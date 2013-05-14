@@ -14,8 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import logging
 import os
 from google.appengine.ext import ndb
+from google.appengine.api import users
 import webapp2
 import jinja2
 
@@ -31,22 +33,67 @@ class MenuItem(ndb.Model):
   description = ndb.TextProperty()
 
 
+main_menu = [
+    MenuItem(title="Portfolio", link="/portfolio/"),
+    MenuItem(title="Opinions", link="/opinions/"),
+    MenuItem(title="News", link="/news/")
+]
+
+
 class MainHandler(webapp2.RequestHandler):
     def get(self):
+        user = users.get_current_user()
         template = jinja_environment.get_template('templates/main.html')
-
-        home = MenuItem(title="Portfolio", link="/portfolio/", active=True)
-        about = MenuItem(title="Opinions", link="/opinions/")
-        contact = MenuItem(title="News", link="/news/")
-
-        main_menu = [home, about, contact]
 
         self.response.out.write(template.render(
             main_menu=main_menu,
             page_title="Main page",
-            site_name="egoroff.spb.ru"
+            site_name="egoroff.spb.ru",
+            user=user
+            ))
+
+
+class PortfolioHandler(webapp2.RequestHandler):
+    def get(self):
+        user = users.get_current_user()
+        template = jinja_environment.get_template('templates/portfolio.html')
+
+        self.response.out.write(template.render(
+            main_menu=main_menu,
+            page_title="Portfolio",
+            site_name="egoroff.spb.ru",
+            user=user
+            ))
+
+
+class OpinionsHandler(webapp2.RequestHandler):
+    def get(self):
+        user = users.get_current_user()
+        template = jinja_environment.get_template('templates/opinions.html')
+
+        self.response.out.write(template.render(
+            main_menu=main_menu,
+            page_title="Opinions",
+            site_name="egoroff.spb.ru",
+            user=user
+            ))
+
+
+class NewsHandler(webapp2.RequestHandler):
+    def get(self):
+        user = users.get_current_user()
+        template = jinja_environment.get_template('templates/news.html')
+
+        self.response.out.write(template.render(
+            main_menu=main_menu,
+            page_title="News",
+            site_name="egoroff.spb.ru",
+            user=user
             ))
 
 app = webapp2.WSGIApplication([
-    ('/', MainHandler)
+    ('/', MainHandler),
+    ('/portfolio/', PortfolioHandler),
+    ('/opinions/', OpinionsHandler),
+    ('/news/', NewsHandler),
 ], debug=True)
