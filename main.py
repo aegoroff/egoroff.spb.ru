@@ -15,6 +15,7 @@
 # limitations under the License.
 #
 import logging
+from lxml import etree
 import os
 from google.appengine.ext import ndb
 from google.appengine.api import users
@@ -58,11 +59,18 @@ class PortfolioHandler(webapp2.RequestHandler):
         user = users.get_current_user()
         template = jinja_environment.get_template('templates/portfolio.html')
 
+        xml_input = etree.XML(open('mod_rewrite.xml', 'r').read())
+        xslt_root = etree.XML(open('apache_module.xsl', 'r').read())
+        transform = etree.XSLT(xslt_root)
+
+        content = unicode(transform(xml_input))
+
         self.response.out.write(template.render(
             main_menu=main_menu,
             page_title="Portfolio",
             site_name="egoroff.spb.ru",
-            user=user
+            user=user,
+            html=content
             ))
 
 
