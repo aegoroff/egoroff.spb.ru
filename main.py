@@ -24,6 +24,8 @@ import webapp2
 import jinja2
 
 jinja_environment = jinja2.Environment(
+    trim_blocks=True,
+    optimized=True,
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
     extensions=['jinja2.ext.autoescape'])
 
