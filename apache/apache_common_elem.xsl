@@ -249,7 +249,7 @@
                 <xsl:variable name="lowerdirective" select="translate(., $uppercase, $lowercase)"/>
 
                 <xsl:choose>
-                    <xsl:when test="$in-modulesynopsis = '1' and @module = /modulesynopsis/name">
+                    <xsl:when test="$in-modulesynopsis = '1' and @module = modulesynopsis/name">
                         <a href="#{$lowerdirective}">
                             <xsl:if test="@type='section'">&lt;</xsl:if>
                             <xsl:value-of select="."/>
@@ -262,7 +262,7 @@
                             <xsl:if test="@status = 'obsolete'">obs_</xsl:if>
                         </xsl:variable>
 
-                        <a href="{$path}/apache/{$obs_}{@module}.html#{$lowerdirective}">
+                        <a href="{$path}/portfolio/{$obs_}{@module}.html#{$lowerdirective}">
                             <xsl:if test="@type='section'">&lt;</xsl:if>
                             <xsl:value-of select="."/>
                             <xsl:if test="@type='section'">&gt;</xsl:if>
@@ -310,14 +310,15 @@
                      and includes lt/gt only for "section" directives -->
                 <h2>
 
+                    <a id="{$lowername}" name="{$lowername}">
+                        <xsl:value-of select="$messages/message[@name='directive']"/>
+                    </a>
+                    <xsl:text>&#160;</xsl:text>
+
                     <xsl:if test="@type='section'">&lt;</xsl:if>
                     <xsl:value-of select="name"/>
                     <xsl:if test="@type='section'">&gt;</xsl:if>
 
-                    <xsl:text></xsl:text>
-                    <a id="{$lowername}" name="{$lowername}">
-                        <xsl:value-of select="$messages/message[@name='directive']"/>
-                    </a>
                 </h2>
                 <!-- Directive header -->
                 <div class="directive">

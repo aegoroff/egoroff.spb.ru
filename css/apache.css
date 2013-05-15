@@ -63,27 +63,6 @@ div.warning p {
 	padding: 0
 }
 
-div.note pre,
-div.warning pre {
-	font-size: 13px
-}
-
-h2 {
-	padding: 0.2em 0 0.2em 0.7em;
-	margin: 0 0 0.5em 0;
-	text-decoration: none
-}
-
-.directive-section h2 {
-	background-color: #557697;
-	color: #fff
-}
-div.page-content {
-	background-color: white;
-	padding: 0.5em;
-	vertical-align: top
-}
-
 div.directive div.td, div.directive div.th {
     padding: 3px;
 }
