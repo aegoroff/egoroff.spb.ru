@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding=UTF-8
 #
 # Copyright 2007 Google Inc.
 #
@@ -14,8 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
-from xml.etree import ElementTree
+
 from lxml import etree
 import os
 from google.appengine.ext import ndb
@@ -44,8 +44,8 @@ main_menu = [
 ]
 
 apache_docs = {
-    'mod_rewrite': "apache_module",
-    'rewriteguide': "apache_manualpage"
+    'mod_rewrite': ["apache_module", u"Модуль Apache mod_rewrite"],
+    'rewriteguide': ["apache_manualpage", u"Руководство по URL преобразованиям"]
 }
 
 
@@ -82,7 +82,7 @@ class ApacheHandler(webapp2.RequestHandler):
             return
 
         xml_input = etree.parse('apache/{0}.xml'.format(doc), parser)
-        stylesheet = apache_docs[doc]
+        stylesheet = apache_docs[doc][0]
         xslt_root = etree.parse('apache/{0}.xsl'.format(stylesheet), parser)
         transform = etree.XSLT(xslt_root)
 
@@ -90,7 +90,7 @@ class ApacheHandler(webapp2.RequestHandler):
 
         self.response.out.write(template.render(
             main_menu=main_menu,
-            page_title=doc,
+            page_title=apache_docs[doc][1],
             site_name="egoroff.spb.ru",
             user=user,
             html=content

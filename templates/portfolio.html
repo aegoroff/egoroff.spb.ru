@@ -1,4 +1,4 @@
-{% extends "/templates/page.html" %}
+﻿{% extends "/templates/page.html" %}
 
 {% block content %}
 
@@ -12,7 +12,7 @@
           <!--Body content-->
           <ul>
           {% for item in apache_docs %}
-                <li><a href="./{{ item }}.html">{{ item }}</a></li>
+                <li><a href="./{{ item }}.html">{{ apache_docs[item][1] }}</a></li>
           {% endfor %}
           </ul>
         </div>
