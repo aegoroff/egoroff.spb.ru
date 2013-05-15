@@ -15,6 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import json
 
 from lxml import etree
 import os
@@ -30,6 +31,11 @@ jinja_environment = jinja2.Environment(
     extensions=['jinja2.ext.autoescape'])
 
 
+def readJson(path):
+    with open(path) as f:
+        return json.load(f, encoding="UTF-8")
+
+
 class MenuItem(ndb.Model):
     title = ndb.TextProperty()
     link = ndb.TextProperty()
@@ -43,10 +49,7 @@ main_menu = [
     MenuItem(title="News", link="/news/")
 ]
 
-apache_docs = {
-    'mod_rewrite': ["apache_module", u"Модуль Apache mod_rewrite"],
-    'rewriteguide': ["apache_manualpage", u"Руководство по URL преобразованиям"]
-}
+apache_docs = readJson("apache/config.json")
 
 
 class MainHandler(webapp2.RequestHandler):
@@ -63,7 +66,7 @@ class MainHandler(webapp2.RequestHandler):
 
 
 class FileResolver(etree.Resolver):
-    def resolve(self, url, pubid, context):
+    def resolve(self, url, identifier, context):
         return self.resolve_filename(url, context)
 
 

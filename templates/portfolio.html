@@ -10,11 +10,12 @@
         </div>
         <div class="span10">
           <!--Body content-->
-          <ul>
+          <dl>
           {% for item in apache_docs %}
-                <li><a href="./{{ item }}.html">{{ apache_docs[item][1] }}</a></li>
+                <dt><a href="./{{ item }}.html">{{ apache_docs[item][1] }}</a></dt>
+                <dd>{{ apache_docs[item][2] }}</dd>
           {% endfor %}
-          </ul>
+          </dl>
         </div>
       </div>
     </div>

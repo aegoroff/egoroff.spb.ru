@@ -1,0 +1,4 @@
+{
+   "mod_rewrite" : ["apache_module", "Модуль Apache mod_rewrite", "Перевод документации Apache по модулю mod_rewrite — реализующему механизм URL преобразований."],
+   "rewriteguide" : ["apache_manualpage", "Руководство по URL преобразованиям", "Перевод Apache URL Rewriting Guide в оригинале написанного Ralf S. Engelschall. Этот документ дополняет документацию к mod_rewrite. Он описывает возможности использования mod_rewrite веб-сервера Apache."]
+}
