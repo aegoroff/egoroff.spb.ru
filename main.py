@@ -43,6 +43,11 @@ main_menu = [
     MenuItem(title="News", link="/news/")
 ]
 
+apache_docs = {
+    'mod_rewrite': "apache_module",
+    'rewriteguide': "apache_manualpage"
+}
+
 
 class MainHandler(webapp2.RequestHandler):
     def get(self):
@@ -62,26 +67,47 @@ class FileResolver(etree.Resolver):
         return self.resolve_filename(url, context)
 
 
-class PortfolioHandler(webapp2.RequestHandler):
+class ApacheHandler(webapp2.RequestHandler):
     def get(self):
         user = users.get_current_user()
-        template = jinja_environment.get_template('templates/portfolio.html')
+        template = jinja_environment.get_template('templates/apache.html')
+
+        uri = self.request.url
+        doc = os.path.basename(uri).rstrip(".html")
 
         parser = etree.XMLParser(load_dtd=False, dtd_validation=False)
         parser.resolvers.add(FileResolver())
 
-        xml_input = etree.parse('apache/mod_rewrite.xml', parser)
-        xslt_root = etree.parse('apache/apache_module.xsl', parser)
+        if doc not in apache_docs:
+            return
+
+        xml_input = etree.parse('apache/{0}.xml'.format(doc), parser)
+        stylesheet = apache_docs[doc]
+        xslt_root = etree.parse('apache/{0}.xsl'.format(stylesheet), parser)
         transform = etree.XSLT(xslt_root)
 
         content = unicode(transform(xml_input))
 
         self.response.out.write(template.render(
             main_menu=main_menu,
-            page_title="Portfolio",
+            page_title=doc,
             site_name="egoroff.spb.ru",
             user=user,
             html=content
+        ))
+
+
+class PortfolioHandler(webapp2.RequestHandler):
+    def get(self):
+        user = users.get_current_user()
+        template = jinja_environment.get_template('templates/portfolio.html')
+
+        self.response.out.write(template.render(
+            main_menu=main_menu,
+            page_title="Portfolio",
+            site_name="egoroff.spb.ru",
+            user=user,
+            apache_docs=apache_docs
         ))
 
 
@@ -113,6 +139,7 @@ class NewsHandler(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
                                   ('/', MainHandler),
+                                  ('/portfolio/.*html', ApacheHandler),
                                   ('/portfolio/', PortfolioHandler),
                                   ('/opinions/', OpinionsHandler),
                                   ('/news/', NewsHandler),

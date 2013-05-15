@@ -10,13 +10,12 @@
         </div>
         <div class="span10">
           <!--Body content-->
-          {{ html }}
+          <ul>
+          {% for item in apache_docs %}
+                <li><a href="./{{ item }}.html">{{ item }}</a></li>
+          {% endfor %}
+          </ul>
         </div>
       </div>
     </div>
-{% endblock %}
-
-{% block additional_css %}
-    <link href="/css/common.css" rel="stylesheet">
-    <link href="/css/apache.css" rel="stylesheet">
 {% endblock %}

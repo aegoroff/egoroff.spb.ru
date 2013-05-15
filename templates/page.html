@@ -49,12 +49,14 @@
 
     <div class="container">
 
+      {% block breadcrumbs %}
       {% if page_title != 'Main page' %}
         <ul class="breadcrumb">
           <li><a href="/">Home</a> <span class="divider">/</span></li>
           <li class="active">{{ page_title }}</li>
         </ul>
       {% endif %}
+      {% endblock %}
       {% block content %}{% endblock %}
 
       <hr>

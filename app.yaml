@@ -28,3 +28,7 @@ libraries:
   version: "2.6"
 - name: lxml
   version: "2.3"
+
+pagespeed:
+  enabled_rewriters:
+  - CollapseWhitespace
