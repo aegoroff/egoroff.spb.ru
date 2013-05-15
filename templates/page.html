@@ -28,7 +28,7 @@
           <div class="nav-collapse collapse">
             <ul class="nav">
               {% for item in main_menu %}
-                {% if item.title == page_title %}<li class="active">{% else %}<li>{% endif %}<a href="{{ item.link }}">{{ item.title }}</a></li>
+                <li{% if item.title == page_title %} class="active"{% endif %}><a href="{{ item.link }}">{{ item.title }}</a></li>
               {% endfor %}
             </ul>
             {% if user %}
