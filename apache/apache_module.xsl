@@ -1,6 +1,4 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE xsl:stylesheet SYSTEM "common/entities.dtd">
-<!-- $Id: apache_module.xsl,v 1.12 2004/02/06 15:53:10 egr Exp $ -->
 
 <xsl:stylesheet
 	version="1.0"

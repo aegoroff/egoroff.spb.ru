@@ -60,12 +60,6 @@ class FileResolver(etree.Resolver):
         return self.resolve_filename(url, context)
 
 
-class DTDResolver(etree.Resolver):
-    def resolve(self, url, id, context):
-        return self.resolve_string(
-            '<!ENTITY nbsp "&#160;">', context)
-
-
 class PortfolioHandler(webapp2.RequestHandler):
     def get(self):
         user = users.get_current_user()
@@ -73,10 +67,9 @@ class PortfolioHandler(webapp2.RequestHandler):
 
         parser = etree.XMLParser(load_dtd=False, dtd_validation=False)
         parser.resolvers.add(FileResolver())
-        #parser.resolvers.add(DTDResolver())
 
-        xml_input = etree.parse('mod_rewrite.xml', parser)
-        xslt_root = etree.parse('apache_module.xsl', parser)
+        xml_input = etree.parse('apache/mod_rewrite.xml', parser)
+        xslt_root = etree.parse('apache/apache_module.xsl', parser)
         transform = etree.XSLT(xslt_root)
 
         content = unicode(transform(xml_input))

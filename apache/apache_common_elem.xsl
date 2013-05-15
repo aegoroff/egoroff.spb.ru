@@ -1,5 +1,4 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE xsl:stylesheet SYSTEM "common/entities.dtd">
 <!-- $Id: apache_common_elem.xsl,v 1.8 2005/09/10 08:31:40 egr Exp $ -->
 
 <xsl:stylesheet
@@ -7,7 +6,7 @@
         xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
         >
 
-    <xsl:variable name="message_file">common/messages.xml</xsl:variable>
+    <xsl:variable name="message_file">messages.xml</xsl:variable>
 
     <!-- Read the localized messages from the specified language file -->
     <xsl:variable name="messages" select="document($message_file)/messages"/>
