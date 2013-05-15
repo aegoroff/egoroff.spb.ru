@@ -1,0 +1,223 @@
+
+/* Tables */
+
+div.table, div.breadcrumbs, div.bottomMenuContainer, div.directive {
+	height:0;
+}
+div.tr{
+	height:0;
+}
+/* не для IE */
+div.table[class], div.breadcrumbs[class], div.bottomMenuContainer[class], div.directive[class] {height:auto; display: table;}
+div.tr[class] { height:auto; display: table-row;}
+div.td[class], div.th[class] {float:none; display: table-cell;}
+
+div.td, div.th{
+	height: 100%;
+	float: left;
+}
+
+div#siteCap, div.bottomMenuContainer{
+	width:100%;
+}
+
+/* White text */
+
+.wtxt {
+	color: white;
+}
+
+pre.code, h1, h2, h3, h4, .bottomMenuContainer,
+.date, .log, #siteCap, .exit, .log dt, .auth,
+.localMenu li, .breadcrumbs, #mainMenu, .published, .updated {
+	font-family: Verdana, Arial, "Sans Serif"
+}
+
+/* Sizes */
+
+h1 {
+	font-size: 90%
+}
+
+h2, .bottomMenuContainer {
+	font-size: 83%
+}
+
+h3, PRE.code, .published, .updated, #mainMenu li,
+.log dt, .localMenu li, .breadcrumbs {
+	font-size: 78%
+}
+
+h4 {
+	font-size: 76%
+}
+
+.date {
+	font-size: 70%
+}
+
+.exit {
+	font-size: 60%
+}
+
+.smaller{
+	font-size: 80%
+}
+
+/* Outline */
+
+blockquote, q {
+	font-style: italic
+}
+
+A:hover{
+	color: red;
+}
+
+/* Idents */
+
+h1 {
+	margin: 0 0 0.5em 0
+}
+
+.bottomMenuContainer ul {
+	margin-bottom: 0px
+}
+
+.bottomMenuContainer ul {
+	margin-top: 0px
+}
+
+dd {
+	margin-bottom: 0.5em
+}
+
+#mainMenu li {
+	margin-top: 0.5em
+}
+
+h1, .filesList li, .select {
+	padding: 0.3em
+}
+
+.exit, #mainMenu li, .page-content, .localMenu li, .calendar li {
+	padding: 2px
+}
+
+.bottomMenuContainer div.td, .breadcrumbs div.td, #siteCap div.td {
+	padding: 5px
+}
+
+#mainMenu, #fileScrollBlock, #contentSingleCell div.td, #navBlock div.td {
+	padding: 10px
+}
+
+/* alignment */ 
+
+#mainMenu, #navBlock, #fileScrollBlock, #contentSingleCell, .page-content {
+	vertical-align: top
+}
+
+#siteCap, .bottomMenuContainer div.td, .breadcrumbs {
+	vertical-align: middle;
+}
+
+acronym {
+	border-bottom: 1px dotted black;
+	cursor: help
+}
+
+.bottomMenuContainer div.td {
+	width: 33%
+}
+
+/* Navigation lists elements */
+
+.filesList li {
+	list-style: none;
+}
+
+#mainMenu li {
+	margin-left: -25px;
+	list-style: none;
+}
+
+/* Code examples */
+
+pre.code, code {
+	color: #0d0d97
+}
+
+/* Menu items images */
+
+.homePageMenuImg, .globeNavImg
+{
+	vertical-align: middle;
+	border: 0px;
+}
+
+.homePageMenuImg
+{
+	width: 50px;
+	height: 50px;
+}
+
+.globeNavImg
+{
+	margin-right: 5px;
+	width: 25px;
+	height: 25px;
+}
+
+.fileSpecElem{
+	width: 65%;
+	margin-left: 3%;
+}
+
+.materialinfo {
+	font: .75em/2em Verdana, Arial, "Sans Serif"; /*9px/16px*/
+	/* margin-top: 2.22em; /*20*/
+	float:left;
+	clear: both;
+	padding: 0 0 0 0px;
+	z-index:20;
+	position:relative;
+
+	
+}
+.materialinfo  div {
+		padding: 5px .56em 0;
+		margin-right: 0px;
+		float: left;
+}
+
+.materialinfo .twitter { 
+	margin-right: -2px !important;  
+}
+
+.materialinfo .twitter a {
+	display: -moz-inline-stack;
+	display: inline-block; 
+	background: url(/images/bg-icon-twitter.gif) 0 0 no-repeat; 
+	width: 14px; 
+	height: 16px; 
+	position: relative;
+	top: 1px; 
+}
+
+.materialinfo .facebook { 
+	opacity: 0.5; 
+}
+
+.materialinfo .facebook:hover {
+	opacity: 1; 
+}
+.materialinfo .facebook a {
+	display: -moz-inline-stack;
+	display: inline-block; 
+	background: url(/images/bg-icon-facebook.png) 0 0 no-repeat;
+	width: 14px;
+	height: 16px;
+	position: relative;
+	top: 1px;
+}

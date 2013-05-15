@@ -12,7 +12,12 @@ handlers:
   static_dir: bootstrap
 - url: /js
   static_dir: js
-
+- url: /css
+  static_dir: css
+- url: /images
+  static_dir: images
+- url: /apache
+  static_dir: apache
 - url: .*
   script: main.app
 

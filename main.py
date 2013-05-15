@@ -15,6 +15,7 @@
 # limitations under the License.
 #
 import logging
+from xml.etree import ElementTree
 from lxml import etree
 import os
 from google.appengine.ext import ndb
@@ -28,10 +29,10 @@ jinja_environment = jinja2.Environment(
 
 
 class MenuItem(ndb.Model):
-  title = ndb.TextProperty()
-  link = ndb.TextProperty()
-  active = ndb.BooleanProperty()
-  description = ndb.TextProperty()
+    title = ndb.TextProperty()
+    link = ndb.TextProperty()
+    active = ndb.BooleanProperty()
+    description = ndb.TextProperty()
 
 
 main_menu = [
@@ -51,7 +52,18 @@ class MainHandler(webapp2.RequestHandler):
             page_title="Main page",
             site_name="egoroff.spb.ru",
             user=user
-            ))
+        ))
+
+
+class FileResolver(etree.Resolver):
+    def resolve(self, url, pubid, context):
+        return self.resolve_filename(url, context)
+
+
+class DTDResolver(etree.Resolver):
+    def resolve(self, url, id, context):
+        return self.resolve_string(
+            '<!ENTITY nbsp "&#160;">', context)
 
 
 class PortfolioHandler(webapp2.RequestHandler):
@@ -59,8 +71,12 @@ class PortfolioHandler(webapp2.RequestHandler):
         user = users.get_current_user()
         template = jinja_environment.get_template('templates/portfolio.html')
 
-        xml_input = etree.XML(open('mod_rewrite.xml', 'r').read())
-        xslt_root = etree.XML(open('apache_module.xsl', 'r').read())
+        parser = etree.XMLParser(load_dtd=False, dtd_validation=False)
+        parser.resolvers.add(FileResolver())
+        #parser.resolvers.add(DTDResolver())
+
+        xml_input = etree.parse('mod_rewrite.xml', parser)
+        xslt_root = etree.parse('apache_module.xsl', parser)
         transform = etree.XSLT(xslt_root)
 
         content = unicode(transform(xml_input))
@@ -71,7 +87,7 @@ class PortfolioHandler(webapp2.RequestHandler):
             site_name="egoroff.spb.ru",
             user=user,
             html=content
-            ))
+        ))
 
 
 class OpinionsHandler(webapp2.RequestHandler):
@@ -84,7 +100,7 @@ class OpinionsHandler(webapp2.RequestHandler):
             page_title="Opinions",
             site_name="egoroff.spb.ru",
             user=user
-            ))
+        ))
 
 
 class NewsHandler(webapp2.RequestHandler):
@@ -97,11 +113,12 @@ class NewsHandler(webapp2.RequestHandler):
             page_title="News",
             site_name="egoroff.spb.ru",
             user=user
-            ))
+        ))
+
 
 app = webapp2.WSGIApplication([
-    ('/', MainHandler),
-    ('/portfolio/', PortfolioHandler),
-    ('/opinions/', OpinionsHandler),
-    ('/news/', NewsHandler),
-], debug=True)
+                                  ('/', MainHandler),
+                                  ('/portfolio/', PortfolioHandler),
+                                  ('/opinions/', OpinionsHandler),
+                                  ('/news/', NewsHandler),
+                              ], debug=True)
