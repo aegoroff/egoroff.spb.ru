@@ -16,3 +16,7 @@ div.td, div.th{
 	height: 100%;
 	float: left;
 }
+
+pre.code, code {
+	color: #0d0d97
+}
