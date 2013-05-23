@@ -1,0 +1,77 @@
+{% extends 'file/admin/folders.html' %}
+
+{% block side %}
+    <a href="{{ url_for('admin.file.index')}}" class="btn">&larr; Назад</a><br>
+    <h2 class="page-header">Редактирование папки</h2>
+    <form class="form-actions" method="POST" action="">
+        <fieldset>
+            {% include 'file/admin/folder_fields.html' %}
+
+            <div class="form-actions">
+                <button type="submit"
+                        class="btn btn-primary btn-loading"
+                        data-loading-text="Сохранение..">
+                    Сохранить
+                </button>
+                <button type="submit"
+                        name="delete_folder"
+                        class="btn btn-primary btn-loading btn-danger"
+                        data-loading-text="Удаление..">
+                    Удалить
+                </button>
+            </div>
+        </fieldset>
+    </form>
+{% endblock %}
+
+{% block file_content %}
+    <h2 class="page-header">Добавление файла</h2>
+    <form method="POST" action="{{ add_url }}" enctype="multipart/form-data">
+        {{ file_form.csrf }}
+        {% set form_field = file_form.file %}
+        {% include 'bit/form_text_field.html' %}
+        <div class="form-actions">
+            <button type="submit"
+                    class="btn btn-primary btn-loading"
+                    data-loading-text="Добавление..">
+                Добавить
+            </button>
+        </div>
+    </form>
+    <h2>Файлы</h2>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Название</th>
+                <th>Тип</th>
+                <th>Ссылка</th>
+                <th>Операции</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for f in folder.files %}
+                {% set file=f.get() %}
+                <tr>
+                    <td>{{ file.title_filename }}</td>
+                    <td>
+                        {% if file.is_image %}
+                            <img src="{{ file.url }}=s100">
+                        {% else %}
+                            Документ
+                        {% endif %}
+                    </td>
+                    <td>
+                       {{ file.url }}
+                    </td>
+                    <td>
+                        <form method="POST" action="{{ url_for('admin.file.del_file', key_id=folder.key.id(), file_key=f.id()) }}">
+                            <button type="submit" class="btn-danger">
+                                Удалить
+                            </button>
+                        </form>
+                   </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

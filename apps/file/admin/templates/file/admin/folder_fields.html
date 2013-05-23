@@ -1,0 +1,6 @@
+{{ form.csrf }}
+{% set form_field = form.title %}
+{% include 'bit/form_text_field.html' %}
+
+{% set form_field = form.is_public %}
+{% include 'bit/form_text_field.html' %}

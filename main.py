@@ -15,6 +15,15 @@ import util
 import model
 import admin
 
+from apps.file.views import mod as file_view
+app.register_blueprint(file_view)
+
+from apps.file.admin.views import mod as file_admin_mod
+app.register_blueprint(file_admin_mod)
+
+from apps.portfolio.views import mod as portfolio_mod
+app.register_blueprint(portfolio_mod)
+
 
 @app.route('/')
 def welcome():
