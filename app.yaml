@@ -24,6 +24,12 @@ handlers:
   static_dir: static/
   expiration: 1000d
 
+- url: /apache/images
+  static_dir: apache/images
+
+- url: /apache/css
+  static_dir: apache/css
+
 - url: /.*
   script: main.app
 
