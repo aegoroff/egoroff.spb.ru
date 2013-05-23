@@ -4,31 +4,42 @@ runtime: python27
 api_version: 1
 threadsafe: yes
 
-handlers:
-- url: /favicon\.ico
-  static_files: favicon.ico
-  upload: favicon\.ico
-- url: /bootstrap
-  static_dir: bootstrap
-- url: /js
-  static_dir: js
-- url: /css
-  static_dir: css
-- url: /images
-  static_dir: images
-- url: /apache/images
-  static_dir: apache/images
-- url: .*
-  script: main.app
+builtins:
+- remote_api: on
+- deferred: on
+- appstats: on
 
 libraries:
-- name: webapp2
-  version: "2.5.2"
 - name: jinja2
-  version: "2.6"
+  version: latest
 - name: lxml
   version: "2.3"
 
-pagespeed:
-  enabled_rewriters:
-  - CollapseWhitespace
+handlers:
+- url: /(favicon\.ico|robots\.txt)
+  static_files: static/\1
+  upload: static/(.*)
+
+- url: /p/
+  static_dir: static/
+  expiration: 1000d
+
+- url: /.*
+  script: main.app
+
+skip_files:
+- ^(.*/)?app\.yaml
+- ^(.*/)?app\.yml
+- ^(.*/)?index\.yaml
+- ^(.*/)?index\.yml
+- ^(.*/)?#.*#
+- ^(.*/)?.*~
+- ^(.*/)?.*\.py[co]
+- ^(.*/)?.*/RCS/.*
+- ^(.*/)?\..*
+- ^(.*/)?.*\.bak$
+- ^(.*/)?Icon\r
+- ^lib/.*
+- ^static/src/.*
+- ^static/lib/.*
+- ^static/dst/.*
