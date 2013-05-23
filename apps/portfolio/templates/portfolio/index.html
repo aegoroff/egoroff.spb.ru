@@ -6,7 +6,7 @@
         <span class="divider"> &rarr; </span>
     </li>
     <li class="active">
-        Портфель
+        {{ title }}
     </li>
 {% endblock %}
 
@@ -14,9 +14,17 @@
     <div class="row">
         <div class="span12">
             <h1 class="page-header">
-                Портфель
+                {{ title }}
             </h1>
         </div>
-        <!-- TODO: porfolio content -->
+        <div class="span12">
+          <!--Body content-->
+          <dl>
+          {% for item in apache_docs %}
+                <dt><a href="./{{ item }}.html">{{ apache_docs[item][1] }}</a></dt>
+                <dd>{{ apache_docs[item][2] }}</dd>
+          {% endfor %}
+          </dl>
+        </div>
     </div>
 {% endblock %}

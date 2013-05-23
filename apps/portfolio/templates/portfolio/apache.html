@@ -1,0 +1,32 @@
+﻿{% extends 'base.html' %}
+
+{% block content %}
+
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <div class="span10">
+                <!--Body content-->
+                {{ html }}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block additional_css %}
+    <link href="/apache/css/common.css" rel="stylesheet">
+    <link href="/apache/css/apache.css" rel="stylesheet">
+{% endblock %}
+
+{% block breadcrumbs %}
+    <li>
+        <a href="{{ url_for('welcome') }}">Главная</a>
+        <span class="divider"> &rarr; </span>
+    </li>
+    <li>
+        <a href="{{ url_for('portfolio.index') }}">Портфель</a>
+        <span class="divider"> &rarr; </span>
+    </li>
+    <li class="active">
+        {{ page_title }}
+    </li>
+{% endblock %}
