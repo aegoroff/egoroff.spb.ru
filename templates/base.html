@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% autoescape true %}
 <html class="{% block html_class %}{{html_class}}{% endblock %}" lang="en">
   <head>
     <meta charset="utf-8">
@@ -42,3 +43,4 @@
     # endblock
   </body>
 </html>
+{% endautoescape %}
