@@ -51,15 +51,14 @@ apache_docs = readJson("apache/config.json")
 @app.route('/')
 def welcome():
   posts = Post.query(Post.is_public == True).order(-Post.created)
-  headline=posts.fetch(1)
   posts_count = posts.count()
-  posts = posts.fetch(4)
+  posts = [p for p in posts.fetch(5)]
   return flask.render_template(
       'welcome.html',
       html_class='welcome',
       apache_docs=apache_docs,
-      posts=posts,
-      headline=headline,
+      posts=posts[1:],
+      headline=posts[0],
       posts_count=posts_count,
     )
 
