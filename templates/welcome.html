@@ -1,23 +1,47 @@
 # extends 'base.html'
 
 # block content
-    <!-- Main hero unit for a primary marketing message or call to action -->
-      <div class="hero-unit">
+<!-- Main hero unit for a primary marketing message or call to action -->
+<div class="hero-unit">
+    {% if headline %}
+        {% for post in headline %}
+            <h1>{{ post.title }}</h1>
+            <p>{{ post.short_text|safe }}</p>
+            {% if post.text %}
+                <p><a href="{{ url_for('news.post', key_id=post.key.id()) }}" class="btn btn-primary btn-large">Читать
+                    дальше &raquo;</a></p>
+            {% endif %}
+        {% endfor %}
+    {% else %}
         <h1>Hello, world!</h1>
-        <p>This is a template for a simple marketing or informational website. It includes a large callout called the hero unit and three supporting pieces of content. Use it as a starting point to create something more unique.</p>
+        <p>This is a template for a simple marketing or informational website. It includes a large callout called the
+            hero unit and three supporting pieces of content. Use it as a starting point to create something more
+            unique.</p>
         <p><a href="#" class="btn btn-primary btn-large">Learn more &raquo;</a></p>
-      </div>
+    {% endif %}
+</div>
 
-      <!-- Example row of columns -->
-      <div class="row-fluid">
-        <div class="span6">
-          <h2>Heading</h2>
-          <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
-          <p><a class="btn" href="#">View details &raquo;</a></p>
-        </div>
-        <div class="span6">
-          <h2>Про апачей</h2>
-          {% include 'portfolio/apache_documents_list.html' %}
-       </div>
-      </div>
+<!-- Example row of columns -->
+<div class="row-fluid">
+    <div class="span6">
+        <h2>Журнал</h2>
+        {% if posts %}
+            {% for post in posts %}
+                <div class="span6">
+                    {% include 'news/post_box.html' %}
+                </div>
+            {% endfor %}
+
+            {% if posts_count > 4 %}
+                <div class="span12" style="margin-top: 10px;">
+                    <a class="btn pull-right" href="{{ url_for('news.index') }}">Остальные &rarr;</a>
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
+    <div class="span6">
+        <h2>Про апачей</h2>
+        {% include 'portfolio/apache_documents_list.html' %}
+    </div>
+</div>
 # endblock

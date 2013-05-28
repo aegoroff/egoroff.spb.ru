@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html class="{{html_class}}" lang="en" data-channel-name="{{channel_name}}">
+  <head>
+    <meta charset="utf-8">
+    <title>
+      {% block title %}
+        {% if title %}
+          {{title}} |
+        {% endif %}
+      {% endblock %}
+      {{config.BRAND_NAME}}
+    </title>
+
+    {% include 'bit/style.html' %}
+    {% block head %}{% endblock %}
+  </head>
+
+  <body>
+    {% include 'admin/top_bar.html' %}
+
+    <div class="container">
+      {% include 'bit/notifications.html' %}
+      {% block content %}{% endblock %}
+    </div>
+
+
+    {% include 'bit/script.html' %}
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

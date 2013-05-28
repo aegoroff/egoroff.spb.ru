@@ -11,6 +11,20 @@ class BaseX(object):
       return cls_db_list[0]
     return None
 
+  @classmethod
+  def retrieve_by_id(cls, id):
+    try:
+      return cls.get_by_id(int(id))
+    except ValueError:
+      return None
+
+  @classmethod
+  def retrieve_by_key_safe(cls, key_urlsafe):
+    try:
+      return ndb.Key(urlsafe=key_urlsafe).get()
+    except:
+      return None
+
   @ndb.ComputedProperty
   def created_ago(self):
     if not self.created:
