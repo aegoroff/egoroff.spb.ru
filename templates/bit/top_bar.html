@@ -1,28 +1,31 @@
 <div class="navbar navbar-fixed-top">
-  <div class="navbar-inner">
-    <div class="container-fluid">
-      <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </a>
-      <a class="brand" href="{{url_for('welcome')}}">
-        {{config.CONFIG_DB.brand_name}}
-      </a>
-      <div class="nav-collapse collapse">
-        <ul class="nav">
-        <li>
-            <a href={{ url_for('portfolio.index') }}>
-                Портфель
+    <div class="navbar-inner">
+        <div class="container-fluid">
+            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
             </a>
-        </li>
+            <a class="brand" href="{{ url_for('welcome') }}">
+                {{ config.CONFIG_DB.brand_name }}
+            </a>
 
-          # include 'bit/contact_menu.html'
-        </ul>
-        <ul class="nav pull-right">
-          # include 'bit/user_menu.html'
-        </ul>
-      </div>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    {% for item in config.SITE %}
+                        <li>
+                            <a href={{ url_for(item[item.ID]) }}>
+                                item[item.TITLE]
+                            </a>
+                        </li>
+                    {% endfor %}
+
+                    # include 'bit/contact_menu.html'
+                </ul>
+                <ul class="nav pull-right">
+                    # include 'bit/user_menu.html'
+                </ul>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
