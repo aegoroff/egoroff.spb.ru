@@ -3,6 +3,7 @@
 from flask import Blueprint, render_template
 from lxml import etree
 import main
+import site_map
 
 
 class FileResolver(etree.Resolver):
@@ -17,22 +18,28 @@ mod = Blueprint(
     url_prefix='/portfolio'
 )
 
+main_section_item = site_map.MAP[0]
+apache_section_item = main_section_item[site_map.CHILDS][0]
 
 @mod.route('/')
 def index():
     return render_template(
         'portfolio/index.html',
+        parent_id=main_section_item[site_map.ID],
+        current_id=main_section_item[site_map.ID],
         breadcrumbs=main.breadcrumbs_home,
-        title=u"Портфель"
+        title=main_section_item[site_map.TITLE]
     )
 
 @mod.route('/apache/')
 def apache():
     breadcrumbs =[i for i in main.breadcrumbs_home]
-    breadcrumbs.append(('portfolio.index', u"Портфель"))
+    breadcrumbs.append((main_section_item[site_map.ID], main_section_item[site_map.TITLE]))
     return render_template(
         'portfolio/apache.html',
-        title=u"Про апачей",
+        title=apache_section_item[site_map.TITLE],
+        parent_id=main_section_item[site_map.ID],
+        current_id=apache_section_item[site_map.ID],
         breadcrumbs=breadcrumbs,
         apache_docs=main.apache_docs
     )
@@ -54,8 +61,10 @@ def get_doc(doc):
     content = unicode(transform(xml_input))
 
     breadcrumbs =[i for i in main.breadcrumbs_home]
-    breadcrumbs.append(('portfolio.index', u"Портфель"))
-    breadcrumbs.append(('portfolio.apache', u"Про апачей"))
+    parents = [ main_section_item, apache_section_item ]
+    append = lambda item: breadcrumbs.append((item[site_map.ID], item[site_map.TITLE]))
+    map(append, parents)
+
     return render_template(
         'portfolio/apache_document.html',
         title=main.apache_docs[doc][1],

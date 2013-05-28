@@ -13,9 +13,9 @@
             <div class="nav-collapse collapse">
                 <ul class="nav">
                     {% for item in config.SITE %}
-                        <li>
-                            <a href={{ url_for(item[item.ID]) }}>
-                                item[item.TITLE]
+                        <li {% if item["id"] == current_id %}class="active"{% endif %}>
+                            <a href={{ url_for(item['id']) }}> {% if item["class"] %}<i class="{{ item["class"] }}"></i> {% endif %}
+                                {{ item['title'] }}
                             </a>
                         </li>
                     {% endfor %}

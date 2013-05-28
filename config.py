@@ -1,4 +1,6 @@
 import os
+import site_map
+
 try:
   # This part is surrounded in try/except because the this config.py file is
   # also used in the build.py script which is used to compile/minify the client
@@ -23,6 +25,8 @@ PRODUCTION = not DEVELOPMENT
 DEBUG = DEVELOPMENT
 
 DEFAULT_DB_LIMIT = 64
+
+SITE = site_map.MAP
 
 ################################################################################
 # Client modules, also used by the build.py script.
