@@ -35,6 +35,8 @@ STYLES = [
 SCRIPTS_MODULES = [
     'libs',
     'scripts',
+    'jquery.plugins',
+    'admin'
   ]
 
 SCRIPTS = {

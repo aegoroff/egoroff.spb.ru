@@ -4,6 +4,9 @@
       <script src="/p/{{script.replace('.coffee', '.js').replace('src/coffee', 'dst/js')}}?{{config.CURRENT_VERSION_ID}}"></script>
     # endfor
   # else
-    <script src="/p/min/js/{{module}}.min.js?{{config.CURRENT_VERSION_ID}}"></script>
+    # if not current_user.admin and module == 'admin'
+    # else
+        <script src="/p/min/js/{{module}}.min.js?{{config.CURRENT_VERSION_ID}}"></script>
+    # endif
   # endif
 # endfor
