@@ -10,12 +10,7 @@
         </div>
         <div class="span12">
           <!--Body content-->
-          <dl>
-          {% for item in apache_docs %}
-                <dt><a href="./{{ item }}.html">{{ apache_docs[item][1] }}</a></dt>
-                <dd>{{ apache_docs[item][2] }}</dd>
-          {% endfor %}
-          </dl>
+          {% include 'portfolio/apache_documents_list.html' %}
         </div>
     </div>
     <div class="span3">

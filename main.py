@@ -1,3 +1,4 @@
+import json
 import sys
 sys.path.insert(0, 'lib.zip')
 
@@ -26,11 +27,19 @@ app.register_blueprint(portfolio_mod)
 
 breadcrumbs_home =[('welcome', 'Home', 'icon-home')]
 
+def readJson(path):
+    with open(path) as f:
+        return json.load(f, encoding="UTF-8")
+
+
+apache_docs = readJson("apache/config.json")
+
 @app.route('/')
 def welcome():
   return flask.render_template(
       'welcome.html',
       html_class='welcome',
+      apache_docs=apache_docs
     )
 
 
