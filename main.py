@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import json
 import sys
 sys.path.insert(0, 'lib.zip')
@@ -25,7 +27,10 @@ app.register_blueprint(file_admin_mod)
 from apps.portfolio.views import mod as portfolio_mod
 app.register_blueprint(portfolio_mod)
 
-breadcrumbs_home =[('welcome', 'Home', 'icon-home')]
+from apps.opinions.views import mod as opinions_mod
+app.register_blueprint(opinions_mod)
+
+breadcrumbs_home =[('welcome', u'Главная', 'icon-home')]
 
 def readJson(path):
     with open(path) as f:

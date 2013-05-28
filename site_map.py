@@ -17,4 +17,9 @@ MAP = [
             {ID: "portfolio.download", TITLE: u"Загрузки"},
         ]
     },
+    {
+        ID: "opinions.index",
+        CLASS: "icon-edit",
+        TITLE: u"Писанина"
+    },
 ]
