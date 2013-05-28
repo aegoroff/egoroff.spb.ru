@@ -29,6 +29,7 @@ DEFAULT_DB_LIMIT = 64
 ################################################################################
 STYLES = [
     'src/less/style.less',
+    'src/less/apache.less',
   ]
 
 SCRIPTS_MODULES = [

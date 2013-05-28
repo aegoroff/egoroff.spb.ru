@@ -1,0 +1,80 @@
+pre {
+  .code {
+    font-family: "Courier New", Courier, monospace;
+    font-size: 95%;
+  }
+}
+
+div {
+  .example {
+    color: #000;
+    padding: 0.5em;
+    margin: 1em 2em 1em 1em;
+    width: 50%;
+    p, pre, table {
+      padding: 0;
+      margin: 0;
+    }
+    p {
+      line-height: 1em;
+    }
+  }
+  .note, .warning {
+    background-color: #eee;
+    color: #036;
+    padding: 0.5em;
+    margin: 1em 2em 1em 1em;
+    .example {
+      background-color: transparent;
+      color: inherit;
+      margin-right: 1em;
+    }
+    p {
+      margin: 0.5em 0 0 0;
+      padding: 0;
+    }
+  }
+  .warning {
+    border: 1px solid #f00;
+  }
+  .directive {
+    .td, .th {
+      padding: 3px;
+    }
+  }
+  .table, .breadcrumbs, .bottomMenuContainer, .directive {
+    height: 0;
+  }
+  .tr {
+    height: 0;
+  }
+  .table[class], .breadcrumbs[class], .bottomMenuContainer[class], .directive[class] {
+    height: auto;
+    display: table;
+  }
+  .tr[class] {
+    height: auto;
+    display: table-row;
+  }
+  .td[class], .th[class] {
+    float: none;
+    display: table-cell;
+  }
+  .td, .th {
+    height: 100%;
+    float: left;
+  }
+}
+
+code {
+  color: #0d0d97
+}
+
+/* example inside table */
+table {
+  div {
+    .example {
+      margin-right: 1em;
+    }
+  }
+}
