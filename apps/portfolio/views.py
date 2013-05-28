@@ -20,6 +20,7 @@ mod = Blueprint(
 
 main_section_item = site_map.MAP[0]
 apache_section_item = main_section_item[site_map.CHILDS][0]
+download_section_item = main_section_item[site_map.CHILDS][1]
 
 @mod.route('/')
 def index():
@@ -30,6 +31,20 @@ def index():
         breadcrumbs=main.breadcrumbs_home,
         title=main_section_item[site_map.TITLE]
     )
+
+
+@mod.route('/download/')
+def download():
+    breadcrumbs =[i for i in main.breadcrumbs_home]
+    breadcrumbs.append((main_section_item[site_map.ID], main_section_item[site_map.TITLE]))
+    return render_template(
+        'portfolio/index.html',
+        parent_id=main_section_item[site_map.ID],
+        current_id=download_section_item[site_map.ID],
+        breadcrumbs=breadcrumbs,
+        title=download_section_item[site_map.TITLE]
+    )
+
 
 @mod.route('/apache/')
 def apache():

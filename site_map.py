@@ -14,6 +14,7 @@ MAP = [
         TITLE: u"Портфель",
         CHILDS: [
             {ID: "portfolio.apache", TITLE: u"Про апачей"},
+            {ID: "portfolio.download", TITLE: u"Загрузки"},
         ]
     },
 ]
