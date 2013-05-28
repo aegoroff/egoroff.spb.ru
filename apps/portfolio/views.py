@@ -30,12 +30,19 @@ mod = Blueprint(
 def index():
     return render_template(
         'portfolio/index.html',
-        title=u"Портфель",
+        title=u"Портфель"
+    )
+
+@mod.route('/apache/')
+def apache():
+    return render_template(
+        'portfolio/apache.html',
+        title=u"Про апачей",
         apache_docs=apache_docs
     )
 
 
-@mod.route('/<doc>.html', methods=['GET'])
+@mod.route('/apache/<doc>.html', methods=['GET'])
 def get_doc(doc):
     if doc not in apache_docs:
         return
@@ -51,7 +58,7 @@ def get_doc(doc):
     content = unicode(transform(xml_input))
 
     return render_template(
-        'portfolio/apache.html',
+        'portfolio/apache_document.html',
         title=apache_docs[doc][1],
         apache_docs=apache_docs,
         html=content

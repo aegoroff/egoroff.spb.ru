@@ -1,16 +1,4 @@
-﻿{% extends 'base.html' %}
-
-{% block content %}
-
-    <div class="container-fluid">
-        <div class="row-fluid">
-            <div class="span12">
-                <!--Body content-->
-                {{ html | safe }}
-            </div>
-        </div>
-    </div>
-{% endblock %}
+{% extends 'base.html' %}
 
 {% block breadcrumbs %}
     <li>
@@ -24,4 +12,35 @@
     <li class="active">
         {{ title }}
     </li>
+{% endblock %}
+
+{% block content %}
+    <div class="row-fluid">
+    <div class="span9">
+        <div class="span12">
+            <h1 class="page-header">
+                {{ title }}
+            </h1>
+        </div>
+        <div class="span12">
+          <!--Body content-->
+          <dl>
+          {% for item in apache_docs %}
+                <dt><a href="./{{ item }}.html">{{ apache_docs[item][1] }}</a></dt>
+                <dd>{{ apache_docs[item][2] }}</dd>
+          {% endfor %}
+          </dl>
+        </div>
+    </div>
+    <div class="span3">
+        <div class="span12">
+            <h1 class="page-header">
+                Подразделы
+            </h1>
+        </div>
+        <div class="span12">
+          <!--subsections-->
+        </div>
+    </div>
+    </div>
 {% endblock %}
