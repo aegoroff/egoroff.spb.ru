@@ -45,6 +45,15 @@ SCRIPTS = {
       'lib/bootstrap/js/bootstrap-dropdown.js',
       'lib/bootstrap/js/bootstrap-tooltip.js',
     ],
+    'jquery.plugins': [
+        'lib/jquery.mosaic.js',
+        'lib/jquery.form.js',
+        'lib/jquery.tablesorter.js',
+        'lib/jquery.metadata.js',
+    ],
+    'admin':[
+        'lib/redactor.js'
+    ],
     'scripts': [
       'src/coffee/common/util.coffee',
       'src/coffee/common/service.coffee',
