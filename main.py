@@ -30,6 +30,15 @@ app.register_blueprint(portfolio_mod)
 from apps.opinions.views import mod as opinions_mod
 app.register_blueprint(opinions_mod)
 
+from apps.news.views import mod as news_mod
+app.register_blueprint(news_mod)
+
+from apps.news.admin.views import mod as news_admin_mod
+app.register_blueprint(news_admin_mod)
+
+from apps.news.models import Post
+
+
 breadcrumbs_home =[('welcome', u'Главная', 'icon-home')]
 
 def readJson(path):

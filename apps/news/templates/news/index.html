@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="row">
+        <div class="span12">
+            <h1 class="page-header">
+                {{ title }}
+            </h1>
+        </div>
+        <div class="span12">
+            {% if not posts or not posts.count() %}
+                Ничего нет
+            {% else %}
+                {% for post in posts %}
+                    {% include 'news/post_box.html' %}
+                    <hr>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

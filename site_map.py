@@ -22,4 +22,9 @@ MAP = [
         CLASS: "icon-edit",
         TITLE: u"Писанина"
     },
+    {
+        ID: "news.index",
+        CLASS: "icon-calendar",
+        TITLE: u"Журнал"
+    },
 ]

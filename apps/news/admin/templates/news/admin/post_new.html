@@ -1,0 +1,33 @@
+{% extends 'admin.html' %}
+
+{% block head %}
+    <link type="text/css" rel='stylesheet' href="/p/css/redactor.css">
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        $(function(){
+            $('.redactor').redactor();
+        });
+    </script>
+{%  endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="span12">
+        <h1 class="page-header">Добавление новости</h1>
+        <form method="POST">
+            {% include 'news/admin/post_fields.html' %}
+            <div class="form-actions">
+                <button type="submit"
+                    class="btn btn-primary">
+                    Добавить новость
+                </button>
+                <a class="btn" href="{{ url_for('admin.news.index') }}">
+                    Отмена
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
