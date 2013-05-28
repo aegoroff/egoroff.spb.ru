@@ -11,21 +11,3 @@
         </div>
     </div>
 {% endblock %}
-
-{% block breadcrumbs %}
-    <li>
-        <a href="{{ url_for('welcome') }}">Главная</a>
-        <span class="divider"> &rarr; </span>
-    </li>
-    <li>
-        <a href="{{ url_for('portfolio.index') }}">Портфель</a>
-        <span class="divider"> &rarr; </span>
-    </li>
-    <li>
-        <a href="{{ url_for('portfolio.apache') }}">Про апачей</a>
-        <span class="divider"> &rarr; </span>
-    </li>
-    <li class="active">
-        {{ title }}
-    </li>
-{% endblock %}

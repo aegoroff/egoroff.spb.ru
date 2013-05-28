@@ -20,17 +20,28 @@
 
   <body>
     # include 'bit/top_bar.html'
+    # if breadcrumbs
     <div class="container-fluid">
-        <div class="row-fluid">
+        <div class="row">
             <div class="span12">
                 <ul class="breadcrumb">
                     {% block breadcrumbs %}
+                    {% for item in breadcrumbs %}
+                        <li>
+                            <a href="{{ url_for(item[0]) }}">{% if item[2] %}<i class="{{ item[2] }}"></i>{% endif %} {{ item[1] }}</a>
+                            <span class="divider"> &rarr; </span>
+                        </li>
+                    {% endfor %}
+                    <li class="active">
+                        {{ title }}
+                    </li>
                     {% endblock %}
                 </ul>
             </div>
             <hr>
         </div>
     </div>
+    # endif
     <div class="container-fluid main-container">
       # include 'bit/notifications.html'
       # block content

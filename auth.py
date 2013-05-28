@@ -6,6 +6,7 @@ import functools
 import flask
 import flaskext.login
 import flaskext.oauth
+import main
 
 import util
 import model
@@ -122,6 +123,7 @@ def signin():
   return flask.render_template(
       'signin.html',
       title='Please sign in',
+      breadcrumbs=main.breadcrumbs_home,
       html_class='signin',
       google_signin_url=google_signin_url,
       twitter_signin_url=twitter_signin_url,

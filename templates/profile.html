@@ -1,15 +1,5 @@
 # extends 'base.html'
 
-{% block breadcrumbs %}
-    <li>
-        <a href="{{ url_for('welcome') }}">Главная</a>
-        <span class="divider"> &rarr; </span>
-    </li>
-    <li class="active">
-        {{title}}
-    </li>
-{% endblock %}
-
 # block content
   <div class="page-header">
     <h1>{{user_db.name}}</h1>

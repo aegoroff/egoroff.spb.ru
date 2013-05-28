@@ -1,19 +1,5 @@
 {% extends 'base.html' %}
 
-{% block breadcrumbs %}
-    <li>
-        <a href="{{ url_for('welcome') }}">Главная</a>
-        <span class="divider"> &rarr; </span>
-    </li>
-    <li>
-        <a href="{{ url_for('portfolio.index') }}">Портфель</a>
-        <span class="divider"> &rarr; </span>
-    </li>
-    <li class="active">
-        {{ title }}
-    </li>
-{% endblock %}
-
 {% block content %}
     <div class="row-fluid">
     <div class="span9">

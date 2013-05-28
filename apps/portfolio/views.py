@@ -3,6 +3,7 @@
 from flask import Blueprint, render_template
 import json
 from lxml import etree
+import main
 
 
 def readJson(path):
@@ -30,14 +31,18 @@ mod = Blueprint(
 def index():
     return render_template(
         'portfolio/index.html',
+        breadcrumbs=main.breadcrumbs_home,
         title=u"Портфель"
     )
 
 @mod.route('/apache/')
 def apache():
+    breadcrumbs =[i for i in main.breadcrumbs_home]
+    breadcrumbs.append(('portfolio.index', u"Портфель"))
     return render_template(
         'portfolio/apache.html',
         title=u"Про апачей",
+        breadcrumbs=breadcrumbs,
         apache_docs=apache_docs
     )
 
@@ -57,9 +62,13 @@ def get_doc(doc):
 
     content = unicode(transform(xml_input))
 
+    breadcrumbs =[i for i in main.breadcrumbs_home]
+    breadcrumbs.append(('portfolio.index', u"Портфель"))
+    breadcrumbs.append(('portfolio.apache', u"Про апачей"))
     return render_template(
         'portfolio/apache_document.html',
         title=apache_docs[doc][1],
+        breadcrumbs=breadcrumbs,
         apache_docs=apache_docs,
         html=content
     )

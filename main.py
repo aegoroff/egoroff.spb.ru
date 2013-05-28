@@ -24,6 +24,7 @@ app.register_blueprint(file_admin_mod)
 from apps.portfolio.views import mod as portfolio_mod
 app.register_blueprint(portfolio_mod)
 
+breadcrumbs_home =[('welcome', 'Home', 'icon-home')]
 
 @app.route('/')
 def welcome():
@@ -65,6 +66,7 @@ def profile():
   return flask.render_template(
       'profile.html',
       title='Profile',
+      breadcrumbs=breadcrumbs_home,
       html_class='profile',
       form=form,
       user_db=user_db,
@@ -105,6 +107,7 @@ def feedback():
   return flask.render_template(
       'feedback.html',
       title='Feedback',
+      breadcrumbs=breadcrumbs_home,
       html_class='feedback',
       form=form,
     )
@@ -133,6 +136,7 @@ def user_list():
       'user_list.html',
       html_class='user',
       title='User List',
+      breadcrumbs=breadcrumbs_home,
       user_dbs=user_dbs,
       more_url=util.generate_more_url(more_cursor),
     )
