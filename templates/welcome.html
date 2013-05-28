@@ -3,20 +3,8 @@
 # block content
 <!-- Main hero unit for a primary marketing message or call to action -->
 <div class="hero-unit">
-    {% if headline %}
-        <h1>{{ headline.title }}</h1>
-        <p>{{ headline.short_text|safe }}</p>
-        {% if headline.text %}
-            <p><a href="{{ url_for('news.post', key_id=headline.key.id()) }}" class="btn btn-primary btn-large">Читать
-                дальше &raquo;</a></p>
-        {% endif %}
-    {% else %}
-        <h1>Hello, world!</h1>
-        <p>This is a template for a simple marketing or informational website. It includes a large callout called the
-            hero unit and three supporting pieces of content. Use it as a starting point to create something more
-            unique.</p>
-        <p><a href="#" class="btn btn-primary btn-large">Learn more &raquo;</a></p>
-    {% endif %}
+    <h1>Важно</h1>
+    <p>Сайт долго был в спячке, но теперь он просыпается. Будут появляться новые материалы, т.к. многое из того, что написано на этом сайте сильно устарело и/или является неверным и смешным. В какой-то мере этот сайт отражает мой путь как разработчика. Полезность/бесполезность этих материалов определяйте сами.</p>
 </div>
 
 <!-- Example row of columns -->

@@ -52,13 +52,12 @@ apache_docs = readJson("apache/config.json")
 def welcome():
   posts = Post.query(Post.is_public == True).order(-Post.created)
   posts_count = posts.count()
-  posts = [p for p in posts.fetch(5)]
+  posts = posts.fetch(4)
   return flask.render_template(
       'welcome.html',
       html_class='welcome',
       apache_docs=apache_docs,
-      posts=posts[1:],
-      headline=posts[0],
+      posts=posts,
       posts_count=posts_count,
     )
 
