@@ -11,7 +11,8 @@
 {% endblock %}
 
 {% block content %}
-    <div class="row">
+    <div class="row-fluid">
+    <div class="span9">
         <div class="span12">
             <h1 class="page-header">
                 {{ title }}
@@ -26,5 +27,16 @@
           {% endfor %}
           </dl>
         </div>
+    </div>
+    <div class="span3">
+        <div class="span12">
+            <h1 class="page-header">
+                Подразделы
+            </h1>
+        </div>
+        <div class="span12">
+          <!--subsections-->
+        </div>
+    </div>
     </div>
 {% endblock %}
