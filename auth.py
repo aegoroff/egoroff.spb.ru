@@ -124,7 +124,7 @@ def signin():
 
   return flask.render_template(
       'signin.html',
-      title=u'Пожайлуйста войдите',
+      title=u'Пожалуйста войдите',
       breadcrumbs=main.breadcrumbs_home,
       html_class='signin',
       google_signin_url=google_signin_url,
