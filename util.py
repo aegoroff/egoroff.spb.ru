@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from google.appengine.datastore.datastore_query import Cursor
 from google.appengine.ext import ndb
 from google.appengine.ext import blobstore
@@ -193,6 +195,18 @@ DAY = 24 * HOUR
 MONTH = 30 * DAY
 
 
+def declension(number, nominative, genitiveSingular, genitivePlural):
+    if number < 0:
+        number = 0 - number
+    lastDigit = number % 10
+    lastTwoDigits = number % 100
+    if lastDigit == 1 and lastTwoDigits != 11:
+        return nominative
+    if lastDigit == 2 and lastTwoDigits != 12 or lastDigit == 3 and lastTwoDigits != 13 or lastDigit == 4 and lastTwoDigits != 14:
+        return genitiveSingular
+    return genitivePlural
+
+
 def format_datetime_ago(timestamp):
   delta = datetime.utcnow() - timestamp
   seconds = delta.seconds + delta.days * DAY
@@ -201,20 +215,20 @@ def format_datetime_ago(timestamp):
   days = 1.0 * seconds / DAY
 
   if seconds < 0:
-    return 'not yet'
+    return u'только что'
   if seconds < 1 * MINUTE:
-    return '%d seconds ago' % seconds
+    return u'%d %s назад' % (seconds, declension(seconds, u"секунду", u"секунды", u"секунд"))
   if seconds < 2 * MINUTE:
-    return 'a minute ago'
+    return u'минуту назад'
   if seconds < 45 * MINUTE:
-    return '%0.0f minutes ago' % minutes
+    return u'%0.0f %s назад' % (minutes, declension(int(minutes), u"минуту", u"минуты", u"минут"))
   if seconds < 90 * MINUTE:
-    return 'an hour ago'
+    return u'час назад'
   if seconds < 24 * HOUR:
-    return '%0.0f hours ago' % hours
+    return u'%0.0f %s назад' % (hours, declension(int(hours), u"час", u"часа", u"часов"))
   if seconds < 48 * HOUR:
-    return 'yesterday'
+    return u'вчера'
   if seconds < 30 * DAY:
-    return '%0.0f days ago' % days
+    return u'%0.0f %s назад' % (days, declension(int(days), u"день", u"дня", u"дней"))
   else:
     return timestamp.strftime('%Y-%m-%d')

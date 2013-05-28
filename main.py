@@ -66,10 +66,10 @@ def welcome():
 # Profile stuff
 ################################################################################
 class ProfileUpdateForm(wtf.Form):
-  name = wtf.TextField('Name', [wtf.validators.required()])
-  email = wtf.TextField('Email', [
+  name = wtf.TextField(u'Имя', [wtf.validators.required()])
+  email = wtf.TextField(u'Электропочта', [
       wtf.validators.optional(),
-      wtf.validators.email('That does not look like an email'),
+      wtf.validators.email(u'Это не похоже на электропочту :)'),
     ])
 
 
@@ -93,7 +93,7 @@ def profile():
 
   return flask.render_template(
       'profile.html',
-      title='Profile',
+      title=u'Профиль',
       breadcrumbs=breadcrumbs_home,
       html_class='profile',
       form=form,
@@ -105,11 +105,11 @@ def profile():
 # Feedback
 ################################################################################
 class FeedbackForm(wtf.Form):
-  subject = wtf.TextField('Subject', [wtf.validators.required()])
-  message = wtf.TextAreaField('Message', [wtf.validators.required()])
-  email = wtf.TextField('Email (optional)', [
+  subject = wtf.TextField(u'Тема', [wtf.validators.required()])
+  message = wtf.TextAreaField(u'Сообщение', [wtf.validators.required()])
+  email = wtf.TextField(u'Электропочта (необязательно)', [
       wtf.validators.optional(),
-      wtf.validators.email('That does not look like an email'),
+      wtf.validators.email(u'Это не похоже на электропочту :)'),
     ])
 
 
@@ -127,14 +127,14 @@ def feedback():
         reply_to=form.email.data or config.CONFIG_DB.feedback_email,
         body='%s\n\n%s' % (form.message.data, form.email.data)
       )
-    flask.flash('Thank you for your feedback!', category='success')
+    flask.flash(u'Ушло! Спасибо за мнение!', category='success')
     return flask.redirect(flask.url_for('welcome'))
   if not form.errors and auth.current_user_id() > 0:
     form.email.data = auth.current_user_db().email
 
   return flask.render_template(
       'feedback.html',
-      title='Feedback',
+      title=u'Фидбек',
       breadcrumbs=breadcrumbs_home,
       html_class='feedback',
       form=form,
@@ -163,7 +163,7 @@ def user_list():
   return flask.render_template(
       'user_list.html',
       html_class='user',
-      title='User List',
+      title=u'Пользователи',
       breadcrumbs=breadcrumbs_home,
       user_dbs=user_dbs,
       more_url=util.generate_more_url(more_cursor),

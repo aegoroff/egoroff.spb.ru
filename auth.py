@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from google.appengine.ext import ndb
 from google.appengine.api import users
 
@@ -122,7 +124,7 @@ def signin():
 
   return flask.render_template(
       'signin.html',
-      title='Please sign in',
+      title=u'Пожайлуйста войдите',
       breadcrumbs=main.breadcrumbs_home,
       html_class='signin',
       google_signin_url=google_signin_url,
@@ -135,7 +137,7 @@ def signin():
 @app.route('/signout/')
 def signout():
   flaskext.login.logout_user()
-  flask.flash(u'You have been signed out.')
+  flask.flash(u'Вы вышли')
   return flask.redirect(flask.url_for('welcome'))
 
 
@@ -154,7 +156,7 @@ def signin_google():
 def google_authorized():
   google_user = users.get_current_user()
   if google_user is None:
-    flask.flash(u'You denied the request to sign in.')
+    flask.flash(u'Вы не захотели входить')
     return flask.redirect(util.get_next_url())
 
   user_db = retrieve_user_from_google(google_user)
@@ -200,7 +202,7 @@ twitter = twitter_oauth.remote_app(
 @twitter.authorized_handler
 def twitter_oauth_authorized(resp):
   if resp is None:
-    flask.flash(u'You denied the request to sign in.')
+    flask.flash(u'Вы не захотели входить')
     return flask.redirect(util.get_next_url())
 
   flask.session['oauth_token'] = (
@@ -226,7 +228,7 @@ def signin_twitter():
       )
   except:
     flask.flash(
-        'Something went terribly wrong with Twitter sign in. Please try again.',
+        u'Что-то очень плохое произошло с входом через твиттер. Попробуйте еще раз.',
         category='danger',
       )
     return flask.redirect(flask.url_for('signin', next=util.get_next_url()))
@@ -266,7 +268,7 @@ facebook = facebook_oauth.remote_app(
 @facebook.authorized_handler
 def facebook_authorized(resp):
   if resp is None:
-    return 'Access denied: reason=%s error=%s' % (
+    return u'нет доступа: причина=%s error=%s' % (
       flask.request.args['error_reason'],
       flask.request.args['error_description']
     )
@@ -318,12 +320,12 @@ def signin_user_db(user_db):
 
   flask_user_db = FlaskUser(user_db)
   if flaskext.login.login_user(flask_user_db):
-    flask.flash('Hello %s, welcome to %s!!!' % (
+    flask.flash(u'Привет %s, добро пожаловать на сайт %s!!!' % (
         user_db.name, config.CONFIG_DB.brand_name,
       ), category='success')
     return flask.redirect(util.get_next_url())
   else:
-    flask.flash('Sorry, but you could not sign in.', category='danger')
+    flask.flash(u'Простите, но вам не удалось войти', category='danger')
     return flask.redirect(flask.url_for('signin'))
 
 

@@ -5,7 +5,7 @@
     <h1>
       {{title}}
       <small>
-        It only takes 8 seconds
+        Займет только 8 секунд!
       </small>
     </h1>
   </div>
@@ -13,20 +13,20 @@
     <div class="span4 offset4">
       <a class="btn btn-block btn-large btn-google" href="{{google_signin_url}}">
         <img src="/p/img/signin/google.svg" alt="Google Logo">
-        Sign in with Google
+        Войти с учетной записью Google
       </a>
 
       # if config.CONFIG_DB.facebook_app_id and config.CONFIG_DB.facebook_app_secret
         <a class="btn btn-block btn-large btn-facebook" href="{{facebook_signin_url}}">
           <img src="/p/img/signin/facebook.svg" alt="Facebook Logo">
-          Sign in with Facebook
+          Войти с учетной записью Facebook
         </a>
       # endif
 
       # if config.CONFIG_DB.twitter_consumer_key and config.CONFIG_DB.twitter_consumer_secret
         <a class="btn btn-block btn-large btn-twitter" href="{{twitter_signin_url}}">
           <img src="/p/img/signin/twitter.svg" alt="Twitter Logo">
-          Sign in with Twitter
+          Войти с учетной записью Twitter
         </a>
       # endif
     </div>
