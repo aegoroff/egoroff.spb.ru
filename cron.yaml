@@ -1,6 +1,6 @@
 cron:
-- description: egoroff.spb.ru Post and Users Backup
-  url: /_ah/datastore_admin/backup.create?name=DataBackupToBlobstore&kind1=Post&kind2=User&filesystem=blobstore
+- description: egoroff.spb.ru Data Backup
+  url: /_ah/datastore_admin/backup.create?name=DataBackupToBlobstore&kind1=Post&kind2=User&kind3=Folder&filesystem=blobstore
   schedule: every sunday 03:00
   timezone: Europe/Moscow
   target: ah-builtin-python-bundle
