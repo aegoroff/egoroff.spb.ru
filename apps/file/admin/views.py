@@ -75,17 +75,19 @@ def add_file(key_id):
     if not folder:
         return flask.redirect(flask.url_for('admin.file.index'))
     upload_files = get_uploads(flask.request, 'file')
+    form = FileForm()
     if len(upload_files):
         blob_info = upload_files[0]
         if blob_info.size:
-            file = File.create(
+            f = File.create(
                 blob_info.key(),
                 size=blob_info.size,
                 filename=os.path.basename(blob_info.filename.replace('\\','/')),
                 content_type=blob_info.content_type)
-            file.put()
-            if file.get_cached_url():
-                folder.files.append(file.key)
+            form.populate_obj(f)
+            f.put()
+            if f.get_cached_url():
+                folder.files.append(f.key)
                 folder.put()
         else:
             blob_info.delete()

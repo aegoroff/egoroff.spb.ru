@@ -30,6 +30,8 @@
         {{ file_form.csrf_token }}
         {% set form_field = file_form.file %}
         {% include 'bit/form_text_field.html' %}
+        {% set form_field = file_form.description %}
+        {% include 'bit/form_text_field.html' %}
         <div class="form-actions">
             <button type="submit"
                     class="btn btn-primary btn-loading"
