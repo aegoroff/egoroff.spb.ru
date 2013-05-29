@@ -46,6 +46,7 @@
             <tr>
                 <th>Название</th>
                 <th>Тип</th>
+                <th>Описание</th>
                 <th>Ссылка</th>
                 <th>Операции</th>
             </tr>
@@ -62,6 +63,7 @@
                             Документ
                         {% endif %}
                     </td>
+                    <td>{{ file.description }}</td>
                     <td>
                        {{ file.url }}
                     </td>
