@@ -35,6 +35,7 @@ handlers:
 
 skip_files:
 - ^(.*/)?app\.yaml
+- ^(.*/)?tests\.py
 - ^(.*/)?app\.yml
 - ^(.*/)?index\.yaml
 - ^(.*/)?index\.yml
