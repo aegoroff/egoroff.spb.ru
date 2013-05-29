@@ -193,6 +193,7 @@ MINUTE = 60 * SECOND
 HOUR = 60 * MINUTE
 DAY = 24 * HOUR
 MONTH = 30 * DAY
+YEAR = 365 * DAY
 
 
 def declension(number, nominative, genitiveSingular, genitivePlural):
@@ -213,7 +214,10 @@ def format_datetime_ago(timestamp):
   minutes = 1.0 * seconds / MINUTE
   hours = 1.0 * seconds / HOUR
   days = 1.0 * seconds / DAY
+  months = 1.0 * seconds / MONTH
+  years = 1.0 * seconds / YEAR
 
+  ago_template = u'%0.0f %s назад'
   if seconds < 0:
     return u'только что'
   if seconds < 1 * MINUTE:
@@ -221,14 +225,16 @@ def format_datetime_ago(timestamp):
   if seconds < 2 * MINUTE:
     return u'минуту назад'
   if seconds < 45 * MINUTE:
-    return u'%0.0f %s назад' % (minutes, declension(int(minutes), u"минуту", u"минуты", u"минут"))
+    return ago_template % (minutes, declension(int(minutes), u"минуту", u"минуты", u"минут"))
   if seconds < 90 * MINUTE:
     return u'час назад'
   if seconds < 24 * HOUR:
-    return u'%0.0f %s назад' % (hours, declension(int(hours), u"час", u"часа", u"часов"))
+    return ago_template % (hours, declension(int(hours), u"час", u"часа", u"часов"))
   if seconds < 48 * HOUR:
     return u'вчера'
   if seconds < 30 * DAY:
-    return u'%0.0f %s назад' % (days, declension(int(days), u"день", u"дня", u"дней"))
+    return ago_template % (days, declension(int(days), u"день", u"дня", u"дней"))
+  if seconds < 12 * MONTH:
+    return ago_template % (months, declension(int(months), u"месяц", u"месяца", u"месяцев"))
   else:
-    return timestamp.strftime('%Y-%m-%d')
+    return ago_template % (years, declension(int(years), u"год", u"года", u"лет"))
