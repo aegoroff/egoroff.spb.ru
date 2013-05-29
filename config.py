@@ -57,6 +57,7 @@ SCRIPTS = {
         'lib/jquery.form.js',
         'lib/jquery.tablesorter.js',
         'lib/jquery.metadata.js',
+        'lib/jquery.dateFormat-1.0.js',
     ],
     'admin':[
         'lib/redactor.js'
