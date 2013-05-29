@@ -27,7 +27,7 @@
 {% block file_content %}
     <h2 class="page-header">Добавление файла</h2>
     <form method="POST" action="{{ add_url }}" enctype="multipart/form-data">
-        {{ file_form.csrf }}
+        {{ form.csrf_token }}
         {% set form_field = file_form.file %}
         {% include 'bit/form_text_field.html' %}
         <div class="form-actions">
