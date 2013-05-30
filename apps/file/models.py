@@ -8,6 +8,7 @@ import uuid
 from google.appengine.api import images
 from flask import url_for
 from auth import current_user_key
+import units
 
 IMAGE_TYPES = ('image/bmp', 'image/jpeg', 'image/png',
     'image/gif', 'image/tiff', 'image/x-icon')
@@ -23,6 +24,7 @@ class File(Base):
     blob_key = ndb.BlobKeyProperty(verbose_name=u'Ключ файла')
     filename = ndb.StringProperty(verbose_name=u'Оригинальное название файла')
     size = ndb.IntegerProperty(verbose_name=u'Размер файла')
+    human_readable_size = ndb.ComputedProperty(lambda self: units.formatToHumanSize(self.size))
     content_type = ndb.StringProperty(verbose_name=u'Тип файла')
 
     ext = ndb.ComputedProperty(lambda self: path.splitext(self.filename)[1][1:] if self.filename is not None else '')
@@ -71,6 +73,7 @@ class File(Base):
     @classmethod
     def is_image_type(cls, content_type):
         return content_type in IMAGE_TYPES
+
 
 
 class Folder(Base):

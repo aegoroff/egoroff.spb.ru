@@ -3,22 +3,22 @@
 {% block content %}
     <div class="row-fluid">
         <div class="span9">
-            <div class="span12">
-                <h1 class="page-header">
-                    {{ title }}
-                </h1>
+            <div class="hero-unit">
+                <p>Загрузка разного мелкого софта (утилиты, драйвера и пр.), сделанного мной или сделанного другими, но
+                    адаптированного под другие условия работы.</p>
+                <p>Находившийся тут ранее <a href="http://code.google.com/p/parser3mssql/">Parser 3 драйвер для MS SQL переехал на Google Code</a>.</p>
             </div>
             <div class="span12">
                 {% for download in downloads %}
-                <h2> {{ download }}</h2>
+                    <h2> {{ download }}</h2>
                     {% for f in downloads[download] %}
-                    <li class="thumbnails">
-                        <a class="icon-download-alt" href="{{ f.url }}"
-                           onclick="_gaq.push(['_trackPageview', '{{ f.url }}']);">
-                            &nbsp;{{ f.description }}</a>&nbsp;
-                        <small><i class="icon-calendar"></i> <span
-                                class="shortDateFormat">{{ f.created }}</span></small>
-                    </li>
+                        <li class="thumbnails">
+                            <a class="icon-download-alt" href="{{ f.url }}" title="Размер: {{ f.human_readable_size }}"
+                               onclick="_gaq.push(['_trackPageview', '{{ f.url }}']);">
+                                &nbsp;{{ f.description }}</a>&nbsp;
+                            <small><i class="icon-calendar"></i> <span
+                                    class="shortDateFormat">{{ f.created }}</span></small>
+                        </li>
                     {% endfor %}
                 {% endfor %}
             </div>
