@@ -25,8 +25,8 @@ def get_file(file_key):
     if file.title_filename:
         return redirect(url_for('file.get_w_name',
             file_key=file_key, name=file.title_filename))
-    if not _check_owner(file):
-            return render_template('file/is_private.html')
+    #if not _check_owner(file):
+    #        return render_template('file/is_private.html')
     return send_blob(file.blob_key, content_type=file.content_type)
 
 @mod.route('/<string:file_key>/<string:name>',
@@ -36,8 +36,8 @@ def get_file_w_name(file_key, name):
     file = File.query(File.uid==file_key).get()
     if not file or not file.blob_key:
         return render_template('file/not_found.html')
-    if not _check_owner(file):
-        return render_template('file/is_private.html')
+    #if not _check_owner(file):
+    #    return render_template('file/is_private.html')
     return send_blob(file.blob_key, content_type=file.content_type)
 
 _blueprints = (mod,)
