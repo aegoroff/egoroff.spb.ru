@@ -14,13 +14,8 @@ MAP = [
         TITLE: u"Портфель"
     },
     {
-        ID: "opinions.index",
+        ID: "news.index",
         CLASS: "icon-edit",
         TITLE: u"Блог"
-    },
-    {
-        ID: "news.index",
-        CLASS: "icon-calendar",
-        TITLE: u"Журнал"
     },
 ]

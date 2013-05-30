@@ -21,9 +21,9 @@ mod = Blueprint(
 
 main_section_item = site_map.MAP[0]
 
-@mod.route('/')
 @mod.route('/download/')
 @mod.route('/apache/')
+@mod.route('/')
 def index():
     folders = Folder.query()
     downloads = {}

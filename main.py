@@ -27,9 +27,6 @@ app.register_blueprint(file_admin_mod)
 from apps.portfolio.views import mod as portfolio_mod
 app.register_blueprint(portfolio_mod)
 
-from apps.opinions.views import mod as opinions_mod
-app.register_blueprint(opinions_mod)
-
 from apps.news.views import mod as news_mod
 app.register_blueprint(news_mod)
 

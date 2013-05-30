@@ -12,7 +12,7 @@ mod = Blueprint(
     url_prefix='/news'
 )
 
-main_section_item = site_map.MAP[2]
+main_section_item = site_map.MAP[1]
 
 @mod.route('/')
 def index():
@@ -28,6 +28,7 @@ def index():
     )
 
 @mod.route('/<int:key_id>/', endpoint='post')
+@mod.route('/<int:key_id>.html', endpoint='post')
 def get_post(key_id):
     post = Post.retrieve_by_id(key_id)
     if not post:
