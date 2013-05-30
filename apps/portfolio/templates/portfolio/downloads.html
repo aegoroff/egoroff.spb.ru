@@ -2,25 +2,33 @@
 
 {% block content %}
     <div class="row-fluid">
-    <div class="span9">
-        <div class="span12">
-            <h1 class="page-header">
-                {{ title }}
-            </h1>
+        <div class="span9">
+            <div class="span12">
+                <h1 class="page-header">
+                    {{ title }}
+                </h1>
+            </div>
+            <div class="span12">
+                {% for download in hashcalcs %}
+                    <li class="thumbnails">
+                        <a class="icon-download-alt" href="{{ download.get_file.url }}"
+                           onclick="_gaq.push(['_trackPageview', '{{ download.get_file.url }}']);">
+                            &nbsp;{{ download.get_file.description }}</a>&nbsp;
+                        <small><i class="icon-calendar"></i> <span
+                                class="shortDateFormat">{{ download.get_file.created }}</span></small>
+                    </li>
+                {% endfor %}
+            </div>
         </div>
-        <div class="span12">
-          <!--Body content-->
+        <div class="span3">
+            <div class="span12">
+                <h1 class="page-header">
+                    Подразделы
+                </h1>
+            </div>
+            <div class="span12">
+                {% include 'bit/sidebar.html' %}
+            </div>
         </div>
-    </div>
-    <div class="span3">
-        <div class="span12">
-            <h1 class="page-header">
-                Подразделы
-            </h1>
-        </div>
-        <div class="span12">
-          {% include 'bit/sidebar.html' %}
-        </div>
-    </div>
     </div>
 {% endblock %}

@@ -2,6 +2,7 @@
 
 from flask import Blueprint, render_template
 from lxml import etree
+from apps.file.models import Folder
 import main
 import site_map
 
@@ -37,12 +38,19 @@ def index():
 def download():
     breadcrumbs =[i for i in main.breadcrumbs_home]
     breadcrumbs.append((main_section_item[site_map.ID], main_section_item[site_map.TITLE]))
+    folders = Folder.query()
+    hashcalcs = []
+    for f in folders:
+        if f.title == "hcalc":
+            for fl in f.files:
+                hashcalcs.append(fl)
     return render_template(
         'portfolio/downloads.html',
         parent_id=main_section_item[site_map.ID],
         current_id=download_section_item[site_map.ID],
         breadcrumbs=breadcrumbs,
-        title=download_section_item[site_map.TITLE]
+        title=download_section_item[site_map.TITLE],
+        hashcalcs=hashcalcs
     )
 
 
