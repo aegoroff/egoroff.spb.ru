@@ -58,6 +58,9 @@ def welcome():
       posts_count=posts_count,
     )
 
+@app.route('/opinions/')
+def opinions():
+    return flask.redirect(flask.url_for('news.index'), code=301)
 
 ################################################################################
 # Profile stuff
