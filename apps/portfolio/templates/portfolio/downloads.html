@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="row-fluid">
+    <div class="span9">
+        <div class="span12">
+            <h1 class="page-header">
+                {{ title }}
+            </h1>
+        </div>
+        <div class="span12">
+          <!--Body content-->
+        </div>
+    </div>
+    <div class="span3">
+        <div class="span12">
+            <h1 class="page-header">
+                Подразделы
+            </h1>
+        </div>
+        <div class="span12">
+          {% include 'bit/sidebar.html' %}
+        </div>
+    </div>
+    </div>
+{% endblock %}

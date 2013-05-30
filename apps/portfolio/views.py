@@ -38,7 +38,7 @@ def download():
     breadcrumbs =[i for i in main.breadcrumbs_home]
     breadcrumbs.append((main_section_item[site_map.ID], main_section_item[site_map.TITLE]))
     return render_template(
-        'portfolio/index.html',
+        'portfolio/downloads.html',
         parent_id=main_section_item[site_map.ID],
         current_id=download_section_item[site_map.ID],
         breadcrumbs=breadcrumbs,
