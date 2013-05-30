@@ -6,15 +6,15 @@ INT64_BITS_COUNT = 64
 BINARY_THOUSAND = 1024
 
 UNITS = [
-    "bytes",
-    "Kb",
-    "Mb",
-    "Gb",
-    "Tb",
-    "Pb",
-    "Eb",
-    "Zb",
-    "Yb"
+    u"байт",
+    u"Кб",
+    u"Мб",
+    u"Гб",
+    u"Тб",
+    u"Пб",
+    u"Эб",
+    u"Зб",
+    u"Йб"
 ]
 
 def ilog(x):
@@ -48,7 +48,7 @@ def normalize(bytesValue):
 
 def formatToHumanSize(bytesValue, precision=2):
     units, value = normalize(bytesValue)
-    f = '{0:.{2}f} {1}'
+    f = u'{0:.{2}f} {1}'
     if not units:
-        f = '{0} {1}'
+        f = u'{0} {1}'
     return f.format(value, UNITS[units], precision)
