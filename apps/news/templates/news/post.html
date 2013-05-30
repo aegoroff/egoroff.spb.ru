@@ -3,12 +3,24 @@
 {% block content %}
     <div class="row-fluid">
         <div class="span9">
-            <h3><small><i class="icon-calendar"></i> <span class="shortDateFormat">{{ post.created }}</span></small></h3>
+            <h3>
+                <small><i class="icon-calendar"></i> <span class="shortDateFormat">{{ post.created }}</span></small>
+            </h3>
             {% if post.text %}
                 {{ post.text|safe }}
             {% else %}
                 {{ post.short_text|safe }}
             {% endif %}
+        </div>
+        <div class="span3">
+            <h4>
+                Из последнего
+            </h4>
+            <dl>
+                {% for post in last %}
+                    {% include 'news/post_box.html' %}
+                {% endfor %}
+            </dl>
         </div>
     </div>
 {% endblock %}

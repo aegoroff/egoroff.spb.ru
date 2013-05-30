@@ -33,11 +33,14 @@ def get_post(key_id):
     post = Post.retrieve_by_id(key_id)
     if not post:
         return redirect(url_for('news.index'))
+    posts = Post.query().order(-Post.created)
+    last = posts.fetch(5)
     breadcrumbs =[i for i in main.breadcrumbs_home]
     breadcrumbs.append((main_section_item[site_map.ID], main_section_item[site_map.TITLE]))
     return render_template(
         'news/post.html',
         title=post.title,
         post=post,
+        last=last,
         breadcrumbs=breadcrumbs
     )
