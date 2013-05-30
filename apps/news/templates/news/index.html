@@ -11,10 +11,11 @@
             {% if not posts or not posts.count() %}
                 Ничего нет
             {% else %}
+                <dl>
                 {% for post in posts %}
                     {% include 'news/post_box.html' %}
-                    <hr>
                 {% endfor %}
+                </dl>
             {% endif %}
         </div>
     </div>
