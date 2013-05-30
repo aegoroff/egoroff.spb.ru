@@ -1,6 +1,6 @@
 {% for item in config.SITE %}
     {% if item["id"] == parent_id and item["childs"] %}
-        <div class="sidebar-nav">
+        <div class="well sidebar-nav">
             <ul class="nav nav-list">
                 {% for child in item["childs"] %}
                     <li {% if child["id"] == current_id %}class="active"{% endif %}><a href="{{ url_for(child['id']) }}">{{ child['title'] }}</a></li>
