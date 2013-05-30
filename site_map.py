@@ -11,16 +11,12 @@ MAP = [
     {
         ID: "portfolio.index",
         CLASS: "icon-briefcase",
-        TITLE: u"Портфель",
-        CHILDS: [
-            {ID: "portfolio.apache", TITLE: u"Про апачей"},
-            {ID: "portfolio.download", TITLE: u"Загрузки"},
-        ]
+        TITLE: u"Портфель"
     },
     {
         ID: "opinions.index",
         CLASS: "icon-edit",
-        TITLE: u"Писанина"
+        TITLE: u"Блог"
     },
     {
         ID: "news.index",
