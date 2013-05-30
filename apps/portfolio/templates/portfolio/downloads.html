@@ -11,11 +11,11 @@
             <div class="span12">
                 {% for download in hashcalcs %}
                     <li class="thumbnails">
-                        <a class="icon-download-alt" href="{{ download.get_file.url }}"
-                           onclick="_gaq.push(['_trackPageview', '{{ download.get_file.url }}']);">
-                            &nbsp;{{ download.get_file.description }}</a>&nbsp;
+                        <a class="icon-download-alt" href="{{ download.url }}"
+                           onclick="_gaq.push(['_trackPageview', '{{ download.url }}']);">
+                            &nbsp;{{ download.description }}</a>&nbsp;
                         <small><i class="icon-calendar"></i> <span
-                                class="shortDateFormat">{{ download.get_file.created }}</span></small>
+                                class="shortDateFormat">{{ download.created }}</span></small>
                     </li>
                 {% endfor %}
             </div>
