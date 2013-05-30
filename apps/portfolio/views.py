@@ -2,7 +2,7 @@
 
 from flask import Blueprint, render_template
 from lxml import etree
-from apps.file.models import Folder
+from apps.file.models import Folder, File
 import main
 import site_map
 
@@ -39,18 +39,22 @@ def download():
     breadcrumbs =[i for i in main.breadcrumbs_home]
     breadcrumbs.append((main_section_item[site_map.ID], main_section_item[site_map.TITLE]))
     folders = Folder.query()
-    hashcalcs = []
+
+    downloads = {}
     for f in folders:
-        if f.title == "hcalc":
-            for fl in f.files:
-                hashcalcs.append(fl)
+        if not f.is_public:
+            continue
+        files = []
+        a = lambda key: files.append(key.get())
+        map(a, f.files)
+        downloads[f.title] = files
     return render_template(
         'portfolio/downloads.html',
         parent_id=main_section_item[site_map.ID],
         current_id=download_section_item[site_map.ID],
         breadcrumbs=breadcrumbs,
         title=download_section_item[site_map.TITLE],
-        hashcalcs=hashcalcs
+        downloads=downloads
     )
 
 

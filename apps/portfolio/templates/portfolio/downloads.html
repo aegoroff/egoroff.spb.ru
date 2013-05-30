@@ -9,14 +9,17 @@
                 </h1>
             </div>
             <div class="span12">
-                {% for download in hashcalcs %}
+                {% for download in downloads %}
+                <h2> {{ download }}</h2>
+                    {% for f in downloads[download] %}
                     <li class="thumbnails">
-                        <a class="icon-download-alt" href="{{ download.url }}"
-                           onclick="_gaq.push(['_trackPageview', '{{ download.url }}']);">
-                            &nbsp;{{ download.description }}</a>&nbsp;
+                        <a class="icon-download-alt" href="{{ f.url }}"
+                           onclick="_gaq.push(['_trackPageview', '{{ f.url }}']);">
+                            &nbsp;{{ f.description }}</a>&nbsp;
                         <small><i class="icon-calendar"></i> <span
-                                class="shortDateFormat">{{ download.created }}</span></small>
+                                class="shortDateFormat">{{ f.created }}</span></small>
                     </li>
+                    {% endfor %}
                 {% endfor %}
             </div>
         </div>
