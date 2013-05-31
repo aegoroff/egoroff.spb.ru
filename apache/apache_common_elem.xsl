@@ -521,7 +521,7 @@
 
 
 	<xsl:template match="acronym">
-		<acronym>
+		<acronym class="initialism">
 			<xsl:copy-of select="@*"/>
 			<xsl:apply-templates/>
 		</acronym>
@@ -598,7 +598,7 @@
 
 
 	<xsl:template match="table">
-		<table class="table table-condensed">
+		<table class="table table-condensed table-striped">
 			<xsl:copy-of select="@*"/>
 			<xsl:apply-templates/>
 		</table>

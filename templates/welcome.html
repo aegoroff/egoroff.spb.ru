@@ -1,32 +1,21 @@
 # extends 'base.html'
 
 # block content
-<!-- Main hero unit for a primary marketing message or call to action -->
-<div class="hero-unit">
-    <h1>Важно</h1>
-    <p>Сайт долго был в спячке, но теперь он просыпается. Будут появляться новые материалы, т.к. многое из того, что написано на этом сайте сильно устарело и/или является неверным и смешным. В какой-то мере этот сайт отражает мой путь как разработчика. Полезность/бесполезность этих материалов определяйте сами.</p>
-</div>
-
 <!-- Example row of columns -->
-<div class="row-fluid">
-    <div class="span4">
-        <h2>Блог</h2>
+<div class="row">
+    <div class="span6">
+        <h2><a href="{{ url_for('news.index') }}">Блог</a></h2>
         {% if posts %}
             <dl>
             {% for post in posts %}
                     {% include 'news/post_box.html' %}
             {% endfor %}
             </dl>
-            {% if posts_count > 4 %}
-                <div class="span12" style="margin-top: 10px;">
-                    <a class="btn pull-right" href="{{ url_for('news.index') }}">Остальные &rarr;</a>
-                </div>
-            {% endif %}
         {% else %}
             <p>Пока ничего нового.</p>
         {% endif %}
     </div>
-    <div class="span4">
+    <div class="span6">
         <h2>Про апачей</h2>
         {% include 'portfolio/apache_documents_list.html' %}
     </div>

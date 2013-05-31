@@ -2,19 +2,23 @@
 
 {% block content %}
     <div class="row">
-        <div class="span12">
-            <h1 class="page-header">
-                {{ title }}
-            </h1>
+        <!-- Main hero unit for a primary marketing message or call to action -->
+        <div class="hero-unit">
+            <h1>Блог</h1>
+
+            <p>Многое из того, что написано на этом сайте сильно устарело и/или является неверным и смешным. В какой-то
+                мере
+                этот сайт отражает мой путь как разработчика. Полезность/бесполезность этих материалов определяйте
+                сами.</p>
         </div>
-        <div class="span12">
+        <div class="span9">
             {% if not posts or not posts.count() %}
                 Ничего нет
             {% else %}
                 <dl>
-                {% for post in posts %}
-                    {% include 'news/post_box.html' %}
-                {% endfor %}
+                    {% for post in posts %}
+                        {% include 'news/post_box.html' %}
+                    {% endfor %}
                 </dl>
             {% endif %}
         </div>
