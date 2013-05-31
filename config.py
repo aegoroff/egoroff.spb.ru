@@ -34,12 +34,14 @@ SITE = site_map.MAP
 STYLES = [
     'src/less/style.less',
     'src/less/apache.less',
+    'src/less/shCoreDefault.less',
   ]
 
 SCRIPTS_MODULES = [
     'libs',
     'scripts',
     'jquery.plugins',
+    'syntax-highlighter',
     'admin'
   ]
 
@@ -61,6 +63,19 @@ SCRIPTS = {
     ],
     'admin':[
         'lib/redactor.js'
+    ],
+    'syntax-highlighter': [
+        'lib/syntax-highlighter/shCore.js',
+        'lib/syntax-highlighter/shBrushCpp.js',
+        'lib/syntax-highlighter/shBrushCSharp.js',
+        'lib/syntax-highlighter/shBrushXml.js',
+        'lib/syntax-highlighter/shBrushJScript.js',
+        'lib/syntax-highlighter/shBrushParser.js',
+        'lib/syntax-highlighter/shBrushSql.js',
+        'lib/syntax-highlighter/shBrushNasm8086.js',
+        'lib/syntax-highlighter/shBrushIL.js',
+        'lib/syntax-highlighter/shBrushHashQuery.js',
+        'lib/syntax-highlighter/run.js',
     ],
     'scripts': [
       'src/coffee/common/util.coffee',
