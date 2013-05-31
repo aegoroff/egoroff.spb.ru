@@ -624,5 +624,27 @@
 		</tr>
 	</xsl:template>
 
+    <xsl:template match="img">
+		<img>
+			<xsl:copy-of select="@*"/>
+			<xsl:apply-templates/>
+		</img>
+	</xsl:template>
+
+	<xsl:template match="div1/head">
+		<h2><xsl:call-template name="head"/></h2>
+	</xsl:template>
+
+	<xsl:template match="div2/head">
+		<h3><xsl:call-template name="head"/></h3>
+	</xsl:template>
+
+	<xsl:template match="div3/head">
+		<h4><xsl:call-template name="head"/></h4>
+	</xsl:template>
+
+	<xsl:template name="head">
+		<xsl:apply-templates/>
+	</xsl:template>
 
 </xsl:stylesheet>

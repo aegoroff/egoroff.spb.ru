@@ -1,4 +1,7 @@
 {{form.csrf_token}}
+{% set form_field = form.created %}
+{% include 'bit/form_text_field.html' %}
+
 {% set form_field = form.title %}
 {% include 'bit/form_text_field.html' %}
 

@@ -1,9 +1,16 @@
 # -*- coding: utf-8 -*-
+import datetime
 
 from flaskext import wtf
 
 
 class PostForm(wtf.Form):
+    created = wtf.DateTimeField(
+        u'Создано',
+        description=u'Дата создания',
+        default=datetime.datetime.now(),
+        validators=[wtf.validators.required()]
+    )
     title = wtf.TextField(
         u'Заголовок',
         description=u'Введите заголовок записи',
