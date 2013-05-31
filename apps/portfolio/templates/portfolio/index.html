@@ -2,11 +2,11 @@
 
 {% block content %}
     <div class="hero-unit">
-        <h1>Эбаут</h1>
+        <h1>{{ title }}</h1>
 
         <p>Софт, код, документация и прочие полезности.</p>
     </div>
-    <div class="row">
+    <div class="row-fluid">
         <div class="span6">
             <h1>Про апачей</h1>
             {% include 'portfolio/apache_documents_list.html' %}

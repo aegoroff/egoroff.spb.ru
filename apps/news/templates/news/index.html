@@ -1,17 +1,17 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <div class="row">
-        <!-- Main hero unit for a primary marketing message or call to action -->
-        <div class="hero-unit">
-            <h1>Блог</h1>
+    <!-- Main hero unit for a primary marketing message or call to action -->
+    <div class="hero-unit">
+        <h1>Блог</h1>
 
-            <p>Многое из того, что написано на этом сайте сильно устарело и/или является неверным и смешным. В какой-то
-                мере
-                этот сайт отражает мой путь как разработчика. Полезность/бесполезность этих материалов определяйте
-                сами.</p>
-        </div>
-        <div class="span9">
+        <p>Многое из того, что написано на этом сайте сильно устарело и/или является неверным и смешным. В какой-то
+            мере
+            этот сайт отражает мой путь как разработчика. Полезность/бесполезность этих материалов определяйте
+            сами.</p>
+    </div>
+    <div class="row-fluid">
+        <div class="span12">
             {% if not posts or not posts.count() %}
                 Ничего нет
             {% else %}
