@@ -1,5 +1,9 @@
 {% extends 'base.html' %}
 
+# block scripts
+<script type="text/javascript">SyntaxHighlighter.all()</script>
+# endblock
+
 {% block content %}
     <div class="row-fluid">
         <div class="span9">
@@ -7,7 +11,7 @@
                 <small><i class="icon-calendar"></i> <span class="shortDateFormat">{{ post.created }}</span></small>
             </h3>
             {% if post.text %}
-                {{ post.text|safe }}
+                {{ content|safe }}
             {% else %}
                 {{ post.short_text|safe }}
             {% endif %}

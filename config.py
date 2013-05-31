@@ -75,7 +75,6 @@ SCRIPTS = {
         'lib/syntax-highlighter/shBrushNasm8086.js',
         'lib/syntax-highlighter/shBrushIL.js',
         'lib/syntax-highlighter/shBrushHashQuery.js',
-        'lib/syntax-highlighter/run.js',
     ],
     'scripts': [
       'src/coffee/common/util.coffee',

@@ -7,7 +7,10 @@
 {% block scripts %}
     <script>
         $(function(){
-            $('.redactor').redactor();
+            $('.redactor').redactor({
+                linebreaks: true,
+                cleanup: true
+            });
         });
     </script>
 {% endblock %}

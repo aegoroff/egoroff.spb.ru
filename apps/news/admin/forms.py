@@ -15,12 +15,12 @@ class PostForm(wtf.Form):
         default=False,
         validators=[wtf.validators.optional()]
     )
-    short_text = wtf.TextField(
+    short_text = wtf.TextAreaField(
         u'Краткое описание',
         description=u'Введите краткое описание',
         validators=[wtf.validators.required()]
     )
-    text = wtf.TextField(
+    text = wtf.TextAreaField(
         u'Текст',
         description=u'Введите основной текст записи',
         validators=[wtf.validators.optional()]

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from lxml import etree
 from flask import Blueprint, redirect, render_template, url_for
 from apps.news.models import Post
 import main
@@ -13,6 +14,10 @@ mod = Blueprint(
 )
 
 main_section_item = site_map.MAP[1]
+
+class FileResolver(etree.Resolver):
+    def resolve(self, url, identifier, context):
+        return self.resolve_filename(url, context)
 
 @mod.route('/')
 def index():
@@ -33,6 +38,19 @@ def get_post(key_id):
     post = Post.retrieve_by_id(key_id)
     if not post:
         return redirect(url_for('news.index'))
+
+    content = post.text
+    if post.text.startswith('<?xml version="1.0"?>'):
+        parser = etree.XMLParser(load_dtd=False, dtd_validation=False)
+        parser.resolvers.add(FileResolver())
+
+        xml_input = etree.fromstring(post.text, )
+        stylesheet = main.apache_docs['rewriteguide'][0]
+        xslt_root = etree.parse('apache/{0}.xsl'.format(stylesheet), parser)
+        transform = etree.XSLT(xslt_root)
+
+        content = unicode(transform(xml_input))
+
     posts = Post.query().order(-Post.created)
     last = posts.fetch(5)
     breadcrumbs =[i for i in main.breadcrumbs_home]
@@ -41,6 +59,7 @@ def get_post(key_id):
         'news/post.html',
         title=post.title,
         post=post,
+        content=content,
         last=last,
         breadcrumbs=breadcrumbs
     )
