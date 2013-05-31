@@ -4,6 +4,7 @@ from flask import Blueprint, redirect, render_template, url_for
 from apps.news.models import Post
 import main
 import site_map
+from typographus import Typographus
 
 
 mod = Blueprint(
@@ -40,7 +41,7 @@ def get_post(key_id):
         return redirect(url_for('news.index'))
 
     content = post.text
-    if post.text.startswith('<?xml version="1.0"?>'):
+    if content and content.startswith('<?xml version="1.0"?>'):
         parser = etree.XMLParser(load_dtd=False, dtd_validation=False)
         parser.resolvers.add(FileResolver())
 
@@ -50,6 +51,10 @@ def get_post(key_id):
         transform = etree.XSLT(xslt_root)
 
         content = unicode(transform(xml_input))
+
+    #typo = Typographus()
+    #if content:
+    #    content = typo.typo_text(content)
 
     posts = Post.query().order(-Post.created)
     last = posts.fetch(5)

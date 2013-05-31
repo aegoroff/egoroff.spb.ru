@@ -597,4 +597,32 @@
 	</xsl:template>
 
 
+	<xsl:template match="table">
+		<table class="table table-condensed">
+			<xsl:copy-of select="@*"/>
+			<xsl:apply-templates/>
+		</table>
+	</xsl:template>
+
+	<xsl:template match="td">
+		<td>
+			<xsl:copy-of select="@*"/>
+			<xsl:apply-templates/>
+		</td>
+	</xsl:template>
+
+	<xsl:template match="th">
+		<th>
+			<xsl:copy-of select="@*"/>
+			<xsl:apply-templates/>
+		</th>
+	</xsl:template>
+
+	<xsl:template match="tr">
+		<tr>
+			<xsl:copy-of select="@*"/><xsl:apply-templates/>
+		</tr>
+	</xsl:template>
+
+
 </xsl:stylesheet>

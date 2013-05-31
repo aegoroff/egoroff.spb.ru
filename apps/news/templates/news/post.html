@@ -10,7 +10,7 @@
             <h3>
                 <small><i class="icon-calendar"></i> <span class="shortDateFormat">{{ post.created }}</span></small>
             </h3>
-            {% if post.text %}
+            {% if content %}
                 {{ content|safe }}
             {% else %}
                 {{ post.short_text|safe }}
