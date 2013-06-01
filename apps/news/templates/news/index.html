@@ -12,7 +12,7 @@
     </div>
     <div class="row-fluid">
         <div class="span12">
-            {% if not posts or not posts.count() %}
+            {% if not posts %}
                 Ничего нет
             {% else %}
                 <dl id="log">
@@ -20,6 +20,8 @@
                         {% include 'news/post_box.html' %}
                     {% endfor %}
                 </dl>
+                <button class="btn btn-large btn-primary" id="moreNews" type="button">Больше записей</button>
+                <input type="hidden" name="offset" id="offsetValue" value="20"/>
             {% endif %}
         </div>
     </div>

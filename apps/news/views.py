@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from lxml import etree
+import config
 from flask import Blueprint, redirect, render_template, url_for
 from apps.news.models import Post
 import main
@@ -23,6 +24,7 @@ class FileResolver(etree.Resolver):
 @mod.route('/')
 def index():
     posts = Post.query(Post.is_public == True).order(-Post.created)
+    posts = posts.fetch(config.ATOM_FEED_LIMIT, offset=0)
     return render_template(
         'news/index.html',
         title=main_section_item[site_map.TITLE],
