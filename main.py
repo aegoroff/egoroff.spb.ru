@@ -2,12 +2,17 @@
 
 import json
 import sys
+from urlparse import urljoin
+
+
 sys.path.insert(0, 'lib.zip')
 
 from google.appengine.api import mail
 import flask
 from flaskext import wtf
+from flask import request
 import config
+from werkzeug.contrib.atom import AtomFeed
 
 app = flask.Flask(__name__)
 app.config.from_object(config)
@@ -57,6 +62,27 @@ def welcome():
       posts=posts,
       posts_count=posts_count,
     )
+
+
+def make_external(url):
+    return urljoin(request.url_root, url)
+
+
+@app.route('/recent.atom')
+def recent_feed():
+    feed = AtomFeed('Recent Posts',
+                    feed_url=request.url, url=request.url_root)
+    articles = Post.query(Post.is_public == True).order(-Post.created)
+    articles = articles.fetch(20)
+
+    for article in articles:
+        feed.add(article.title, unicode(article.short_text),
+                 content_type='html',
+                 author="Alexander Egorov",
+                 url=make_external(flask.url_for('news.post', key_id=article.key.id())),
+                 updated=article.modified,
+                 published=article.created)
+    return feed.get_response()
 
 @app.route('/opinions/')
 def opinions():
