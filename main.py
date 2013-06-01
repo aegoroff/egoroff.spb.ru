@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import json
-import logging
 import sys
 from urlparse import urljoin
 
@@ -103,10 +102,7 @@ def opinions_files(key_id):
         29: 8003,
         30: 6004
     }
-    if key_id in remapping:
-        url = urljoin(flask.url_for('news.index'), '{0}.html'.format(remapping[key_id]))
-        return flask.redirect(url, code=301)
-    return flask.redirect(flask.url_for('news.index'), code=301)
+    return util.redirect(key_id, remapping)
 
 ################################################################################
 # Profile stuff
