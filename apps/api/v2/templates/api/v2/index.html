@@ -1,0 +1,397 @@
+{% extends 'base.html' %}
+
+{% block breadcrumbs %}
+    <li>
+        <a href="{{ url_for('pages.index') }}">Главная</a>
+        <span class="divider"> &rarr; </span>
+    </li>
+    <li class="active">
+        API версия 2
+    </li>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+        $(function(){
+
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="span12">
+        <h1 class="page-header">
+            API версия 2
+        </h1>
+        <section id="preview">
+            <h2 class="page-header">Введение</h2>
+            <p>
+                Для доступа к данным по HTTP предлагается JSON интерфейс,
+                который возвращает ответ в виде JavaScript-объектов. Возвращаемый
+                объект всегда содержит следующие свойства:
+            </p>
+            <dl class="dl-horizontal">
+                <dt>success</dt>
+                <dd>Принимает значение <strong>true</strong> в случае успешного выполнения запроса или <strong>false</strong> в случае ошибки</dd>
+                <dt>result</dt>
+                <dd>Содержит ответ на запрос в случае успешного его выполнения или краткую информацию об возникшей ошибке в случае неудавшегося выполнения</dd>
+            </dl>
+
+        </section>
+
+        <section id="counts">
+            <h2 class="page-header">
+                Счетчики
+            </h2>
+            <h3>Получение количества товаров</h3>
+                <p>
+                Получение общего количества товаров, которые находятся в нашей базе.
+                </p>
+                <dl class="dl-horizontal">
+                    <dt>URL</dt>
+                    <dd>
+                        <a href="{{ url_for('api.v2.products_count_json') }}">
+                            http://{{ request.host }}/{{ url_for('api.v2.products_count_json') }}
+                        </a>
+                    </dd>
+                    <dt>result</dt>
+                    <dd>
+                        Число
+                    </dd>
+                </dl>
+
+                <p>Получение количества товаров, которые доступны для заказа в текущий момент</p>
+                <dl class="dl-horizontal">
+                    <dt>URL</dt>
+                    <dd>
+                        <a href="{{ url_for('api.v2.products_count_json', available=true) }}">
+                            http://{{ request.host }}/{{ url_for('api.v2.products_count_json', available=true) }}
+                        </a>
+                    </dd>
+                    <dt>result</dt>
+                    <dd>
+                        Число
+                    </dd>
+                </dl>
+
+                <p>Получение количества товаров недоступных для заказа в текущий момент</p>
+                <dl class="dl-horizontal">
+                    <dt>URL</dt>
+                    <dd>
+                    <a href="{{ url_for('api.v2.products_count_json', available=false) }}">
+                        http://{{ request.host }}/{{ url_for('api.v2.products_count_json', available=false) }}
+                    </a>
+                    </dd>
+                    <dt>result</dt>
+                    <dd>
+                        Число
+                    </dd>
+                </dl>
+        </section>
+
+
+        <section id="products">
+            <h2 class="page-header">
+                Товары
+            </h2>
+            <p>
+                Для получения информации о товаре, необходимо знать его идентификатор (id).
+            </p>
+            Получение списка идентификаторов всех товаров из базы
+            <dl class="dl-horizontal">
+                <dt>URL</dt>
+                <dd>
+                    <a href="{{ url_for('api.v2.products_json') }}">
+                        http://{{ request.host }}/{{ url_for('api.v2.products_json') }}
+                    </a>
+                </dd>
+                <dt>result</dt>
+                <dd>
+                     Массив, элементами которого являются числа-идентификаторы
+                </dd>
+            </dl>
+
+            Получение списка идентификаторов товаров доступных для заказа
+            <dl class="dl-horizontal">
+                <dt>URL</dt>
+                <dd>
+                    <a href="{{ url_for('api.v2.products_json', available=true) }}">
+                        http://{{ request.host }}/{{ url_for('api.v2.products_json', available=true) }}
+                    </a>
+                </dd>
+                <dt>result</dt>
+                <dd>
+                     Массив, элементами которого являются числа-идентификаторы
+                </dd>
+            </dl>
+
+            Получение списка идентификаторов товаров недоступных для заказа
+            <dl class="dl-horizontal">
+                <dt>URL</dt>
+                <dd>
+                    <a href="{{ url_for('api.v2.products_json', available=false) }}">
+                       http://{{ request.host }}/{{ url_for('api.v2.products_json', available=false) }}
+                   </a>
+                </dd>
+                <dt>result</dt>
+                <dd>
+                     Массив, элементами которого являются числа-идентификаторы
+                </dd>
+            </dl>
+
+            Получение списка идентификаторов товаров, которые были изменены от указанной даты
+            <dl class="dl-horizontal">
+                <dt>URL</dt>
+                <dd>
+                    <a href="{{ url_for('api.v2.products_dates_json', from_date='2012-10-01') }}">
+                       http://{{ request.host }}/{{ url_for('api.v2.products_dates_json', from_date='2012-10-01') }}
+                   </a>
+                </dd>
+                <dt>result</dt>
+                <dd>
+                     Массив, элементами которого являются числа-идентификаторы
+                </dd>
+            </dl>
+
+            Получение списка идентификаторов товаров, которые были изменены в диапазоне двух дат
+            <dl class="dl-horizontal">
+                <dt>URL</dt>
+                <dd>
+                    <a href="{{ url_for('api.v2.products_dates_json', from_date='2012-10-01', to_date='2012-11-01') }}">
+                       http://{{ request.host }}/{{ url_for('api.v2.products_dates_json', from_date='2012-10-01', to_date='2012-11-01') }}
+                   </a>
+                </dd>
+                <dt>result</dt>
+                <dd>
+                     Массив, элементами которого являются числа-идентификаторы
+                </dd>
+            </dl>
+
+            Получение списка идентификаторов товаров, которые были созданы от указанной даты
+            <dl class="dl-horizontal">
+                <dt>URL</dt>
+                <dd>
+                    <a href="{{ url_for('api.v2.products_dates_json', new=True, from_date='2012-10-01') }}">
+                       http://{{ request.host }}/{{ url_for('api.v2.products_dates_json', new=True, from_date='2012-10-01') }}
+                   </a>
+                </dd>
+                <dt>result</dt>
+                <dd>
+                     Массив, элементами которого являются числа-идентификаторы
+                </dd>
+            </dl>
+
+            Получение списка идентификаторов товаров, которые были созданы в диапазоне двух дат
+            <dl class="dl-horizontal">
+                <dt>URL</dt>
+                <dd>
+                    <a href="{{ url_for('api.v2.products_dates_json', new=True, from_date='2012-10-01', to_date='2012-11-01') }}">
+                       http://{{ request.host }}/{{ url_for('api.v2.products_dates_json', new=True, from_date='2012-10-01', to_date='2012-11-01') }}
+                   </a>
+                </dd>
+                <dt>result</dt>
+                <dd>
+                     Массив, элементами которого являются числа-идентификаторы
+                </dd>
+            </dl>
+
+            Получение информации о товаре по его идентификатору
+            <dl class="dl-horizontal">
+                <dt>URL</dt>
+                <dd>
+                    <a href="{{ url_for('api.v2.product_json', id=available_product.key.id()) }}">
+                        http://{{ request.host }}/{{ url_for('api.v2.product_json', id=available_product.key.id()) }}
+                    </a>
+                </dd>
+                <dt>result</dt>
+                <dd>
+                    Объект. Возвращаемый объект содержит следующие свойства:
+                    <dl class="dl-horizontal">
+                        <dt>id</dt>
+                        <dd>Идентификатор товара</dd>
+
+                        <dt>url</dt>
+                        <dd>Ссылка на страницу товара на сайте
+                            <a href="http://www.3dhero.ru">3dhero.ru</a>
+                        </dd>
+
+                        <dt>name</dt>
+                        <dd>Название товара</dd>
+
+                        <dt>is_available</dt>
+                        <dd>true - доступен для заказа, false - недоступен</dd>
+
+                        <dt>price_trade</dt>
+                        <dd>Цена оптовая</dd>
+
+                        <dt>price_retail</dt>
+                        <dd>Цена розничная</dd>
+
+                        <dt>barcode</dt>
+                        <dd>Штрих-код</dd>
+
+                        <dt>catalogue_id</dt>
+                        <dd>Артикул</dd>
+
+                        <dt>category</dt>
+                        <dd>Категория</dd>
+
+                        <dt>country</dt>
+                        <dd>Страна-производитель</dd>
+
+                        <dt>brand</dt>
+                        <dd>Фирма-производитель</dd>
+
+                        <dt>rating</dt>
+                        <dd>Рейтинг продаж</dd>
+
+                        <dt>weight</dt>
+                        <dd>Вес товара</dd>
+
+                        <dt>size</dt>
+                        <dd>Размер товара</dd>
+
+                        <dt>material</dt>
+                        <dd>Материал товара</dd>
+
+                        <dt>box_size</dt>
+                        <dd>Размер упаковки</dd>
+
+                        <dt>box_weight</dt>
+                        <dd>Вес с упаковкой (брутто)</dd>
+
+                        <dt>box_material</dt>
+                        <dd>Материал упаковки</dd>
+
+                        <dt>equipment</dt>
+                        <dd>Описание комплектации</dd>
+
+                        <dt>description</dt>
+                        <dd>Описание товара</dd>
+
+                        <dt>leftovers</dt>
+                        <dd>Остаток на складе</dd>
+
+                        <dt>leftovers_on_way</dt>
+                        <dd>Ожидаемое кол-во товара</dd>
+
+                        <dt>created</dt>
+                        <dd>Время добавления в базу</dd>
+
+                        <dt>modified</dt>
+                        <dd>Время последнего изменения</dd>
+
+                        <dt>images_list</dt>
+                        <dd>
+                            Список URL на изображения товара.
+                            Первый элемент - это основное изображение.
+                            Имеется возможность масштабирования изображений
+                            путем изменения их URL. Для изменения размера в конец URL
+                            необходимо добавить "=sXX", где XX - это число в диапазоне
+                            (0-1600], в результате изображение будет отмасштабировано
+                            по длинной стороне до указанного размера. Также имеется возможность
+                            обрезать изображение, чтобы вписать его в квадрат, для этого
+                            в конец URL нужно добавить "=sXX-c".
+                            Например:<br>
+                                <a href="http://lh3.ggpht.com/a_NpEBmq1WCSoN6mNwVgZj6iy3jQ5pzAUq9d7M0Aw2DCMj24zma4TMYnukVa7quTgxTB4cy3mB5fBjLVKQ">
+                                    Исходное изображение
+                                </a><br>
+                                <a href="http://lh3.ggpht.com/a_NpEBmq1WCSoN6mNwVgZj6iy3jQ5pzAUq9d7M0Aw2DCMj24zma4TMYnukVa7quTgxTB4cy3mB5fBjLVKQ=s200">
+                                    Изображение уменьшенное до 200px по высоте
+                                </a><br>
+                            <a href="http://lh3.ggpht.com/a_NpEBmq1WCSoN6mNwVgZj6iy3jQ5pzAUq9d7M0Aw2DCMj24zma4TMYnukVa7quTgxTB4cy3mB5fBjLVKQ=s251-c">
+                                Кроп изображения в 251px
+                            </a><br>
+                        </dd>
+                    </dl>
+                </dd>
+            </dl>
+        </section>
+
+        <section id="categories">
+            <h2 class="page-header">
+                Категории
+            </h2>
+            Получение количества категорий товаров
+            <dl class="dl-horizontal">
+                <dt>
+                    URL
+                </dt>
+                <dd>
+                    <a href="{{ url_for('api.v2.categories_count_json') }}">
+                        http://{{ request.host }}/{{ url_for('api.v2.categories_count_json') }}
+                    </a>
+                </dd>
+                <dt>result</dt>
+                <dd>
+                    Число
+                </dd>
+            </dl>
+
+            Получение списка идентификаторов категорий товаров
+            <dl class="dl-horizontal">
+                <dt>URL</dt>
+                <dd>
+                    <a href="{{ url_for('api.v2.categories_json') }}">
+                        http://{{ request.host }}/{{ url_for('api.v2.categories_json') }}
+                    </a>
+                </dd>
+                <dt>result</dt>
+                <dd>
+                     Массив, элементами которого являются числа-идентификаторы
+                </dd>
+            </dl>
+
+            Получение информации о категории по ее идентификатору
+            <dl class="dl-horizontal">
+                <dt>URL</dt>
+                <dd>
+                    <a href="{{ url_for('api.v2.category_json', id=available_category.key.id()) }}">
+                        http://{{ request.host }}/{{ url_for('api.v2.category_json', id=available_category.key.id()) }}
+                    </a>
+                </dd>
+                <dt>result</dt>
+                <dd>
+                     Объект. Возвращаемый объект содержит следующие свойства:
+                    <dl class="dl-horizontal">
+                        <dt>id</dt>
+                        <dd>Идентификатор</dd>
+
+                        <dt>name</dt>
+                        <dd>Название</dd>
+
+                        <dt>products_count</dt>
+                        <dd>Кол-во продуктов в категории</dd>
+
+                        <dt>products_by_id</dt>
+                        <dd>Массив идентификаторов продуктов запрошенной категории</dd>
+
+                        <dt>created</dt>
+                        <dd>Время добавления в базу</dd>
+
+                        <dt>modified</dt>
+                        <dd>Время последнего изменения</dd>
+                    </dl>
+                </dd>
+            </dl>
+        </section>
+
+        <section id="utils">
+            <h2 class="page-header">Утилиты для работы с JSON</h2>
+
+            <h3>Для Google Chrome</h3>
+            <a href="https://chrome.google.com/webstore/detail/json-prettifier/kccpfgilgmgbipamhohknpokhibinhhj">JSON Prettifier</a>,
+            <a href="https://chrome.google.com/webstore/detail/jsonview/chklaanhfefbnpoihckbnefhakgolnmc">JSONView</a>
+
+            <h3>Для Mozilla Firefox</h3>
+            <a href="https://addons.mozilla.org/en-US/firefox/addon/jsonovich/">JSONovich</a>
+
+            <h3>Online-валидаторы</h3>
+            <a href="http://jsonformatter.curiousconcept.com/">jsonformatter</a>,
+            <a href="http://jsonlint.com/">JSONLint</a>
+        </section>
+    </div>
+</div>
+{% endblock %}
