@@ -12,6 +12,10 @@
       # endblock
       {{config.CONFIG_DB.brand_name}}
     </title>
+    <link href="{{ url_for('recent_feed') }}"
+      rel="alternate"
+      title="Recent Posts"
+      type="application/atom+xml">
     # include 'bit/style.html'
     # block head
     # endblock
