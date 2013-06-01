@@ -70,7 +70,7 @@ def make_external(url):
 
 @app.route('/recent.atom')
 def recent_feed():
-    feed = AtomFeed('Recent Posts',
+    feed = AtomFeed('egoroff.spb.ru feed',
                     feed_url=request.url, url=request.url_root)
     articles = Post.query(Post.is_public == True).order(-Post.created)
     articles = articles.fetch(config.ATOM_FEED_LIMIT)
