@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
+from urlparse import urljoin
 from lxml import etree
 import config
 from flask import Blueprint, redirect, render_template, url_for
 from apps.news.models import Post
+import flask
 import main
 import site_map
 from typographus import Typographus
@@ -68,5 +70,6 @@ def get_post(key_id):
         post=post,
         content=content,
         last=last,
+        full_uri=urljoin(flask.request.url_root, flask.url_for('news.post', key_id=post.key.id())),
         breadcrumbs=breadcrumbs
     )

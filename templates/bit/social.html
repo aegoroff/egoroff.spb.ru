@@ -1,0 +1,8 @@
+{% if full_uri %}
+    &nbsp;&nbsp;&nbsp;
+    <a href="http://twitter.com/home/?status={{ full_uri }}" title="в твиттер"><small><i class="icon-twitter"></i></small></a>&nbsp;
+    <a href="http://www.facebook.com/sharer.php?u={{ full_uri }}" title="в facebook"
+       onclick="window.open(this.href, 'Поделиться ссылкой в facebook', 'width=800,height=300'); return false">
+        <small><i class="icon-facebook"></i></small></a>&nbsp;
+    <small><span id="plusone-div"></span></small>
+{% endif %}
