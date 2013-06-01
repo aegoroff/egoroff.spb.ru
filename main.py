@@ -73,7 +73,7 @@ def recent_feed():
     feed = AtomFeed('Recent Posts',
                     feed_url=request.url, url=request.url_root)
     articles = Post.query(Post.is_public == True).order(-Post.created)
-    articles = articles.fetch(20)
+    articles = articles.fetch(config.ATOM_FEED_LIMIT)
 
     for article in articles:
         feed.add(article.title, unicode(article.short_text),
