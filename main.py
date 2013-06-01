@@ -92,7 +92,16 @@ def opinions():
 @app.route('/opinions/<int:key_id>.html')
 def opinions_files(key_id):
     remapping = {
-        1: 25002
+        1: 25002,
+        8: 6003,
+        13: 3006,
+        21: 9002,
+        25: 22002,
+        26: 27002,
+        27: 27001,
+        28: 14004,
+        29: 8003,
+        30: 6004
     }
     if key_id in remapping:
         url = urljoin(flask.url_for('news.index'), '{0}.html'.format(remapping[key_id]))
