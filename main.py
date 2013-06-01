@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import json
+import logging
 import sys
 from urlparse import urljoin
 
@@ -86,6 +87,16 @@ def recent_feed():
 
 @app.route('/opinions/')
 def opinions():
+    return flask.redirect(flask.url_for('news.index'), code=301)
+
+@app.route('/opinions/<int:key_id>.html')
+def opinions_files(key_id):
+    remapping = {
+        1: 25002
+    }
+    if key_id in remapping:
+        url = urljoin(flask.url_for('news.index'), '{0}.html'.format(remapping[key_id]))
+        return flask.redirect(url, code=301)
     return flask.redirect(flask.url_for('news.index'), code=301)
 
 ################################################################################
