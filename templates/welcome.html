@@ -6,11 +6,13 @@
     <div class="span6">
         <h2><a href="{{ url_for('news.index') }}">Блог</a></h2>
         {% if posts %}
-            <dl>
+            <dl id="log">
             {% for post in posts %}
                     {% include 'news/post_box.html' %}
             {% endfor %}
             </dl>
+            <button class="btn btn-large btn-primary" id="moreNews" type="button">Больше записей</button>
+            <input type="hidden" name="offset" id="offsetValue" value="20"/>
         {% else %}
             <p>Пока ничего нового.</p>
         {% endif %}

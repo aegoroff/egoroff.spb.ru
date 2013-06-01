@@ -72,8 +72,12 @@ def make_external(url):
 def recent_feed():
     feed = AtomFeed('egoroff.spb.ru feed',
                     feed_url=request.url, url=request.url_root)
+
+    offset = 0
+    if flask.request.is_xhr and "offset" in flask.request.args:
+        offset = int(flask.request.args["offset"])
     articles = Post.query(Post.is_public == True).order(-Post.created)
-    articles = articles.fetch(config.ATOM_FEED_LIMIT)
+    articles = articles.fetch(config.ATOM_FEED_LIMIT, offset=offset)
 
     for article in articles:
         feed.add(article.title, unicode(article.short_text),

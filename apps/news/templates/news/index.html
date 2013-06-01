@@ -15,7 +15,7 @@
             {% if not posts or not posts.count() %}
                 Ничего нет
             {% else %}
-                <dl>
+                <dl id="log">
                     {% for post in posts %}
                         {% include 'news/post_box.html' %}
                     {% endfor %}

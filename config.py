@@ -61,6 +61,7 @@ SCRIPTS = {
         'lib/jquery.tablesorter.js',
         'lib/jquery.metadata.js',
         'lib/jquery.dateFormat-1.0.js',
+        'lib/news.async.reader.js',
     ],
     'admin':[
         'lib/redactor.js'
