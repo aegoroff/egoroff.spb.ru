@@ -192,7 +192,7 @@ twitter = twitter_oauth.remote_app(
     base_url='http://api.twitter.com/1/',
     request_token_url='https://api.twitter.com/oauth/request_token',
     access_token_url='https://api.twitter.com/oauth/access_token',
-    authorize_url='https://api.twitter.com/oauth/authenticate',
+    authorize_url='https://api.twitter.com/oauth/authorize',
     consumer_key=config.CONFIG_DB.twitter_consumer_key,
     consumer_secret=config.CONFIG_DB.twitter_consumer_secret,
   )
