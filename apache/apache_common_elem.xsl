@@ -647,4 +647,26 @@
 		<xsl:apply-templates/>
 	</xsl:template>
 
+	<xsl:template match="link">
+		<a>
+			<xsl:attribute name="href">
+                <xsl:choose>
+                    <xsl:when test="@id = 1">
+                        <xsl:text>/portfolio/</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="@id = 2">
+                        <xsl:text>/opinions/</xsl:text>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:text>/</xsl:text>
+                    </xsl:otherwise>
+                </xsl:choose>
+				<xsl:if test="@name">
+					<xsl:value-of select="@name"/><xsl:text>.html</xsl:text>
+				</xsl:if>
+			</xsl:attribute>
+			<xsl:apply-templates/>
+		</a>
+	</xsl:template>
+
 </xsl:stylesheet>
