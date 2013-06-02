@@ -21,12 +21,12 @@ function onRssSuccess(xml) {
             var d = description.textContent == undefined ? description.text : description.textContent;
             var t = title.textContent == undefined ? title.text : title.textContent;
             var dlLog = $("body").find("dl#log");
-            var link = "<a href=\"" + $("entry link", xml).get(item).getAttribute("href") + "\">" + t + "</a>"
+            var link = "<a href=\"" + $("entry link", xml).get(item).getAttribute("href") + "\">" + t + "</a>";
             dlLog.append("<dt><dt><small><i class=\"icon-calendar\"></i> <span class=\"shortDateFormat\">" + humanReadableDate + "</span></small>&nbsp;" + link + "</dt>");
             dlLog.append("<dd>" + d + "</dd>");
         }
     );
     if (items.length < 20) {
-        $("button#moreNews").remove()
+        $("button#moreNews").remove();
     }
 }
