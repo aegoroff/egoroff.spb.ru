@@ -1,4 +1,5 @@
 $(function() {
+    "use strict";
     var more = $("button#moreNews");
     more.click(function () {
         var ov = $("input#offsetValue");
@@ -10,6 +11,7 @@ $(function() {
 });
 
 function onRssSuccess(xml) {
+    "use strict";
     var items = $("entry", xml);
     items.each(
         function(item) {
