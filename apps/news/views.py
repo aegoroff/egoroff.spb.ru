@@ -37,6 +37,10 @@ def index():
         breadcrumbs=main.breadcrumbs_home
     )
 
+@mod.route('/rss/')
+def rss():
+    return main.recent_feed()
+
 @mod.route('/<int:key_id>/', endpoint='post')
 @mod.route('/<int:key_id>.html', endpoint='post')
 def get_post(key_id):
