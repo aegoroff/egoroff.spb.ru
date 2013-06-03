@@ -17,6 +17,7 @@ mod = Blueprint(
     url_prefix='/news'
 )
 
+
 def get_paginator(posts, page, posts_per_page = 20):
     paginator = Paginator(posts, posts_per_page)
     try:
