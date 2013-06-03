@@ -3,9 +3,11 @@ $(function() {
     var more = $("button#moreNews");
     more.click(function () {
         var ov = $("input#offsetValue");
+        var lv = $("input#limitValue");
         var offset = ov.val();
-        $.get('/recent.atom?offset=' + offset, onRssSuccess);
-        ov.attr("value", parseInt(offset) + 20);
+        var limit = lv.val();
+        $.get('/recent.atom?offset=' + offset + '&limit=' + limit, onRssSuccess);
+        ov.attr("value", parseInt(offset) + parseInt(limit));
     });
     more.button();
 });
@@ -28,7 +30,9 @@ function onRssSuccess(xml) {
             dlLog.append("<dd>" + d + "</dd>");
         }
     );
-    if (items.length < 20) {
+    var lv = $("input#limitValue");
+    var limit = lv.val();
+    if (items.length < parseInt(limit)) {
         $("button#moreNews").remove();
     }
 }
