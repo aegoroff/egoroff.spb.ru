@@ -78,11 +78,26 @@ def index():
         apache_docs=main.apache_docs
     )
 
+
+def create_breadcrumbs():
+    breadcrumbs = [i for i in main.breadcrumbs_home]
+    parents = [main_section_item]
+    append = lambda item: breadcrumbs.append((item[site_map.ID], item[site_map.TITLE]))
+    map(append, parents)
+    return breadcrumbs
+
+
 @mod.route('/<doc>.html', methods=['GET'])
 @mod.route('/apache/<doc>.html', methods=['GET'])
 def get_doc(doc):
     if doc not in main.apache_docs:
-        return
+        return render_template(
+            'portfolio/apache_document.html',
+            title=doc,
+            breadcrumbs=create_breadcrumbs(),
+            apache_docs=main.apache_docs,
+            html=u"<p>Пока ничего нет</p>"
+        )
 
     parser = etree.XMLParser(load_dtd=False, dtd_validation=False)
     parser.resolvers.add(FileResolver())
@@ -94,15 +109,10 @@ def get_doc(doc):
 
     content = unicode(transform(xml_input))
 
-    breadcrumbs =[i for i in main.breadcrumbs_home]
-    parents = [ main_section_item ]
-    append = lambda item: breadcrumbs.append((item[site_map.ID], item[site_map.TITLE]))
-    map(append, parents)
-
     return render_template(
         'portfolio/apache_document.html',
         title=main.apache_docs[doc][1],
-        breadcrumbs=breadcrumbs,
+        breadcrumbs=create_breadcrumbs(),
         apache_docs=main.apache_docs,
         html=content
     )
