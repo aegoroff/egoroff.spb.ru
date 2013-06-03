@@ -72,19 +72,11 @@ def index():
         'portfolio/index.html',
         parent_id=main_section_item[site_map.ID],
         current_id=main_section_item[site_map.ID],
-        breadcrumbs=main.breadcrumbs_home,
+        breadcrumbs=main.create_breadcrumbs([]),
         title=main_section_item[site_map.TITLE],
         downloads=downloads,
         apache_docs=main.apache_docs
     )
-
-
-def create_breadcrumbs():
-    breadcrumbs = [i for i in main.breadcrumbs_home]
-    parents = [main_section_item]
-    append = lambda item: breadcrumbs.append((item[site_map.ID], item[site_map.TITLE]))
-    map(append, parents)
-    return breadcrumbs
 
 
 @mod.route('/<doc>.html', methods=['GET'])
@@ -94,7 +86,7 @@ def get_doc(doc):
         return render_template(
             'portfolio/apache_document.html',
             title=doc,
-            breadcrumbs=create_breadcrumbs(),
+            breadcrumbs=main.create_breadcrumbs([main_section_item]),
             apache_docs=main.apache_docs,
             html=u"<p>Пока ничего нет</p>"
         )
@@ -112,7 +104,7 @@ def get_doc(doc):
     return render_template(
         'portfolio/apache_document.html',
         title=main.apache_docs[doc][1],
-        breadcrumbs=create_breadcrumbs(),
+        breadcrumbs=main.create_breadcrumbs([main_section_item]),
         apache_docs=main.apache_docs,
         html=content
     )

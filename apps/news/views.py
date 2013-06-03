@@ -26,7 +26,7 @@ class FileResolver(etree.Resolver):
 @mod.route('/')
 def index():
     posts = Post.query(Post.is_public == True).order(-Post.created)
-    posts = posts.fetch(config.ATOM_FEED_LIMIT, offset=0)
+    posts = posts.fetch()
     return render_template(
         'news/index.html',
         title=main_section_item[site_map.TITLE],
@@ -34,7 +34,7 @@ def index():
         current_id=main_section_item[site_map.ID],
         posts=posts,
         key=main_section_item[site_map.ID],
-        breadcrumbs=main.breadcrumbs_home
+        breadcrumbs=main.create_breadcrumbs([])
     )
 
 @mod.route('/rss/')
@@ -66,8 +66,6 @@ def get_post(key_id):
 
     posts = Post.query(Post.is_public == True).order(-Post.created)
     last = posts.fetch(5)
-    breadcrumbs =[i for i in main.breadcrumbs_home]
-    breadcrumbs.append((main_section_item[site_map.ID], main_section_item[site_map.TITLE]))
     return render_template(
         'news/post.html',
         title=post.title,
@@ -75,5 +73,5 @@ def get_post(key_id):
         content=content,
         last=last,
         full_uri=urljoin(flask.request.url_root, flask.url_for('news.post', key_id=post.key.id())),
-        breadcrumbs=breadcrumbs
+        breadcrumbs=main.create_breadcrumbs([main_section_item])
     )

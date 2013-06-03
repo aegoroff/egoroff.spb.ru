@@ -3,6 +3,7 @@
 import json
 import sys
 from urlparse import urljoin
+import site_map
 
 
 sys.path.insert(0, 'lib.zip')
@@ -41,7 +42,12 @@ app.register_blueprint(news_admin_mod)
 from apps.news.models import Post
 
 
-breadcrumbs_home =[('welcome', u'Главная', 'icon-home')]
+def create_breadcrumbs(parents):
+    breadcrumbs = [('welcome', u'Главная', 'icon-home')]
+    append = lambda item: breadcrumbs.append((item[site_map.ID], item[site_map.TITLE]))
+    map(append, parents)
+    return breadcrumbs
+
 
 def readJson(path):
     with open(path) as f:
@@ -145,7 +151,7 @@ def profile():
   return flask.render_template(
       'profile.html',
       title=u'Профиль',
-      breadcrumbs=breadcrumbs_home,
+      breadcrumbs=create_breadcrumbs([]),
       html_class='profile',
       form=form,
       user_db=user_db,
@@ -186,7 +192,7 @@ def feedback():
   return flask.render_template(
       'feedback.html',
       title=u'Фидбек',
-      breadcrumbs=breadcrumbs_home,
+      breadcrumbs=create_breadcrumbs([]),
       html_class='feedback',
       form=form,
     )
@@ -215,7 +221,7 @@ def user_list():
       'user_list.html',
       html_class='user',
       title=u'Пользователи',
-      breadcrumbs=breadcrumbs_home,
+      breadcrumbs=create_breadcrumbs([]),
       user_dbs=user_dbs,
       more_url=util.generate_more_url(more_cursor),
     )
