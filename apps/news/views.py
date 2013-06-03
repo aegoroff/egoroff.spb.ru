@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from urlparse import urljoin
 from lxml import etree
-import config
+from apps.utils.paginator import Paginator, EmptyPage, InvalidPage
 from flask import Blueprint, redirect, render_template, url_for
 from apps.news.models import Post
 import flask
@@ -17,6 +17,14 @@ mod = Blueprint(
     url_prefix='/news'
 )
 
+def get_paginator(posts, page, posts_per_page = 20):
+    paginator = Paginator(posts, posts_per_page)
+    try:
+        posts = paginator.page(page)
+    except (EmptyPage, InvalidPage):
+        posts = paginator.page(paginator.num_pages)
+    return posts
+
 main_section_item = site_map.MAP[1]
 
 POSTS_QUERY = "WHERE is_public = True ORDER BY created DESC"
@@ -25,10 +33,11 @@ class FileResolver(etree.Resolver):
     def resolve(self, url, identifier, context):
         return self.resolve_filename(url, context)
 
-@mod.route('/')
-def index():
+@mod.route('/', defaults={'page': 1})
+@mod.route('/page/<int:page>/')
+def index(page):
     posts = Post.gql(POSTS_QUERY)
-    posts = posts.fetch()
+    posts = get_paginator(posts, page)
     return render_template(
         'news/index.html',
         title=main_section_item[site_map.TITLE],
