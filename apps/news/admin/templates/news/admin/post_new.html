@@ -8,8 +8,7 @@
     <script>
         $(function(){
             $('.redactor').redactor({
-                linebreaks: true,
-                cleanup: true
+                linebreaks: true
             });
         });
     </script>
@@ -18,13 +17,13 @@
 {% block content %}
 <div class="row">
     <div class="span12">
-        <h1 class="page-header">Добавление новости</h1>
+        <h1 class="page-header">Добавление поста</h1>
         <form method="POST">
             {% include 'news/admin/post_fields.html' %}
             <div class="form-actions">
                 <button type="submit"
                     class="btn btn-primary">
-                    Добавить новость
+                    Добавить пост
                 </button>
                 <a class="btn" href="{{ url_for('admin.news.index') }}">
                     Отмена
