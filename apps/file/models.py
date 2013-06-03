@@ -15,15 +15,15 @@ IMAGE_TYPES = ('image/bmp', 'image/jpeg', 'image/png',
 
 class File(Base):
     uid = ndb.StringProperty()
-    title = ndb.StringProperty(verbose_name=u'Название файла')
-    description = ndb.TextProperty(verbose_name=u'Описание файла')
+    title = ndb.StringProperty(verbose_name=u'Название файла', indexed=False)
+    description = ndb.TextProperty(verbose_name=u'Описание файла', indexed=False)
     owner = ndb.KeyProperty()
     is_public = ndb.BooleanProperty(default=False, verbose_name=u'Публичный?')
     url = ndb.StringProperty(verbose_name=u'URL')
 
     blob_key = ndb.BlobKeyProperty(verbose_name=u'Ключ файла')
-    filename = ndb.StringProperty(verbose_name=u'Оригинальное название файла')
-    size = ndb.IntegerProperty(verbose_name=u'Размер файла')
+    filename = ndb.StringProperty(verbose_name=u'Оригинальное название файла', indexed=False)
+    size = ndb.IntegerProperty(verbose_name=u'Размер файла', indexed=False)
     human_readable_size = ndb.ComputedProperty(lambda self: units.formatToHumanSize(self.size))
     content_type = ndb.StringProperty(verbose_name=u'Тип файла')
 
@@ -77,7 +77,7 @@ class File(Base):
 
 
 class Folder(Base):
-    title = ndb.StringProperty(verbose_name=u'Название')
+    title = ndb.StringProperty(verbose_name=u'Название', indexed=False)
     is_public = ndb.BooleanProperty(verbose_name=u'Публичная?', default=False)
     files = ndb.KeyProperty(File, verbose_name=u'Файлы', repeated=True)
 
