@@ -65,13 +65,16 @@ def get_post(key_id):
     #    content = typo.typo_text(content)
 
     posts = Post.query(Post.is_public == True).order(-Post.created)
-    last = posts.fetch(5)
+    limit=5
+    last = posts.fetch(limit)
     return render_template(
         'news/post.html',
         title=post.title,
         post=post,
         content=content,
         last=last,
+        limit=limit,
+        offset=limit,
         full_uri=urljoin(flask.request.url_root, flask.url_for('news.post', key_id=post.key.id())),
         breadcrumbs=main.create_breadcrumbs([main_section_item])
     )

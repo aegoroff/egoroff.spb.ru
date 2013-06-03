@@ -80,10 +80,13 @@ def recent_feed():
                     feed_url=request.url, url=request.url_root)
 
     offset = 0
+    limit = config.ATOM_FEED_LIMIT
     if flask.request.is_xhr and "offset" in flask.request.args:
         offset = int(flask.request.args["offset"])
+    if flask.request.is_xhr and "limit" in flask.request.args:
+        limit = int(flask.request.args["limit"])
     articles = Post.query(Post.is_public == True).order(-Post.created)
-    articles = articles.fetch(config.ATOM_FEED_LIMIT, offset=offset)
+    articles = articles.fetch(limit, offset=offset)
 
     for article in articles:
         feed.add(article.title, unicode(article.short_text),

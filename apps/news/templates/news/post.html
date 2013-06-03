@@ -32,11 +32,12 @@ renderPlusone();
             <h4>
                 Из последнего
             </h4>
-            <dl>
+            <dl id="log">
                 {% for post in last %}
                     {% include 'news/post_box.html' %}
                 {% endfor %}
             </dl>
+            {% include 'bit/more_posts.html' %}
         {% include 'bit/small_banner.html' %}
         </div>
     </div>
