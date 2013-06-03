@@ -19,13 +19,15 @@ mod = Blueprint(
 
 main_section_item = site_map.MAP[1]
 
+POSTS_QUERY = "WHERE is_public = True ORDER BY created DESC"
+
 class FileResolver(etree.Resolver):
     def resolve(self, url, identifier, context):
         return self.resolve_filename(url, context)
 
 @mod.route('/')
 def index():
-    posts = Post.query(Post.is_public == True).order(-Post.created)
+    posts = Post.gql(POSTS_QUERY)
     posts = posts.fetch()
     return render_template(
         'news/index.html',
@@ -64,9 +66,9 @@ def get_post(key_id):
     #if content:
     #    content = typo.typo_text(content)
 
-    posts = Post.query(Post.is_public == True).order(-Post.created)
-    limit=5
-    last = posts.fetch(limit)
+    limit = 5
+    posts = Post.gql("{0} LIMIT {1}".format(POSTS_QUERY, limit))
+    last = posts.fetch()
     return render_template(
         'news/post.html',
         title=post.title,

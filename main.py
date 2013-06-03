@@ -33,7 +33,8 @@ app.register_blueprint(file_admin_mod)
 from apps.portfolio.views import mod as portfolio_mod
 app.register_blueprint(portfolio_mod)
 
-from apps.news.views import mod as news_mod
+from apps.news.views import mod as news_mod, POSTS_QUERY
+
 app.register_blueprint(news_mod)
 
 from apps.news.admin.views import mod as news_admin_mod
@@ -58,15 +59,13 @@ apache_docs = readJson("apache/config.json")
 
 @app.route('/')
 def welcome():
-  posts = Post.query(Post.is_public == True).order(-Post.created)
-  posts_count = posts.count()
-  posts = posts.fetch(5)
+  posts = Post.gql("{0} LIMIT {1}".format(POSTS_QUERY, 5))
+  posts = posts.fetch()
   return flask.render_template(
       'welcome.html',
       html_class='welcome',
       apache_docs=apache_docs,
-      posts=posts,
-      posts_count=posts_count,
+      posts=posts
     )
 
 
@@ -85,8 +84,8 @@ def recent_feed():
         offset = int(flask.request.args["offset"])
     if flask.request.is_xhr and "limit" in flask.request.args:
         limit = int(flask.request.args["limit"])
-    articles = Post.query(Post.is_public == True).order(-Post.created)
-    articles = articles.fetch(limit, offset=offset)
+    articles = Post.gql("{0} LIMIT {1} OFFSET {2}".format(POSTS_QUERY, limit, offset))
+    articles = articles.fetch()
 
     for article in articles:
         feed.add(article.title, unicode(article.short_text),
