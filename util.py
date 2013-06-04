@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 from urlparse import urljoin
 
 from google.appengine.datastore.datastore_query import Cursor
@@ -246,3 +247,7 @@ def format_datetime_ago(timestamp):
     return ago_template % (months, declension(int(months), u"месяц", u"месяца", u"месяцев"))
   else:
     return ago_template % (years, declension(int(years), u"год", u"года", u"лет"))
+
+def readJson(path):
+    with open(path) as f:
+        return json.load(f, encoding="UTF-8")

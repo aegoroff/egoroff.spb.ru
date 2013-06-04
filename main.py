@@ -50,12 +50,7 @@ def create_breadcrumbs(parents):
     return breadcrumbs
 
 
-def readJson(path):
-    with open(path) as f:
-        return json.load(f, encoding="UTF-8")
-
-
-apache_docs = readJson("apache/config.json")
+apache_docs = util.readJson("apache/config.json")
 
 @app.route('/')
 def welcome():
