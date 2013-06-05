@@ -79,6 +79,7 @@ main_section_item = site_map.MAP[0]
 
 
 @mod.route('/portfolio/download/')
+@mod.route('/portfolio/flickr/')
 @mod.route('/apache/')
 @mod.route('/portfolio/')
 def index():
