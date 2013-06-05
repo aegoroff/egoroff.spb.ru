@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<!DOCTYPE modulesynopsis SYSTEM "../style/modulesynopsis.dtd">
+<?xml-stylesheet type="text/xsl" href="../style/manual.en.xsl"?>
+<!-- $LastChangedRevision: 421174 $ -->
+
+<!--
+ Licensed to the Apache Software Foundation (ASF) under one or more
+ contributor license agreements.  See the NOTICE file distributed with
+ this work for additional information regarding copyright ownership.
+ The ASF licenses this file to You under the Apache License, Version 2.0
+ (the "License"); you may not use this file except in compliance with
+ the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+<modulesynopsis metafile="mod_proxy_http.xml.meta">
+
+<name>mod_proxy_http</name>
+<description>HTTP support module for
+<module>mod_proxy</module></description>
+<status>Extension</status>
+<sourcefile>proxy_http.c</sourcefile>
+<identifier>proxy_http_module</identifier>
+
+<summary>
+    <p>Модуль <em>требует</em> наличия <module
+    >mod_proxy</module>. Реализует функционал для прокси HTTP запросов.
+    <module>mod_proxy_http</module>
+    поддерживает HTTP/0.9, HTTP/1.0 и HTTP/1.1. <em>НЕ</em> предоставляет
+    никаких возможностей кэшировария. Если хотите кэширующий прокси,
+    стоит посмотреть на модуль
+    <module>mod_cache</module>.</p>
+
+    <p>Итак, для того, чтобы работал прокси HTTP запросов на сервере должны работать модули,
+    <module>mod_proxy</module> и <module>mod_proxy_http</module>.</p>
+
+    <note type="warning"><title>Предупреждение</title>
+      <p>Не включайте прокси до тех пор пока вы не <a href="#access"
+      >защитили свой сервер</a>. Открытые прокси опасны как для вашей сети, так и для интернета в целом.</p>
+    </note>
+</summary>
+<seealso><module>mod_proxy</module></seealso>
+<seealso><module>mod_proxy_connect</module></seealso>
+
+</modulesynopsis>

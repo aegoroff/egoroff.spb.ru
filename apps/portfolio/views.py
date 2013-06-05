@@ -16,11 +16,10 @@ class FileResolver(etree.Resolver):
 mod = Blueprint(
     'portfolio',
     __name__,
-    template_folder='templates',
-    url_prefix='/portfolio'
+    template_folder='templates'
 )
 
-@mod.route('/<int:key_id>.html', methods=['GET'])
+@mod.route('/portfolio/<int:key_id>.html', methods=['GET'])
 def portfolio_files(key_id):
     remapping = {
         1: 19002,
@@ -55,9 +54,9 @@ def portfolio_files(key_id):
 
 main_section_item = site_map.MAP[0]
 
-@mod.route('/download/')
+@mod.route('/portfolio/download/')
 @mod.route('/apache/')
-@mod.route('/')
+@mod.route('/portfolio/')
 def index():
     folders = Folder.query()
     downloads = {}
@@ -79,8 +78,9 @@ def index():
     )
 
 
-@mod.route('/<doc>.html', methods=['GET'])
+@mod.route('/portfolio/<doc>.html', methods=['GET'])
 @mod.route('/apache/<doc>.html', methods=['GET'])
+@mod.route('/portfolio/apache/<doc>.html', methods=['GET'])
 def get_doc(doc):
     if doc not in main.apache_docs:
         return render_template(
