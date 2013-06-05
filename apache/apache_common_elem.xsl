@@ -657,6 +657,9 @@
                     <xsl:when test="@id = 2">
                         <xsl:text>/opinions/</xsl:text>
                     </xsl:when>
+                    <xsl:when test="@id = 62">
+                        <xsl:text>/portfolio/</xsl:text>
+                    </xsl:when>
                     <xsl:otherwise>
                         <xsl:text>/</xsl:text>
                     </xsl:otherwise>
