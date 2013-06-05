@@ -8,6 +8,9 @@
 {% set form_field = form.is_public %}
 {% include 'bit/form_text_field.html' %}
 
+{% set form_field = form.tags %}
+{% include 'bit/form_text_field.html' %}
+
 {% set form_field = form.short_text %}
 {% include 'bit/form_textarea_field.html' %}
 
