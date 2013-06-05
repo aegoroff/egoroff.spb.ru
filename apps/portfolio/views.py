@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
+import os
 
 from flask import Blueprint, render_template
 from lxml import etree
+import time
 from apps.file.models import Folder, File
 import main
 import site_map
@@ -18,6 +20,26 @@ mod = Blueprint(
     __name__,
     template_folder='templates'
 )
+
+APACHE_DOC_PATH_TEMPLATE = 'apache/{0}.xml'
+
+
+def create_apache_docs():
+    config = util.readJson("apache/config.json")
+    result = []
+    for item in config:
+        path = APACHE_DOC_PATH_TEMPLATE.format(item)
+        t = time.gmtime(os.path.getmtime(path))
+        r = {
+            "doc": item,
+            "stylesheet": config[item][0],
+            "title": config[item][1],
+            "descr": config[item][2],
+            "modified": time.strftime("%Y-%m-%d %H:%M:%S", t)
+        }
+        result.append(r)
+    return result
+
 
 @mod.route('/portfolio/<int:key_id>.html', methods=['GET'])
 def portfolio_files(key_id):
@@ -52,7 +74,9 @@ def portfolio_files(key_id):
     }
     return util.redirect(key_id, remapping)
 
+
 main_section_item = site_map.MAP[0]
+
 
 @mod.route('/portfolio/download/')
 @mod.route('/apache/')
@@ -74,7 +98,7 @@ def index():
         breadcrumbs=main.create_breadcrumbs([]),
         title=main_section_item[site_map.TITLE],
         downloads=downloads,
-        apache_docs=main.apache_docs
+        apache_docs=create_apache_docs()
     )
 
 
@@ -82,20 +106,26 @@ def index():
 @mod.route('/apache/<doc>.html', methods=['GET'])
 @mod.route('/portfolio/apache/<doc>.html', methods=['GET'])
 def get_doc(doc):
-    if doc not in main.apache_docs:
+    docs = create_apache_docs()
+    data = None
+    for d in docs:
+        if d["doc"] == doc:
+            data = d
+            break
+
+    if not data:
         return render_template(
             'portfolio/apache_document.html',
             title=doc,
             breadcrumbs=main.create_breadcrumbs([main_section_item]),
-            apache_docs=main.apache_docs,
             html=u"<p>Пока ничего нет</p>"
         )
 
     parser = etree.XMLParser(load_dtd=False, dtd_validation=False)
     parser.resolvers.add(FileResolver())
 
-    xml_input = etree.parse('apache/{0}.xml'.format(doc), parser)
-    stylesheet = main.apache_docs[doc][0]
+    xml_input = etree.parse(APACHE_DOC_PATH_TEMPLATE.format(doc), parser)
+    stylesheet = data["stylesheet"]
     xslt_root = etree.parse('apache/{0}.xsl'.format(stylesheet), parser)
     transform = etree.XSLT(xslt_root)
 
@@ -103,8 +133,7 @@ def get_doc(doc):
 
     return render_template(
         'portfolio/apache_document.html',
-        title=main.apache_docs[doc][1],
+        title=data["title"],
         breadcrumbs=main.create_breadcrumbs([main_section_item]),
-        apache_docs=main.apache_docs,
         html=content
     )

@@ -1,8 +1,8 @@
 {% if apache_docs %}
 <dl>
     {% for item in apache_docs %}
-        <dt><a href="{{ url_for('portfolio.index') }}{{ item }}.html">{{ apache_docs[item][1] }}</a></dt>
-        <dd>{{ apache_docs[item][2] }}</dd>
+        <dt><small><i class="icon-calendar"></i> <span class="shortDateFormat">{{ item['modified']}}</span></small>&nbsp;<a href="{{ url_for('portfolio.index') }}{{ item['doc'] }}.html">{{ item['title'] }}</a></dt>
+        <dd>{{ item['descr'] }}</dd>
     {% endfor %}
 </dl>
 {% endif %}

@@ -30,7 +30,8 @@ app.register_blueprint(file_view)
 from apps.file.admin.views import mod as file_admin_mod
 app.register_blueprint(file_admin_mod)
 
-from apps.portfolio.views import mod as portfolio_mod
+from apps.portfolio.views import mod as portfolio_mod, create_apache_docs
+
 app.register_blueprint(portfolio_mod)
 
 from apps.news.views import mod as news_mod, POSTS_QUERY
@@ -50,8 +51,6 @@ def create_breadcrumbs(parents):
     return breadcrumbs
 
 
-apache_docs = util.readJson("apache/config.json")
-
 @app.route('/')
 def welcome():
   posts = Post.gql("{0} LIMIT {1}".format(POSTS_QUERY, 5))
@@ -59,7 +58,7 @@ def welcome():
   return flask.render_template(
       'welcome.html',
       html_class='welcome',
-      apache_docs=apache_docs,
+      apache_docs=create_apache_docs(),
       posts=posts
     )
 
