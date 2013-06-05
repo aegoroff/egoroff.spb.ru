@@ -22,6 +22,12 @@ renderPlusone();
                 {{ post.short_text|safe }}
             {% endif %}
             <div class="well well-small">
+                Теги:&nbsp;
+                {% for tag in post.tags %}
+                   <a href="{{ url_for('news.index') }}?tag={{ tag }}">{{ tag }}</a>
+                {% endfor %}
+            </div>
+            <div class="well well-small">
                 <h3>
                     <small><i class="icon-calendar"></i> <span class="shortDateFormat">{{ post.created }}</span></small>
                     {% include 'bit/social.html' %}
