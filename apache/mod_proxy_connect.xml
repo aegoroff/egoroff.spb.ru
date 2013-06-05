@@ -35,9 +35,8 @@
     HTTP method. This method is mainly used to tunnel SSL requests
     through proxy servers.</p>
 
-    <p>Thus, in order to get the ability of handling <code>CONNECT</code>
-    requests, <module>mod_proxy</module> and
-    <module>mod_proxy_connect</module> have to be present in the server.</p>
+    <p>Итак, для того, чтобы работал прокси <code>CONNECT</code> запросов на сервере должны работать модули,
+    <module>mod_proxy</module> и <module>mod_proxy_connect</module>.</p>
 
     <note type="warning"><title>Предупреждение</title>
       <p>Не включайте прокси до тех пор пока вы не <a href="#access"

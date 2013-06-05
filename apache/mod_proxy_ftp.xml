@@ -34,9 +34,8 @@
     >mod_proxy</module>. It provides support for the proxying
     FTP sites.</p>
 
-    <p>Thus, in order to get the ability of handling FTP proxy requests,
-    <module>mod_proxy</module> and <module>mod_proxy_ftp</module>
-    have to be present in the server.</p>
+    <p>Итак, для того, чтобы работал прокси FTP запросов на сервере должны работать модули,
+    <module>mod_proxy</module> и <module>mod_proxy_ftp</module>.</p>
 
     <note type="warning"><title>Предупреждение</title>
       <p>Не включайте прокси до тех пор пока вы не <a href="#access"
