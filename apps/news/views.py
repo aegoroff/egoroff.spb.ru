@@ -66,8 +66,7 @@ def get_post(key_id):
         parser.resolvers.add(FileResolver())
 
         xml_input = etree.fromstring(post.text, )
-        stylesheet = main.apache_docs['rewriteguide'][0]
-        xslt_root = etree.parse('apache/{0}.xsl'.format(stylesheet), parser)
+        xslt_root = etree.parse('apache/apache_manualpage.xsl', parser)
         transform = etree.XSLT(xslt_root)
 
         content = unicode(transform(xml_input))
