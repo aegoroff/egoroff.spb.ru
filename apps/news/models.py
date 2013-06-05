@@ -11,7 +11,7 @@ class Post(Base):
     is_public = ndb.BooleanProperty(verbose_name=u'Публичная?')
     short_text = ndb.TextProperty(verbose_name=u'Краткое описание', required=True)
     text = ndb.TextProperty(verbose_name=u'Основной текст')
-    tags = ndb.StringProperty(verbose_name=u'Теги', indexed=False, repeated=True)
+    tags = ndb.StringProperty(verbose_name=u'Теги', repeated=True)
 
 class Tag(object):
   """Holds tag properties """

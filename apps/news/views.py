@@ -38,6 +38,11 @@ class FileResolver(etree.Resolver):
 @mod.route('/page/<int:page>/')
 def index(page):
     posts = Post.gql(POSTS_QUERY)
+    if "tag" in flask.request.args:
+        tag = flask.request.args["tag"]
+        query = "WHERE is_public = True AND tags IN (:1) ORDER BY created DESC"
+        posts = Post.gql(query, tag)
+
     posts = get_paginator(posts, page)
     return render_template(
         'news/index.html',

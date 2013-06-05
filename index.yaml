@@ -15,3 +15,10 @@ indexes:
   - name: is_public
   - name: created
     direction: desc
+
+- kind: Post
+  properties:
+  - name: is_public
+  - name: tags
+  - name: created
+    direction: desc
