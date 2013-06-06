@@ -78,20 +78,27 @@ def index(page):
         query = "WHERE is_public = True AND tags IN (:1) ORDER BY created DESC"
         posts = Post.gql(query, tag)
 
-    all_query = Post.gql("WHERE is_public = True")
+    all_query = Post.gql("WHERE is_public = True  ORDER BY created DESC")
     all_posts = all_query.fetch()
 
-    dates = {}
-    for key,group in itertools.groupby(all_posts, key=lambda post: (post.created.year, post.created.month)):
-        dates[key] = len(filter(None, group))
+    archieve = {}
+    for ym, group in itertools.groupby(all_posts, key=lambda post: (post.created.year, post.created.month)):
+        if ym[0] not in archieve:
+            archieve[ym[0]] = []
+        for m, months in itertools.groupby(group, key=lambda p: p.created.month):
+            posts_count = len(filter(None, months))
+            k = (m, posts_count)
+            archieve[ym[0]].append(k)
 
     posts = get_paginator(posts, page)
+
     return render_template(
         'news/index.html',
         title=title,
         parent_id=main_section_item[site_map.ID],
         current_id=main_section_item[site_map.ID],
         posts=posts,
+        archieve=archieve,
         tags=create_tag_rank(all_posts),
         key=main_section_item[site_map.ID],
         breadcrumbs=breadcrumbs

@@ -14,6 +14,11 @@ indexes:
   properties:
   - name: is_public
   - name: created
+
+- kind: Post
+  properties:
+  - name: is_public
+  - name: created
     direction: desc
 
 - kind: Post

@@ -90,6 +90,18 @@
                        class={{ tag.tag_level }}>{{ tag.title }}</a>
                 {% endfor %}
             {% endif %}
+            <h3>Архив</h3>
+            {% if not archieve %}
+                <p>Ничего нет</p>
+            {% else %}
+                {% for year in archieve %}
+                    <h4>{{ year }}</h4>
+                    {% for month in archieve[year] %}
+                        <a href="{{ url_for('news.index') }}?year={{ year }}&month={{ month[0] }}"
+                           >{{ month[0] }} ({{ month[1] }})</a><br/>
+                     {% endfor %}
+                {% endfor %}
+            {% endif %}
         </div>
     </div>
 {% endblock %}
