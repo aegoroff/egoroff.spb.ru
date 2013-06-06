@@ -23,7 +23,7 @@ renderPlusone();
             {% endif %}
             {% if post.tags %}
                 <div class="well well-small">
-                    Теги:&nbsp;
+                    Метки:&nbsp;
                     {% for tag in post.tags %}
                        <a href="{{ url_for('news.index') }}?tag={{ tag }}" class="btn">{{ tag }}</a>
                     {% endfor %}
