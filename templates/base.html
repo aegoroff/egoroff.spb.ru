@@ -53,6 +53,13 @@
     </div>
     # include 'bit/footer.html'
     # include 'bit/script.html'
+    # if not current_user.admin and config.CONFIG_DB.analytics_id
+        <script type="text/javascript">
+          jQuery.error = function (message) {
+              _gaq.push(['_trackEvent', 'jQuery Error', message, navigator.userAgent]);
+          }
+        </script>
+    # endif
     # block scripts
     # endblock
   </body>

@@ -10,4 +10,12 @@
       var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
     })();
   </script>
+    <script type="text/javascript">
+      var _gaq = window._gaq || [];
+      window.onerror = function(msg, url, line) {
+        var preventErrorAlert = true;
+        _gaq.push(['_trackEvent', 'JS Error', msg, navigator.userAgent + ' -> ' + url + " : " + line]);
+        return preventErrorAlert;
+    };
+    </script>
 # endif
