@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime
 from urlparse import urljoin
 from lxml import etree
 from apps.utils.paginator import Paginator, EmptyPage, InvalidPage
