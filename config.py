@@ -36,6 +36,7 @@ STYLES = [
     'src/less/style.less',
     'src/less/apache.less',
     'src/less/shCoreDefault.less',
+    'src/less/tags.less',
   ]
 
 SCRIPTS_MODULES = [

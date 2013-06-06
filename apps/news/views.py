@@ -3,7 +3,7 @@ from urlparse import urljoin
 from lxml import etree
 from apps.utils.paginator import Paginator, EmptyPage, InvalidPage
 from flask import Blueprint, redirect, render_template, url_for
-from apps.news.models import Post
+from apps.news.models import Post, Tag
 import flask
 import main
 import site_map
@@ -18,7 +18,7 @@ mod = Blueprint(
 )
 
 
-def get_paginator(posts, page, posts_per_page = 20):
+def get_paginator(posts, page, posts_per_page=20):
     paginator = Paginator(posts, posts_per_page)
     try:
         posts = paginator.page(page)
@@ -26,13 +26,44 @@ def get_paginator(posts, page, posts_per_page = 20):
         posts = paginator.page(paginator.num_pages)
     return posts
 
+
 main_section_item = site_map.MAP[1]
 
 POSTS_QUERY = "WHERE is_public = True ORDER BY created DESC"
 
+TAG_RANK = ("tagRank10", "tagRank9",
+            "tagRank8", "tagRank7", "tagRank6",
+            "tagRank5", "tagRank4", "tagRank3",
+            "tagRank2", "tagRank1")
+
+
+def compute_rank(tag_title, count, totalcount):
+    """Compute taglevel from frequency of tag"""
+    index = int(float(count) / float(totalcount) * 10)
+    return Tag(tag_title, TAG_RANK[index])
+
+
+def create_tag_rank(articles):
+    """Create tag rank"""
+    tag_count_dict = {}
+    total_count = 0
+    for article in articles:
+        for t in article.tags:
+            total_count += 1
+            if t in tag_count_dict:
+                tag_count_dict[t] += 1
+            else:
+                tag_count_dict[t] = 1
+    tags = []
+    append = lambda tag_title: tags.append(compute_rank(tag_title, tag_count_dict[tag_title], total_count))
+    map(append, tag_count_dict)
+    return tags
+
+
 class FileResolver(etree.Resolver):
     def resolve(self, url, identifier, context):
         return self.resolve_filename(url, context)
+
 
 @mod.route('/', defaults={'page': 1})
 @mod.route('/page/<int:page>/')
@@ -43,6 +74,9 @@ def index(page):
         query = "WHERE is_public = True AND tags IN (:1) ORDER BY created DESC"
         posts = Post.gql(query, tag)
 
+    all_query = Post.gql("WHERE is_public = True")
+    all_posts = all_query.fetch()
+
     posts = get_paginator(posts, page)
     return render_template(
         'news/index.html',
@@ -50,13 +84,16 @@ def index(page):
         parent_id=main_section_item[site_map.ID],
         current_id=main_section_item[site_map.ID],
         posts=posts,
+        tags=create_tag_rank(all_posts),
         key=main_section_item[site_map.ID],
         breadcrumbs=main.create_breadcrumbs([])
     )
 
+
 @mod.route('/rss/')
 def rss():
     return main.recent_feed()
+
 
 @mod.route('/<int:key_id>/', endpoint='post')
 @mod.route('/<int:key_id>.html', endpoint='post')
