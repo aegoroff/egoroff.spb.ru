@@ -35,7 +35,8 @@ SITE = site_map.MAP
 STYLES = [
     'src/less/style.less',
     'src/less/apache.less',
-    'src/less/shCoreDefault.less',
+    #'src/less/shCoreDefault.less',
+    'src/less/shCoreEclipse.less',
     'src/less/tags.less',
   ]
 
