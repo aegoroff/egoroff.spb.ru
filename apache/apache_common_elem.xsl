@@ -555,8 +555,7 @@
     </xsl:template>
 
 	<xsl:template match="example">
-		<pre class="prettyprint">
-            <!--
+		<pre>
 			<xsl:choose>
 				<xsl:when test="@class">
 					<xsl:attribute name="class">
@@ -567,7 +566,6 @@
 					<xsl:attribute name="class"><xsl:text>code</xsl:text></xsl:attribute>
 				</xsl:otherwise>
 			</xsl:choose>
-			-->
 			<xsl:apply-templates/>
 		</pre>
 	</xsl:template>
