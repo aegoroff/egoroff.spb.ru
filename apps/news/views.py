@@ -64,6 +64,20 @@ class FileResolver(etree.Resolver):
     def resolve(self, url, identifier, context):
         return self.resolve_filename(url, context)
 
+MONTHS = {
+    1 : u"Январь",
+    2 : u"Февраль",
+    3 : u"Март",
+    4 : u"Апрель",
+    5 : u"Май",
+    6 : u"Июнь",
+    7 : u"Июль",
+    8 : u"Август",
+    9 : u"Сентябрь",
+    10 : u"Октябрь",
+    11 : u"Ноябрь",
+    12 : u"Декабрь"
+}
 
 @mod.route('/', defaults={'page': 1})
 @mod.route('/page/<int:page>/')
@@ -99,6 +113,7 @@ def index(page):
         current_id=main_section_item[site_map.ID],
         posts=posts,
         archieve=archieve,
+        months=MONTHS,
         tags=create_tag_rank(all_posts),
         key=main_section_item[site_map.ID],
         breadcrumbs=breadcrumbs
@@ -108,7 +123,6 @@ def index(page):
 @mod.route('/rss/')
 def rss():
     return main.recent_feed()
-
 
 @mod.route('/<int:key_id>/', endpoint='post')
 @mod.route('/<int:key_id>.html', endpoint='post')
