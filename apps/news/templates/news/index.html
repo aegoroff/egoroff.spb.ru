@@ -22,68 +22,72 @@
                 </dl>
             {% endif %}
 
-            {% if "tag" in request.args %}
-                {% set tag_query = "?tag=" + request.args["tag"] %}
-            {% else %}
-                {% set tag_query = "" %}
-            {% endif %}
-            <ul class="pager">
-                {% if posts.has_previous %}
-                    <li class="previous">
-                        <a href="{{ url_for(
+            {% if posts.paginator.num_pages > 1 %}
+
+                {% if "tag" in request.args %}
+                    {% set tag_query = "?tag=" + request.args["tag"] %}
+                {% else %}
+                    {% set tag_query = "" %}
+                {% endif %}
+                <ul class="pager">
+                    {% if posts.has_previous %}
+                        <li class="previous">
+                            <a href="{{ url_for(
                                 'news.index',
                                 page=posts.previous_page_number) }}{{ tag_query }}"
-                           class="prev">
-                            &larr; новее
-                        </a>
-                    </li>
-                {% else %}
-                    <li class="disabled previous">
-                        <a href="#">&larr; новее</a>
-                    </li>
-                {% endif %}
+                               class="prev">
+                                &larr; новее
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="disabled previous">
+                            <a href="#">&larr; новее</a>
+                        </li>
+                    {% endif %}
 
-                {% if posts.has_next %}
-                    <li class="next">
-                        <a href="{{ url_for('news.index', page=posts.next_page_number) }}{{ tag_query }}"
-                           class="next">старее &rarr;</a>
-                    </li>
-                {% else %}
-                    <li class="next disabled">
-                        <a href="#"
-                           class="next">старее &rarr;</a>
-                    </li>
-                {% endif %}
-            </ul>
-            <div class="pagination">
-                <ul style="float: left;">
-                    {% for page in posts.paginator.page_range %}
-                        {% if page %}
-                            {% if page == posts.number %}
-                                <li class="active">
-                                    <a href="{{ url_for('news.index', page=page) }}{{ tag_query }}"
-                                       class="page">{{ page }}</a>
-                                </li>
-                            {% else %}
-                                <li>
-                                    <a href="{{ url_for('news.index', page=page) }}{{ tag_query }}"
-                                       class="page">{{ page }}</a>
-                                </li>
-                            {% endif %}
-                        {% else %}
-                            ......
-                        {% endif %}
-                    {% endfor %}
+                    {% if posts.has_next %}
+                        <li class="next">
+                            <a href="{{ url_for('news.index', page=posts.next_page_number) }}{{ tag_query }}"
+                               class="next">старее &rarr;</a>
+                        </li>
+                    {% else %}
+                        <li class="next disabled">
+                            <a href="#"
+                               class="next">старее &rarr;</a>
+                        </li>
+                    {% endif %}
                 </ul>
-            </div>
+                <div class="pagination">
+                    <ul style="float: left;">
+                        {% for page in posts.paginator.page_range %}
+                            {% if page %}
+                                {% if page == posts.number %}
+                                    <li class="active">
+                                        <a href="{{ url_for('news.index', page=page) }}{{ tag_query }}"
+                                           class="page">{{ page }}</a>
+                                    </li>
+                                {% else %}
+                                    <li>
+                                        <a href="{{ url_for('news.index', page=page) }}{{ tag_query }}"
+                                           class="page">{{ page }}</a>
+                                    </li>
+                                {% endif %}
+                            {% else %}
+                                ......
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
         </div>
         <div class="span3 tags">
-        <h3>Метки</h3>
+            <h3>Метки</h3>
             {% if not tags %}
                 <p>Ничего нет</p>
             {% else %}
                 {% for tag in tags %}
-                    <a href="{{ url_for('news.index') }}?tag={{ tag.title }}" class={{tag.tag_level}}>{{ tag.title }}</a>
+                    <a href="{{ url_for('news.index') }}?tag={{ tag.title }}"
+                       class={{ tag.tag_level }}>{{ tag.title }}</a>
                 {% endfor %}
             {% endif %}
         </div>
