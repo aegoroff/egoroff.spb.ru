@@ -91,6 +91,10 @@ def index(page):
         title = u"Все посты по метке: {0}".format(tag)
         query = "WHERE is_public = True AND tags IN (:1) ORDER BY created DESC"
         posts = Post.gql(query, tag)
+    #if "year" in flask.request.args and "month" in flask.request.args:
+        #query = "WHERE is_public = True AND created > DATE('YYYY-MM-DD') AND created < DATE('YYYY-MM-DD') ORDER BY created DESC"
+        #posts = Post.gql(query, tag)
+        #posts = Post.query().order(-Post.created)
 
     all_query = Post.gql("WHERE is_public = True  ORDER BY created DESC")
     all_posts = all_query.fetch()
