@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import json
 import sys
 from urlparse import urljoin
 import site_map
@@ -22,7 +21,6 @@ app.jinja_env.line_statement_prefix = '#'
 import auth
 import util
 import model
-import admin
 
 from apps.file.views import mod as file_view
 app.register_blueprint(file_view)
@@ -31,7 +29,6 @@ from apps.file.admin.views import mod as file_admin_mod
 app.register_blueprint(file_admin_mod)
 
 from apps.portfolio.views import mod as portfolio_mod, create_apache_docs
-
 app.register_blueprint(portfolio_mod)
 
 from apps.news.views import mod as news_mod, POSTS_QUERY
@@ -42,6 +39,9 @@ from apps.news.admin.views import mod as news_admin_mod
 app.register_blueprint(news_admin_mod)
 
 from apps.news.models import Post
+
+from apps.compatibility.views import mod as compatibility_mod
+app.register_blueprint(compatibility_mod)
 
 
 def create_breadcrumbs(parents):
@@ -89,31 +89,6 @@ def recent_feed():
                  updated=article.modified,
                  published=article.created)
     return feed.get_response()
-
-@app.route('/opinions/')
-def opinions():
-    return flask.redirect(flask.url_for('news.index'), code=301)
-
-@app.route('/opinions/<int:key_id>.html')
-def opinions_files(key_id):
-    remapping = {
-        1: 25002,
-        4: 31001,
-        8: 6003,
-        11: 30001,
-        13: 3006,
-        18: 29001,
-        21: 9002,
-        22: 2004,
-        24: 25003,
-        25: 22002,
-        26: 27002,
-        27: 27001,
-        28: 14004,
-        29: 8003,
-        30: 6004
-    }
-    return util.redirect(key_id, remapping)
 
 ################################################################################
 # Profile stuff

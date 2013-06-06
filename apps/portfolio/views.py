@@ -41,40 +41,6 @@ def create_apache_docs():
     return result
 
 
-@mod.route('/portfolio/<int:key_id>.html', methods=['GET'])
-def portfolio_files(key_id):
-    remapping = {
-        1: 19002,
-        3: 24001,
-        5: 23001,
-        6: 21002,
-        7: 22001,
-        8: 21001,
-        9: 13004,
-        10: 6007,
-        11: 18001,
-        12: 12004,
-        13: 12003,
-        14: 1006,
-        15: 6005,
-        16: 16002,
-        17: 12002,
-        18: 6006,
-        19: 17001,
-        21: 11004,
-        22: 9004,
-        23: 13003,
-        24: 16001,
-        25: 9003,
-        26: 14005,
-        27: 5004,
-        28: 11003,
-        29: 15001,
-        30: 8002
-    }
-    return util.redirect(key_id, remapping)
-
-
 main_section_item = site_map.MAP[0]
 
 
