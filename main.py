@@ -21,6 +21,7 @@ app.jinja_env.line_statement_prefix = '#'
 import auth
 import util
 import model
+import admin
 
 from apps.file.views import mod as file_view
 app.register_blueprint(file_view)
