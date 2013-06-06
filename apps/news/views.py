@@ -74,7 +74,7 @@ def index(page):
     if "tag" in flask.request.args:
         tag = flask.request.args["tag"]
         breadcrumbs = main.create_breadcrumbs([main_section_item])
-        title = tag
+        title = u"Все посты по метке: {0}".format(tag)
         query = "WHERE is_public = True AND tags IN (:1) ORDER BY created DESC"
         posts = Post.gql(query, tag)
 
