@@ -35,15 +35,17 @@ SITE = site_map.MAP
 STYLES = [
     'src/less/style.less',
     'src/less/apache.less',
-    'src/less/shCoreDefault.less',
+    #'src/less/shCoreDefault.less',
     'src/less/tags.less',
+    'src/less/prettify.less',
   ]
 
 SCRIPTS_MODULES = [
     'libs',
     'scripts',
     'jquery.plugins',
-    'syntax-highlighter',
+    #'syntax-highlighter',
+    'prettify',
     'admin'
   ]
 
@@ -78,6 +80,38 @@ SCRIPTS = {
         'lib/syntax-highlighter/shBrushNasm8086.js',
         'lib/syntax-highlighter/shBrushIL.js',
         'lib/syntax-highlighter/shBrushHashQuery.js',
+    ],
+    'prettify': [
+        'lib/google-code-prettify/prettify.js',
+        'lib/google-code-prettify/lang-apollo.js',
+        'lib/google-code-prettify/lang-basic.js',
+        'lib/google-code-prettify/lang-clj.js',
+        'lib/google-code-prettify/lang-css.js',
+        'lib/google-code-prettify/lang-dart.js',
+        'lib/google-code-prettify/lang-erlang.js',
+        'lib/google-code-prettify/lang-go.js',
+        'lib/google-code-prettify/lang-hs.js',
+        'lib/google-code-prettify/lang-lisp.js',
+        'lib/google-code-prettify/lang-llvm.js',
+        'lib/google-code-prettify/lang-lua.js',
+        'lib/google-code-prettify/lang-matlab.js',
+        'lib/google-code-prettify/lang-ml.js',
+        'lib/google-code-prettify/lang-mumps.js',
+        'lib/google-code-prettify/lang-n.js',
+        'lib/google-code-prettify/lang-pascal.js',
+        'lib/google-code-prettify/lang-proto.js',
+        'lib/google-code-prettify/lang-r.js',
+        'lib/google-code-prettify/lang-rd.js',
+        'lib/google-code-prettify/lang-scala.js',
+        'lib/google-code-prettify/lang-sql.js',
+        'lib/google-code-prettify/lang-tcl.js',
+        'lib/google-code-prettify/lang-tex.js',
+        'lib/google-code-prettify/lang-vb.js',
+        'lib/google-code-prettify/lang-vhdl.js',
+        'lib/google-code-prettify/lang-wiki.js',
+        'lib/google-code-prettify/lang-xq.js',
+        'lib/google-code-prettify/lang-yaml.js',
+        'lib/google-code-prettify/run_prettify.js'
     ],
     'scripts': [
       'src/coffee/common/util.coffee',
