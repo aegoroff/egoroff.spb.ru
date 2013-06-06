@@ -69,8 +69,12 @@ class FileResolver(etree.Resolver):
 @mod.route('/page/<int:page>/')
 def index(page):
     posts = Post.gql(POSTS_QUERY)
+    breadcrumbs = main.create_breadcrumbs([])
+    title = main_section_item[site_map.TITLE]
     if "tag" in flask.request.args:
         tag = flask.request.args["tag"]
+        breadcrumbs = main.create_breadcrumbs([main_section_item])
+        title = tag
         query = "WHERE is_public = True AND tags IN (:1) ORDER BY created DESC"
         posts = Post.gql(query, tag)
 
@@ -80,13 +84,13 @@ def index(page):
     posts = get_paginator(posts, page)
     return render_template(
         'news/index.html',
-        title=main_section_item[site_map.TITLE],
+        title=title,
         parent_id=main_section_item[site_map.ID],
         current_id=main_section_item[site_map.ID],
         posts=posts,
         tags=create_tag_rank(all_posts),
         key=main_section_item[site_map.ID],
-        breadcrumbs=main.create_breadcrumbs([])
+        breadcrumbs=breadcrumbs
     )
 
 
