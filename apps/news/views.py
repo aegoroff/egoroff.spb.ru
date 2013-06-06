@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime
 from urlparse import urljoin
 from lxml import etree
 from apps.utils.paginator import Paginator, EmptyPage, InvalidPage
@@ -8,7 +9,7 @@ import flask
 import main
 import site_map
 from typographus import Typographus
-
+import itertools
 
 mod = Blueprint(
     'news',
@@ -80,6 +81,10 @@ def index(page):
 
     all_query = Post.gql("WHERE is_public = True")
     all_posts = all_query.fetch()
+
+    dates = {}
+    for key,group in itertools.groupby(all_posts, key=lambda post: (post.created.year, post.created.month)):
+        dates[key] = len(filter(None, group))
 
     posts = get_paginator(posts, page)
     return render_template(
