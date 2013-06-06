@@ -1,5 +1,21 @@
 {% extends 'base.html' %}
 
+# block scripts
+  <script>
+  $(function() {
+    $( "#accordion" ).accordion({
+      collapsible: true,
+      heightStyle: "content"
+    });
+  });
+  </script>
+# endblock
+
+{% block head %}
+    <link type="text/css" rel='stylesheet' href="/p/css/jquery-ui-1.10.3.custom.min.css">
+{% endblock %}
+
+
 {% block content %}
     <!-- Main hero unit for a primary marketing message or call to action -->
     <div class="hero-unit">
@@ -94,23 +110,16 @@
             {% if not archieve %}
                 <p>Ничего нет</p>
             {% else %}
-                <div class="accordion" id="accordion2">
+                <div id="accordion">
                     {% for year in archieve | sort(reverse=True) %}
-                        <div class="accordion-group">
-                            <div class="accordion-heading">
-                                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2"
-                                   href="#collapse{{ year }}">
-                                    {{ year }}
-                                </a>
-                            </div>
-                            <div id="collapse{{ year }}" class="accordion-body collapse in">
-                                <div class="accordion-inner">
-                                {% for month in archieve[year] %}
-                                    <a href="{{ url_for('news.index') }}?year={{ year }}&month={{ month[0] }}"
-                                            >{{ months[month[0]] }} ({{ month[1] }})</a><br/>
-                                {% endfor %}
-                                </div>
-                            </div>
+                        <h3>{{ year }}</h3>
+                        <div>
+                            <ul>
+                            {% for month in archieve[year] %}
+                                <li><a href="{{ url_for('news.index') }}?year={{ year }}&month={{ month[0] }}"
+                                        >{{ months[month[0]] }} ({{ month[1] }})</a></li>
+                            {% endfor %}
+                            </ul>
                         </div>
                     {% endfor %}
                 </div>

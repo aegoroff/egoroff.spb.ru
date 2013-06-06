@@ -51,6 +51,7 @@ SCRIPTS_MODULES = [
 SCRIPTS = {
     'libs': [
       'lib/jquery.js',
+      'lib/jquery-ui-1.10.3.custom.js',
       'lib/bootstrap/js/bootstrap-alert.js',
       'lib/bootstrap/js/bootstrap-button.js',
       'lib/bootstrap/js/bootstrap-collapse.js',
