@@ -22,12 +22,17 @@
                 </dl>
             {% endif %}
         </div>
+        {% if "tag" in request.args %}
+            {% set tag_query = "?tag=" + request.args["tag"] %}
+        {% else %}
+            {% set tag_query = "" %}
+        {% endif %}
         <ul class="pager">
             {% if posts.has_previous %}
                 <li class="previous">
                     <a href="{{ url_for(
                                 'news.index',
-                                page=posts.previous_page_number) }}"
+                                page=posts.previous_page_number) }}{{ tag_query }}"
                        class="prev">
                         &larr; новее
                     </a>
@@ -40,7 +45,7 @@
 
             {% if posts.has_next %}
                 <li class="next">
-                    <a href="{{ url_for('news.index', page=posts.next_page_number) }}"
+                    <a href="{{ url_for('news.index', page=posts.next_page_number) }}{{ tag_query }}"
                        class="next">старее &rarr;</a>
                 </li>
             {% else %}
@@ -56,11 +61,11 @@
                     {% if page %}
                         {% if page == posts.number %}
                             <li class="active">
-                                <a href="{{ url_for('news.index', page=page) }}" class="page">{{ page }}</a>
+                                <a href="{{ url_for('news.index', page=page) }}{{ tag_query }}" class="page">{{ page }}</a>
                             </li>
                         {% else %}
                             <li>
-                                <a href="{{ url_for('news.index', page=page) }}" class="page">{{ page }}</a>
+                                <a href="{{ url_for('news.index', page=page) }}{{ tag_query }}" class="page">{{ page }}</a>
                             </li>
                         {% endif %}
                     {% else %}
