@@ -146,7 +146,25 @@ def get_post(key_id):
     #if content:
     #    content = typo.typo_text(content)
 
-    limit = 5
+    original_limit = 5
+    limit = original_limit
+    offset = 0
+    while True:
+        keys = Post.query(Post.is_public == True).order(-Post.created).fetch(limit, keys_only=True, offset=offset)
+        found = False
+        for k in keys:
+            if k.id() == key_id:
+                found = True
+                break
+        if not found:
+            offset += limit
+        else:
+            break
+
+    if offset > 0:
+        limit += offset
+    offset += original_limit
+
     posts = Post.gql("{0} LIMIT {1}".format(POSTS_QUERY, limit))
     last = posts.fetch()
     return render_template(
@@ -155,8 +173,8 @@ def get_post(key_id):
         main_post=post,
         content=content,
         last=last,
-        limit=limit,
-        offset=limit,
+        limit=original_limit,
+        offset=offset,
         full_uri=urljoin(flask.request.url_root, flask.url_for('news.post', key_id=key_id)),
         breadcrumbs=main.create_breadcrumbs([main_section_item])
     )
