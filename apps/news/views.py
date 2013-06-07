@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 from urlparse import urljoin
 import datetime
 import calendar
@@ -104,16 +105,19 @@ def index(page):
         query = "WHERE is_public = True AND tags IN (:1) ORDER BY created DESC"
         posts = Post.gql(query, tag)
     if "year" in flask.request.args and "month" in flask.request.args:
-        year = int(flask.request.args["year"])
-        month = int(flask.request.args["month"])
-        current_month = datetime.datetime(year, month, 1)
-        next_month = add_months(datetime.datetime(year, month, 1), 1)
+        try:
+            year = int(flask.request.args["year"])
+            month = int(flask.request.args["month"])
+            current_month = datetime.datetime(year, month, 1)
+            next_month = add_months(datetime.datetime(year, month, 1), 1)
 
-        breadcrumbs = main.create_breadcrumbs([main_section_item])
-        title = u"Все посты за {0} {1} года".format(MONTHS[month], year)
+            breadcrumbs = main.create_breadcrumbs([main_section_item])
+            title = u"Все посты за {0} {1} года".format(MONTHS[month], year)
 
-        posts = Post.query(Post.is_public == True, ndb.AND(Post.created >= current_month,
-                         Post.created < next_month)).order(-Post.created)
+            posts = Post.query(Post.is_public == True, ndb.AND(Post.created >= current_month,
+                             Post.created < next_month)).order(-Post.created)
+        except ValueError:
+            logging.error("invalid year or month")
 
     all_query = Post.gql("WHERE is_public = True  ORDER BY created DESC")
     all_posts = all_query.fetch()
