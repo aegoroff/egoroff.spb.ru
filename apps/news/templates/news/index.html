@@ -116,7 +116,7 @@
                     {% for year in archieve | sort(reverse=True) %}
                         <h3>{{ year }}</h3>
                         <div>
-                            <ul>
+                            <ul class="nav nav-list">
                             {% for month in archieve[year] %}
                                 <li><a href="{{ url_for('news.index') }}?year={{ year }}&month={{ month[0] }}"
                                         >{{ months[month[0]] }} ({{ month[1] }})</a></li>
