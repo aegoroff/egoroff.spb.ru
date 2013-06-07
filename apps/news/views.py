@@ -13,7 +13,6 @@ import main
 import site_map
 from typographus import Typographus
 import itertools
-import util
 
 mod = Blueprint(
     'news',
