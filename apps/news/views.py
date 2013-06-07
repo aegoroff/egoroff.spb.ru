@@ -152,11 +152,11 @@ def get_post(key_id):
     return render_template(
         'news/post.html',
         title=post.title,
-        post=post,
+        main_post=post,
         content=content,
         last=last,
         limit=limit,
         offset=limit,
-        full_uri=urljoin(flask.request.url_root, flask.url_for('news.post', key_id=post.key.id())),
+        full_uri=urljoin(flask.request.url_root, flask.url_for('news.post', key_id=key_id)),
         breadcrumbs=main.create_breadcrumbs([main_section_item])
     )

@@ -28,19 +28,19 @@ renderPlusone();
             {% if content %}
                 {{ content|safe }}
             {% else %}
-                {{ post.short_text|safe }}
+                {{ main_post.short_text|safe }}
             {% endif %}
-            {% if post.tags %}
+            {% if main_post.tags %}
                 <div class="well well-small">
                     Метки:&nbsp;
-                    {% for tag in post.tags %}
+                    {% for tag in main_post.tags %}
                        <a href="{{ url_for('news.index') }}?tag={{ tag }}" class="btn">{{ tag }}</a>
                     {% endfor %}
                 </div>
             {% endif %}
             <div class="well well-small">
                 <h3>
-                    <small><i class="icon-calendar"></i> <span class="shortDateFormat">{{ post.created }}</span></small>
+                    <small><i class="icon-calendar"></i> <span class="shortDateFormat">{{ main_post.created }}</span></small>
                     {% include 'bit/social.html' %}
                 </h3>
             </div>
