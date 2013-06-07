@@ -31,7 +31,7 @@
             {% if not posts %}
                 Ничего нет
             {% else %}
-                <dl>
+                <dl id="blog">
                     {% for post in posts.object_list %}
                         {% include 'news/post_box.html' %}
                     {% endfor %}
@@ -118,7 +118,7 @@
                         <div>
                             <ul class="nav nav-list">
                             {% for month in archieve[year] %}
-                                <li><a href="{{ url_for('news.index') }}?year={{ year }}&month={{ month[0] }}"
+                                <li><a href="#year={{ year }}&month={{ month[0] }}"
                                         >{{ months[month[0]] }} ({{ month[1] }})</a></li>
                             {% endfor %}
                             </ul>

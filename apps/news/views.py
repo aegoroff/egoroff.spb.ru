@@ -1,13 +1,9 @@
 # -*- coding: utf-8 -*-
-import logging
 from urlparse import urljoin
-import datetime
-import calendar
 from lxml import etree
 from apps.utils.paginator import Paginator, EmptyPage, InvalidPage
 from flask import Blueprint, redirect, render_template, url_for
 from apps.news.models import Post, Tag
-from google.appengine.ext import ndb
 import flask
 import main
 import site_map
@@ -83,14 +79,6 @@ MONTHS = {
     12 : u"Декабрь"
 }
 
-
-def add_months(source_date, months):
-    month = source_date.month - 1 + months
-    year = source_date.year + month / 12
-    month = month % 12 + 1
-    day = min(source_date.day,calendar.monthrange(year,month)[1])
-    return datetime.datetime(year,month,day)
-
 @mod.route('/', defaults={'page': 1})
 @mod.route('/page/<int:page>/')
 def index(page):
@@ -103,20 +91,6 @@ def index(page):
         title = u"Все посты по метке: {0}".format(tag)
         query = "WHERE is_public = True AND tags IN (:1) ORDER BY created DESC"
         posts = Post.gql(query, tag)
-    if "year" in flask.request.args and "month" in flask.request.args:
-        try:
-            year = int(flask.request.args["year"])
-            month = int(flask.request.args["month"])
-            current_month = datetime.datetime(year, month, 1)
-            next_month = add_months(datetime.datetime(year, month, 1), 1)
-
-            breadcrumbs = main.create_breadcrumbs([main_section_item])
-            title = u"Все посты за {0} {1} года".format(MONTHS[month], year)
-
-            posts = Post.query(Post.is_public == True, ndb.AND(Post.created >= current_month,
-                             Post.created < next_month)).order(-Post.created)
-        except ValueError:
-            logging.error("invalid year or month")
 
     all_query = Post.gql("WHERE is_public = True  ORDER BY created DESC")
     all_posts = all_query.fetch()
