@@ -96,8 +96,9 @@
                 </div>
             {% endif %}
         </div>
-        <div class="span3 tags">
+        <div class="span3">
             <h3>Метки</h3>
+            <div class="tags">
             {% if not tags %}
                 <p>Ничего нет</p>
             {% else %}
@@ -106,6 +107,7 @@
                        class={{ tag.tag_level }}>{{ tag.title }}</a>
                 {% endfor %}
             {% endif %}
+            </div>
             <h3>Архив</h3>
             {% if not archieve %}
                 <p>Ничего нет</p>
