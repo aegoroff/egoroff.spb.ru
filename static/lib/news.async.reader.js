@@ -25,6 +25,9 @@ $(function() {
                 y = pair[1];
             }
         }
+        var dlLog = $("body").find("dl#blog");
+        dlLog.empty();
+        dlLog.append("<dt>Загрузка данных. Пожалуйста подождите ...</dt>");
         $.get('/recent.atom?year=' + y + '&month=' + m, onArchieveRssSuccess);
     });
     month.button();
@@ -68,7 +71,7 @@ function loadBlog(items, xml, dlLog) {
             var t = title.textContent == undefined ? title.text : title.textContent;
 
             var link = "<a href=\"" + $("entry link", xml).get(item).getAttribute("href") + "\">" + t + "</a>";
-            dlLog.append("<dt><dt><small><i class=\"icon-calendar\"></i> <span class=\"shortDateFormat\">" + humanReadableDate + "</span></small>&nbsp;" + link + "</dt>");
+            dlLog.append("<dt><small><i class=\"icon-calendar\"></i> <span class=\"shortDateFormat\">" + humanReadableDate + "</span></small>&nbsp;" + link + "</dt>");
             dlLog.append("<dd>" + d + "</dd>");
         }
     );
