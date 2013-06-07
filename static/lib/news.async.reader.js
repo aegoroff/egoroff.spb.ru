@@ -70,7 +70,9 @@ function loadBlog(items, xml, dlLog) {
             var d = description.textContent == undefined ? description.text : description.textContent;
             var t = title.textContent == undefined ? title.text : title.textContent;
 
-            var link = "<a href=\"" + $("entry link", xml).get(item).getAttribute("href") + "\">" + t + "</a>";
+            var current_uri = window.location.href;
+            var item_uri = $("entry link", xml).get(item).getAttribute("href");
+            var link = current_uri == item_uri ? '<span>' + t + '</span>' : "<a href=\"" + $("entry link", xml).get(item).getAttribute("href") + "\">" + t + "</a>";
             dlLog.append("<dt><small><i class=\"icon-calendar\"></i> <span class=\"shortDateFormat\">" + humanReadableDate + "</span></small>&nbsp;" + link + "</dt>");
             dlLog.append("<dd>" + d + "</dd>");
         }
