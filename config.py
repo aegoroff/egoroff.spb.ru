@@ -64,7 +64,6 @@ SCRIPTS = {
         'lib/jquery.tablesorter.js',
         'lib/jquery.metadata.js',
         'lib/jquery.dateFormat-1.0.js',
-        'lib/news.async.reader.js',
     ],
     'admin':[
         'lib/redactor.js'
@@ -88,5 +87,6 @@ SCRIPTS = {
       'src/coffee/site/app.coffee',
       'src/coffee/site/profile.coffee',
       'src/coffee/site/admin.coffee',
+      'src/coffee/site/news.async.reader.coffee',
     ],
   }
