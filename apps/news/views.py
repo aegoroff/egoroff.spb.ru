@@ -58,7 +58,7 @@ def create_tag_rank(articles):
     tags = []
     append = lambda tag_title: tags.append(compute_rank(tag_title, tag_count_dict[tag_title], total_count))
     map(append, tag_count_dict)
-    return tags
+    return sorted(tags, key=lambda tag: tag.title)
 
 
 class FileResolver(etree.Resolver):
