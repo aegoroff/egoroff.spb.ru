@@ -9,6 +9,7 @@ import main
 import site_map
 from typographus import Typographus
 import itertools
+import util
 
 mod = Blueprint(
     'news',
@@ -85,8 +86,8 @@ def index(page):
     posts = Post.gql(POSTS_QUERY)
     breadcrumbs = main.create_breadcrumbs([])
     title = main_section_item[site_map.TITLE]
-    if "tag" in flask.request.args:
-        tag = flask.request.args["tag"]
+    tag = util.param('tag')
+    if tag:
         breadcrumbs = main.create_breadcrumbs([main_section_item])
         title = u"Все посты по метке: {0}".format(tag)
         query = "WHERE is_public = True AND tags IN (:1) ORDER BY created DESC"
@@ -114,6 +115,7 @@ def index(page):
         posts=posts,
         archieve=archieve,
         months=MONTHS,
+        tag_selected=tag,
         tags=create_tag_rank(all_posts),
         key=main_section_item[site_map.ID],
         breadcrumbs=breadcrumbs

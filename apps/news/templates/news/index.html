@@ -95,8 +95,12 @@
                 <p>Ничего нет</p>
             {% else %}
                 {% for tag in tags %}
-                    <a href="{{ url_for('news.index') }}?tag={{ tag.title }}"
+                    {% if tag.title == tag_selected %}
+                        <span class={{ tag.tag_level }}>{{ tag.title }}</span>
+                    {% else %}
+                        <a href="{{ url_for('news.index') }}?tag={{ tag.title }}"
                        class={{ tag.tag_level }}>{{ tag.title }}</a>
+                    {% endif %}
                 {% endfor %}
             {% endif %}
             </div>
