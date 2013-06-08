@@ -41,22 +41,22 @@
     Модуль может быть настроен для соединения с другими прокси модулями как для вышеперечисленных, так и
     для других протоколов.</p>
 
-    <p>Apache's proxy features are divided into several modules in
-    addition to <module>mod_proxy</module>:
+    <p>Функционал прокси в Apache, разбит на несколько модулей, помимо собственно модуля
+    <module>mod_proxy</module>:
     <module>mod_proxy_http</module>, <module>mod_proxy_ftp</module>
-    and <module>mod_proxy_connect</module>.  Thus, if you want to use
-    one or more of the particular proxy functions, load
-    <module>mod_proxy</module> <em>and</em> the appropriate module(s)
-    into the server (either statically at compile-time or dynamically
-    via the <directive module="mod_so">LoadModule</directive>
-    directive).</p>
+    и <module>mod_proxy_connect</module>.  Таким образом, когда вы хотите использовать
+    одну или несколько функций проксирования, загрузите
+    <module>mod_proxy</module> <em>и</em> соответствующий модуль(ли)
+    на сервер либо статически (при компиляций) либо динамически
+    через директиву <directive module="mod_so">LoadModule</directive>
+    .</p>
 
-    <p>In addition, extended features are provided by other modules.
-    Caching is provided by <module>mod_cache</module> and related
-    modules.  The ability to contact remote servers using the SSL/TLS
-    protocol is provided by the <code>SSLProxy*</code> directives of
-    <module>mod_ssl</module>.  These additional modules will need
-    to be loaded and configured to take advantage of these features.</p>
+    <p>Помимо этого, расширенный функционал прокси обеспечивается другими модулями.
+    Кэширование обеспечивается <module>mod_cache</module> и относящимися к нему
+    модулями.  Работа с удаленными серверами по протоколу SSL/TLS
+    обеспечивается директивами семейства <code>SSLProxy*</code> модуля
+    <module>mod_ssl</module>.  Эти дополнительные модули должны быть загружены и
+    настроены чтобы эти функции заработали.</p>
 </summary>
 <seealso><module>mod_cache</module></seealso>
 <seealso><module>mod_proxy_http</module></seealso>
@@ -64,23 +64,23 @@
 <seealso><module>mod_proxy_connect</module></seealso>
 <seealso><module>mod_ssl</module></seealso>
 
-    <section id="forwardreverse"><title>Forward and Reverse Proxies</title>
-      <p>Apache can be configured in both a <dfn>forward</dfn> and
-      <dfn>reverse</dfn> proxy mode.</p>
+    <section id="forwardreverse"><title>Прямые и обратные прокси</title>
+      <p>Apache может быть настроен для работы как в режиме <dfn>прямого</dfn> так и в режиме
+      <dfn>обратного</dfn> прокси.</p>
 
-      <p>An ordinary <dfn>forward proxy</dfn> is an intermediate
-      server that sits between the client and the <em>origin
-      server</em>.  In order to get content from the origin server,
-      the client sends a request to the proxy naming the origin server
-      as the target and the proxy then requests the content from the
-      origin server and returns it to the client.  The client must be
-      specially configured to use the forward proxy to access other
-      sites.</p>
+      <p>Обычный <dfn>прямой прокси</dfn> - это сервер посредник
+      находящийся между клиентом и <em>целевым
+      сервером</em>.  Чтобы получить содержимое оригинального сервера,
+      клиент отправляет запрос прокси серверу указывая оригинальный сервер
+      как конечную цель а прокси затем запрашивает содержимре с  оригинального сервера
+      и возвращает его клиенту.  Клиент должен быть специальным образом настроен
+      на использование прямого прокси, чтобы получать доступ к другим
+      узлам.</p>
 
-      <p>A typical usage of a forward proxy is to provide Internet
-      access to internal clients that are otherwise restricted by a
-      firewall.  The forward proxy can also use caching (as provided
-      by <module>mod_cache</module>) to reduce network usage.</p>
+      <p>Типичный вариант использования прямого прокси это обеспечение доступа в интернет
+      для внутренних клиентов сидящих за
+      брандмауэром.  Также прямой прокси может быть использован как кэширующий сервер (обеспечивается
+      модулем <module>mod_cache</module>) для уменьшения нагрузки на сеть.</p>
 
       <p>The forward proxy is activated using the <directive
       module="mod_proxy">ProxyRequests</directive> directive.  Because
