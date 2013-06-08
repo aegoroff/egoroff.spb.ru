@@ -30,7 +30,7 @@ def index():
 
 @mod.route('/posts.json')
 @except_wrap
-def products_json():
+def posts_json():
     year = util.param('year', int)
     month = util.param('month', int)
     if year and month:
@@ -50,7 +50,7 @@ def products_json():
 
 @mod.route('/post.json')
 @except_wrap
-def product_json():
+def post_json():
     key_id = param('id', int)
     if not key_id:
         raise ApiException('Invalid request: "id" parameter not found.')

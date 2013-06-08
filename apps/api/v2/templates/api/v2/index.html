@@ -40,6 +40,88 @@
             </dl>
 
         </section>
+        <section id="posts">
+            <h2 class="page-header">
+                Блог
+            </h2>
+            Получение списка постов из базы. Поддерживаются ключи limit и offset в строке запроса. По умолчанию limit = 20, offset = 0
+            <dl class="dl-horizontal">
+                <dt>URL</dt>
+                <dd>
+                    <a href="{{ url_for('api.v2.posts_json') }}">
+                        http://{{ request.host }}/{{ url_for('api.v2.posts_json') }}
+                    </a>
+                </dd>
+                <dt>result</dt>
+                <dd>
+                     Массив постов. Каждый пост содержит следующие свойства:
+                    <dl class="dl-horizontal">
+                        <dt>key</dt>
+                        <dd>Ключ</dd>
+
+                        <dt>id</dt>
+                        <dd>Идентификатор</dd>
+
+                        <dt>created</dt>
+                        <dd>Дата и время создания</dd>
+
+                        <dt>modified</dt>
+                        <dd>Дата и время последнего изменения</dd>
+
+                        <dt>created_ago</dt>
+                        <dd>Сколько времени прошло с момента создания</dd>
+
+                        <dt>modified_ago</dt>
+                        <dd>Сколько времени прошло с момента последнего изменения</dd>
+
+                        <dt>title</dt>
+                        <dd>Заголовок</dd>
+
+                        <dt>short_text</dt>
+                        <dd>Краткое описание</dd>
+                    </dl>
+                </dd>
+            </dl>
+
+            Получение поста из базы по его id.
+            <dl class="dl-horizontal">
+                <dt>URL</dt>
+                <dd>
+                    <a href="{{ url_for('api.v2.post_json') }}?id=8002">
+                        http://{{ request.host }}/{{ url_for('api.v2.post_json') }}?id=8002
+                    </a>
+                </dd>
+                <dt>result</dt>
+                <dd>
+                     Пост содержит следующие свойства:
+                    <dl class="dl-horizontal">
+                        <dt>key</dt>
+                        <dd>Ключ</dd>
+
+                        <dt>id</dt>
+                        <dd>Идентификатор</dd>
+
+                        <dt>created</dt>
+                        <dd>Дата и время создания</dd>
+
+                        <dt>modified</dt>
+                        <dd>Дата и время последнего изменения</dd>
+
+                        <dt>created_ago</dt>
+                        <dd>Сколько времени прошло с момента создания</dd>
+
+                        <dt>modified_ago</dt>
+                        <dd>Сколько времени прошло с момента последнего изменения</dd>
+
+                        <dt>title</dt>
+                        <dd>Заголовок</dd>
+
+                        <dt>short_text</dt>
+                        <dd>Краткое описание</dd>
+                    </dl>
+                </dd>
+            </dl>
+        </section>
 
         <section id="utils">
             <h2 class="page-header">Утилиты для работы с JSON</h2>
