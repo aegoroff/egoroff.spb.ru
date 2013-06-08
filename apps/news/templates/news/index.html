@@ -95,7 +95,8 @@
                 <p>Ничего нет</p>
             {% else %}
                 {% for tag in tags %}
-                    <a href="#tag={{ tag.title }}" class="{{ tag.tag_level }} q">{{ tag.title }}</a>
+                    <a href="{{ url_for('news.index') }}?tag={{ tag.title }}"
+                       class={{ tag.tag_level }}>{{ tag.title }}</a>
                 {% endfor %}
             {% endif %}
             </div>
@@ -109,7 +110,8 @@
                         <div>
                             <ul class="nav nav-list">
                             {% for month in archieve[year] %}
-                                <li><a href="#year={{ year }}&month={{ month[0] }}" class="q">{{ months[month[0]] }} ({{ month[1] }})</a></li>
+                                <li><a href="#year={{ year }}&month={{ month[0] }}"
+                                        >{{ months[month[0]] }} ({{ month[1] }})</a></li>
                             {% endfor %}
                             </ul>
                         </div>

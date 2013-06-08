@@ -33,7 +33,6 @@ def index():
 def products_json():
     year = util.param('year', int)
     month = util.param('month', int)
-    tag = util.param('tag')
     if year and month:
         current_month = datetime.datetime(year, month, 1)
         next_month = util.add_months(datetime.datetime(year, month, 1), 1)
@@ -45,11 +44,7 @@ def products_json():
         offset = util.param('offset', int) or 0
         limit = util.param('limit', int) or config.ATOM_FEED_LIMIT
 
-        if tag:
-            query = "WHERE is_public = True AND tags IN (:1) ORDER BY created DESC LIMIT {0} OFFSET {1}"
-            articles = Post.gql(query.format(limit, offset), tag)
-        else:
-            articles = Post.gql("{0} LIMIT {1} OFFSET {2}".format(POSTS_QUERY, limit, offset))
+        articles = Post.gql("{0} LIMIT {1} OFFSET {2}".format(POSTS_QUERY, limit, offset))
         q = articles.fetch()
     return util.jsonify_model_dbs(q)
 
