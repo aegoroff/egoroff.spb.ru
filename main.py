@@ -48,6 +48,9 @@ from apps.news.models import Post
 from apps.compatibility.views import mod as compatibility_mod
 app.register_blueprint(compatibility_mod)
 
+from apps.api.v2.views import mod as api_mod
+app.register_blueprint(api_mod)
+
 
 def create_breadcrumbs(parents):
     breadcrumbs = [('welcome', u'Главная', 'icon-home')]
