@@ -37,6 +37,8 @@
                 {% else %}
                     {% set tag_query = "" %}
                 {% endif %}
+                {% set older = "старее &rarr;" %}
+                {% set newer = "&larr; новее" %}
                 <ul class="pager">
                     {% if posts.has_previous %}
                         <li class="previous">
@@ -44,24 +46,24 @@
                                 'news.index',
                                 page=posts.previous_page_number) }}{{ tag_query }}"
                                class="prev">
-                                &larr; новее
+                                {{ newer | safe }}
                             </a>
                         </li>
                     {% else %}
                         <li class="disabled previous">
-                            <a href="#">&larr; новее</a>
+                            <a href="#">{{ newer | safe }}</a>
                         </li>
                     {% endif %}
 
                     {% if posts.has_next %}
                         <li class="next">
                             <a href="{{ url_for('news.index', page=posts.next_page_number) }}{{ tag_query }}"
-                               class="next">старее &rarr;</a>
+                               class="next">{{ older | safe }}</a>
                         </li>
                     {% else %}
                         <li class="next disabled">
                             <a href="#"
-                               class="next">старее &rarr;</a>
+                               class="next">{{ older | safe }}</a>
                         </li>
                     {% endif %}
                 </ul>
