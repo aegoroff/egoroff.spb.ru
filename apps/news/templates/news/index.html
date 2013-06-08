@@ -17,6 +17,7 @@
 
 
 {% block content %}
+    {% strip %}
     <div class="row-fluid">
         <div class="span9">
             {% if not posts %}
@@ -28,78 +29,14 @@
                     {% endfor %}
                 </dl>
             {% endif %}
-
-            {% if posts.paginator.num_pages > 1 %}
-
-                {% if "tag" in request.args %}
-                    {% set tag_query = "?tag=" + request.args["tag"] %}
-                {% else %}
-                    {% set tag_query = "" %}
-                {% endif %}
-                {% set older = "старее &rarr;" %}
-                {% set newer = "&larr; новее" %}
-                <ul class="pager">
-                    {% if posts.has_previous %}
-                        {% set li_class = "previous" %}
-                        {% set href = url_for('news.index', page=posts.previous_page_number) + tag_query %}
-                    {% else %}
-                        {% set li_class = "disabled previous" %}
-                        {% set href = "#" %}
-                    {% endif %}
-
-                    <li class="{{ li_class }}">
-                        <a href="{{ href }}"
-                           class="prev">{{ newer | safe }}</a>
-                    </li>
-
-                    {% if posts.has_next %}
-                        {% set li_class = "next" %}
-                        {% set href = url_for('news.index', page=posts.next_page_number) + tag_query %}
-                    {% else %}
-                        {% set li_class = "next disabled" %}
-                        {% set href = "#" %}
-                    {% endif %}
-
-                    <li class="{{ li_class }}">
-                        <a href="{{ href }}"
-                           class="next">{{ older | safe }}</a>
-                    </li>
-                </ul>
-                <div class="pagination">
-                    <ul style="float: left;">
-                        {% for page in posts.paginator.page_range %}
-                            {% if page %}
-                                <li {% if page == posts.number %} class="active" {% endif %}>
-                                    <a href="{{ url_for('news.index', page=page) }}{{ tag_query }}"
-                                       class="page">{{ page }}</a>
-                                </li>
-                            {% else %}
-                                ......
-                            {% endif %}
-                        {% endfor %}
-                    </ul>
-                </div>
-            {% endif %}
+            {% include 'news/paginator.html' %}
         </div>
         <div class="span3">
             <h3>Метки</h3>
-
-            <div class="tags">
-                {% if not tags %}
-                    <p>Ничего нет</p>
-                {% else %}
-                    {% for tag in tags %}
-                        {% if tag.title == tag_selected %}
-                            <span class={{ tag.tag_level }}>{{ tag.title }}</span>
-                        {% else %}
-                            <a href="{{ url_for('news.index') }}?tag={{ tag.title }}"
-                               class={{ tag.tag_level }}>{{ tag.title }}</a>
-                        {% endif %}
-                    {% endfor %}
-                {% endif %}
-            </div>
+            {% include 'news/tags.html' %}
             <h3>Архив</h3>
             {% include 'news/archive.html' %}
         </div>
     </div>
+    {% endstrip %}
 {% endblock %}
