@@ -1,0 +1,19 @@
+{% strip %}
+{% if not archieve %}
+    <p>Ничего нет</p>
+{% else %}
+    <div id="accordion">
+        {% for year in archieve | sort(reverse=True) %}
+            <h3>{{ year }}</h3>
+            <div>
+                <ul class="nav nav-list">
+                    {% for month in archieve[year] %}
+                        <li><a href="#year={{ year }}&month={{ month[0] }}"
+                                >{{ months[month[0]] }}&nbsp;({{ month[1] }})</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+{% endstrip %}
