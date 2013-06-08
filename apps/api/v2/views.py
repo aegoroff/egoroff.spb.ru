@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
+from google.appengine.ext import ndb
+from apps.news.views import POSTS_QUERY
+import config
 
 from flask import Blueprint, render_template, current_app, request
 import json
 from util import param, jsonify_model_db
-from apps.api.utils import except_wrap, ApiException, jsonify_success
-from datetime import datetime
+from apps.api.utils import except_wrap, ApiException
+import datetime
 from apps.news.models import Post
 import util
 
@@ -25,26 +28,25 @@ def index():
         'api/v2/index.html'
     )
 
-
 @mod.route('/posts.json')
 @except_wrap
 def products_json():
-    is_public = param('is_public', bool)
-    if is_public is not None and not is_public:
-        posts_query = Post.query(Post.is_public != True)
+    year = util.param('year', int)
+    month = util.param('month', int)
+    if year and month:
+        current_month = datetime.datetime(year, month, 1)
+        next_month = util.add_months(datetime.datetime(year, month, 1), 1)
+
+        posts = Post.query(Post.is_public == True, ndb.AND(Post.created >= current_month,
+                         Post.created < next_month)).order(-Post.created)
+        q = posts.fetch()
     else:
-        posts_query = Post.query(Post.is_public == True)
+        offset = util.param('offset', int) or 0
+        limit = util.param('limit', int) or config.ATOM_FEED_LIMIT
 
-    posts_dbs, more_cursor = util.retrieve_dbs(
-      posts_query,
-      limit=util.param('limit', int),
-      cursor=util.param('cursor'),
-      order=util.param('order') or '-created',
-      name=util.param('name'),
-      admin=util.param('admin', bool),
-    )
-
-    return util.jsonify_model_dbs(posts_dbs, more_cursor)
+        articles = Post.gql("{0} LIMIT {1} OFFSET {2}".format(POSTS_QUERY, limit, offset))
+        q = articles.fetch()
+    return util.jsonify_model_dbs(q)
 
 @mod.route('/post.json')
 @except_wrap

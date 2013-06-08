@@ -42,8 +42,8 @@ STYLES = [
 
 SCRIPTS_MODULES = [
     'libs',
-    'scripts',
     'jquery.plugins',
+    'scripts',
     'syntax-highlighter',
     'admin'
   ]

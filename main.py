@@ -75,41 +75,16 @@ def make_external(url):
     return urljoin(request.url_root, url)
 
 
-def add_months(source_date, months):
-    month = source_date.month - 1 + months
-    year = source_date.year + month / 12
-    month = month % 12 + 1
-    day = min(source_date.day,calendar.monthrange(year,month)[1])
-    return datetime.datetime(year,month,day)
-
-
 @app.route('/recent.atom')
 def recent_feed():
     feed = AtomFeed('egoroff.spb.ru feed',
                     feed_url=request.url, url=request.url_root)
-    articles = []
-    if flask.request.is_xhr and "year" in flask.request.args and "month" in flask.request.args:
-        try:
-            year = util.param('year', int)
-            month = util.param('month', int)
-            current_month = datetime.datetime(year, month, 1)
-            next_month = add_months(datetime.datetime(year, month, 1), 1)
+    limit = config.ATOM_FEED_LIMIT
+    if util.param('limit'):
+        limit = util.param('limit', int)
 
-            posts = Post.query(Post.is_public == True, ndb.AND(Post.created >= current_month,
-                             Post.created < next_month)).order(-Post.created)
-            articles = posts.fetch()
-        except ValueError:
-            logging.error("invalid year or month")
-    else:
-        offset = 0
-        limit = config.ATOM_FEED_LIMIT
-        if flask.request.is_xhr and "offset" in flask.request.args:
-            offset = util.param('offset', int)
-        if flask.request.is_xhr and "limit" in flask.request.args:
-            limit = util.param('limit', int)
-
-        articles = Post.gql("{0} LIMIT {1} OFFSET {2}".format(POSTS_QUERY, limit, offset))
-        articles = articles.fetch()
+    articles = Post.gql("{0} LIMIT {1}".format(POSTS_QUERY, limit))
+    articles = articles.fetch()
 
     for article in articles:
         feed.add(article.title, unicode(article.short_text),

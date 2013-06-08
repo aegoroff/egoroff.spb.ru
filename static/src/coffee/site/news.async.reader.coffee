@@ -1,10 +1,11 @@
 $ ->
+  api_uri = '/api/v2/posts.json'
   more = $("button#moreNews").click ->
     ov = $("input#offsetValue")
     lv = $("input#limitValue")
     offset = ov.val()
     limit = lv.val()
-    $.get('/recent.atom?offset=' + offset + '&limit=' + limit, onRssSuccess)
+    $.get(api_uri + '?offset=' + offset + '&limit=' + limit, onRssSuccess)
     ov.attr("value", parseInt(offset) + parseInt(limit))
   more.button()
 
@@ -23,46 +24,40 @@ $ ->
     dlLog = $("body").find("dl#blog")
     dlLog.empty()
     dlLog.append("<dt>Загрузка данных. Пожалуйста подождите ...</dt>")
-    $.get('/recent.atom?year=' + y + '&month=' + m, onArchieveRssSuccess)
+    $.get(api_uri + '?year=' + y + '&month=' + m, onArchieveRssSuccess)
   month.button()
 
-onRssSuccess = (xml) ->
-  items = $("entry", xml)
+onRssSuccess = (result) ->
   dlLog = $("body").find("dl#log")
-  loadBlog(items, xml, dlLog)
+  loadBlog(result.result, dlLog)
   lv = $("input#limitValue")
   limit = lv.val()
-  if items.length < parseInt(limit)
+  if result.count < parseInt(limit)
     $("button#moreNews").remove()
 
-onArchieveRssSuccess  = (xml) ->
-  items = $("entry", xml)
+onArchieveRssSuccess  = (result) ->
   dlLog = $("body").find("dl#blog")
   dlLog.empty()
-  loadBlog(items, xml, dlLog)
+  loadBlog(result.result, dlLog)
   limit = 20
-  if items.length < limit
+  if result.count < limit
     $("ul.pager").remove()
     $("div.pagination").remove()
 
 
-loadBlog = (items, xml, dlLog) ->
-  items.each (item) ->
-    dt = $("entry published", xml).get(item)
-    title = $("entry title", xml).get(item)
-    description = $("entry content", xml).get(item)
-    date = if dt.textContent == undefined then dt.text else dt.textContent
-    humanReadableDate = $.format.date(date, "dd MMMM yyyy")
+loadBlog = (items, dlLog) ->
+  for item in items
+      date = item["created"]
+      date = date.substring(0, date.length - 4)
+      title = item["title"]
+      description = item["short_text"]
+      humanReadableDate = $.format.date(date, "dd MMMM yyyy")
 
-    d = if description.textContent == undefined then description.text else description.textContent
-    t = if title.textContent == undefined then title.text else title.textContent
-
-    current_uri = window.location.href
-    item_uri = $("entry link", xml).get(item).getAttribute("href")
-    if current_uri == item_uri
-      link = '<span>' + t + '</span>'
-    else
-      link = "<a href=\"" + $("entry link", xml).get(item).getAttribute("href") + "\">" + t + "</a>"
-
-    dlLog.append("<dt><small><i class=\"icon-calendar\"></i> <span class=\"shortDateFormat\">" + humanReadableDate + "</span></small>&nbsp;" + link + "</dt>")
-    dlLog.append("<dd>" + d + "</dd>")
+      base = window.location.origin
+      current_uri = window.location.href
+      item_uri = base + '/news/' + item["id"] + '.html'
+      link = "<a href=\"" + item_uri + "\">" + title + "</a>"
+      if current_uri == item_uri
+        link = '<span>' + title + '</span>'
+      dlLog.append("<dt><small><i class=\"icon-calendar\"></i> <span class=\"shortDateFormat\">" + humanReadableDate + "</span></small>&nbsp;" + link + "</dt>")
+      dlLog.append("<dd>" + description + "</dd>")
