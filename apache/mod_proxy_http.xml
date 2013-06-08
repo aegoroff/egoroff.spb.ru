@@ -23,9 +23,9 @@
 <modulesynopsis metafile="mod_proxy_http.xml.meta">
 
 <name>mod_proxy_http</name>
-<description>HTTP support module for
+<description>Поддержка протокола HTTP в
 <module>mod_proxy</module></description>
-<status>Extension</status>
+<status>Расширение</status>
 <sourcefile>proxy_http.c</sourcefile>
 <identifier>proxy_http_module</identifier>
 

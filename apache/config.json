@@ -3,6 +3,6 @@
    "rewriteguide" : ["apache_manualpage", "Руководство по URL преобразованиям", "Перевод Apache URL Rewriting Guide в оригинале написанного Ralf S. Engelschall. Этот документ дополняет документацию к mod_rewrite. Он описывает возможности использования mod_rewrite веб-сервера Apache."],
    "mod_proxy" : ["apache_module", "Модуль Apache mod_proxy", "Частичный перевод (работа идет) документации Apache по модулю mod_proxy"],
    "mod_proxy_http" : ["apache_module", "Модуль Apache mod_proxy_http", "Перевод документации Apache по модулю mod_proxy_http"],
-   "mod_proxy_ftp" : ["apache_module", "Модуль Apache mod_proxy_ftp", "Частичный перевод (работа идет) документации Apache по модулю mod_proxy_ftp"],
-   "mod_proxy_connect" : ["apache_module", "Модуль Apache mod_proxy_connect", "Частичный перевод (работа идет) документации Apache по модулю mod_proxy_connect"]
+   "mod_proxy_ftp" : ["apache_module", "Модуль Apache mod_proxy_ftp", "Перевод документации Apache по модулю mod_proxy_ftp"],
+   "mod_proxy_connect" : ["apache_module", "Модуль Apache mod_proxy_connect", "Перевод документации Apache по модулю mod_proxy_connect"]
 }

@@ -23,17 +23,16 @@
 <modulesynopsis metafile="mod_proxy_connect.xml.meta">
 
 <name>mod_proxy_connect</name>
-<description><module>mod_proxy</module> extension for
-<code>CONNECT</code> request handling</description>
-<status>Extension</status>
+<description>Поддержка протокола CONNECT в
+<module>mod_proxy</module></description>
+<status>Расширение</status>
 <sourcefile>proxy_connect.c</sourcefile>
 <identifier>proxy_connect_module</identifier>
 
 <summary>
-    <p>This module <em>requires</em> the service of <module
-    >mod_proxy</module>. It provides support for the <code>CONNECT</code>
-    HTTP method. This method is mainly used to tunnel SSL requests
-    through proxy servers.</p>
+    <p>Модуль <em>требует</em> наличия <module
+    >mod_proxy</module>. Обеспеспечивает функционал прокси метода <code>CONNECT</code>
+    в HTTP протоколе. Этот метод, главным образом используется для туннелирования SSL запросов через прокси серверы.</p>
 
     <p>Итак, для того, чтобы работал прокси <code>CONNECT</code> запросов на сервере должны работать модули,
     <module>mod_proxy</module> и <module>mod_proxy_connect</module>.</p>

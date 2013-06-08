@@ -23,16 +23,15 @@
 <modulesynopsis metafile="mod_proxy_ftp.xml.meta">
 
 <name>mod_proxy_ftp</name>
-<description>FTP support module for
+<description>Поддержка протокола FTP в
 <module>mod_proxy</module></description>
-<status>Extension</status>
+<status>Расширение</status>
 <sourcefile>proxy_ftp.c</sourcefile>
 <identifier>proxy_ftp_module</identifier>
 
 <summary>
-    <p>This module <em>requires</em> the service of <module
-    >mod_proxy</module>. It provides support for the proxying
-    FTP sites.</p>
+    <p>Модуль <em>требует</em> наличия <module
+    >mod_proxy</module>. Обеспеспечивает функционал прокси для FTP сайтов.</p>
 
     <p>Итак, для того, чтобы работал прокси FTP запросов на сервере должны работать модули,
     <module>mod_proxy</module> и <module>mod_proxy_ftp</module>.</p>
