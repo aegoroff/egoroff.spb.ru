@@ -17,7 +17,7 @@
 
 
 {% block content %}
-
+{% strip %}
     <div class="row-fluid">
         <div class="span9">
             {% if not posts %}
@@ -119,4 +119,5 @@
             {% endif %}
         </div>
     </div>
+ {% endstrip %}
 {% endblock %}

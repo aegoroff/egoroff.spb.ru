@@ -1,4 +1,5 @@
-    <dt><small><i class="icon-calendar"></i> <span class="shortDateFormat">{{ post.created }}</span></small>&nbsp;
+{% strip %}
+    <dt><small><i class="icon-calendar"></i>&nbsp;<span class="shortDateFormat">{{ post.created }}</span></small>&nbsp;
         {% if main_post and main_post.key.id() == post.key.id() %}
             <span>{{ post.title }}</span>
         {% else %}
@@ -6,3 +7,4 @@
         {% endif %}
     </dt>
     <dd>{{ post.short_text|safe }}</dd>
+{% endstrip %}

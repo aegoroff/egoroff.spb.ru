@@ -21,6 +21,7 @@ from werkzeug.contrib.atom import AtomFeed
 app = flask.Flask(__name__)
 app.config.from_object(config)
 app.jinja_env.line_statement_prefix = '#'
+app.jinja_env.add_extension('jinja2htmlcompress.SelectiveHTMLCompress')
 
 import auth
 import util
@@ -50,7 +51,6 @@ app.register_blueprint(compatibility_mod)
 
 from apps.api.v2.views import mod as api_mod
 app.register_blueprint(api_mod)
-
 
 def create_breadcrumbs(parents):
     breadcrumbs = [('welcome', u'Главная', 'icon-home')]

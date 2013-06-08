@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 {% autoescape true %}
+{% strip %}
 <html class="{% block html_class %}{{html_class}}{% endblock %}" lang="en">
   <head>
     <meta charset="utf-8">
@@ -64,4 +65,5 @@
     # endblock
   </body>
 </html>
+{% endstrip %}
 {% endautoescape %}

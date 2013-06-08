@@ -1,3 +1,4 @@
+{% strip %}
 <div class="navbar navbar-fixed-top">
     <div class="navbar-inner">
         <div class="container-fluid">
@@ -14,7 +15,7 @@
                 <ul class="nav">
                     {% for item in config.SITE %}
                         <li {% if item["id"] == current_id %}class="active"{% endif %}>
-                            <a href={{ url_for(item['id']) }}> {% if item["class"] %}<i class="{{ item["class"] }}"></i> {% endif %}
+                            <a href={{ url_for(item['id']) }}>&nbsp;{% if item["class"] %}<i class="{{ item["class"] }}"></i>&nbsp;{% endif %}
                                 {{ item['title'] }}
                             </a>
                         </li>
@@ -29,3 +30,4 @@
         </div>
     </div>
 </div>
+{% endstrip %}
