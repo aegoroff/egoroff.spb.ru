@@ -29,10 +29,14 @@ $ ->
     dlLog = $("body").find("dl#blog")
     dlLog.empty()
     dlLog.append("<dt>Загрузка данных. Пожалуйста подождите ...</dt>")
+    tag_q = ''
     if tag != ''
-      $.get(api_uri + '?tag=' + tag, onArchieveRssSuccess)
-    else
-      $.get(api_uri + '?year=' + y + '&month=' + m, onArchieveRssSuccess)
+      tag_q = '&tag=' + tag
+    date_q = '?'
+    if y > 1 and m > 1
+      date_q = '?year=' + y + '&month=' + m
+
+    $.get(api_uri + date_q + tag_q, onArchieveRssSuccess)
   month.button()
 
 onRssSuccess = (result) ->
@@ -47,8 +51,20 @@ onArchieveRssSuccess  = (result) ->
   dlLog = $("body").find("dl#blog")
   dlLog.empty()
   loadBlog(result.result, dlLog)
-  limit = 20
+  ov = $("input#offsetValue")
+  lv = $("input#limitValue")
+  offset = parseInt(ov.val()) or 0
+  limit = parseInt(lv.val()) or 20
+  LOG('result count: ' + result.count)
+  LOG('limit: ' + limit)
   if result.count < limit
+    $("ul.pager").remove()
+    $("div.pagination").remove()
+  else
+    $("ul.pager").parent().append('<button class="btn btn-large btn-primary btn-block" id="moreNews" type="button">Больше записей</button>
+<input type="hidden" name="offset" id="offsetValue" value="' + offset + '"/>
+<input type="hidden" name="limit" id="limitValue" value="' + limit + '"/>
+')
     $("ul.pager").remove()
     $("div.pagination").remove()
 

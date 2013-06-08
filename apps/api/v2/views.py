@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 from google.appengine.ext import ndb
 from apps.news.views import POSTS_QUERY
 import config
@@ -45,6 +46,8 @@ def products_json():
         offset = util.param('offset', int) or 0
         limit = util.param('limit', int) or config.ATOM_FEED_LIMIT
 
+        logging.info("limit: {0}".format(limit))
+        logging.info("offset: {0}".format(offset))
         if tag:
             query = "WHERE is_public = True AND tags IN (:1) ORDER BY created DESC LIMIT {0} OFFSET {1}"
             articles = Post.gql(query.format(limit, offset), tag)
