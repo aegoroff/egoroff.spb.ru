@@ -87,8 +87,8 @@ def recent_feed():
     articles = []
     if flask.request.is_xhr and "year" in flask.request.args and "month" in flask.request.args:
         try:
-            year = int(flask.request.args["year"])
-            month = int(flask.request.args["month"])
+            year = util.param('year', int)
+            month = util.param('month', int)
             current_month = datetime.datetime(year, month, 1)
             next_month = add_months(datetime.datetime(year, month, 1), 1)
 
@@ -101,9 +101,9 @@ def recent_feed():
         offset = 0
         limit = config.ATOM_FEED_LIMIT
         if flask.request.is_xhr and "offset" in flask.request.args:
-            offset = int(flask.request.args["offset"])
+            offset = util.param('offset', int)
         if flask.request.is_xhr and "limit" in flask.request.args:
-            limit = int(flask.request.args["limit"])
+            limit = util.param('limit', int)
 
         articles = Post.gql("{0} LIMIT {1} OFFSET {2}".format(POSTS_QUERY, limit, offset))
         articles = articles.fetch()
