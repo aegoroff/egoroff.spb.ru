@@ -9,22 +9,30 @@ $ ->
     ov.attr("value", parseInt(offset) + parseInt(limit))
   more.button()
 
-  month = $('div#accordion > div > ul > li > a')
+  month = $('a.q')
   month.click (event) ->
     href = event.target.hash
     vars = href.split('&')
     y = 1
     m = 1
+    tag = ''
     for v in vars
       pair = v.split('=')
-      if pair[0] == 'month'
-          m = pair[1]
-       else
-          y = pair[1]
+      switch pair[0]
+        when "month" then m = pair[1]
+        when "year" then y = pair[1]
+        when "#year" then y = pair[1]
+        when "#tag" then tag = pair[1]
+        when "tag" then tag = pair[1]
+        else y = pair[1]
+
     dlLog = $("body").find("dl#blog")
     dlLog.empty()
     dlLog.append("<dt>Загрузка данных. Пожалуйста подождите ...</dt>")
-    $.get(api_uri + '?year=' + y + '&month=' + m, onArchieveRssSuccess)
+    if tag != ''
+      $.get(api_uri + '?tag=' + tag, onArchieveRssSuccess)
+    else
+      $.get(api_uri + '?year=' + y + '&month=' + m, onArchieveRssSuccess)
   month.button()
 
 onRssSuccess = (result) ->
