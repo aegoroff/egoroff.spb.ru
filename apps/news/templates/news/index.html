@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 
 # block scripts
-  <script>
-  $(function() {
-    $( "#accordion" ).accordion({
-      collapsible: true,
-      heightStyle: "content"
+<script>
+    $(function () {
+        $("#accordion").accordion({
+            collapsible: true,
+            heightStyle: "content"
+        });
     });
-  });
-  </script>
+</script>
 # endblock
 
 {% block head %}
@@ -41,31 +41,30 @@
                 {% set newer = "&larr; новее" %}
                 <ul class="pager">
                     {% if posts.has_previous %}
-                        <li class="previous">
-                            <a href="{{ url_for(
-                                'news.index',
-                                page=posts.previous_page_number) }}{{ tag_query }}"
-                               class="prev">
-                                {{ newer | safe }}
-                            </a>
-                        </li>
+                        {% set li_class = "previous" %}
+                        {% set href = url_for('news.index', page=posts.previous_page_number) + tag_query %}
                     {% else %}
-                        <li class="disabled previous">
-                            <a href="#">{{ newer | safe }}</a>
-                        </li>
+                        {% set li_class = "disabled previous" %}
+                        {% set href = "#" %}
                     {% endif %}
 
+                    <li class="{{ li_class }}">
+                        <a href="{{ href }}"
+                           class="prev">{{ newer | safe }}</a>
+                    </li>
+
                     {% if posts.has_next %}
-                        <li class="next">
-                            <a href="{{ url_for('news.index', page=posts.next_page_number) }}{{ tag_query }}"
-                               class="next">{{ older | safe }}</a>
-                        </li>
+                        {% set li_class = "next" %}
+                        {% set href = url_for('news.index', page=posts.next_page_number) + tag_query %}
                     {% else %}
-                        <li class="next disabled">
-                            <a href="#"
-                               class="next">{{ older | safe }}</a>
-                        </li>
+                        {% set li_class = "next disabled" %}
+                        {% set href = "#" %}
                     {% endif %}
+
+                    <li class="{{ li_class }}">
+                        <a href="{{ href }}"
+                           class="next">{{ older | safe }}</a>
+                    </li>
                 </ul>
                 <div class="pagination">
                     <ul style="float: left;">
@@ -85,19 +84,20 @@
         </div>
         <div class="span3">
             <h3>Метки</h3>
+
             <div class="tags">
-            {% if not tags %}
-                <p>Ничего нет</p>
-            {% else %}
-                {% for tag in tags %}
-                    {% if tag.title == tag_selected %}
-                        <span class={{ tag.tag_level }}>{{ tag.title }}</span>
-                    {% else %}
-                        <a href="{{ url_for('news.index') }}?tag={{ tag.title }}"
-                       class={{ tag.tag_level }}>{{ tag.title }}</a>
-                    {% endif %}
-                {% endfor %}
-            {% endif %}
+                {% if not tags %}
+                    <p>Ничего нет</p>
+                {% else %}
+                    {% for tag in tags %}
+                        {% if tag.title == tag_selected %}
+                            <span class={{ tag.tag_level }}>{{ tag.title }}</span>
+                        {% else %}
+                            <a href="{{ url_for('news.index') }}?tag={{ tag.title }}"
+                               class={{ tag.tag_level }}>{{ tag.title }}</a>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
             </div>
             <h3>Архив</h3>
             {% if not archieve %}
@@ -108,10 +108,10 @@
                         <h3>{{ year }}</h3>
                         <div>
                             <ul class="nav nav-list">
-                            {% for month in archieve[year] %}
-                                <li><a href="#year={{ year }}&month={{ month[0] }}"
-                                        >{{ months[month[0]] }} ({{ month[1] }})</a></li>
-                            {% endfor %}
+                                {% for month in archieve[year] %}
+                                    <li><a href="#year={{ year }}&month={{ month[0] }}"
+                                            >{{ months[month[0]] }} ({{ month[1] }})</a></li>
+                                {% endfor %}
                             </ul>
                         </div>
                     {% endfor %}
