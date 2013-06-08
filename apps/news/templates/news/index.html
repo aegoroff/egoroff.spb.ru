@@ -71,17 +71,10 @@
                     <ul style="float: left;">
                         {% for page in posts.paginator.page_range %}
                             {% if page %}
-                                {% if page == posts.number %}
-                                    <li class="active">
-                                        <a href="{{ url_for('news.index', page=page) }}{{ tag_query }}"
-                                           class="page">{{ page }}</a>
-                                    </li>
-                                {% else %}
-                                    <li>
-                                        <a href="{{ url_for('news.index', page=page) }}{{ tag_query }}"
-                                           class="page">{{ page }}</a>
-                                    </li>
-                                {% endif %}
+                                <li {% if page == posts.number %} class="active" {% endif %}>
+                                    <a href="{{ url_for('news.index', page=page) }}{{ tag_query }}"
+                                       class="page">{{ page }}</a>
+                                </li>
                             {% else %}
                                 ......
                             {% endif %}
