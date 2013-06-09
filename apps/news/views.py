@@ -14,8 +14,7 @@ import util
 mod = Blueprint(
     'news',
     __name__,
-    template_folder='templates',
-    url_prefix='/news'
+    template_folder='templates'
 )
 
 
@@ -80,8 +79,10 @@ MONTHS = {
     12 : u"Декабрь"
 }
 
-@mod.route('/', defaults={'page': 1})
-@mod.route('/page/<int:page>/')
+@mod.route('/news/', defaults={'page': 1})
+@mod.route('/news/page/<int:page>/')
+@mod.route('/blog/', defaults={'page': 1})
+@mod.route('/blog/page/<int:page>/')
 def index(page):
     posts = Post.gql(POSTS_QUERY)
     breadcrumbs = main.create_breadcrumbs([])
@@ -122,12 +123,15 @@ def index(page):
     )
 
 
-@mod.route('/rss/')
+@mod.route('/news/rss/')
+@mod.route('/blog/rss/')
 def rss():
     return main.recent_feed()
 
-@mod.route('/<int:key_id>/', endpoint='post')
-@mod.route('/<int:key_id>.html', endpoint='post')
+@mod.route('/news/<int:key_id>/', endpoint='post')
+@mod.route('/news/<int:key_id>.html', endpoint='post')
+@mod.route('/blog/<int:key_id>/', endpoint='post')
+@mod.route('/blog/<int:key_id>.html', endpoint='post')
 def get_post(key_id):
     post = Post.retrieve_by_id(key_id)
     if not post:
