@@ -3,7 +3,7 @@
     <h3> {{ download }}</h3>
     {% for f in downloads[download] %}
         <li class="thumbnails">
-            <a class="icon-download-alt" href="{{ f.url }}" title="Размер: {{ f.human_readable_size }}" onclick="_gaq.push(['_trackPageview', '{{ f.title }}']);">&nbsp;{{ f.description }}</a>&nbsp;
+            <a class="icon-download-alt" href="{{ f.url }}" title="Размер: {{ f.human_readable_size }}" onclick="_gaq.push(['_trackPageview', '{{ f.title_filename }}']);">&nbsp;{{ f.description }}</a>&nbsp;
             <small><i class="icon-calendar"></i>&nbsp;<span class="shortDateFormat">{{ f.created }}</span></small>
         </li>
     {% endfor %}
