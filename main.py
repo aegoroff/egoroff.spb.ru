@@ -71,6 +71,12 @@ def welcome():
     )
 
 
+@app.template_filter('time_ago')
+def time_ago(timestamp):
+    return util.format_datetime_ago(timestamp)
+
+app.jinja_env.filters["time_ago"] = time_ago
+
 def make_external(url):
     return urljoin(request.url_root, url)
 
