@@ -70,6 +70,14 @@ def welcome():
       posts=posts
     )
 
+@app.context_processor
+def inject_current_section():
+    for section in site_map.MAP:
+        index = section[site_map.ID]
+        section_uri = flask.url_for(index)
+        if section_uri in request.path:
+            return dict(current_id=index)
+    return dict(current_id="")
 
 @app.template_filter('time_ago')
 def time_ago(timestamp):

@@ -112,7 +112,6 @@ def index(page):
         'news/index.html',
         title=title,
         parent_id=main_section_item[site_map.ID],
-        current_id=main_section_item[site_map.ID],
         posts=posts,
         archieve=archieve,
         months=MONTHS,

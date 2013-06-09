@@ -61,7 +61,6 @@ def index():
     return render_template(
         'portfolio/index.html',
         parent_id=main_section_item[site_map.ID],
-        current_id=main_section_item[site_map.ID],
         breadcrumbs=main.create_breadcrumbs([]),
         title=main_section_item[site_map.TITLE],
         downloads=downloads,
