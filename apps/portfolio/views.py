@@ -61,7 +61,6 @@ def index():
     return render_template(
         'portfolio/index.html',
         parent_id=main_section_item[site_map.ID],
-        breadcrumbs=main.create_breadcrumbs([]),
         title=main_section_item[site_map.TITLE],
         downloads=downloads,
         apache_docs=create_apache_docs()
@@ -83,7 +82,6 @@ def get_doc(doc):
         return render_template(
             'portfolio/apache_document.html',
             title=doc,
-            breadcrumbs=main.create_breadcrumbs([main_section_item]),
             html=u"<p>Пока ничего нет</p>"
         )
 
@@ -100,6 +98,6 @@ def get_doc(doc):
     return render_template(
         'portfolio/apache_document.html',
         title=data["title"],
-        breadcrumbs=main.create_breadcrumbs([main_section_item]),
+
         html=content
     )

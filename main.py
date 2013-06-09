@@ -70,14 +70,33 @@ def welcome():
       posts=posts
     )
 
-@app.context_processor
-def inject_current_section():
+
+def current_section():
     for section in site_map.MAP:
         index = section[site_map.ID]
         section_uri = flask.url_for(index)
         if section_uri in request.path:
-            return dict(current_id=index)
+            return section
+    return None
+
+
+@app.context_processor
+def inject_current_section():
+    curr = current_section()
+    if curr:
+        return dict(current_id=curr[site_map.ID])
     return dict(current_id="")
+
+@app.context_processor
+def inject_breadcrumbs():
+    curr = current_section()
+    if curr:
+        if request.path == flask.url_for(curr[site_map.ID]):
+            return dict(breadcrumbs=create_breadcrumbs([]))
+        return dict(breadcrumbs=create_breadcrumbs([curr]))
+    if request.path == '/':
+        return dict(breadcrumbs=None)
+    return dict(breadcrumbs=create_breadcrumbs([]))
 
 @app.template_filter('time_ago')
 def time_ago(timestamp):
@@ -141,7 +160,6 @@ def profile():
   return flask.render_template(
       'profile.html',
       title=u'Профиль',
-      breadcrumbs=create_breadcrumbs([]),
       html_class='profile',
       form=form,
       user_db=user_db,
@@ -183,7 +201,6 @@ def feedback():
   return flask.render_template(
       'feedback.html',
       title=u'Фидбек',
-      breadcrumbs=create_breadcrumbs([]),
       html_class='feedback',
       form=form,
     )
@@ -212,7 +229,6 @@ def user_list():
       'user_list.html',
       html_class='user',
       title=u'Пользователи',
-      breadcrumbs=create_breadcrumbs([]),
       user_dbs=user_dbs,
       more_url=util.generate_more_url(more_cursor),
     )

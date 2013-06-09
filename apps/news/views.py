@@ -118,7 +118,6 @@ def index(page):
         tag_selected=tag,
         tags=create_tag_rank(all_posts),
         key=main_section_item[site_map.ID],
-        breadcrumbs=breadcrumbs
     )
 
 
@@ -181,5 +180,5 @@ def get_post(key_id):
         limit=original_limit,
         offset=offset,
         full_uri=urljoin(flask.request.url_root, flask.url_for('news.post', key_id=key_id)),
-        breadcrumbs=main.create_breadcrumbs([main_section_item])
+
     )
