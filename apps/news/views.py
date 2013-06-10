@@ -94,6 +94,12 @@ def index(page):
         query = "WHERE is_public = True AND tags IN (:1) ORDER BY created DESC"
         posts = Post.gql(query, tag)
 
+    if page > 1:
+        if not tag:
+            title = u" {0}-я страница".format(page)
+        else:
+            title = u" {0}-я страница постов по метке: {1}".format(page, tag)
+
     all_query = Post.gql("WHERE is_public = True  ORDER BY created DESC")
     all_posts = all_query.fetch()
 
