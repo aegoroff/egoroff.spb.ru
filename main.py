@@ -76,22 +76,22 @@ def current_section():
         index = section[site_map.ID]
         section_uri = flask.url_for(index)
         if section_uri in request.path:
-            return section
-    return None
+            return section, section_uri
+    return None, None
 
 
 @app.context_processor
 def inject_current_section():
-    curr = current_section()
+    curr, uri = current_section()
     if curr:
         return dict(current_id=curr[site_map.ID])
     return dict(current_id="")
 
 @app.context_processor
 def inject_breadcrumbs():
-    curr = current_section()
+    curr, uri = current_section()
     if curr:
-        if request.path == flask.url_for(curr[site_map.ID]):
+        if request.path == uri and (not request.query_string or request.query_string == ''):
             return dict(breadcrumbs=create_breadcrumbs([]))
         return dict(breadcrumbs=create_breadcrumbs([curr]))
     if request.path == '/':
