@@ -168,9 +168,9 @@ def get_post(key_id):
 
         content = unicode(transform(xml_input))
 
-    #typo = Typographus()
-    #if content:
-    #    content = typo.typo_text(content)
+    typo = Typographus()
+    if content:
+        content = typo.process(content)
 
     original_limit = 5
     limit = original_limit

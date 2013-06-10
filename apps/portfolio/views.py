@@ -6,6 +6,7 @@ from lxml import etree
 import time
 from apps.file.models import Folder, File
 import site_map
+from typographus import Typographus
 import util
 
 
@@ -88,6 +89,10 @@ def get_doc(doc):
     transform = etree.XSLT(xslt_root)
 
     content = unicode(transform(xml_input))
+
+    typo = Typographus()
+    if content:
+        content = typo.process(content)
 
     return render_template(
         'portfolio/apache_document.html',
