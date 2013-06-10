@@ -5,7 +5,6 @@ from flask import Blueprint, render_template
 from lxml import etree
 import time
 from apps.file.models import Folder, File
-import main
 import site_map
 import util
 
