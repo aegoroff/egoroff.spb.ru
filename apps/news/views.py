@@ -5,16 +5,18 @@ from apps.utils.paginator import Paginator, EmptyPage, InvalidPage
 from flask import Blueprint, redirect, render_template, url_for
 from apps.news.models import Post, Tag
 import flask
-import main
+import config
 import site_map
 from typographus import Typographus
 import itertools
 import util
+from werkzeug.contrib.atom import AtomFeed
 
 mod = Blueprint(
     'news',
     __name__,
-    template_folder='templates'
+    template_folder='templates',
+    url_prefix='/blog'
 )
 
 
@@ -64,32 +66,30 @@ class FileResolver(etree.Resolver):
     def resolve(self, url, identifier, context):
         return self.resolve_filename(url, context)
 
+
 MONTHS = {
-    1 : u"Январь",
-    2 : u"Февраль",
-    3 : u"Март",
-    4 : u"Апрель",
-    5 : u"Май",
-    6 : u"Июнь",
-    7 : u"Июль",
-    8 : u"Август",
-    9 : u"Сентябрь",
-    10 : u"Октябрь",
-    11 : u"Ноябрь",
-    12 : u"Декабрь"
+    1: u"Январь",
+    2: u"Февраль",
+    3: u"Март",
+    4: u"Апрель",
+    5: u"Май",
+    6: u"Июнь",
+    7: u"Июль",
+    8: u"Август",
+    9: u"Сентябрь",
+    10: u"Октябрь",
+    11: u"Ноябрь",
+    12: u"Декабрь"
 }
 
-@mod.route('/news/', defaults={'page': 1})
-@mod.route('/news/page/<int:page>/')
-@mod.route('/blog/', defaults={'page': 1})
-@mod.route('/blog/page/<int:page>/')
+
+@mod.route('/', defaults={'page': 1})
+@mod.route('/page/<int:page>/')
 def index(page):
     posts = Post.gql(POSTS_QUERY)
-    breadcrumbs = main.create_breadcrumbs([])
     title = main_section_item[site_map.TITLE]
     tag = util.param('tag')
     if tag:
-        breadcrumbs = main.create_breadcrumbs([main_section_item])
         title = u"Все посты по метке: {0}".format(tag)
         query = "WHERE is_public = True AND tags IN (:1) ORDER BY created DESC"
         posts = Post.gql(query, tag)
@@ -121,15 +121,31 @@ def index(page):
     )
 
 
-@mod.route('/news/rss/')
-@mod.route('/blog/rss/')
-def rss():
-    return main.recent_feed()
+@mod.route('/recent.atom')
+def recent_feed():
+    feed = AtomFeed('egoroff.spb.ru feed',
+                    feed_url=flask.request.url, url=flask.request.url_root)
+    limit = config.ATOM_FEED_LIMIT
+    if util.param('limit'):
+        limit = util.param('limit', int)
 
-@mod.route('/news/<int:key_id>/', endpoint='post')
-@mod.route('/news/<int:key_id>.html', endpoint='post')
-@mod.route('/blog/<int:key_id>/', endpoint='post')
-@mod.route('/blog/<int:key_id>.html', endpoint='post')
+    articles = Post.gql("{0} LIMIT {1}".format(POSTS_QUERY, limit))
+    articles = articles.fetch()
+
+    make_external = lambda url: urljoin(flask.request.url_root, url)
+
+    for article in articles:
+        feed.add(article.title, unicode(article.short_text),
+                 content_type='html',
+                 author="Alexander Egorov",
+                 url=make_external(flask.url_for('news.post', key_id=article.key.id())),
+                 updated=article.modified,
+                 published=article.created)
+    return feed.get_response()
+
+
+@mod.route('/<int:key_id>/', endpoint='post')
+@mod.route('/<int:key_id>.html', endpoint='post')
 def get_post(key_id):
     post = Post.retrieve_by_id(key_id)
     if not post:

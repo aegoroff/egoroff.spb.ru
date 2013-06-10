@@ -18,7 +18,8 @@ class FileResolver(etree.Resolver):
 mod = Blueprint(
     'portfolio',
     __name__,
-    template_folder='templates'
+    template_folder='templates',
+    url_prefix='/portfolio'
 )
 
 APACHE_DOC_PATH_TEMPLATE = 'apache/{0}.xml'
@@ -43,11 +44,7 @@ def create_apache_docs():
 
 main_section_item = site_map.MAP[0]
 
-
-@mod.route('/portfolio/download/')
-@mod.route('/portfolio/flickr/')
-@mod.route('/apache/')
-@mod.route('/portfolio/')
+@mod.route('/')
 def index():
     folders = Folder.query()
     downloads = {}
@@ -67,9 +64,7 @@ def index():
     )
 
 
-@mod.route('/portfolio/<doc>.html', methods=['GET'])
-@mod.route('/apache/<doc>.html', methods=['GET'])
-@mod.route('/portfolio/apache/<doc>.html', methods=['GET'])
+@mod.route('/<doc>.html', methods=['GET'])
 def get_doc(doc):
     docs = create_apache_docs()
     data = None

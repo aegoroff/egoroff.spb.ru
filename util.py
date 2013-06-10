@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import calendar
 import json
-from urlparse import urljoin
 
 from google.appengine.datastore.datastore_query import Cursor
 from google.appengine.ext import ndb
@@ -15,13 +14,6 @@ import re
 import unicodedata
 
 import config
-
-
-def redirect(key_id, remapping):
-    if key_id in remapping:
-        url = urljoin(flask.url_for('news.index'), '{0}.html'.format(remapping[key_id]))
-        return flask.redirect(url, code=301)
-    return flask.redirect(flask.url_for('news.index'), code=301)
 
 
 ################################################################################

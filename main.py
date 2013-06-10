@@ -1,11 +1,6 @@
 # -*- coding: utf-8 -*-
-import calendar
-import logging
 
 import sys
-from urlparse import urljoin
-import datetime
-from google.appengine.ext import ndb
 import site_map
 
 
@@ -16,7 +11,6 @@ import flask
 from flaskext import wtf
 from flask import request
 import config
-from werkzeug.contrib.atom import AtomFeed
 
 app = flask.Flask(__name__)
 app.config.from_object(config)
@@ -29,12 +23,15 @@ import model
 import admin
 
 from apps.file.views import mod as file_view
+
 app.register_blueprint(file_view)
 
 from apps.file.admin.views import mod as file_admin_mod
+
 app.register_blueprint(file_admin_mod)
 
 from apps.portfolio.views import mod as portfolio_mod, create_apache_docs
+
 app.register_blueprint(portfolio_mod)
 
 from apps.news.views import mod as news_mod, POSTS_QUERY
@@ -42,15 +39,19 @@ from apps.news.views import mod as news_mod, POSTS_QUERY
 app.register_blueprint(news_mod)
 
 from apps.news.admin.views import mod as news_admin_mod
+
 app.register_blueprint(news_admin_mod)
 
 from apps.news.models import Post
 
 from apps.compatibility.views import mod as compatibility_mod
+
 app.register_blueprint(compatibility_mod)
 
 from apps.api.v2.views import mod as api_mod
+
 app.register_blueprint(api_mod)
+
 
 def create_breadcrumbs(parents):
     breadcrumbs = [('welcome', u'Главная', 'icon-home')]
@@ -61,13 +62,13 @@ def create_breadcrumbs(parents):
 
 @app.route('/')
 def welcome():
-  posts = Post.gql("{0} LIMIT {1}".format(POSTS_QUERY, 5))
-  posts = posts.fetch()
-  return flask.render_template(
-      'welcome.html',
-      html_class='welcome',
-      apache_docs=create_apache_docs(),
-      posts=posts
+    posts = Post.gql("{0} LIMIT {1}".format(POSTS_QUERY, 5))
+    posts = posts.fetch()
+    return flask.render_template(
+        'welcome.html',
+        html_class='welcome',
+        apache_docs=create_apache_docs(),
+        posts=posts
     )
 
 
@@ -87,55 +88,34 @@ def inject_current_section():
         return dict(current_id=curr[site_map.ID])
     return dict(current_id="")
 
+
 @app.context_processor
 def inject_breadcrumbs():
+    if request.path == '/':
+        return dict(breadcrumbs=None)
     curr, uri = current_section()
     if curr:
         if request.path == uri and (not request.query_string or request.query_string == ''):
             return dict(breadcrumbs=create_breadcrumbs([]))
         return dict(breadcrumbs=create_breadcrumbs([curr]))
-    if request.path == '/':
-        return dict(breadcrumbs=None)
     return dict(breadcrumbs=create_breadcrumbs([]))
+
 
 @app.template_filter('time_ago')
 def time_ago(timestamp):
     return util.format_datetime_ago(timestamp)
 
+
 app.jinja_env.filters["time_ago"] = time_ago
-
-def make_external(url):
-    return urljoin(request.url_root, url)
-
-
-@app.route('/recent.atom')
-def recent_feed():
-    feed = AtomFeed('egoroff.spb.ru feed',
-                    feed_url=request.url, url=request.url_root)
-    limit = config.ATOM_FEED_LIMIT
-    if util.param('limit'):
-        limit = util.param('limit', int)
-
-    articles = Post.gql("{0} LIMIT {1}".format(POSTS_QUERY, limit))
-    articles = articles.fetch()
-
-    for article in articles:
-        feed.add(article.title, unicode(article.short_text),
-                 content_type='html',
-                 author="Alexander Egorov",
-                 url=make_external(flask.url_for('news.post', key_id=article.key.id())),
-                 updated=article.modified,
-                 published=article.created)
-    return feed.get_response()
 
 ################################################################################
 # Profile stuff
 ################################################################################
 class ProfileUpdateForm(wtf.Form):
-  name = wtf.TextField(u'Имя', [wtf.validators.required()])
-  email = wtf.TextField(u'Электропочта', [
-      wtf.validators.optional(),
-      wtf.validators.email(u'Это не похоже на электропочту :)'),
+    name = wtf.TextField(u'Имя', [wtf.validators.required()])
+    email = wtf.TextField(u'Электропочта', [
+        wtf.validators.optional(),
+        wtf.validators.email(u'Это не похоже на электропочту :)'),
     ])
 
 
@@ -143,26 +123,26 @@ class ProfileUpdateForm(wtf.Form):
 @app.route('/profile/', methods=['GET', 'POST'], endpoint='profile')
 @auth.login_required
 def profile():
-  form = ProfileUpdateForm()
-  user_db = auth.current_user_db()
-  if form.validate_on_submit():
-    user_db.name = form.name.data
-    user_db.email = form.email.data.lower()
-    user_db.put()
-    return flask.redirect(flask.url_for('welcome'))
-  if not form.errors:
-    form.name.data = user_db.name
-    form.email.data = user_db.email or ''
+    form = ProfileUpdateForm()
+    user_db = auth.current_user_db()
+    if form.validate_on_submit():
+        user_db.name = form.name.data
+        user_db.email = form.email.data.lower()
+        user_db.put()
+        return flask.redirect(flask.url_for('welcome'))
+    if not form.errors:
+        form.name.data = user_db.name
+        form.email.data = user_db.email or ''
 
-  if flask.request.path.startswith('/_s/'):
-    return util.jsonify_model_db(user_db)
+    if flask.request.path.startswith('/_s/'):
+        return util.jsonify_model_db(user_db)
 
-  return flask.render_template(
-      'profile.html',
-      title=u'Профиль',
-      html_class='profile',
-      form=form,
-      user_db=user_db,
+    return flask.render_template(
+        'profile.html',
+        title=u'Профиль',
+        html_class='profile',
+        form=form,
+        user_db=user_db,
     )
 
 
@@ -170,39 +150,39 @@ def profile():
 # Feedback
 ################################################################################
 class FeedbackForm(wtf.Form):
-  subject = wtf.TextField(u'Тема', [wtf.validators.required()])
-  message = wtf.TextAreaField(u'Сообщение', [wtf.validators.required()])
-  email = wtf.TextField(u'Электропочта (необязательно)', [
-      wtf.validators.optional(),
-      wtf.validators.email(u'Это не похоже на электропочту :)'),
+    subject = wtf.TextField(u'Тема', [wtf.validators.required()])
+    message = wtf.TextAreaField(u'Сообщение', [wtf.validators.required()])
+    email = wtf.TextField(u'Электропочта (необязательно)', [
+        wtf.validators.optional(),
+        wtf.validators.email(u'Это не похоже на электропочту :)'),
     ])
 
 
 @app.route('/feedback/', methods=['GET', 'POST'])
 @auth.login_required
 def feedback():
-  form = FeedbackForm()
-  if form.validate_on_submit():
-    mail.send_mail(
-        sender=config.CONFIG_DB.feedback_email,
-        to=config.CONFIG_DB.feedback_email,
-        subject='[%s] %s' % (
-            config.CONFIG_DB.brand_name,
-            form.subject.data,
-          ),
-        reply_to=form.email.data or config.CONFIG_DB.feedback_email,
-        body='%s\n\n%s' % (form.message.data, form.email.data)
-      )
-    flask.flash(u'Ушло! Спасибо за мнение!', category='success')
-    return flask.redirect(flask.url_for('welcome'))
-  if not form.errors and auth.current_user_id() > 0:
-    form.email.data = auth.current_user_db().email
+    form = FeedbackForm()
+    if form.validate_on_submit():
+        mail.send_mail(
+            sender=config.CONFIG_DB.feedback_email,
+            to=config.CONFIG_DB.feedback_email,
+            subject='[%s] %s' % (
+                config.CONFIG_DB.brand_name,
+                form.subject.data,
+            ),
+            reply_to=form.email.data or config.CONFIG_DB.feedback_email,
+            body='%s\n\n%s' % (form.message.data, form.email.data)
+        )
+        flask.flash(u'Ушло! Спасибо за мнение!', category='success')
+        return flask.redirect(flask.url_for('welcome'))
+    if not form.errors and auth.current_user_id() > 0:
+        form.email.data = auth.current_user_db().email
 
-  return flask.render_template(
-      'feedback.html',
-      title=u'Фидбек',
-      html_class='feedback',
-      form=form,
+    return flask.render_template(
+        'feedback.html',
+        title=u'Фидбек',
+        html_class='feedback',
+        form=form,
     )
 
 
@@ -213,24 +193,24 @@ def feedback():
 @app.route('/user/', endpoint='user_list')
 @auth.admin_required
 def user_list():
-  user_dbs, more_cursor = util.retrieve_dbs(
-      model.User.query(),
-      limit=util.param('limit', int),
-      cursor=util.param('cursor'),
-      order=util.param('order') or '-created',
-      name=util.param('name'),
-      admin=util.param('admin', bool),
+    user_dbs, more_cursor = util.retrieve_dbs(
+        model.User.query(),
+        limit=util.param('limit', int),
+        cursor=util.param('cursor'),
+        order=util.param('order') or '-created',
+        name=util.param('name'),
+        admin=util.param('admin', bool),
     )
 
-  if flask.request.path.startswith('/_s/'):
-    return util.jsonify_model_dbs(user_dbs, more_cursor)
+    if flask.request.path.startswith('/_s/'):
+        return util.jsonify_model_dbs(user_dbs, more_cursor)
 
-  return flask.render_template(
-      'user_list.html',
-      html_class='user',
-      title=u'Пользователи',
-      user_dbs=user_dbs,
-      more_url=util.generate_more_url(more_cursor),
+    return flask.render_template(
+        'user_list.html',
+        html_class='user',
+        title=u'Пользователи',
+        user_dbs=user_dbs,
+        more_url=util.generate_more_url(more_cursor),
     )
 
 
@@ -245,24 +225,24 @@ def user_list():
 @app.errorhandler(418)
 @app.errorhandler(500)
 def error_handler(e):
-  try:
-    e.code
-  except:
-    class e(object):
-      code = 500
-      name = 'Internal Server Error'
+    try:
+        e.code
+    except:
+        class e(object):
+            code = 500
+            name = 'Internal Server Error'
 
-  if flask.request.path.startswith('/_s/'):
-    return flask.jsonify({
-        'status': 'error',
-        'error_code': e.code,
-        'error_name': e.name.lower().replace(' ', '_'),
-        'error_message': e.name,
-      }), e.code
+    if flask.request.path.startswith('/_s/'):
+        return flask.jsonify({
+            'status': 'error',
+            'error_code': e.code,
+            'error_name': e.name.lower().replace(' ', '_'),
+            'error_message': e.name,
+        }), e.code
 
-  return flask.render_template(
-      'error.html',
-      title='Error %d (%s)!!1' % (e.code, e.name),
-      html_class='error-page',
-      error=e,
+    return flask.render_template(
+        'error.html',
+        title='Error %d (%s)!!1' % (e.code, e.name),
+        html_class='error-page',
+        error=e,
     ), e.code
