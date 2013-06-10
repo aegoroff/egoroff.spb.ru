@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 from urlparse import urljoin
-
-import util
 import flask
 from flask import Blueprint
 
