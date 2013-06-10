@@ -26,9 +26,9 @@ renderPlusone();
     <div class="row-fluid">
         <div class="span9">
             {% if content %}
-                {{ content|safe }}
+                {{ content | typo | safe }}
             {% else %}
-                {{ main_post.short_text|safe }}
+                {{ main_post.short_text | typo | safe }}
             {% endif %}
             {% if main_post.tags %}
                 <div class="well well-small">

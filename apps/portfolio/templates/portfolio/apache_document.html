@@ -6,7 +6,7 @@
         <div class="row-fluid">
             <div class="span10">
                 {% if not apache_docs %}
-                {{ html | safe }}
+                {{ html | typo | safe }}
                 {% else %}
                     <p>Пока ничего нет, но можно почитать другое :)</p>
                     {% include 'portfolio/apache_documents_list.html' %}

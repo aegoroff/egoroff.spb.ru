@@ -8,7 +8,6 @@ import flask
 import config
 import site_map
 import itertools
-import typographus
 import util
 from werkzeug.contrib.atom import AtomFeed
 
@@ -171,9 +170,6 @@ def get_post(key_id):
         transform = etree.XSLT(xslt_root)
 
         content = unicode(transform(xml_input))
-
-    if content:
-        content = typographus.typo(content)
 
     original_limit = 5
     limit = original_limit

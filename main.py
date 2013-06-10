@@ -2,6 +2,7 @@
 
 import sys
 import site_map
+import typographus
 
 
 sys.path.insert(0, 'lib.zip')
@@ -93,9 +94,13 @@ def inject_breadcrumbs():
 def time_ago(timestamp):
     return util.format_datetime_ago(timestamp)
 
-
 app.jinja_env.filters["time_ago"] = time_ago
 
+@app.template_filter('typo')
+def typo(s):
+    return typographus.typo(s)
+
+app.jinja_env.filters["typo"] = typo
 
 @app.route('/')
 def welcome():
