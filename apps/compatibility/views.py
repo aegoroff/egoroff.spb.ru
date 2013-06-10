@@ -109,6 +109,7 @@ def portfolio_files(key_id):
 @mod.route('/portfolio/<doc>.html', methods=['GET'])
 @mod.route('/apache/<doc>.html', methods=['GET'])
 @mod.route('/portfolio/apache/<doc>.html', methods=['GET'])
+@mod.route('/download/Flickr/setup.exe', defaults={'doc': None})
 def redirect_portfolio(doc):
     path = ''
     if doc:
