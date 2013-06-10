@@ -19,7 +19,6 @@ mod = Blueprint(
     url_prefix='/blog'
 )
 
-
 def get_paginator(posts, page, posts_per_page=20):
     paginator = Paginator(posts, posts_per_page)
     try:
@@ -83,6 +82,12 @@ MONTHS = {
 }
 
 
+def month_tuple_to_string(month):
+    return u'{0} ({1})'.format(MONTHS[month[0]], month[1])
+
+mod.add_app_template_filter(month_tuple_to_string, 'month_tuple_to_string')
+
+
 @mod.route('/', defaults={'page': 1})
 @mod.route('/page/<int:page>/')
 def index(page):
@@ -120,7 +125,6 @@ def index(page):
         parent_id=main_section_item[site_map.ID],
         posts=posts,
         archieve=archieve,
-        months=MONTHS,
         tag_selected=tag,
         tags=create_tag_rank(all_posts),
         key=main_section_item[site_map.ID],

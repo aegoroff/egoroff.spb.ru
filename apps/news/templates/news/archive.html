@@ -8,8 +8,7 @@
             <div>
                 <ul class="nav nav-list">
                     {% for month in archieve[year] %}
-                        <li><a href="#year={{ year }}&month={{ month[0] }}"
-                                >{{ months[month[0]] }}&nbsp;({{ month[1] }})</a></li>
+                        <li><a href="#year={{ year }}&month={{ month[0] }}">{{ month | month_tuple_to_string }}</a></li>
                     {% endfor %}
                 </ul>
             </div>
