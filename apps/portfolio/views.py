@@ -77,7 +77,7 @@ def get_doc(doc):
         return render_template(
             'portfolio/apache_document.html',
             title=doc,
-            html=u"<p>Пока ничего нет</p>"
+            apache_docs=create_apache_docs()
         )
 
     parser = etree.XMLParser(load_dtd=False, dtd_validation=False)
@@ -93,6 +93,5 @@ def get_doc(doc):
     return render_template(
         'portfolio/apache_document.html',
         title=data["title"],
-
         html=content
     )

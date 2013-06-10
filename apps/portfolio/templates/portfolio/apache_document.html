@@ -5,8 +5,12 @@
     <div class="container-fluid">
         <div class="row-fluid">
             <div class="span10">
-                <!--Body content-->
+                {% if not apache_docs %}
                 {{ html | safe }}
+                {% else %}
+                    <p>Пока ничего нет, но можно почитать другое :)</p>
+                    {% include 'portfolio/apache_documents_list.html' %}
+                {% endif %}
             </div>
             <div class="span2">
                 {% include 'bit/small_banner.html' %}
