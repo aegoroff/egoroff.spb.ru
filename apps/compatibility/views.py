@@ -103,6 +103,7 @@ def portfolio_files(key_id):
 
 
 @mod.route('/portfolio/download/', defaults={'doc': None})
+@mod.route('/portfolio/apache/', defaults={'doc': None})
 @mod.route('/portfolio/flickr/', defaults={'doc': None})
 @mod.route('/apache/', defaults={'doc': None})
 @mod.route('/portfolio/<doc>.html', methods=['GET'])
