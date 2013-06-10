@@ -60,18 +60,6 @@ def create_breadcrumbs(parents):
     return breadcrumbs
 
 
-@app.route('/')
-def welcome():
-    posts = Post.gql("{0} LIMIT {1}".format(POSTS_QUERY, 5))
-    posts = posts.fetch()
-    return flask.render_template(
-        'welcome.html',
-        html_class='welcome',
-        apache_docs=create_apache_docs(),
-        posts=posts
-    )
-
-
 def current_section():
     for section in site_map.MAP:
         index = section[site_map.ID]
@@ -107,6 +95,18 @@ def time_ago(timestamp):
 
 
 app.jinja_env.filters["time_ago"] = time_ago
+
+
+@app.route('/')
+def welcome():
+    posts = Post.gql("{0} LIMIT {1}".format(POSTS_QUERY, 5))
+    posts = posts.fetch()
+    return flask.render_template(
+        'welcome.html',
+        html_class='welcome',
+        apache_docs=create_apache_docs(),
+        posts=posts
+    )
 
 ################################################################################
 # Profile stuff
