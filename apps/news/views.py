@@ -7,8 +7,8 @@ from apps.news.models import Post, Tag
 import flask
 import config
 import site_map
-from typographus import Typographus
 import itertools
+import typographus
 import util
 from werkzeug.contrib.atom import AtomFeed
 
@@ -168,9 +168,8 @@ def get_post(key_id):
 
         content = unicode(transform(xml_input))
 
-    typo = Typographus()
     if content:
-        content = typo.process(content)
+        content = typographus.typo(content)
 
     original_limit = 5
     limit = original_limit
