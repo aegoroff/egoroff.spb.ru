@@ -132,7 +132,7 @@ def index(page):
 
 @mod.route('/recent.atom')
 def recent_feed():
-    feed = AtomFeed('egoroff.spb.ru feed',
+    feed = AtomFeed('{0} feed'.format(config.CONFIG_DB.brand_name),
                     feed_url=flask.request.url, url=flask.request.url_root)
     limit = config.ATOM_FEED_LIMIT
     if util.param('limit'):
