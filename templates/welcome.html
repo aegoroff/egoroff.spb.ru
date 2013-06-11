@@ -1,5 +1,10 @@
 # extends 'base.html'
 
+
+# block head
+    <meta name="google-site-verification" content="PHs3gMRw0_sIAdVqjk38_fbq9h3VGHkkIq3w1chJXWs"/>
+# endblock
+
 # block content
 <!-- Example row of columns -->
 <div class="row-fluid">
@@ -7,9 +12,9 @@
         <h2><a href="{{ url_for('news.index') }}">Блог</a></h2>
         {% if posts %}
             <dl id="log">
-            {% for post in posts %}
+                {% for post in posts %}
                     {% include 'news/post_box.html' %}
-            {% endfor %}
+                {% endfor %}
             </dl>
         {% else %}
             <p>Пока ничего нового.</p>
