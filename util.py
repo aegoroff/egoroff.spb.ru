@@ -253,3 +253,19 @@ def add_months(source_date, months):
     month = month % 12 + 1
     day = min(source_date.day,calendar.monthrange(year,month)[1])
     return datetime(year,month,day)
+
+import xml.etree.ElementTree as ET
+
+def create_site_map_xml(pages):
+    urlset = ET.Element('urlset')
+    urlset.set("xmlns", 'http://www.sitemaps.org/schemas/sitemap/0.9')
+    for page in pages:
+        url = ET.SubElement(urlset, 'url')
+        loc = ET.SubElement(url, 'loc')
+        loc.text = page["loc"]
+        changefreq = ET.SubElement(url, 'changefreq')
+        changefreq.text = page["changefreq"]
+        priority = ET.SubElement(url, 'priority')
+        priority.text = page["priority"]
+
+    return ET.tostring(urlset, encoding="UTF-8")

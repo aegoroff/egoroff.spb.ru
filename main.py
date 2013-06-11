@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
+from urlparse import urljoin
 import site_map
 import typographus
 
@@ -10,7 +11,7 @@ sys.path.insert(0, 'lib.zip')
 from google.appengine.api import mail
 import flask
 from flaskext import wtf
-from flask import request
+from flask import request, current_app
 import config
 
 app = flask.Flask(__name__)
@@ -94,13 +95,17 @@ def inject_breadcrumbs():
 def time_ago(timestamp):
     return util.format_datetime_ago(timestamp)
 
+
 app.jinja_env.filters["time_ago"] = time_ago
+
 
 @app.template_filter('typo')
 def typo(s):
     return typographus.typo(s)
 
+
 app.jinja_env.filters["typo"] = typo
+
 
 @app.route('/')
 def welcome():
@@ -112,6 +117,48 @@ def welcome():
         apache_docs=create_apache_docs(),
         posts=posts
     )
+
+
+@app.route('/sitemap.xml')
+def sitemap():
+    create = lambda path: urljoin(flask.request.url_root, path)
+    full_uri = lambda marker: create(flask.url_for(marker))
+    pages = [
+        {
+            "loc": create(''),
+            "changefreq": "weekly",
+            "priority": "1.0"
+        }
+
+    ]
+    for item in site_map.MAP:
+        page = {
+            "loc": full_uri(item[site_map.ID]),
+            "changefreq": "weekly",
+            "priority": "0.9"
+        }
+        pages.append(page)
+
+    apache_docs = create_apache_docs()
+
+    for d in apache_docs:
+        page = {
+            "loc": create(urljoin(flask.url_for('portfolio.index'), '{0}.html'.format(d['doc']))),
+            "changefreq": "yearly",
+            "priority": "1.0"
+        }
+        pages.append(page)
+
+    keys = Post.query(Post.is_public == True).order(-Post.created).fetch(keys_only=True)
+    for k in keys:
+        page = {
+            "loc": create(urljoin(flask.url_for('news.index'), '{0}.html'.format(k.id()))),
+            "changefreq": "yearly",
+            "priority": "1.0"
+        }
+        pages.append(page)
+
+    return current_app.response_class(util.create_site_map_xml(pages), mimetype='application/xml')
 
 ################################################################################
 # Profile stuff
