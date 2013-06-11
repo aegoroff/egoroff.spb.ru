@@ -1,8 +1,8 @@
 $ ->
   window.setInterval( ->
-    api_uri = '/api/v2/post.random.json'
+    api_uri = '/api/v2/get.random.post.json'
     $.get(api_uri, onSuccess)
-  , 10000)
+  , 30000)
 
 
 onSuccess = (result) ->

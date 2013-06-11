@@ -68,7 +68,7 @@ def post_json():
     return get_post_json(param('id', int))
 
 
-@mod.route('/post.random.json')
+@mod.route('/get.random.post.json')
 @except_wrap
 def random_post_json():
     keys = Post.query(Post.is_public == True).order(-Post.created).fetch(keys_only=True)
