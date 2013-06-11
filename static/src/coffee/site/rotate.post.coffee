@@ -1,5 +1,5 @@
 $ ->
-  if $("body").find("div.hero-unit") == null
+  if window.location.pathname != '/'
     return
   window.setInterval( ->
     api_uri = '/api/v2/post.random.json'
