@@ -256,6 +256,14 @@ def add_months(source_date, months):
 
 import xml.etree.ElementTree as ET
 
+
+def create_page(loc, changefreq, priority="1.0"):
+    return {
+        "loc": loc,
+        "changefreq": changefreq,
+        "priority": priority
+    }
+
 def create_site_map_xml(pages):
     urlset = ET.Element('urlset')
     urlset.set("xmlns", 'http://www.sitemaps.org/schemas/sitemap/0.9')

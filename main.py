@@ -118,37 +118,28 @@ def welcome():
         posts=posts
     )
 
-
-def create_page(loc, changefreq, priority="1.0"):
-    return {
-        "loc": loc,
-        "changefreq": changefreq,
-        "priority": priority
-    }
-
-
 @app.route('/sitemap.xml')
 def sitemap():
     create = lambda path: urljoin(flask.request.url_root, path)
     full_uri = lambda marker: create(flask.url_for(marker))
 
-    pages = [create_page(create(''), "weekly")]
+    pages = [util.create_page(create(''), "weekly")]
 
     for item in site_map.MAP:
-        p = create_page(full_uri(item[site_map.ID]), "weekly", '0.9')
+        p = util.create_page(full_uri(item[site_map.ID]), "weekly", '0.9')
         pages.append(p)
 
     apache_docs = create_apache_docs()
 
     for d in apache_docs:
         loc = create(urljoin(flask.url_for('portfolio.index'), '{0}.html'.format(d['doc'])))
-        p = create_page(loc, "yearly")
+        p = util.create_page(loc, "yearly")
         pages.append(p)
 
     keys = Post.query(Post.is_public == True).order(-Post.created).fetch(keys_only=True)
     for k in keys:
         loc = create(urljoin(flask.url_for('news.index'), '{0}.html'.format(k.id())))
-        p = create_page(loc, "yearly")
+        p = util.create_page(loc, "yearly")
         pages.append(p)
 
     return current_app.response_class(util.create_site_map_xml(pages), mimetype='application/xml')
