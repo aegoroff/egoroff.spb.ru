@@ -1,4 +1,6 @@
 $ ->
+  if $("body").find("div.hero-unit") == null
+    return
   window.setInterval( ->
     api_uri = '/api/v2/post.random.json'
     $.get(api_uri, onSuccess)
