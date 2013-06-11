@@ -43,6 +43,7 @@ SCRIPTS_MODULES = [
     'libs',
     'jquery.plugins',
     'scripts',
+    'home',
     'syntax-highlighter',
     'admin'
   ]
@@ -87,6 +88,8 @@ SCRIPTS = {
       'src/coffee/site/profile.coffee',
       'src/coffee/site/admin.coffee',
       'src/coffee/site/news.async.reader.coffee',
+    ],
+    'home': [
       'src/coffee/site/rotate.post.coffee',
     ],
   }

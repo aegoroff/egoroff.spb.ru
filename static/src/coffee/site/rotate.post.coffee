@@ -1,6 +1,4 @@
 $ ->
-  if window.location.pathname != '/'
-    return
   window.setInterval( ->
     api_uri = '/api/v2/post.random.json'
     $.get(api_uri, onSuccess)
