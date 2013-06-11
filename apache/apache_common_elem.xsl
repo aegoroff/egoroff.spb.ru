@@ -291,7 +291,7 @@
         </xsl:variable>
 
         <code class="module">
-            <a href="{$path}/apache/{$obs_}{.}.html">
+            <a href="{$path}/apache/{$obs_}{.}.html" itemprop="url">
                 <xsl:value-of select="."/>
             </a>
         </code>
@@ -544,7 +544,7 @@
     </xsl:template>
 
     <xsl:template match="a">
-        <a href="{@href}">
+        <a href="{@href}" itemprop="url">
             <xsl:if test="@title">
                 <xsl:attribute name="title">
                     <xsl:value-of select="@title"/>
@@ -648,7 +648,7 @@
 	</xsl:template>
 
 	<xsl:template match="link">
-		<a>
+		<a itemprop="url">
 			<xsl:attribute name="href">
                 <xsl:choose>
                     <xsl:when test="@id = 1">
