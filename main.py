@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import random
 
 import sys
 from urlparse import urljoin
@@ -115,7 +116,8 @@ def welcome():
         'welcome.html',
         html_class='welcome',
         apache_docs=create_apache_docs(),
-        posts=posts
+        posts=posts,
+        rnd=random.randint(0,4)
     )
 
 @app.route('/sitemap.xml')

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import random
 from google.appengine.ext import ndb
 from apps.news.views import POSTS_QUERY
 import config
@@ -48,10 +49,8 @@ def posts_json():
         q = articles.fetch()
     return util.jsonify_model_dbs(q)
 
-@mod.route('/post.json')
-@except_wrap
-def post_json():
-    key_id = param('id', int)
+
+def get_post_json(key_id):
     if not key_id:
         raise ApiException('Invalid request: "id" parameter not found.')
 
@@ -62,3 +61,17 @@ def post_json():
         if key_id:
             raise ApiException('Post with "%s" == %s not found' % ('id', key_id), status=404)
     return jsonify_model_db(product)
+
+@mod.route('/post.json')
+@except_wrap
+def post_json():
+    return get_post_json(param('id', int))
+
+
+@mod.route('/post.random.json')
+@except_wrap
+def random_post_json():
+    keys = Post.query(Post.is_public == True).order(-Post.created).fetch(keys_only=True)
+    posts = [k.id() for k in keys]
+    ix = random.randint(0, len(posts) - 1)
+    return get_post_json(posts[ix])

@@ -87,5 +87,6 @@ SCRIPTS = {
       'src/coffee/site/profile.coffee',
       'src/coffee/site/admin.coffee',
       'src/coffee/site/news.async.reader.coffee',
+      'src/coffee/site/rotate.post.coffee',
     ],
   }

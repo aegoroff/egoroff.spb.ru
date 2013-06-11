@@ -55,7 +55,7 @@ loadBlog = (items, dlLog) ->
 
       base = window.location.origin
       current_uri = window.location.href
-      item_uri = base + '/news/' + item["id"] + '.html'
+      item_uri = base + '/blog/' + item["id"] + '.html'
       link = "<a href=\"" + item_uri + "\">" + title + "</a>"
       if current_uri == item_uri
         link = '<span>' + title + '</span>'
