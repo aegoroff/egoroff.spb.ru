@@ -3,7 +3,7 @@
 <dl>
     {% for item in apache_docs %}
         <dt><a href="{{ url_for('portfolio.index') }}{{ item['doc'] }}.html">{{ item['title'] }}</a></dt>
-        <dd>{{ item['descr'] }}</dd>
+        <dd>{{ item['descr'] | typo | safe }}</dd>
     {% endfor %}
 </dl>
 {% endif %}

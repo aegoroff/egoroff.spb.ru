@@ -6,5 +6,5 @@
             <a href="{{ url_for('news.post', key_id=post.key.id()) }}">{{ post.title }}</a>
         {% endif %}
     </dt>
-    <dd>{{ post.short_text | typo | safe }}</dd>
+    <dd>{{ post.short_text | safe }}</dd>
 {% endstrip %}
