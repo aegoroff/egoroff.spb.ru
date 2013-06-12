@@ -71,7 +71,8 @@ def post_json():
 @mod.route('/get.random.post.json')
 @except_wrap
 def random_post_json():
-    keys = Post.query(Post.is_public == True).order(-Post.created).fetch(keys_only=True)
+    limit = 5
+    keys = Post.query(Post.is_public == True).order(-Post.created).fetch(limit, keys_only=True)
     posts = [k.id() for k in keys]
     ix = random.randint(0, len(posts) - 1)
     return get_post_json(posts[ix])
