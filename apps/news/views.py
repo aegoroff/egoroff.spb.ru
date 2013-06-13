@@ -7,6 +7,7 @@ from flask import Blueprint, redirect, render_template, url_for
 from apps.news.models import Post, Tag
 import flask
 import config
+from flask import abort
 import site_map
 import itertools
 import util
@@ -158,8 +159,8 @@ def recent_feed():
 @mod.route('/<int:key_id>.html', endpoint='post')
 def get_post(key_id):
     post = Post.retrieve_by_id(key_id)
-    if not post:
-        return redirect(url_for('news.index'))
+    if not post or not post.is_public:
+        abort(404)
 
     content = post.text
     if content and content.startswith('<?xml version="1.0"?>'):
@@ -199,7 +200,6 @@ def get_post(key_id):
         limit=original_limit,
         offset=offset,
         full_uri=urljoin(flask.request.url_root, flask.url_for('news.post', key_id=key_id)),
-
     )
 
 
@@ -214,4 +214,4 @@ def get_posts_ids(limit, offset):
         keys = Post.query(Post.is_public == True).order(-Post.created).fetch(limit, offset=offset)
         latest = ','.join([str(k.key.id()) for k in keys])
         memcache.add(key, latest, 3600)
-    return [int(k) for k in latest.split(',')]
+    return [long(k) for k in latest.split(',')]
