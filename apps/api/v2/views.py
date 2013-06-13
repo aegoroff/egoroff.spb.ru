@@ -41,13 +41,13 @@ def posts_json():
 
         posts = Post.query(Post.is_public == True, ndb.AND(Post.created >= current_month,
                          Post.created < next_month)).order(-Post.created)
-        q = posts.fetch()
+        q = posts.fetch(use_memcache=True)
     else:
         offset = util.param('offset', int) or 0
         limit = util.param('limit', int) or config.ATOM_FEED_LIMIT
 
         articles = Post.gql("{0} LIMIT {1} OFFSET {2}".format(POSTS_QUERY, limit, offset))
-        q = articles.fetch()
+        q = articles.fetch(use_memcache=True)
     return util.jsonify_model_dbs(q)
 
 

@@ -107,7 +107,7 @@ def index(page):
             title = u" {0}-я страница постов по метке: {1}".format(page, tag)
 
     all_query = Post.gql("WHERE is_public = True  ORDER BY created DESC")
-    all_posts = all_query.fetch()
+    all_posts = all_query.fetch(use_memcache=True)
 
     archieve = {}
     for ym, group in itertools.groupby(all_posts, key=lambda post: (post.created.year, post.created.month)):
@@ -141,7 +141,7 @@ def recent_feed():
         limit = util.param('limit', int)
 
     articles = Post.gql("{0} LIMIT {1}".format(POSTS_QUERY, limit))
-    articles = articles.fetch()
+    articles = articles.fetch(use_memcache=True)
 
     make_external = lambda url: urljoin(flask.request.url_root, url)
 
@@ -186,7 +186,7 @@ def get_post(key_id):
     offset += original_limit
 
     posts = Post.gql("{0} LIMIT {1}".format(POSTS_QUERY, limit))
-    last = posts.fetch()
+    last = posts.fetch(use_memcache=True)
     return render_template(
         'news/post.html',
         title=post.title,
