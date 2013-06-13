@@ -21,7 +21,7 @@ class Paginator(object):
     self.object_list = object_list
     self.per_page = per_page
     self.allow_empty_first_page = allow_empty_first_page
-    self.cache_key = None
+    self.cache_key = cache_key
 
   def validate_number(self, number):
     "Validates the given 1-based page number."
@@ -44,7 +44,7 @@ class Paginator(object):
         top = bottom + self.per_page
         page_items = self.object_list[bottom:top+1]
     else:
-        f = self.object_list.fetch(self.per_page, offset=bottom)
+        f = self.object_list.fetch(self.per_page, offset=bottom, use_memcache=True)
         page_items = [item for item in f]
     if not page_items:
       if number == 1 and self.allow_empty_first_page:
