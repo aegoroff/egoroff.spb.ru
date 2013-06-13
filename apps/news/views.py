@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from urlparse import urljoin
+from google.appengine.api import memcache
 from lxml import etree
 from apps.utils.paginator import Paginator, EmptyPage, InvalidPage
 from flask import Blueprint, redirect, render_template, url_for
@@ -175,12 +176,9 @@ def get_post(key_id):
     limit = original_limit
     offset = 0
     while True:
-        keys = Post.query(Post.is_public == True).order(-Post.created).fetch(limit, keys_only=True, offset=offset)
+        posts = get_posts_ids(limit, offset)
         found = False
-        for k in keys:
-            if k.id() == key_id:
-                found = True
-                break
+        if key_id in posts: found = True
         if not found:
             offset += limit
         else:
@@ -203,3 +201,17 @@ def get_post(key_id):
         full_uri=urljoin(flask.request.url_root, flask.url_for('news.post', key_id=key_id)),
 
     )
+
+
+def create_posts_keys(limit, offset):
+    return 'posts_id_desc_limit_{0}_offset_{1}'.format(limit, offset)
+
+
+def get_posts_ids(limit, offset):
+    key = create_posts_keys(limit, offset)
+    latest = memcache.get(key)
+    if latest is None:
+        keys = Post.query(Post.is_public == True).order(-Post.created).fetch(limit, offset=offset)
+        latest = ','.join([str(k.key.id()) for k in keys])
+        memcache.add(key, latest, 3600)
+    return [int(k) for k in latest.split(',')]

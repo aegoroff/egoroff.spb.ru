@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import random
+from google.appengine.api import memcache
 from google.appengine.ext import ndb
-from apps.news.views import POSTS_QUERY
+from apps.news.views import POSTS_QUERY, create_posts_keys, get_posts_ids
 import config
 
 from flask import Blueprint, render_template, current_app, request
@@ -72,7 +73,7 @@ def post_json():
 @except_wrap
 def random_post_json():
     limit = 5
-    keys = Post.query(Post.is_public == True).order(-Post.created).fetch(limit, keys_only=True)
-    posts = [k.id() for k in keys]
+    offset = 0
+    posts = get_posts_ids(limit, offset)
     ix = random.randint(0, len(posts) - 1)
     return get_post_json(posts[ix])

@@ -44,7 +44,8 @@ class Paginator(object):
         top = bottom + self.per_page
         page_items = self.object_list[bottom:top+1]
     else:
-        page_items = self.object_list.fetch(self.per_page, offset=bottom)
+        f = self.object_list.fetch(self.per_page, offset=bottom)
+        page_items = [item for item in f]
     if not page_items:
       if number == 1 and self.allow_empty_first_page:
         pass
@@ -61,7 +62,9 @@ class Paginator(object):
     try:
       if type(self.object_list) == list:
         return len(self.object_list)
-      return self.object_list.count()
+      # HACK:
+      lst = [item for item in self.object_list]
+      return len(lst)
     except (AttributeError, TypeError):
       # AttributeError if object_list has no count() method.
       # TypeError if object_list.count() requires arguments
