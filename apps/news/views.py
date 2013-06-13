@@ -178,12 +178,8 @@ def get_post(key_id):
     offset = 0
     while True:
         posts = get_posts_ids(limit, offset)
-        found = False
-        if key_id in posts: found = True
-        if not found:
-            offset += limit
-        else:
-            break
+        if key_id in posts: break
+        offset += limit
 
     if offset > 0:
         limit += offset
