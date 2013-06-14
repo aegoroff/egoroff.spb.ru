@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 import os
-
+from urlparse import urljoin
+import flask
 from flask import Blueprint, render_template
 from lxml import etree
 import time
 from apps.file.models import Folder, File
+
 import site_map
 import util
 
@@ -91,5 +93,6 @@ def get_doc(doc):
         'portfolio/apache_document.html',
         title=data["title"],
         html=content,
-        doc=doc
+        doc=doc,
+        full_uri=urljoin(flask.request.url_root, flask.url_for('portfolio.get_doc', doc=doc)),
     )
