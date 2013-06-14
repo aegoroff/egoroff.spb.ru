@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import random
-from apps.news.views import get_posts_ids, PUBLIC_POSTS_QUERY_DESC
+from apps.news.views import get_posts_ids, create_posts_query
 import config
 
 from flask import Blueprint, render_template, current_app, request
@@ -33,17 +33,17 @@ def index():
 def posts_json():
     year = util.param('year', int)
     month = util.param('month', int)
-    q = PUBLIC_POSTS_QUERY_DESC
+    q = create_posts_query()
     if year and month:
         current_month = datetime.datetime(year, month, 1)
         next_month = util.add_months(datetime.datetime(year, month, 1), 1)
 
         q = q.filter(Post.created >= current_month, Post.created < next_month)
-        q = q.fetch(use_memcache=True)
+        q = util.run_query(q)
     else:
         offset = util.param('offset', int) or 0
         limit = util.param('limit', int) or config.ATOM_FEED_LIMIT
-        q = q.fetch(limit, offset=offset, use_memcache=True)
+        q = util.run_query(q, limit, offset=offset)
     return util.jsonify_model_dbs(q)
 
 

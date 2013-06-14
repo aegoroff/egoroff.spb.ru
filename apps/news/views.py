@@ -31,12 +31,19 @@ def get_paginator(posts, page, posts_per_page=20):
 
 main_section_item = site_map.MAP[1]
 
-PUBLIC_POSTS_QUERY_DESC = Post.query(Post.is_public == True).order(-Post.created)
 
 TAG_RANK = ("tagRank10", "tagRank9",
             "tagRank8", "tagRank7", "tagRank6",
             "tagRank5", "tagRank4", "tagRank3",
             "tagRank2", "tagRank1")
+
+
+def create_posts_query():
+    """
+    Creates new public posts query object with created sorting desc
+    :return: new query instance
+    """
+    return Post.query(Post.is_public == True).order(-Post.created)
 
 
 def compute_rank(tag_title, count, totalcount):
@@ -92,7 +99,7 @@ mod.add_app_template_filter(month_tuple_to_string, 'month_tuple_to_string')
 @mod.route('/', defaults={'page': 1})
 @mod.route('/page/<int:page>/')
 def index(page):
-    posts = PUBLIC_POSTS_QUERY_DESC
+    posts = create_posts_query()
     title = main_section_item[site_map.TITLE]
     tag = util.param('tag')
     if tag:
@@ -105,7 +112,7 @@ def index(page):
         else:
             title = u" {0}-я страница постов по метке: {1}".format(page, tag)
 
-    all_posts = PUBLIC_POSTS_QUERY_DESC.fetch(use_memcache=True)
+    all_posts = util.run_query(create_posts_query())
 
     archieve = {}
     for ym, group in itertools.groupby(all_posts, key=lambda post: (post.created.year, post.created.month)):
@@ -116,7 +123,7 @@ def index(page):
             k = (m, posts_count)
             archieve[ym[0]].append(k)
 
-    posts = get_paginator(posts, page)
+    posts = get_paginator(util.run_query(posts), page)
 
     return render_template(
         'news/index.html',
@@ -138,7 +145,7 @@ def recent_feed():
     if util.param('limit'):
         limit = util.param('limit', int)
 
-    articles = PUBLIC_POSTS_QUERY_DESC.fetch(limit, use_memcache=True)
+    articles = util.run_query(create_posts_query(), limit)
 
     make_external = lambda url: urljoin(flask.request.url_root, url)
 
@@ -182,7 +189,7 @@ def get_post(key_id):
         limit += offset
     offset += original_limit
 
-    last = PUBLIC_POSTS_QUERY_DESC.fetch(limit, use_memcache=True)
+    last = util.run_query(create_posts_query(), limit)
     return render_template(
         'news/post.html',
         title=post.title,
@@ -203,7 +210,7 @@ def get_posts_ids(limit, offset):
     key = create_posts_keys(limit, offset)
     latest = memcache.get(key)
     if latest is None:
-        keys = PUBLIC_POSTS_QUERY_DESC.fetch(limit, offset=offset)
+        keys = util.run_query(create_posts_query(), limit, offset=offset)
         latest = ','.join([str(k.key.id()) for k in keys])
         memcache.add(key, latest, 86400)
     return [long(k) for k in latest.split(',')]

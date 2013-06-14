@@ -277,3 +277,14 @@ def create_site_map_xml(pages):
         priority.text = page["priority"]
 
     return ET.tostring(urlset, encoding="UTF-8")
+
+
+def run_query(q, limit=None, **options):
+    opts = {
+        'use_memcache': True,
+        'use_cache': True
+    }
+    if options:
+        for o in options:
+            opts[o] = options[o]
+    return q.fetch(limit, **opts)
