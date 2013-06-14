@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 import random
-from google.appengine.api import memcache
-from google.appengine.ext import ndb
-from apps.news.views import POSTS_QUERY, create_posts_keys, get_posts_ids
+from apps.news.views import get_posts_ids, PUBLIC_POSTS_QUERY_DESC
 import config
 
 from flask import Blueprint, render_template, current_app, request
@@ -35,19 +33,17 @@ def index():
 def posts_json():
     year = util.param('year', int)
     month = util.param('month', int)
+    q = PUBLIC_POSTS_QUERY_DESC
     if year and month:
         current_month = datetime.datetime(year, month, 1)
         next_month = util.add_months(datetime.datetime(year, month, 1), 1)
 
-        posts = Post.query(Post.is_public == True, ndb.AND(Post.created >= current_month,
-                         Post.created < next_month)).order(-Post.created)
-        q = posts.fetch(use_memcache=True)
+        q = q.filter(Post.created >= current_month, Post.created < next_month)
+        q = q.fetch(use_memcache=True)
     else:
         offset = util.param('offset', int) or 0
         limit = util.param('limit', int) or config.ATOM_FEED_LIMIT
-
-        articles = Post.gql("{0} LIMIT {1} OFFSET {2}".format(POSTS_QUERY, limit, offset))
-        q = articles.fetch(use_memcache=True)
+        q = q.fetch(limit, offset=offset, use_memcache=True)
     return util.jsonify_model_dbs(q)
 
 

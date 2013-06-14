@@ -37,15 +37,13 @@ from apps.portfolio.views import mod as portfolio_mod, create_apache_docs
 
 app.register_blueprint(portfolio_mod)
 
-from apps.news.views import mod as news_mod, POSTS_QUERY
+from apps.news.views import mod as news_mod, PUBLIC_POSTS_QUERY_DESC
 
 app.register_blueprint(news_mod)
 
 from apps.news.admin.views import mod as news_admin_mod
 
 app.register_blueprint(news_admin_mod)
-
-from apps.news.models import Post
 
 from apps.compatibility.views import mod as compatibility_mod
 
@@ -110,14 +108,14 @@ app.jinja_env.filters["typo"] = typo
 
 @app.route('/')
 def welcome():
-    posts = Post.gql("{0} LIMIT {1}".format(POSTS_QUERY, 5))
-    posts = posts.fetch()
+    limit = 5
+    posts = PUBLIC_POSTS_QUERY_DESC.fetch(limit)
     return flask.render_template(
         'welcome.html',
         html_class='welcome',
         apache_docs=create_apache_docs(),
         posts=posts,
-        rnd=random.randint(0,4)
+        rnd=random.randint(0,limit-1)
     )
 
 @app.route('/sitemap.xml')
@@ -138,7 +136,7 @@ def sitemap():
         p = util.create_page(loc, "yearly")
         pages.append(p)
 
-    keys = Post.query(Post.is_public == True).order(-Post.created).fetch(keys_only=True)
+    keys = PUBLIC_POSTS_QUERY_DESC.fetch(keys_only=True)
     for k in keys:
         loc = create(urljoin(flask.url_for('news.index'), '{0}.html'.format(k.id())))
         p = util.create_page(loc, "yearly")
