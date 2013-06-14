@@ -6,6 +6,7 @@
 # endblock
 
 # block content
+{% strip %}
 <div class="hero-unit">
     <h1>{{ posts[rnd].title }}</h1>
 
@@ -33,4 +34,5 @@
         {% include 'portfolio/apache_documents_list.html' %}
     </div>
 </div>
+{% endstrip %}
 # endblock
