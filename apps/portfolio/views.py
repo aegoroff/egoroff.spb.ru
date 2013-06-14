@@ -45,11 +45,9 @@ main_section_item = site_map.MAP[0]
 
 @mod.route('/')
 def index():
-    folders = Folder.query()
+    folders = Folder.query(Folder.is_public == True)
     downloads = {}
     for f in folders:
-        if not f.is_public:
-            continue
         files = []
         a = lambda key: files.append(key.get())
         map(a, f.files)
