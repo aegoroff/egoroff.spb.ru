@@ -128,7 +128,6 @@ def index(page):
     return render_template(
         'news/index.html',
         title=title,
-        parent_id=main_section_item[site_map.ID],
         posts=posts,
         archieve=archieve,
         tag_selected=tag,
