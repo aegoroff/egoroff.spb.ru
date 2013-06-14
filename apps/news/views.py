@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 from urlparse import urljoin
 from google.appengine.api import memcache
-from google.appengine.ext import ndb
 from lxml import etree
 from apps.utils.paginator import Paginator, EmptyPage, InvalidPage
-from flask import Blueprint, redirect, render_template, url_for
+from flask import Blueprint, render_template
 from apps.news.models import Post, Tag
 import flask
 import config
