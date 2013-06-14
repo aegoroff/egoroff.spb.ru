@@ -6,11 +6,18 @@
         <div class="row-fluid">
             <div class="span10">
                 {% if not apache_docs %}
-                {{ html | typo | safe }}
+                    {% if doc and doc == 'mod_proxy' %}
+                        {{ html | safe }}
+                        {% else %}
+                        {{ html | typo | safe }}
+                     {% endif %}
                 {% else %}
                     <p>Пока ничего нет, но можно почитать другое :)</p>
                     {% include 'portfolio/apache_documents_list.html' %}
                 {% endif %}
+                <p>
+                {% include 'bit/disqus.html' %}
+                </p>
             </div>
             <div class="span2">
                 {% include 'bit/small_banner.html' %}

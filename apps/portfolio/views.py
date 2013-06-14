@@ -90,5 +90,6 @@ def get_doc(doc):
     return render_template(
         'portfolio/apache_document.html',
         title=data["title"],
-        html=content
+        html=content,
+        doc=doc
     )
