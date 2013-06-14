@@ -15,7 +15,7 @@ MAP = [
     },
     {
         ID: "news.index",
-        CLASS: "icon-edit",
+        CLASS: "icon-book",
         TITLE: u"Блог"
     },
 ]
