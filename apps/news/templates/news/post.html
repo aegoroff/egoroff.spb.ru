@@ -25,6 +25,7 @@ renderPlusone();
 {% block content %}
     <div class="row-fluid">
         <div class="span9">
+            <p class="muted"><i class="icon-calendar"></i>&nbsp;{{ main_post.created_ago }}</p>
             {% if content %}
                 {{ content | typo | safe }}
             {% else %}
