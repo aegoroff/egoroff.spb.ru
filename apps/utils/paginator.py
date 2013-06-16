@@ -21,7 +21,7 @@ class Paginator(object):
     self.object_list = object_list
     self.per_page = per_page
     self.allow_empty_first_page = allow_empty_first_page
-    self.cache_key = cache_key
+    self.cache_key = None
 
   def validate_number(self, number):
     "Validates the given 1-based page number."
@@ -44,8 +44,7 @@ class Paginator(object):
         top = bottom + self.per_page
         page_items = self.object_list[bottom:top+1]
     else:
-        f = self.object_list.fetch(self.per_page, offset=bottom, use_memcache=True)
-        page_items = [item for item in f]
+        page_items = self.object_list.fetch(self.per_page, offset=bottom)
     if not page_items:
       if number == 1 and self.allow_empty_first_page:
         pass
@@ -62,9 +61,7 @@ class Paginator(object):
     try:
       if type(self.object_list) == list:
         return len(self.object_list)
-      # HACK:
-      lst = [item for item in self.object_list]
-      return len(lst)
+      return self.object_list.count()
     except (AttributeError, TypeError):
       # AttributeError if object_list has no count() method.
       # TypeError if object_list.count() requires arguments
