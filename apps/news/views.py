@@ -209,7 +209,7 @@ def get_posts_ids(limit, offset):
     key = create_posts_keys(limit, offset)
     latest = memcache.get(key)
     if latest is None:
-        keys = util.run_query(create_posts_query(), limit, offset=offset)
-        latest = ','.join([str(k.key.id()) for k in keys])
+        keys = util.run_query(create_posts_query(), limit, offset=offset, keys_only=True)
+        latest = ','.join([str(k.id()) for k in keys])
         memcache.add(key, latest, 86400)
     return [long(k) for k in latest.split(',')]
