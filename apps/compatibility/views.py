@@ -121,6 +121,7 @@ def portfolio_files(key_id):
 @mod.route('/download/md5/sha256calculator.exe', defaults={'doc': None})
 @mod.route('/download/md5/sha384calculator.exe', defaults={'doc': None})
 @mod.route('/download/md5/whirlpoolcalculator.exe', defaults={'doc': None})
+@mod.route('/download/md5/apctool.exe', defaults={'doc': None})
 def redirect_portfolio(doc):
     path = ''
     if doc:
