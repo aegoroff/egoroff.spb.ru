@@ -110,6 +110,17 @@ def portfolio_files(key_id):
 @mod.route('/apache/<doc>.html', methods=['GET'])
 @mod.route('/portfolio/apache/<doc>.html', methods=['GET'])
 @mod.route('/download/Flickr/setup.exe', defaults={'doc': None})
+@mod.route('/download/Flickr/setup11.exe', defaults={'doc': None})
+@mod.route('/download/md5/md5calculator.exe', defaults={'doc': None})
+@mod.route('/download/md5/sha1calculator.exe', defaults={'doc': None})
+@mod.route('/download/md5/hashcalculators.exe', defaults={'doc': None})
+@mod.route('/download/md5/sha512calculator.exe', defaults={'doc': None})
+@mod.route('/download/md5/crc32calculator.exe', defaults={'doc': None})
+@mod.route('/download/md5/hqsetup.exe', defaults={'doc': None})
+@mod.route('/download/md5/md4calculator.exe', defaults={'doc': None})
+@mod.route('/download/md5/sha256calculator.exe', defaults={'doc': None})
+@mod.route('/download/md5/sha384calculator.exe', defaults={'doc': None})
+@mod.route('/download/md5/whirlpoolcalculator.exe', defaults={'doc': None})
 def redirect_portfolio(doc):
     path = ''
     if doc:
