@@ -475,6 +475,7 @@
 
     <xsl:template match="ul">
         <ul>
+            <xsl:copy-of select="@*"/>
             <xsl:apply-templates/>
         </ul>
     </xsl:template>
@@ -645,6 +646,13 @@
 
 	<xsl:template name="head">
 		<xsl:apply-templates/>
+	</xsl:template>
+
+    <xsl:template match="div">
+        <div>
+			<xsl:copy-of select="@*"/>
+			<xsl:apply-templates/>
+		</div>
 	</xsl:template>
 
 	<xsl:template match="link">
