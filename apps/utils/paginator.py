@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from math import ceil
+from util import run_query
 from werkzeug.utils import cached_property
 
 __all__ = (
@@ -44,7 +45,7 @@ class Paginator(object):
         top = bottom + self.per_page
         page_items = self.object_list[bottom:top+1]
     else:
-        page_items = self.object_list.fetch(self.per_page, offset=bottom)
+        page_items = run_query(self.object_list, self.per_page, offset=bottom)
     if not page_items:
       if number == 1 and self.allow_empty_first_page:
         pass
