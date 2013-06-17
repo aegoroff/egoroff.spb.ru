@@ -6,6 +6,12 @@
         xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
         >
 
+    <xsl:output
+        method="html"
+		omit-xml-declaration="yes"
+		encoding="utf-8"
+	/>
+
     <xsl:variable name="message_file">messages.xml</xsl:variable>
 
     <!-- Read the localized messages from the specified language file -->
