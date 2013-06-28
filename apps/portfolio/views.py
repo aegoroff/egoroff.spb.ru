@@ -3,6 +3,7 @@ import os
 from urlparse import urljoin
 import flask
 from flask import Blueprint, render_template
+from google.appengine.api import memcache
 from lxml import etree
 import time
 from apps.file.models import Folder, File
@@ -79,15 +80,19 @@ def get_doc(doc):
             apache_docs=create_apache_docs()
         )
 
-    parser = etree.XMLParser(load_dtd=False, dtd_validation=False)
-    parser.resolvers.add(FileResolver())
+    content = memcache.get(doc)
 
-    xml_input = etree.parse(APACHE_DOC_PATH_TEMPLATE.format(doc), parser)
-    stylesheet = data["stylesheet"]
-    xslt_root = etree.parse('apache/{0}.xsl'.format(stylesheet), parser)
-    transform = etree.XSLT(xslt_root)
+    if not content:
+        parser = etree.XMLParser(load_dtd=False, dtd_validation=False)
+        parser.resolvers.add(FileResolver())
 
-    content = unicode(transform(xml_input))
+        xml_input = etree.parse(APACHE_DOC_PATH_TEMPLATE.format(doc), parser)
+        stylesheet = data["stylesheet"]
+        xslt_root = etree.parse('apache/{0}.xsl'.format(stylesheet), parser)
+        transform = etree.XSLT(xslt_root)
+
+        content = unicode(transform(xml_input))
+        memcache.add(doc, content, 86400)
 
     return render_template(
         'portfolio/apache_document.html',
