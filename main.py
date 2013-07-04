@@ -120,9 +120,13 @@ def welcome():
 
 @app.route('/search/')
 def search():
+    title=u'Поиск'
+    q = util.param('q')
+    if q:
+        title = u"Результаты по запросу: {0}".format(q)
     return flask.render_template(
         'search.html',
-        title=u'Поиск',
+        title=title,
         html_class='search'
     )
 

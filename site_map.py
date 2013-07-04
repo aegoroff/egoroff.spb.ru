@@ -18,4 +18,9 @@ MAP = [
         CLASS: "icon-book",
         TITLE: u"Блог"
     },
+    {
+        ID: "search",
+        CLASS: "icon-search",
+        TITLE: u"Поиск"
+    },
 ]
