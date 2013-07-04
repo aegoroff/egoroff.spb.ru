@@ -15,6 +15,5 @@ div.note p,div.warning p{margin:0.5em 0 0 0;padding:0;}
 div.directive div.td,div.directive div.th{padding:3px;}
 div.warning{border:1px solid #f00;}
 table div.example{margin-right:1em;}
-#gs_tti0>input{margin-top:-1px !important;}
-.box{background:#ffffff;border:2px solid #D9D9D9;border-radius:15px;-moz-border-radius:15px;-webkit-border-radius:15px;margin-top:10px;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;}
+#gs_tti0>input{margin-top:-4px !important;}
 .gsc-input-box input[type="text"],.gsc-input-box input[type="text"]:focus,.gsc-input-box input[type="text"]:active{-webkit-box-shadow:none;-moz-box-shadow:none;box-shadow:none;}
