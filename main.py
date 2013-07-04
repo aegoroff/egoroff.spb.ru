@@ -118,6 +118,14 @@ def welcome():
         rnd=random.randint(0,limit-1)
     )
 
+@app.route('/search/')
+def search():
+    return flask.render_template(
+        'search.html',
+        title=u'Поиск',
+        html_class='search'
+    )
+
 @app.route('/sitemap.xml')
 def sitemap():
     create = lambda path: urljoin(flask.request.url_root, path)
