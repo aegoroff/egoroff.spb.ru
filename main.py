@@ -154,7 +154,10 @@ def sitemap():
         p = util.create_page(loc, "yearly")
         pages.append(p)
 
-    return current_app.response_class(util.create_site_map_xml(pages), mimetype='application/xml')
+    sitemap_xml = flask.render_template('sitemap.html', pages=pages , mimetype='text/xml')
+    response = flask.make_response(sitemap_xml)
+    response.headers["Content-Type"] = "application/xml"
+    return response
 
 ################################################################################
 # Profile stuff
