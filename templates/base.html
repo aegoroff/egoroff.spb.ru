@@ -26,13 +26,16 @@
   </head>
 
   <body>
+<!--noindex-->
     # include 'bit/top_bar.html'
     # include 'bit/breadcrumbs.html'
+<!--/noindex-->
     <div class="container-fluid main-container">
       # include 'bit/notifications.html'
       # block content
       # endblock
     </div>
+<!--noindex-->
     # include 'bit/footer.html'
     # include 'bit/script.html'
     # if not current_user.admin and config.CONFIG_DB.analytics_id
@@ -44,6 +47,7 @@
     # endif
     # block scripts
     # endblock
+<!--/noindex-->
   </body>
 </html>
 {% endstrip %}
