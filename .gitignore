@@ -1,4 +1,6 @@
 *.pyc
 .idea/
+lib.zip
 node_modules/
 static/dst/
+static/min/
