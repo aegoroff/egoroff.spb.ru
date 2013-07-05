@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from google.appengine.ext import ndb
 import modelx
 from uuid import uuid4
