@@ -65,7 +65,7 @@ def load_user(key):
   return None
 
 
-login_manager.setup_app(app)
+login_manager.init_app(app)
 
 
 def current_user_id():
@@ -189,10 +189,10 @@ twitter_oauth = flaskext.oauth.OAuth()
 
 twitter = twitter_oauth.remote_app(
     'twitter',
-    base_url='http://api.twitter.com/1/',
+    base_url='https://api.twitter.com/1.1/',
     request_token_url='https://api.twitter.com/oauth/request_token',
     access_token_url='https://api.twitter.com/oauth/access_token',
-    authorize_url='https://api.twitter.com/oauth/authorize',
+    authorize_url='https://api.twitter.com/oauth/authenticate',
     consumer_key=config.CONFIG_DB.twitter_consumer_key,
     consumer_secret=config.CONFIG_DB.twitter_consumer_secret,
   )
