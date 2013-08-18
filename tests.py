@@ -153,6 +153,11 @@ class HumanSizeFormatTest(unittest.TestCase):
         r = util.format_datetime_ago(d)
         self.assertEqual(u'2 месяца назад', r)
 
+    def test2MonthAgo58Days(self):
+        d = datetime.datetime.utcnow() - datetime.timedelta(days=58)
+        r = util.format_datetime_ago(d)
+        self.assertEqual(u'2 месяца назад', r)
+
     def test5MonthAgo(self):
         d = datetime.datetime.utcnow() - datetime.timedelta(days=155)
         r = util.format_datetime_ago(d)
