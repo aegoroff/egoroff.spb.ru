@@ -138,6 +138,8 @@ def sitemap():
     pages = [util.create_page(create(''), "weekly")]
 
     for item in site_map.MAP:
+        if item[site_map.ID] == 'search': # filter search because it disabled it robots.txt
+            continue
         p = util.create_page(full_uri(item[site_map.ID]), "weekly", '0.7')
         pages.append(p)
 
