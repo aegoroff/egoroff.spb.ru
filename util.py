@@ -91,7 +91,7 @@ def jsonify_model_dbs(model_dbs, more_cursor=None):
     result_objects.append(model_db_to_object(model_db))
 
   response_object = {
-      'status': 'success',
+      'success': True,
       'count': len(result_objects),
       'now': format_datetime_utc(datetime.utcnow()),
       'result': result_objects,
@@ -108,7 +108,7 @@ def jsonify_model_db(model_db):
   '''
   result_object = model_db_to_object(model_db)
   response = flask.jsonify({
-      'status': 'success',
+      'success': True,
       'now': format_datetime_utc(datetime.utcnow()),
       'result': result_object,
     })
