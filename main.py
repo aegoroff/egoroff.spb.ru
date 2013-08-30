@@ -108,14 +108,13 @@ app.jinja_env.filters["typo"] = typo
 
 @app.route('/')
 def welcome():
-    limit = 5
+    limit = 10
     posts = util.run_query(create_posts_query(), limit)
     return flask.render_template(
         'welcome.html',
         html_class='welcome',
         apache_docs=create_apache_docs(),
-        posts=posts,
-        rnd=random.randint(0,limit-1)
+        posts=posts
     )
 
 @app.route('/search/')

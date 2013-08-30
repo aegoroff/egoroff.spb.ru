@@ -11,14 +11,6 @@
 
 # block content
 {% strip %}
-<div class="hero-unit">
-    <h1>{{ posts[rnd].title }}</h1>
-
-    <p>{{ posts[rnd].short_text | safe }}<p>
-        <a href="{{ url_for('news.post', key_id=posts[rnd].key.id()) }}" class="btn btn-primary btn-large">Читать далее ...</a>
-    </p>
-</div>
-
 # include 'bit/search.html'
 
 <div class="row-fluid">

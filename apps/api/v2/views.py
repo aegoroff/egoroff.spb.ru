@@ -64,12 +64,3 @@ def get_post_json(key_id):
 def post_json():
     return get_post_json(param('id', int))
 
-
-@mod.route('/get.random.post.json')
-@except_wrap
-def random_post_json():
-    limit = 5
-    offset = 0
-    posts = get_posts_ids(limit, offset)
-    ix = random.randint(0, len(posts) - 1)
-    return get_post_json(posts[ix])

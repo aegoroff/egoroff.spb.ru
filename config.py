@@ -39,7 +39,6 @@ SCRIPTS_MODULES = [
     'libs',
     'jquery.plugins',
     'scripts',
-    'home',
     'syntax-highlighter',
     'admin'
   ]
