@@ -25,7 +25,8 @@ def render_json(value):
 @mod.route('/')
 def index():
     return render_template(
-        'api/v2/index.html'
+        'api/v2/index.html',
+        title=u'JSON API',
     )
 
 @mod.route('/posts.json')
