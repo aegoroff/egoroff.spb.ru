@@ -23,4 +23,9 @@ MAP = [
         CLASS: "icon-search",
         TITLE: u"Поиск"
     },
+    {
+        ID: "news.recent_feed",
+        CLASS: "icon-rss",
+        TITLE: u"RSS"
+    },
 ]
