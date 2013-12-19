@@ -6,7 +6,7 @@ from flask import Blueprint, render_template
 from google.appengine.api import memcache
 from lxml import etree
 import time
-from apps.file.models import Folder, File
+from apps.file.models import Folder
 
 import site_map
 import util
@@ -46,9 +46,10 @@ def create_apache_docs():
 
 main_section_item = site_map.MAP[0]
 
+
 @mod.route('/')
 def index():
-    folders = Folder.query(Folder.is_public == True).fetch(use_memcache=True, use_cache=True)
+    folders = Folder.query(Folder.is_public).fetch(use_memcache=True, use_cache=True)
     downloads = {}
     for f in folders:
         files = []
