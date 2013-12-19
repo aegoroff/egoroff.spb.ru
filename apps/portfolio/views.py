@@ -49,7 +49,7 @@ main_section_item = site_map.MAP[0]
 
 @mod.route('/')
 def index():
-    folders = Folder.query(Folder.is_public).fetch(use_memcache=True, use_cache=True)
+    folders = Folder.query(Folder.is_public == True).fetch(use_memcache=True, use_cache=True)
     downloads = {}
     for f in folders:
         files = []
