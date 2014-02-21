@@ -103,7 +103,7 @@ def remove_dir(directory):
 
 
 def clean_files():
-  bad_endings = ['pyc', '~']
+  bad_endings = ['pyc', 'pyo', '~']
   print_out(
       'CLEAN FILES',
       'Removing files: %s' % ', '.join(['*%s' % e for e in bad_endings]),
