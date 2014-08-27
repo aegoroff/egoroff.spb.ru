@@ -38,6 +38,7 @@ STYLES = [
 SCRIPTS_MODULES = [
     'libs',
     'jquery.plugins',
+    'moment',
     'scripts',
     'syntax-highlighter',
     'admin'
@@ -58,10 +59,12 @@ SCRIPTS = {
         'lib/jquery.form.js',
         'lib/jquery.tablesorter.js',
         'lib/jquery.metadata.js',
-        'lib/jquery.dateFormat-1.0.js',
     ],
     'admin':[
         'lib/redactor.js'
+    ],
+    'moment':[
+        'lib/moment-with-locales.js'
     ],
     'syntax-highlighter': [
         'lib/syntax-highlighter/shCore.js',
@@ -83,6 +86,7 @@ SCRIPTS = {
       'src/coffee/site/profile.coffee',
       'src/coffee/site/admin.coffee',
       'src/coffee/site/news.async.reader.coffee',
+      'src/coffee/site/format.date.coffee',
     ],
     'home': [
       'src/coffee/site/rotate.post.coffee',

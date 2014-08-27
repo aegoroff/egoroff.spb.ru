@@ -6,7 +6,7 @@ $ ->
     offset = ov.val()
     limit = lv.val()
     $.get(api_uri + '?offset=' + offset + '&limit=' + limit, onRssSuccess)
-    ov.attr("value", parseInt(offset) + parseInt(limit))
+    ov.attr("value", parseInt(offset, 10) + parseInt(limit, 10))
   more.button()
 
   month = $('div#accordion > div > ul > li > a')
@@ -20,13 +20,17 @@ $ ->
     for v in vars
       pair = v.split('=')
       if pair[0] == 'month'
-          m = pair[1]
+          m = parseInt(pair[1], 10)
        else
-          y = pair[1]
+          y = parseInt(pair[1], 10)
     dlLog = $("body").find("dl#blog")
     dlLog.empty()
     dlLog.append("<dt>Загрузка данных. Пожалуйста подождите ...</dt>")
-    $('ul.breadcrumb > li.active').text($.format.date(new Date(y, m, 1), "Записи за N yyyy"))
+
+    mmt = moment(new Date(y, m - 1, 10))
+    mmt.locale('ru')
+
+    $('ul.breadcrumb > li.active').text("Записи за " + mmt.format('MMMM YYYY'))
     $.get(api_uri + '?year=' + y + '&month=' + m, onArchieveRssSuccess)
   month.button()
 
@@ -54,7 +58,9 @@ loadBlog = (items, dlLog) ->
       date = date.substring(0, date.length - 4)
       title = item["title"]
       description = item["short_text"]
-      humanReadableDate = $.format.date(date, "dd MMMM yyyy")
+
+      mmt = moment(date)
+      mmt.locale('ru')
 
       base = window.location.origin
       current_uri = window.location.href
@@ -62,5 +68,5 @@ loadBlog = (items, dlLog) ->
       link = "<a href=\"" + item_uri + "\">" + title + "</a>"
       if current_uri == item_uri
         link = '<span>' + title + '</span>'
-      dlLog.append("<dt><small><i class=\"icon-calendar\"></i> <span class=\"shortDateFormat\">" + humanReadableDate + "</span></small>&nbsp;" + link + "</dt>")
+      dlLog.append("<dt><small><i class=\"icon-calendar\"></i> <span class=\"shortDateFormat\">" + mmt.format('LL') + "</span></small>&nbsp;" + link + "</dt>")
       dlLog.append("<dd>" + description + "</dd>")
