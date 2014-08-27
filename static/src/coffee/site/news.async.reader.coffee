@@ -12,6 +12,8 @@ $ ->
   month = $('div#accordion > div > ul > li > a')
   month.click (event) ->
     href = event.target.hash
+    $('div#accordion > div > ul > li').removeClass('active')
+    $(this).parent('li').addClass('active')
     vars = href.split('&')
     y = 1
     m = 1
