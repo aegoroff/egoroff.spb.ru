@@ -211,7 +211,7 @@
                             pattern = "";
                             break;
                         case "N":
-                            retValue += strLongMonthNominative(month);
+                            retValue += strLongMonthNominative(month - 1);
                             pattern = "";
                             break;
                         case "MMMM":
