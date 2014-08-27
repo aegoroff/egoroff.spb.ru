@@ -26,6 +26,7 @@ $ ->
     dlLog = $("body").find("dl#blog")
     dlLog.empty()
     dlLog.append("<dt>Загрузка данных. Пожалуйста подождите ...</dt>")
+    $('ul.breadcrumb > li.active').text($.format.date(new Date(y, m, 1), "Записи за N yyyy"))
     $.get(api_uri + '?year=' + y + '&month=' + m, onArchieveRssSuccess)
   month.button()
 

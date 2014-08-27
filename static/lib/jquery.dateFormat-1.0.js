@@ -4,6 +4,10 @@
 		var shortMonthsInYear = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 		var longMonthsInYear = ["января", "февраля", "марта", "апреля", "мая", "июня",
         "июля", "августа", "сентября", "октября", "ноября", "декабря"];
+
+        var longMonthsInYearNominative = ["январь", "февраль", "март", "апрель", "май", "июнь",
+        "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь"];
+
 		var shortMonthsToNumber = [];
 		shortMonthsToNumber["Jan"] = "01";
 		shortMonthsToNumber["Feb"] = "02";
@@ -31,6 +35,11 @@
         function strLongMonth(value) {
 					var monthArrayIndex = parseInt(value, 10) - 1;
 					return longMonthsInYear[monthArrayIndex] || value;
+        }
+
+        function strLongMonthNominative(value) {
+					var monthArrayIndex = parseInt(value, 10) - 1;
+					return longMonthsInYearNominative[monthArrayIndex] || value;
         }
 
         var parseMonth = function (value) {
@@ -199,6 +208,10 @@
                                	dayOfMonth = dayOfMonth + 'th';
                         	}
                             retValue += dayOfMonth;
+                            pattern = "";
+                            break;
+                        case "N":
+                            retValue += strLongMonthNominative(month);
                             pattern = "";
                             break;
                         case "MMMM":
