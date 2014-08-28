@@ -2,7 +2,7 @@
     <dt>
         <small>
             <i class="icon-calendar"></i> <span class="shortDateFormat" data-bind="text: created"></span>
-        </small>&nbsp;<a data-bind="text: title, attr: { href: '/blog/' + id() + '.html'  }, linkToPost"></a>
+        </small>&nbsp;<a data-bind="text: title, attr: { href: '{{ url_for('news.index') }}' + id() + '.html'  }"></a>
     </dt>
     <dd data-bind="html: short_text"></dd>
 </script>
