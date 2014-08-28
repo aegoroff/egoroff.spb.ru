@@ -1,4 +1,22 @@
 $ ->
+  createDate = (v) ->
+    mmt = moment.utc(v)
+    mmt.locale('ru')
+    timez = jstz.determine().name()
+    return mmt.tz(timez)
+
+  formatDateWith = (v, formatSting) ->
+    return createDate(v).format(formatSting)
+
+  formatDateFromNow = (v) ->
+    return createDate(v).fromNow()
+
+  formatElementWith = (elem, formatSting) ->
+    if $(elem).is(":input")
+      $(elem).val(formatDateWith($(elem).val(), formatSting))
+    else
+      $(elem).text(formatDateWith($(elem).text(), formatSting))
+
   $(document).ready ->
       $(".shortDateFormat").each (idx, elem) ->
           formatElementWith(elem, 'LL')
@@ -6,20 +24,6 @@ $ ->
           formatElementWith(elem, 'LLL')
       $(".date-from-now").each (idx, elem) ->
         if $(elem).is(":input")
-            mmt = moment($(elem).val())
-            mmt.locale('ru')
-            $(elem).val(mmt.fromNow())
+            $(elem).val(formatDateFromNow($(elem).val()))
           else
-            mmt = moment($(elem).text())
-            mmt.locale('ru')
-            $(elem).text(mmt.fromNow())
-
-formatElementWith = (elem, formatSting) ->
-  if $(elem).is(":input")
-    mmt = moment($(elem).val())
-    mmt.locale('ru')
-    $(elem).val(mmt.format(formatSting))
-  else
-    mmt = moment($(elem).text())
-    mmt.locale('ru')
-    $(elem).text(mmt.format(formatSting))
+            $(elem).text(formatDateFromNow($(elem).text()))

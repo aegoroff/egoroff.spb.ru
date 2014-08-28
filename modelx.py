@@ -25,18 +25,6 @@ class BaseX(object):
     except:
       return None
 
-  @ndb.ComputedProperty
-  def created_utc(self):
-    if not self.created:
-      return None
-    return util.format_datetime_utc(self.created)
-
-  @ndb.ComputedProperty
-  def modified_utc(self):
-    if not self.modified:
-      return None
-    return util.format_datetime_utc(self.modified)
-
 
 class ConfigX(object):
   @classmethod

@@ -64,7 +64,9 @@ SCRIPTS = {
         'lib/redactor.js'
     ],
     'moment':[
-        'lib/moment-with-locales.js'
+        'lib/moment-with-locales.js',
+        'lib/moment-timezone-with-data.js',
+        'lib/jstz-1.0.4.min.js',
     ],
     'syntax-highlighter': [
         'lib/syntax-highlighter/shCore.js',

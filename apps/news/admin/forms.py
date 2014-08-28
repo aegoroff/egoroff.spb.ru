@@ -43,7 +43,7 @@ class PostForm(wtf.Form):
     created = wtf.DateTimeField(
         u'Создано',
         description=u'Дата создания',
-        default=datetime.datetime.now(GMT3()),
+        default=datetime.datetime.now(),
         validators=[wtf.validators.required()]
     )
     title = wtf.TextField(
