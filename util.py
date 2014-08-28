@@ -187,7 +187,7 @@ def slugify(value):
 # In Time
 ################################################################################
 def format_datetime_utc(datetime):
-  return datetime.strftime('%Y-%m-%d %H:%M:%S UTC')
+  return datetime.strftime('%Y-%m-%dT%H:%M:%S.000Z')
 
 
 SECOND = 1

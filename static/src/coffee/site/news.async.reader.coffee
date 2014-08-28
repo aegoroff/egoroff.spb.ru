@@ -5,7 +5,7 @@ $ ->
     lv = $("input#limitValue")
     offset = ov.val()
     limit = lv.val()
-    service_call('get', api_uri, { "offset" : offset, "limit" : limit }, null, onRssSuccess)
+    service_call('get', api_uri, { "offset" : offset, "limit" : limit }, onRssSuccess)
     ov.attr("value", parseInt(offset, 10) + parseInt(limit, 10))
   more.button()
 
@@ -31,7 +31,7 @@ $ ->
     mmt.locale(user_lang())
 
     $('ul.breadcrumb > li.active').text("Записи за " + mmt.format('MMMM YYYY'))
-    service_call('get', api_uri, { "year" : y, "month" : m }, null, onArchieveRssSuccess)
+    service_call('get', api_uri, { "year" : y, "month" : m }, onArchieveRssSuccess)
   month.button()
 
   onRssSuccess = (result) ->
