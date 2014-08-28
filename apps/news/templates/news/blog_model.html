@@ -2,7 +2,7 @@
     <dt>
         <small>
             <i class="icon-calendar"></i> <span class="shortDateFormat" data-bind="text: created"></span>
-        </small>&nbsp;<a data-bind="text: title, attr: { href: id }"></a>
+        </small>&nbsp;<a data-bind="text: title, attr: { href: '/blog/' + id() + '.html'  }, linkToPost"></a>
     </dt>
     <dd data-bind="html: short_text"></dd>
 </script>
@@ -22,6 +22,12 @@
         this.SuccessfullyRetrievedPosts = function(posts) {
             ko.mapping.fromJS(posts, self.blogPosts);
         };
+
+        this.postProcessingLogic = function(elements) {
+            $(elements).each(function(idx, elem) {
+                formatElementWith($(elem).find("span.shortDateFormat"), 'LL');
+            });
+        }
     }
 
     vm = new BlogViewModel();

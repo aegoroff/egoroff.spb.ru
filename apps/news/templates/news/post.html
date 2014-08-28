@@ -36,7 +36,11 @@
             <h4>
                 Из последнего
             </h4>
-            <dl id="log" data-bind="template: {name: 'blog', foreach: blogPosts}"></dl>
+            <dl id="log" data-bind="template: {
+                        name: 'blog',
+                        foreach: blogPosts,
+                        afterRender: postProcessingLogic
+                        }"></dl>
 
             <div class="span12">
                 {% include 'bit/more_posts.html' %}

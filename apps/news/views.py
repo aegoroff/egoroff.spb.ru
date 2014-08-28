@@ -188,13 +188,11 @@ def get_post(key_id):
         limit += offset
     offset += original_limit
 
-    last = util.run_query(create_posts_query(), limit)
     return render_template(
         'news/post.html',
         title=post.title,
         main_post=post,
         content=content,
-        last=last,
         limit=original_limit,
         offset=offset,
         full_uri=urljoin(flask.request.url_root, flask.url_for('news.post', key_id=key_id)),
