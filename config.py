@@ -87,8 +87,8 @@ SCRIPTS = {
       'src/coffee/site/app.coffee',
       'src/coffee/site/profile.coffee',
       'src/coffee/site/admin.coffee',
-      'src/coffee/site/news.async.reader.coffee',
       'src/coffee/site/format.date.coffee',
+      'src/coffee/site/news.async.reader.coffee',
     ],
     'home': [
       'src/coffee/site/rotate.post.coffee',

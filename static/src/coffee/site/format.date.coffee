@@ -1,13 +1,4 @@
 $ ->
-  createDate = (v) ->
-    mmt = moment.utc(v)
-    mmt.locale('ru')
-    timez = jstz.determine().name()
-    return mmt.tz(timez)
-
-  formatDateWith = (v, formatSting) ->
-    return createDate(v).format(formatSting)
-
   formatDateFromNow = (v) ->
     return createDate(v).fromNow()
 
