@@ -2,7 +2,13 @@
     <dt>
         <small>
             <i class="icon-calendar"></i> <span class="shortDateFormat" data-bind="text: created"></span>
-        </small>&nbsp;<a data-bind="text: title, attr: { href: '{{ url_for('news.index') }}' + id() + '.html'  }"></a>
+        </small>&nbsp;
+        <!-- ko ifnot: id() == '{{ main_post.key.id() }}' -->
+        <a data-bind="text: title, attr: { href: '{{ url_for('news.index') }}' + id() + '.html'  }"></a>
+        <!-- /ko -->
+        <!-- ko if: id() == '{{ main_post.key.id() }}' -->
+        <span data-bind="text: title"></span>
+        <!-- /ko -->
     </dt>
     <dd data-bind="html: short_text"></dd>
 </script>
