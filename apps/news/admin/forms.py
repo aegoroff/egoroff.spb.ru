@@ -4,25 +4,6 @@ import datetime
 from flaskext import wtf
 
 
-class GMT3(datetime.tzinfo):
-    def utcoffset(self, dt):
-        return datetime.timedelta(hours=3) + self.dst(dt)
-
-    def dst(self, dt):
-        d = datetime.datetime(dt.year, 4, 1)
-        self.dston = d - datetime.timedelta(days=d.weekday() + 1)
-        self.datetime = datetime.datetime(dt.year, 11, 1)
-        d = self.datetime
-        self.dstoff = d - datetime.timedelta(days=d.weekday() + 1)
-        if self.dston <= dt.replace(tzinfo=None) < self.dstoff:
-            return datetime.timedelta(hours=1)
-        else:
-            return datetime.timedelta(0)
-
-    def tzname(self, dt):
-        return "GMT +3"
-
-
 class TagListField(wtf.Field):
     widget = wtf.TextInput()
 
