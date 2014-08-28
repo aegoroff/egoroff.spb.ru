@@ -14,7 +14,7 @@
         this.blogPosts = ko.mapping.fromJS([]);
 
         this.GetPosts = function() {
-            service_call('get', '/api/v2/posts.json', { "offset": 0, "limit": 5 }, function(data) {
+            service_call('get', '/api/v2/posts.json', { "offset": {{ offset }}, "limit": {{ limit }} }, function(data) {
                 self.SuccessfullyRetrievedPosts(data.result);
             });
         };

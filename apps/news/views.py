@@ -194,7 +194,7 @@ def get_post(key_id):
         main_post=post,
         content=content,
         limit=original_limit,
-        offset=offset,
+        offset=0,
         full_uri=urljoin(flask.request.url_root, flask.url_for('news.post', key_id=key_id)),
     )
 
