@@ -210,39 +210,6 @@ def declension(number, nominative, genitiveSingular, genitivePlural):
     return genitivePlural
 
 
-def format_datetime_ago(timestamp):
-  delta = datetime.utcnow() - timestamp
-  seconds = delta.seconds + delta.days * DAY
-  minutes = 1.0 * seconds / MINUTE
-  hours = 1.0 * seconds / HOUR
-  days = 1.0 * seconds / DAY
-  months = 1.0 * seconds / MONTH
-  years = 1.0 * seconds / YEAR
-
-  fround = lambda x: int(round(x))
-  ago_template = u'%0.0f %s назад'
-  if seconds < 0:
-    return u'только что'
-  if seconds < 1 * MINUTE:
-    return u'%d %s назад' % (seconds, declension(seconds, u"секунду", u"секунды", u"секунд"))
-  if seconds < 2 * MINUTE:
-    return u'минуту назад'
-  if seconds < 45 * MINUTE:
-    return ago_template % (fround(minutes), declension(fround(minutes), u"минуту", u"минуты", u"минут"))
-  if seconds < 90 * MINUTE:
-    return u'час назад'
-  if seconds < 24 * HOUR:
-    return ago_template % (fround(hours), declension(fround(hours), u"час", u"часа", u"часов"))
-  if seconds < 48 * HOUR:
-    return u'вчера'
-  if seconds < 30 * DAY:
-    return ago_template % (fround(days), declension(fround(days), u"день", u"дня", u"дней"))
-  if seconds < 12 * MONTH:
-    return ago_template % (fround(months), declension(fround(months), u"месяц", u"месяца", u"месяцев"))
-  else:
-    return ago_template % (fround(years), declension(fround(years), u"год", u"года", u"лет"))
-
-
 def readJson(path):
     with open(path) as f:
         return json.load(f, encoding="UTF-8")

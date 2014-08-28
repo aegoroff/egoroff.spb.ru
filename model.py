@@ -8,7 +8,7 @@ from uuid import uuid4
 class Base(ndb.Model, modelx.BaseX):
   created = ndb.DateTimeProperty(auto_now_add=True)
   modified = ndb.DateTimeProperty(auto_now=True)
-  _PROPERTIES = {'key', 'id', 'created', 'modified', 'created_ago', 'modified_ago'}
+  _PROPERTIES = {'key', 'id', 'created', 'modified'}
 
 
 class Config(Base, modelx.ConfigX):

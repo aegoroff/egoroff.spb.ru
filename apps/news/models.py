@@ -12,7 +12,7 @@ class Post(Base):
     short_text = ndb.TextProperty(verbose_name=u'Краткое описание', required=True)
     text = ndb.TextProperty(verbose_name=u'Основной текст')
     tags = ndb.StringProperty(verbose_name=u'Теги', repeated=True)
-    _PROPERTIES = {'key', 'id', 'created', 'modified', 'created_ago', 'modified_ago', 'title', 'short_text'}
+    _PROPERTIES = {'key', 'id', 'created', 'modified', 'title', 'short_text'}
 
 class Tag(object):
   """Holds tag properties """

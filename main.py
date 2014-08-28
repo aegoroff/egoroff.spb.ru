@@ -90,13 +90,6 @@ def inject_breadcrumbs():
     return dict(breadcrumbs=create_breadcrumbs([]))
 
 
-@app.template_filter('time_ago')
-def time_ago(timestamp):
-    return util.format_datetime_ago(timestamp)
-
-
-app.jinja_env.filters["time_ago"] = time_ago
-
 
 @app.template_filter('typo')
 def typo(s):
