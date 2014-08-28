@@ -23,3 +23,9 @@ window.createDate = (v) ->
 
 window.formatDateWith = (v, formatSting) ->
   return createDate(v).format(formatSting)
+
+window.formatElementWith = (elem, formatSting) ->
+  if $(elem).is(":input")
+    $(elem).val(formatDateWith($(elem).val(), formatSting))
+  else
+    $(elem).text(formatDateWith($(elem).text(), formatSting))

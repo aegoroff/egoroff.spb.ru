@@ -1,21 +1,5 @@
 {% extends 'base.html' %}
 
-# block scripts
-<script type="text/javascript">
-    SyntaxHighlighter.defaults['toolbar'] = false;
-    SyntaxHighlighter.all();
-</script>
-<script type="text/javascript" src="https://apis.google.com/js/plusone.js">
-  {lang: 'ru'}
-</script>
-<script type="text/javascript">
-function renderPlusone() {
-    gapi.plusone.render("plusone-div", { "size": "small" });
-}
-renderPlusone();
-</script>
-# endblock
-
 # block head
 <style type="text/css">
 .syntaxhighlighter { overflow-y: hidden !important; }
@@ -52,11 +36,8 @@ renderPlusone();
             <h4>
                 Из последнего
             </h4>
-            <dl id="log">
-                {% for post in last %}
-                    {% include 'news/post_box.html' %}
-                {% endfor %}
-            </dl>
+            <dl id="log" data-bind="template: {name: 'blog', foreach: blogPosts}"></dl>
+
             <div class="span12">
                 {% include 'bit/more_posts.html' %}
                 <p/>
@@ -65,3 +46,23 @@ renderPlusone();
         </div>
     </div>
 {% endblock %}
+
+# block scripts
+
+<script type="text/javascript">
+    SyntaxHighlighter.defaults['toolbar'] = false;
+    SyntaxHighlighter.all();
+</script>
+<script type="text/javascript" src="https://apis.google.com/js/plusone.js">
+  {lang: user_lang()}
+</script>
+<script type="text/javascript">
+function renderPlusone() {
+    gapi.plusone.render("plusone-div", { "size": "small" });
+}
+renderPlusone();
+</script>
+
+# include 'news/blog_model.html'
+
+# endblock

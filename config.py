@@ -39,6 +39,7 @@ SCRIPTS_MODULES = [
     'libs',
     'jquery.plugins',
     'moment',
+    'knockout',
     'scripts',
     'syntax-highlighter',
     'admin'
@@ -67,6 +68,10 @@ SCRIPTS = {
         'lib/moment-with-locales.js',
         'lib/moment-timezone-with-data.js',
         'lib/jstz-1.0.4.min.js',
+    ],
+    'knockout':[
+        'lib/knockout-3.2.0.debug.js',
+        'lib/knockout.mapping-latest.debug.js',
     ],
     'syntax-highlighter': [
         'lib/syntax-highlighter/shCore.js',

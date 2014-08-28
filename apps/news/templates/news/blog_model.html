@@ -1,0 +1,31 @@
+<script id="blog" type="text/html">
+    <dt>
+        <small>
+            <i class="icon-calendar"></i> <span class="shortDateFormat" data-bind="text: created"></span>
+        </small>&nbsp;<a data-bind="text: title, attr: { href: id }"></a>
+    </dt>
+    <dd data-bind="html: short_text"></dd>
+</script>
+
+<script>
+    function BlogViewModel() {
+        var self = this;
+
+        this.blogPosts = ko.mapping.fromJS([]);
+
+        this.GetPosts = function() {
+            service_call('get', '/api/v2/posts.json', { "offset": 0, "limit": 5 }, function(data) {
+                self.SuccessfullyRetrievedPosts(data.result);
+            });
+        };
+
+        this.SuccessfullyRetrievedPosts = function(posts) {
+            ko.mapping.fromJS(posts, self.blogPosts);
+        };
+    }
+
+    vm = new BlogViewModel();
+    vm.GetPosts();
+    ko.applyBindings(vm);
+
+</script>
