@@ -15,7 +15,7 @@
 
 <script id="morePosts" type="text/html">
     <!-- ko ifnot: $parent.hideAddButton -->
-    <button class="btn btn-large btn-primary btn-block" type="button" data-bind="click: $parent.getPosts">Больше записей</button>
+    <button class="btn btn-large btn-primary btn-block" id="moreNews" type="button" data-bind="click: $parent.getPosts">Больше записей</button>
     <!-- /ko -->
 </script>
 
@@ -50,15 +50,20 @@
             } else {
                 ko.mapping.fromJS(posts, mapping, self.blogPosts);
             }
-            self.hideAddButton = unmapped.length > 0 && posts.length < self.limit;
+
             self.offset += self.limit;
             self.limit = self.seed;
+            self.hideAddButton = posts.length < self.limit;
         };
 
         this.postProcessingLogic = function(elements) {
             $(elements).each(function(idx, elem) {
                 formatElementWith($(elem).find("span.shortDateFormat"), 'LL');
             });
+
+            if(this.hideAddButton) {
+                $("button#moreNews").remove();
+            }
         }
     }
 

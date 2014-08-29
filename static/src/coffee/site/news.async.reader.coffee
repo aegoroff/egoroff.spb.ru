@@ -1,13 +1,5 @@
 $ ->
   api_uri = '/api/v2/posts.json'
-  more = $("button#moreNews").click ->
-    ov = $("input#offsetValue")
-    lv = $("input#limitValue")
-    offset = ov.val()
-    limit = lv.val()
-    service_call('get', api_uri, { "offset" : offset, "limit" : limit }, onRssSuccess)
-    ov.attr("value", parseInt(offset, 10) + parseInt(limit, 10))
-  more.button()
 
   month = $('div#accordion > div > ul > li > a')
   month.click (event) ->
@@ -33,14 +25,6 @@ $ ->
     $('ul.breadcrumb > li.active').text("Записи за " + mmt.format('MMMM YYYY'))
     service_call('get', api_uri, { "year" : y, "month" : m }, onArchieveRssSuccess)
   month.button()
-
-  onRssSuccess = (result) ->
-    dlLog = $("body").find("dl#log")
-    loadBlog(result.result, dlLog)
-    lv = $("input#limitValue")
-    limit = lv.val()
-    if result.count < parseInt(limit)
-      $("button#moreNews").remove()
 
   onArchieveRssSuccess  = (result) ->
     dlLog = $("body").find("dl#blog")
