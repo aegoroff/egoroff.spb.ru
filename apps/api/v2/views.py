@@ -42,9 +42,14 @@ def posts_json():
         q = q.filter(Post.created >= current_month, Post.created < next_month)
         q = util.run_query(q)
     else:
-        offset = util.param('offset', int) or 0
-        limit = util.param('limit', int) or config.ATOM_FEED_LIMIT
-        q = util.run_query(q, limit, offset=offset)
+        tag = util.param('tag')
+        if tag:
+            q = q.filter(Post.tags.IN([tag]))
+            q = util.run_query(q)
+        else:
+            offset = util.param('offset', int) or 0
+            limit = util.param('limit', int) or config.ATOM_FEED_LIMIT
+            q = util.run_query(q, limit, offset=offset)
     return util.jsonify_model_dbs(q)
 
 
