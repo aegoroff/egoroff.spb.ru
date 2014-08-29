@@ -19,13 +19,13 @@
 
         this.blogPosts = ko.mapping.fromJS([]);
 
-        this.GetPosts = function(limit, offset) {
+        this.getPosts = function(limit, offset) {
             service_call('get', '/api/v2/posts.json', { "offset": offset, "limit": limit }, function(data) {
-                self.SuccessfullyRetrievedPosts(data.result);
+                self.successfullyRetrievedPosts(data.result);
             });
         };
 
-        this.SuccessfullyRetrievedPosts = function(posts) {
+        this.successfullyRetrievedPosts = function(posts) {
             ko.mapping.fromJS(posts, self.blogPosts);
         };
 
@@ -37,7 +37,7 @@
     }
 
     vm = new BlogViewModel();
-    vm.GetPosts({{ limit }},{{ offset }});
+    vm.getPosts({{ limit }},{{ offset }});
     ko.applyBindings(vm);
 
 </script>
