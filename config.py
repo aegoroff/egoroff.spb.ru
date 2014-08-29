@@ -88,12 +88,12 @@ SCRIPTS = {
     'scripts': [
       'src/coffee/common/util.coffee',
       'src/coffee/common/service.coffee',
-
       'src/coffee/site/app.coffee',
       'src/coffee/site/profile.coffee',
       'src/coffee/site/admin.coffee',
       'src/coffee/site/format.date.coffee',
       'src/coffee/site/news.async.reader.coffee',
+      'src/coffee/site/blog.loader.coffee',
     ],
     'home': [
       'src/coffee/site/rotate.post.coffee',
