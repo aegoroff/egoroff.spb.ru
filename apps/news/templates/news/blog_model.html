@@ -13,20 +13,44 @@
     <dd data-bind="html: short_text"></dd>
 </script>
 
+<script id="morePosts" type="text/html">
+    <!-- ko ifnot: $parent.hideAddButton -->
+    <button class="btn btn-large btn-primary btn-block" type="button" data-bind="click: $parent.getPosts">Больше записей</button>
+    <!-- /ko -->
+</script>
+
 <script>
     function BlogViewModel() {
         var self = this;
 
+        this.limit  = {{ limit }};
+        this.offset  = {{ offset }};
+        this.hideAddButton  = false;
+
         this.blogPosts = ko.mapping.fromJS([]);
 
-        this.getPosts = function(limit, offset) {
-            service_call('get', '/api/v2/posts.json', { "offset": offset, "limit": limit }, function(data) {
+        this.getPosts = function() {
+            service_call('get', '{{ url_for('api.v2.posts_json') }}', { "offset": self.offset, "limit": self.limit }, function(data) {
                 self.successfullyRetrievedPosts(data.result);
             });
         };
 
+        var mapping = {
+            key: function (item) {
+                return ko.utils.unwrapObservable(item.id);
+            }
+        };
+
         this.successfullyRetrievedPosts = function(posts) {
-            ko.mapping.fromJS(posts, self.blogPosts);
+            var unmapped = ko.mapping.toJS(self.blogPosts);
+            if(unmapped.length > 0) {
+                Array.prototype.push.apply(unmapped, posts);
+                ko.mapping.fromJS(unmapped, mapping, self.blogPosts);
+            } else {
+                ko.mapping.fromJS(posts, mapping, self.blogPosts);
+            }
+            self.hideAddButton = unmapped.length > 0 && posts.length < self.limit;
+            self.offset += self.limit;
         };
 
         this.postProcessingLogic = function(elements) {
@@ -37,7 +61,7 @@
     }
 
     vm = new BlogViewModel();
-    vm.getPosts({{ limit }},{{ offset }});
+    vm.getPosts();
     ko.applyBindings(vm);
 
 </script>

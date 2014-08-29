@@ -42,9 +42,11 @@
                         afterRender: postProcessingLogic
                         }"></dl>
 
-            <div class="span12">
-                {% include 'bit/more_posts.html' %}
-                <p/>
+            <div class="span12" data-bind="template: {
+                        name: 'morePosts',
+                        data: blogPosts
+                        }">
+
             </div>
             <!--/noindex-->
         </div>
