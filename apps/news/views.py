@@ -182,18 +182,15 @@ def get_post(key_id):
     while True:
         posts = get_posts_ids(limit, offset)
         if key_id in posts: break
-        offset += limit
-
-    if offset > 0:
-        limit += offset
-    offset += original_limit
+        limit += original_limit
 
     return render_template(
         'news/post.html',
         title=post.title,
         main_post=post,
         content=content,
-        limit=original_limit,
+        seed=original_limit,
+        limit=limit,
         offset=0,
         full_uri=urljoin(flask.request.url_root, flask.url_for('news.post', key_id=key_id)),
     )

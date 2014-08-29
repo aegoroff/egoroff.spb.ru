@@ -23,6 +23,7 @@
     function BlogViewModel() {
         var self = this;
 
+        this.seed  = {{ seed }};
         this.limit  = {{ limit }};
         this.offset  = {{ offset }};
         this.hideAddButton  = false;
@@ -51,6 +52,7 @@
             }
             self.hideAddButton = unmapped.length > 0 && posts.length < self.limit;
             self.offset += self.limit;
+            self.limit = self.seed;
         };
 
         this.postProcessingLogic = function(elements) {
