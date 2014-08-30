@@ -74,4 +74,10 @@ renderPlusone();
 
 # include 'news/blog_model.html'
 
+<script>
+    vm = new window.BlogViewModel();
+    vm.getPosts();
+    ko.applyBindings(vm);
+</script>
+
 # endblock

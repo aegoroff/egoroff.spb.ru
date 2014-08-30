@@ -3,10 +3,10 @@
         <small>
             <i class="icon-calendar"></i> <span class="shortDateFormat" data-bind="text: created"></span>
         </small>&nbsp;
-        <!-- ko ifnot: id() == '{{ main_post.key.id() }}' -->
+        <!-- ko ifnot: id() == '{{ key_id }}' -->
         <a data-bind="text: title, attr: { href: '{{ url_for('news.index') }}' + id() + '.html'  }"></a>
         <!-- /ko -->
-        <!-- ko if: id() == '{{ main_post.key.id() }}' -->
+        <!-- ko if: id() == '{{ key_id }}' -->
         <span data-bind="text: title"></span>
         <!-- /ko -->
     </dt>
@@ -17,10 +17,4 @@
     <!-- ko ifnot: $parent.hideAddButton -->
     <button class="btn btn-large btn-primary btn-block" id="moreNews" type="button" data-bind="click: $parent.getPosts">Больше записей</button>
     <!-- /ko -->
-</script>
-
-<script>
-    vm = new window.BlogViewModel();
-    vm.getPosts();
-    ko.applyBindings(vm);
 </script>

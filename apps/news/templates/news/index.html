@@ -9,6 +9,8 @@
         });
     });
 </script>
+
+# include 'news/blog_model.html'
 # endblock
 
 {% block head %}
@@ -23,7 +25,11 @@
             {% if not posts %}
                 Ничего нет
             {% else %}
-                <dl id="blog">
+                <dl id="blog" data-bind="template: {
+                        name: 'blog',
+                        foreach: blogPosts,
+                        afterRender: postProcessingLogic
+                        }">
                     {% for post in posts.object_list %}
                         {% include 'news/post_box.html' %}
                     {% endfor %}
