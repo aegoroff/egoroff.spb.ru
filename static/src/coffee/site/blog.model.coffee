@@ -10,7 +10,15 @@ window.BlogViewModel = ->
       offset: self.offset
       limit: self.limit
     , (data) ->
-      self.successfullyRetrievedPosts data.result
+      self.successfullyRetrievedPosts data.result, true
+      return
+
+    return
+
+  @getPostsUsingQuery = (query, append) ->
+    service_call "get", "/api/v2/posts.json", query
+    , (data) ->
+      self.successfullyRetrievedPosts data.result, append
       return
 
     return
@@ -18,9 +26,9 @@ window.BlogViewModel = ->
   mapping = key: (item) ->
     ko.utils.unwrapObservable item.id
 
-  @successfullyRetrievedPosts = (posts) ->
+  @successfullyRetrievedPosts = (posts, append) ->
     unmapped = ko.mapping.toJS(self.blogPosts)
-    if unmapped.length > 0
+    if unmapped.length > 0 and append
       Array::push.apply unmapped, posts
       ko.mapping.fromJS unmapped, mapping, self.blogPosts
     else
