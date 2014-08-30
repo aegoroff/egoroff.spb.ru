@@ -1,10 +1,6 @@
 {% strip %}
     <dt><small><i class="icon-calendar"></i>&nbsp;<span class="shortDateFormat">{{ post.created }}</span></small>&nbsp;
-        {% if main_post and main_post.key.id() == post.key.id() %}
-            <span>{{ post.title }}</span>
-        {% else %}
-            <a href="{{ url_for('news.post', key_id=post.key.id()) }}">{{ post.title }}</a>
-        {% endif %}
+        <a href="{{ url_for('news.post', key_id=post.key.id()) }}">{{ post.title }}</a>
     </dt>
     <dd>{{ post.short_text | safe }}</dd>
 {% endstrip %}
