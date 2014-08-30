@@ -5,14 +5,17 @@ $ ->
     $("ul.pager").remove()
     $("div.pagination").remove()
 
+  removeSelection = ->
+    $('div.tags > ul > li > a').removeClass('btn')
+    $('div#accordion > div > ul > li').removeClass('active')
+
   setBreadcrumbsText = (txt) ->
     $('ul.breadcrumb > li.active').text(txt)
 
   month = $('div#accordion > div > ul > li > a')
   month.click (event) ->
     href = event.target.hash
-    $('div.tags > ul > li > a').removeClass('btn')
-    $('div#accordion > div > ul > li').removeClass('active')
+    removeSelection()
     $(this).parent('li').addClass('active')
     vars = href.split('&')
     y = 1
@@ -36,8 +39,7 @@ $ ->
 
   tag = $('div.tags > ul > li > a')
   tag.click (event) ->
-    $('div.tags > ul > li > a').removeClass('btn')
-    $('div#accordion > div > ul > li').removeClass('active')
+    removeSelection()
     $(this).addClass('btn')
     href = event.target.hash
     $("dl#blogcontainer").remove()
