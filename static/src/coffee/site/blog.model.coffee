@@ -22,10 +22,13 @@ window.BlogViewModel = ->
     ko.utils.unwrapObservable item.id
 
   @successfullyRetrievedPosts = (posts, append) ->
-    unmapped = ko.mapping.toJS(self.blogPosts)
-    if unmapped.length > 0 and append
-      Array::push.apply unmapped, posts
-      ko.mapping.fromJS unmapped, mapping, self.blogPosts
+    if append
+      unmapped = ko.mapping.toJS(self.blogPosts)
+      if unmapped.length > 0
+        Array::push.apply unmapped, posts
+        ko.mapping.fromJS unmapped, mapping, self.blogPosts
+      else
+        ko.mapping.fromJS posts, mapping, self.blogPosts
     else
       ko.mapping.fromJS posts, mapping, self.blogPosts
     self.offset += self.limit
