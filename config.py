@@ -94,8 +94,8 @@ SCRIPTS = {
       'src/coffee/site/profile.coffee',
       'src/coffee/site/admin.coffee',
       'src/coffee/site/format.date.coffee',
-      'src/coffee/site/news.async.reader.coffee',
-      'src/coffee/site/blog.loader.coffee',
+      'src/coffee/site/blog.model.coffee',
+      'src/coffee/site/blog.async.reader.coffee',
     ],
     'home': [
       'src/coffee/site/rotate.post.coffee',
