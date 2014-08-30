@@ -123,10 +123,12 @@ def index(page):
             k = (m, posts_count)
             archieve[ym[0]].append(k)
 
+    posts = get_paginator(util.run_query(posts), page)
 
     return render_template(
         'news/index.html',
         title=title,
+        posts=posts,
         archieve=archieve,
         tag_selected=tag,
         tags=create_tag_rank(all_posts),
@@ -189,7 +191,7 @@ def get_post(key_id):
         content=content,
         seed=original_limit,
         limit=limit,
-        key_id=post.key.id(),
+        key_id=post.key,
         offset=0,
         full_uri=urljoin(flask.request.url_root, flask.url_for('news.post', key_id=key_id)),
     )

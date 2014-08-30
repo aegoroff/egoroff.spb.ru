@@ -16,6 +16,8 @@ $ ->
        else
           y = parseInt(pair[1], 10)
 
+    $("dl#blogcontainer").remove()
+
     mmt = moment(new Date(y, m - 1, 10))
     mmt.locale(user_lang())
 

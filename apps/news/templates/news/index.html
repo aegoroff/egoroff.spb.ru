@@ -14,7 +14,6 @@
 
 <script>
     vm = new window.BlogViewModel();
-    vm.getPostsUsingQuery({'limit' : 20, 'offset': 0});
     ko.applyBindings(vm);
 
     window.LoadBlog = function(query) {
@@ -32,12 +31,22 @@
     {% strip %}
     <div class="row-fluid">
         <div class="span9">
-            <dl id="blogcontainer" data-bind="template: {
-                    name: 'blog',
-                    foreach: blogPosts,
-                    afterRender: postProcessingLogic
-                    }">
-            </dl>
+            {% if not posts %}
+                Ничего нет
+            {% else %}
+                <dl id="blogcontainer">
+                    {% for post in posts.object_list %}
+                        {% include 'news/post_box.html' %}
+                    {% endfor %}
+                </dl>
+                <dl id="log" data-bind="template: {
+                        name: 'blog',
+                        foreach: blogPosts,
+                        afterRender: postProcessingLogic
+                        }">
+                </dl>
+            {% endif %}
+            {% include 'news/paginator.html' %}
         </div>
         <div class="span3">
             <h3>Метки</h3>
