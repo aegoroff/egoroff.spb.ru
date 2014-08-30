@@ -18,7 +18,22 @@
 
     window.LoadBlog = function(query) {
         vm.getPostsUsingQuery(query, false);
-    }
+    };
+
+    $( document ).ready(function() {
+        if(window.location.hash) {
+            var href = window.location.hash;
+            var vars = href.split('&');
+            vars.forEach(function (v) {
+                var pair = v.split('=');
+                if(pair[0] == '#tag') {
+                    var e = $.Event("click");
+                    $('#t_' + pair[1]).trigger(e);
+                }
+            });
+        }
+    });
+
 </script>
 # endblock
 

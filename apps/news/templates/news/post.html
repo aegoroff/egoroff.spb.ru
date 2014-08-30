@@ -19,7 +19,7 @@
                 <div class="well well-small">
                     Метки:&nbsp;
                     {% for tag in main_post.tags %}
-                       <a href="{{ url_for('news.index') }}?tag={{ tag }}" class="btn">{{ tag }}</a>
+                       <a href="{{ url_for('news.index') }}#tag={{ tag }}" class="btn">{{ tag }}</a>
                     {% endfor %}
                 </div>
             {% endif %}

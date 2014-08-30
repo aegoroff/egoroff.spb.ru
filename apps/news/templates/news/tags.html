@@ -7,7 +7,7 @@
         {% for tag in tags %}
             <li>
                 <a href="{{ url_for('news.index') }}#tag={{ tag.title }}"
-                       class={{ tag.tag_level }}>{{ tag.title }}</a>
+                       class="{{ tag.tag_level }}" id="t_{{ tag.title }}">{{ tag.title }}</a>
             </li>
         {% endfor %}
         </ul>
