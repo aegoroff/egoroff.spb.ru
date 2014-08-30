@@ -123,12 +123,10 @@ def index(page):
             k = (m, posts_count)
             archieve[ym[0]].append(k)
 
-    posts = get_paginator(util.run_query(posts), page)
 
     return render_template(
         'news/index.html',
         title=title,
-        posts=posts,
         archieve=archieve,
         tag_selected=tag,
         tags=create_tag_rank(all_posts),

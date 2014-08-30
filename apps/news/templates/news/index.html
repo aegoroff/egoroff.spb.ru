@@ -32,17 +32,12 @@
     {% strip %}
     <div class="row-fluid">
         <div class="span9">
-            {% if not posts %}
-                Ничего нет
-            {% else %}
-                <dl id="blogcontainer" data-bind="template: {
-                        name: 'blog',
-                        foreach: blogPosts,
-                        afterRender: postProcessingLogic
-                        }">
-                </dl>
-            {% endif %}
-            {% include 'news/paginator.html' %}
+            <dl id="blogcontainer" data-bind="template: {
+                    name: 'blog',
+                    foreach: blogPosts,
+                    afterRender: postProcessingLogic
+                    }">
+            </dl>
         </div>
         <div class="span3">
             <h3>Метки</h3>
