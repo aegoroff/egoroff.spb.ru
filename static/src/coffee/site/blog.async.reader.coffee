@@ -1,6 +1,13 @@
 $ ->
   api_uri = '/api/v2/posts.json'
 
+  removePager = ->
+    $("ul.pager").remove()
+    $("div.pagination").remove()
+
+  setBreadcrumbsText = (txt) ->
+    $('ul.breadcrumb > li.active').text(txt)
+
   month = $('div#accordion > div > ul > li > a')
   month.click (event) ->
     href = event.target.hash
@@ -21,9 +28,20 @@ $ ->
     mmt = moment(new Date(y, m - 1, 10))
     mmt.locale(user_lang())
 
-    $('ul.breadcrumb > li.active').text("Записи за " + mmt.format('MMMM YYYY'))
+    setBreadcrumbsText("Записи за " + mmt.format('MMMM YYYY'))
     window.LoadBlog({ "year" : y, "month" : m })
-    $("ul.pager").remove()
-    $("div.pagination").remove()
-
+    removePager()
   month.button()
+
+  tag = $('div.tags > ul > li > a')
+  tag.click (event) ->
+    $('div.tags > ul > li > a').removeClass('btn')
+    $(this).addClass('btn')
+    href = event.target.hash
+    $("dl#blogcontainer").remove()
+    t = href.split('=')[1]
+    setBreadcrumbsText('Все посты по метке: ' + t)
+    window.LoadBlog({ "tag" : t })
+    removePager()
+  tag.button()
+

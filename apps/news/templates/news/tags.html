@@ -6,12 +6,8 @@
         <ul class="inline">
         {% for tag in tags %}
             <li>
-            {% if tag.title == tag_selected %}
-                <span class={{ tag.tag_level }}>{{ tag.title }}</span>
-            {% else %}
-                <a href="{{ url_for('news.index') }}?tag={{ tag.title }}"
-                   class={{ tag.tag_level }}>{{ tag.title }}</a>
-            {% endif %}
+                <a href="{{ url_for('news.index') }}#tag={{ tag.title }}"
+                       class={{ tag.tag_level }}>{{ tag.title }}</a>
             </li>
         {% endfor %}
         </ul>

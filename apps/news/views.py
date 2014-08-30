@@ -101,16 +101,9 @@ mod.add_app_template_filter(month_tuple_to_string, 'month_tuple_to_string')
 def index(page):
     posts = create_posts_query()
     title = main_section_item[site_map.TITLE]
-    tag = util.param('tag')
-    if tag:
-        title = u"Все посты по метке: {0}".format(tag)
-        posts = posts.filter(Post.tags.IN([tag]))
 
     if page > 1:
-        if not tag:
-            title = u" {0}-я страница".format(page)
-        else:
-            title = u" {0}-я страница постов по метке: {1}".format(page, tag)
+        title = u" {0}-я страница".format(page)
 
     all_posts = util.run_query(create_posts_query())
 
@@ -130,7 +123,6 @@ def index(page):
         title=title,
         posts=posts,
         archieve=archieve,
-        tag_selected=tag,
         tags=create_tag_rank(all_posts),
         key=main_section_item[site_map.ID],
     )
