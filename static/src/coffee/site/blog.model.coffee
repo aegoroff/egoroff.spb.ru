@@ -5,15 +5,6 @@ window.BlogViewModel = ->
   @offset = parseInt($("input#offsetValue").val(), 10)
   @hideAddButton = false
   @blogPosts = ko.mapping.fromJS([])
-  @getPosts = ->
-    service_call "get", "/api/v2/posts.json",
-      offset: self.offset
-      limit: self.limit
-    , (data) ->
-      self.successfullyRetrievedPosts data.result, true
-      return
-
-    return
 
   @getPostsUsingQuery = (query, append) ->
     service_call "get", "/api/v2/posts.json", query
@@ -21,6 +12,10 @@ window.BlogViewModel = ->
       self.successfullyRetrievedPosts data.result, append
       return
 
+    return
+
+  @getPosts = ->
+    self.getPostsUsingQuery({"offset": self.offset, "limit": self.limit}, true)
     return
 
   mapping = key: (item) ->
