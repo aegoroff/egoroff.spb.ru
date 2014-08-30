@@ -11,6 +11,7 @@ $ ->
   month = $('div#accordion > div > ul > li > a')
   month.click (event) ->
     href = event.target.hash
+    $('div.tags > ul > li > a').removeClass('btn')
     $('div#accordion > div > ul > li').removeClass('active')
     $(this).parent('li').addClass('active')
     vars = href.split('&')
@@ -36,6 +37,7 @@ $ ->
   tag = $('div.tags > ul > li > a')
   tag.click (event) ->
     $('div.tags > ul > li > a').removeClass('btn')
+    $('div#accordion > div > ul > li').removeClass('active')
     $(this).addClass('btn')
     href = event.target.hash
     $("dl#blogcontainer").remove()
