@@ -1,18 +1,27 @@
-{% strip %}
+
 {% if not archieve %}
     <p>Ничего нет</p>
 {% else %}
-    <div id="accordion">
-        {% for year in archieve | sort(reverse=True) %}
-            <h3>{{ year }}</h3>
-            <div>
-                <ul class="nav nav-list">
+    <div class="panel-group" id="accordion">
+    {% for year in archieve | sort(reverse=True) %}
+        <div class="panel panel-default">
+            <div class="panel-heading">
+              <h3 class="panel-title">
+                <a data-toggle="collapse" data-parent="#accordion" href="#collapse{{ year }}">
+                  {{ year }}
+                </a>
+              </h3>
+            </div>
+            <div id="collapse{{ year }}" class="panel-collapse collapse{% if year == current_year %} in{% endif %}">
+              <div class="panel-body">
+                <ul class="nav">
                     {% for month in archieve[year] %}
                         <li><a href="#year={{ year }}&month={{ month[0] }}">{{ month | month_tuple_to_string }}</a></li>
                     {% endfor %}
                 </ul>
+              </div>
             </div>
-        {% endfor %}
+        </div>
+    {% endfor %}
     </div>
 {% endif %}
-{% endstrip %}

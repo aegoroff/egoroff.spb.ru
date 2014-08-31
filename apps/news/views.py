@@ -11,6 +11,7 @@ from flask import abort
 import site_map
 import itertools
 import util
+from datetime import date
 from werkzeug.contrib.atom import AtomFeed
 
 mod = Blueprint(
@@ -123,6 +124,7 @@ def index(page):
         title=title,
         posts=posts,
         archieve=archieve,
+        current_year=date.today().year,
         tags=create_tag_rank(all_posts),
         key=main_section_item[site_map.ID],
     )

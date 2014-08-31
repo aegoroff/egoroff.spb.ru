@@ -10,22 +10,22 @@ CHILDS = "childs"
 MAP = [
     {
         ID: "portfolio.index",
-        CLASS: "icon-briefcase",
+        CLASS: "fa fa-briefcase",
         TITLE: u"Портфель"
     },
     {
         ID: "news.index",
-        CLASS: "icon-book",
+        CLASS: "fa fa-book",
         TITLE: u"Блог"
     },
     {
         ID: "search",
-        CLASS: "icon-search",
+        CLASS: "fa fa-search",
         TITLE: u"Поиск"
     },
     {
         ID: "news.recent_feed",
-        CLASS: "icon-rss",
+        CLASS: "fa fa-rss",
         TITLE: u"RSS"
     },
 ]

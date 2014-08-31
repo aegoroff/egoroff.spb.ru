@@ -6,13 +6,13 @@ $ ->
     $("div.pagination").remove()
 
   removeSelection = ->
-    $('div.tags > ul > li > a').removeClass('btn')
-    $('div#accordion > div > ul > li').removeClass('active')
+    $('div.tags > ul > li > a').removeClass('btn btn-default')
+    $('div#accordion > div.panel > div.panel-collapse > div.panel-body > ul > li').removeClass('active')
 
   setBreadcrumbsText = (txt) ->
     $('ul.breadcrumb > li.active').text(txt)
 
-  month = $('div#accordion > div > ul > li > a')
+  month = $('div#accordion > div.panel > div.panel-collapse > div.panel-body > ul > li > a')
   month.click (event) ->
     href = event.target.hash
     removeSelection()
@@ -40,7 +40,7 @@ $ ->
   tag = $('div.tags > ul > li > a')
   tag.click (event) ->
     removeSelection()
-    $(this).addClass('btn')
+    $(this).addClass('btn btn-default')
     href = event.target.hash
     $("dl#blogcontainer").remove()
     t = href.split('=')[1]

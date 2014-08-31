@@ -3,7 +3,7 @@
     {% if not tags %}
         <p>Ничего нет</p>
     {% else %}
-        <ul class="inline">
+        <ul class="list-inline">
         {% for tag in tags %}
             <li>
                 <a href="{{ url_for('news.index') }}#tag={{ tag.title }}"
