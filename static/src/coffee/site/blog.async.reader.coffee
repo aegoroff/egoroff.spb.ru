@@ -7,12 +7,12 @@ $ ->
 
   removeSelection = ->
     $('div.tags > ul > li > a').removeClass('btn btn-default')
-    $('div#accordion > div.panel > div.panel-collapse > div.panel-body > ul > li').removeClass('active')
+    $('div#arch > div.panel > div.panel-collapse > div.panel-body > ul > li').removeClass('active')
 
   setBreadcrumbsText = (txt) ->
     $('ul.breadcrumb > li.active').text(txt)
 
-  month = $('div#accordion > div.panel > div.panel-collapse > div.panel-body > ul > li > a')
+  month = $('div#arch > div.panel > div.panel-collapse > div.panel-body > ul > li > a')
   month.click (event) ->
     href = event.target.hash
     removeSelection()

@@ -2,12 +2,12 @@
 {% if not archieve %}
     <p>Ничего нет</p>
 {% else %}
-    <div class="panel-group" id="accordion">
+    <div class="panel-group" id="arch">
     {% for year in archieve | sort(reverse=True) %}
-        <div class="panel panel-default">
+        <div class="panel panel-collapse">
             <div class="panel-heading">
               <h3 class="panel-title">
-                <a data-toggle="collapse" data-parent="#accordion" href="#collapse{{ year }}">
+                <a data-toggle="collapse" href="#collapse{{ year }}">
                   {{ year }}
                 </a>
               </h3>
