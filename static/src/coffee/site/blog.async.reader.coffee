@@ -10,7 +10,7 @@ $ ->
     $('div#arch > div.panel > div.panel-collapse > div.panel-body > ul > li').removeClass('active')
 
   setBreadcrumbsText = (txt) ->
-    $('ul.breadcrumb > li.active').text(txt)
+    $('ol.breadcrumb > li.active').text(txt)
 
   month = $('div#arch > div.panel > div.panel-collapse > div.panel-body > ul > li > a')
   month.click (event) ->
