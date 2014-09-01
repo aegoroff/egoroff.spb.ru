@@ -1,5 +1,7 @@
 User-agent: *
 Disallow: /signout/
-Disallow: /signin/*/
 Disallow: /_s/
 Disallow: /_ah/
+Disallow: /api/v2/
+Disallow: /signin/
+Disallow: /search/

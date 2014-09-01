@@ -4,6 +4,7 @@
     "bootstrap": "~3",
     "font-awesome": "~4",
     "jquery": "~2",
+    "jquery-ui": "~1",
     "momentjs": "~2",
     "nprogress": "https://github.com/lipis/nprogress.git#master",
 	"knockout": "~3",
