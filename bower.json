@@ -27,6 +27,9 @@
     "nprogress": {
       "js": "*.js",
       "less": "*.less"
+    },
+    "knockout": {
+      "js": "*.js"
     }
   }
 }
