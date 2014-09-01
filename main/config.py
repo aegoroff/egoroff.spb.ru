@@ -45,8 +45,6 @@ SCRIPTS = [
         'ext/js/jquery/jquery.js',
         'ext/js/jquery-ui/jquery-ui.js',
         'ext/js/momentjs/moment.js',
-        'ext/js/moment-timezone/moment-timezone-with-data.js',
-        'ext/js/jstz/jstz.js',
         'ext/js/nprogress/nprogress.js',
         'ext/js/knockout/knockout.js',
         'ext/js/knockoutmapping/knockout.mapping.js',
@@ -56,6 +54,8 @@ SCRIPTS = [
         'ext/js/bootstrap/collapse.js',
         'ext/js/bootstrap/dropdown.js',
         'ext/js/bootstrap/tooltip.js',
+        'ext/js/moment-timezone/moment-timezone-with-data.js',
+        'ext/js/jstz/jstz.js',
       ]),
     ('scripts', [
         'src/script/common/service.coffee',
