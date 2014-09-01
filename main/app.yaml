@@ -1,0 +1,65 @@
+application: egoroff
+version: 1
+runtime: python27
+api_version: 1
+threadsafe: yes
+
+builtins:
+- remote_api: on
+- deferred: on
+- appstats: on
+
+inbound_services:
+- warmup
+
+libraries:
+- name: jinja2
+  version: latest
+- name: lxml
+  version: "2.3"
+
+handlers:
+- url: /(favicon\.ico|robots\.txt|googlee53c87e9e3e91020\.html)
+  static_files: static/\1
+  upload: static/(.*)
+  
+- url: /p/(.*\.ttf)
+  static_files: static/\1
+  upload: static/(.*\.ttf)
+  mime_type: font/ttf
+  expiration: 1000d
+
+- url: /p/
+  static_dir: static/
+  expiration: 1000d
+
+- url: /apache/images
+  static_dir: apache/images
+
+- url: /apache/css
+  static_dir: apache/css
+
+- url: /.*
+  script: main.app
+
+skip_files:
+- ^(.*/)?#.*#
+- ^(.*/)?.*/RCS/.*
+- ^(.*/)?.*\.bak$
+- ^(.*/)?.*\.py[co]
+- ^(.*/)?.*~
+- ^(.*/)?Icon\r
+- ^(.*/)?\..*
+- ^(.*/)?app\.yaml
+- ^(.*/)?app\.yml
+- ^(.*/)?index\.yaml
+- ^(.*/)?index\.yml
+- ^lib/.*
+- ^static/dst/.*
+- ^static/ext/coffee/.*
+- ^static/ext/css/.*
+- ^static/ext/js/.*
+- ^static/ext/less/.*
+- ^static/src/.*
+- ^static/lib/.*
+- ^static/dst/.*

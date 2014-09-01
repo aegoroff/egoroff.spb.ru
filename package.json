@@ -1,10 +1,28 @@
 {
   "name": "gae-init",
-  "version": "0.3.1",
   "author": "Panayiotis Lipiridis <lipiridis@gmail.com>",
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://opensource.org/licenses/MIT"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/gae-init"
+  },
   "dependencies": {
     "coffee-script": "~1",
-    "less": "~1.3",
-    "uglify-js": "~1"
+    "less": "~1",
+    "uglify-js": "~2"
+  },
+  "devDependencies": {
+    "bower": "~1",
+    "grunt": "~0",
+    "grunt-bower-task": "~0",
+    "grunt-cli": "~0",
+    "grunt-contrib-clean": "~0",
+    "grunt-contrib-watch": "~0",
+    "load-grunt-tasks": "~0"
   }
 }
