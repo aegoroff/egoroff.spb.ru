@@ -35,6 +35,7 @@ STYLES = [
     'src/less/apache.less',
     'src/less/shCoreEclipse.less',
     'src/less/tags.less',
+    'src/less/nprogress.less',
   ]
 
 SCRIPTS_MODULES = [
@@ -56,6 +57,7 @@ SCRIPTS = {
       'lib/bootstrap/js/bootstrap-collapse.js',
       'lib/bootstrap/js/bootstrap-dropdown.js',
       'lib/bootstrap/js/bootstrap-tooltip.js',
+      'lib/nprogress.js',
     ],
     'jquery.plugins': [
         'lib/jquery.mosaic.js',

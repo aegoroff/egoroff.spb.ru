@@ -7,6 +7,7 @@ window.BlogViewModel = ->
   @blogPosts = ko.mapping.fromJS([])
 
   @getPostsUsingQuery = (query, append) ->
+    NProgress.start()
     service_call "get", "/api/v2/posts.json", query
     , (data) ->
       self.successfullyRetrievedPosts data.result, append
@@ -22,6 +23,7 @@ window.BlogViewModel = ->
     ko.utils.unwrapObservable item.id
 
   @successfullyRetrievedPosts = (posts, append) ->
+    NProgress.done()
     if append
       unmapped = ko.mapping.toJS(self.blogPosts)
       if unmapped.length > 0
