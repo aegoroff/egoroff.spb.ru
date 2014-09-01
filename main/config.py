@@ -62,6 +62,10 @@ SCRIPTS = [
         'src/script/site/profile.coffee',
         'src/script/site/signin.coffee',
         'src/script/site/user.coffee',
+        'src/script/site/format.date.coffee',
+        'src/script/site/rotate.post.coffee',
+        'src/script/site/blog.model.coffee',
+        'src/script/site/blog.async.reader.coffee',
       ]),
   ]
   
