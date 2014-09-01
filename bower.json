@@ -1,5 +1,5 @@
 {
-  "name": "gae-init",
+  "name": "egoroff",
   "dependencies": {
     "bootstrap": "~3",
     "font-awesome": "~4",
@@ -23,6 +23,10 @@
     },
     "jquery": {
       "js": "dist/jquery.js"
+    },
+    "jquery-ui": {
+      "js": "jquery-ui.js",
+      "less": "themes/base/*.css"
     },
     "momentjs": {
       "js": "*.js"
