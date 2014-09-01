@@ -1,0 +1,116 @@
+@import "variables";
+
+pre.code, code {
+  color: #0d0d97;
+}
+
+code {
+  background-color: transparent;
+  border: none;
+  padding: 0px;
+}
+
+pre.code {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 95%;
+  background-color: transparent;
+  border: none;
+}
+
+/* Tables */
+
+div.table, div.breadcrumbs, div.bottomMenuContainer, div.directive {
+  height: 0;
+}
+
+div.tr {
+  height: 0;
+}
+
+/* не для IE */
+div.table[class], div.breadcrumbs[class], div.bottomMenuContainer[class], div.directive[class] {
+  height: auto;
+  display: table;
+}
+
+div.tr[class] {
+  height: auto;
+  display: table-row;
+}
+
+div.td[class], div.th[class] {
+  float: none;
+  display: table-cell;
+}
+
+div.td, div.th {
+  height: 100%;
+  float: left;
+}
+
+div.th {
+  font-weight: bold;
+}
+
+div.example {
+  color: #000;
+  padding: 0.5em;
+  margin: 1em 2em 1em 1em;
+  width: 50%;
+  background-color: #e5ecf3;
+  p, pre, table {
+    padding: 0;
+    margin: 0;
+  }
+  p {
+    line-height: 1em;
+  }
+}
+
+div.note, div.warning {
+  background-color: #eee;
+  color: #036;
+  padding: 0.5em;
+  margin: 1em 2em 1em 1em;
+  div.example {
+    background-color: transparent;
+    color: inherit;
+    margin-right: 1em;
+  }
+  p {
+    margin: 0.5em 0 0 0;
+    padding: 0;
+  }
+}
+
+div.directive {
+  div.td, div.th {
+    padding: 3px;
+  }
+}
+
+div.warning {
+  border: 1px solid #f00;
+}
+
+/* example inside table */
+table {
+  div.example {
+    margin-right: 1em;
+  }
+}
+
+/*
+ * 02.05.2013
+ * Fix Conflict with Google Custom User Search and Bootstrap Styles
+ */
+ #gs_tti0 > input {
+   margin-top:-1px !important;
+ }
+
+ .gsc-input-box {
+   input[type="text"], input[type="text"]:focus, input[type="text"]:active {
+      -webkit-box-shadow: none;
+      box-shadow: none;
+   }
+ }
