@@ -63,7 +63,7 @@ SCRIPTS = [
       ]),
   ]
   
- '''
+'''
  STYLES = [
     'src/less/style.less',
     'src/less/apache.less',
@@ -137,4 +137,4 @@ SCRIPTS = {
       'src/coffee/site/rotate.post.coffee',
     ],
   }
- '''
+'''
