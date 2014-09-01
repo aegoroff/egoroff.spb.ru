@@ -45,6 +45,8 @@ SCRIPTS = [
         'ext/js/jquery/jquery.js',
         'ext/js/momentjs/moment.js',
         'ext/js/nprogress/nprogress.js',
+        'ext/js/knockout/knockout.js',
+        'ext/js/knockoutmapping/knockout.mapping.js',
         'ext/js/bootstrap/alert.js',
         'ext/js/bootstrap/button.js',
         'ext/js/bootstrap/transition.js',

@@ -6,7 +6,8 @@
     "jquery": "~2",
     "momentjs": "~2",
     "nprogress": "https://github.com/lipis/nprogress.git#master",
-	"knockout": "~3"
+	"knockout": "~3",
+	"knockoutmapping": "https://github.com/SteveSanderson/knockout.mapping.git#master"
   },
   "exportsOverride": {
     "bootstrap": {
@@ -30,6 +31,9 @@
       "less": "*.less"
     },
     "knockout": {
+      "js": "dist/knockout.js"
+    },
+    "knockoutmapping": {
       "js": "*.js"
     }
   }
