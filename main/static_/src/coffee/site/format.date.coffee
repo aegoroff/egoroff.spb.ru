@@ -1,14 +1,14 @@
 $ ->
   formatDateFromNow = (v) ->
-    return createDate(v).fromNow()
+    return window.createDate(v).fromNow()
 
   $(document).ready ->
       $(".shortDateFormat").each (idx, elem) ->
-          formatElementWith(elem, 'LL')
+          window.formatElementWith(elem, 'LL')
       $(".longDateFormat").each (idx, elem) ->
-          formatElementWith(elem, 'LLL')
+          window.formatElementWith(elem, 'LLL')
       $(".date-from-now").each (idx, elem) ->
         if $(elem).is(":input")
-            $(elem).val(formatDateFromNow($(elem).val()))
+            $(elem).val window.formatDateFromNow $(elem).val()
           else
-            $(elem).text(formatDateFromNow($(elem).text()))
+            $(elem).text window.formatDateFromNow $(elem).text()
