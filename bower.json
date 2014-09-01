@@ -5,7 +5,8 @@
     "font-awesome": "~4",
     "jquery": "~2",
     "momentjs": "~2",
-    "nprogress": "https://github.com/lipis/nprogress.git#master"
+    "nprogress": "https://github.com/lipis/nprogress.git#master",
+	"knockout": "~3"
   },
   "exportsOverride": {
     "bootstrap": {
