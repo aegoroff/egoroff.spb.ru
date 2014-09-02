@@ -34,3 +34,24 @@ class Base(ndb.Model):
         order=order or util.param('order') or '-created',
         **kwargs
       )
+
+  @classmethod
+  def retrieve_one_by(cls, name, value):
+    cls_db_list = cls.query(getattr(cls, name) == value).fetch(1)
+    if cls_db_list:
+      return cls_db_list[0]
+    return None
+
+  @classmethod
+  def retrieve_by_id(cls, id):
+    try:
+      return cls.get_by_id(int(id))
+    except ValueError:
+      return None
+
+  @classmethod
+  def retrieve_by_key_safe(cls, key_urlsafe):
+    try:
+      return ndb.Key(urlsafe=key_urlsafe).get()
+    except:
+      return None

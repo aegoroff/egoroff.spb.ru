@@ -1,5 +1,5 @@
 <header class="navbar navbar-inverse navbar-fixed-top" role="banner">
-  <div class="container">
+  <div class="container-fluid">
     <div class="navbar-header">
       <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
         <span class="sr-only">Toggle navigation</span>
@@ -11,6 +11,13 @@
     </div>
     <nav class="collapse navbar-collapse" role="navigation">
       <ul class="nav navbar-nav">
+        {% for item in config.SITE %}
+            <li {% if item["id"] == current_id %}class="active"{% endif %}>
+                <a href={{ url_for(item['id']) }}>&nbsp;{% if item["class"] %}<i class="{{ item["class"] }}"></i>&nbsp;{% endif %}
+                    {{ item['title'] }}
+                </a>
+            </li>
+        {% endfor %}
         # include 'bit/contact_menu.html'
       </ul>
       <ul class="nav navbar-nav navbar-right">

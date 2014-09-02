@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import os
+import site_map
 
 
 PRODUCTION = os.environ.get('SERVER_SOFTWARE', '').startswith('Google App Eng')
@@ -32,6 +33,8 @@ else:
 DEFAULT_DB_LIMIT = 64
 ATOM_FEED_LIMIT = 20
 BRAND_NAME = 'Admin Config'
+
+SITE = site_map.MAP
 
 ###############################################################################
 # Client modules, also used by the run.py script.

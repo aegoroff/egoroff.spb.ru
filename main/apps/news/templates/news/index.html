@@ -38,14 +38,14 @@
 # endblock
 
 {% block head %}
-    <link type="text/css" rel='stylesheet' href="/p/css/jquery-ui-1.10.3.custom.min.css">
+
 {% endblock %}
 
 
 {% block content %}
     {% strip %}
-    <div class="row-fluid">
-        <div class="span9">
+    <div class="row">
+        <div class="col-md-9">
             {% if not posts %}
                 Ничего нет
             {% else %}
@@ -63,7 +63,7 @@
             {% endif %}
             {% include 'news/paginator.html' %}
         </div>
-        <div class="span3">
+        <div class="col-md-3">
             <h3>Метки</h3>
             {% include 'news/tags.html' %}
             <h3>Архив</h3>
