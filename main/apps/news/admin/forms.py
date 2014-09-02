@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 import datetime
 
-from flaskext import wtf
+from flask.ext import wtf
+import wtforms
 
 
-class TagListField(wtf.Field):
-    widget = wtf.TextInput()
+class TagListField(wtforms.Field):
+    widget = wtforms.StringField()
 
     def _value(self):
         if self.data:
@@ -21,35 +22,35 @@ class TagListField(wtf.Field):
 
 
 class PostForm(wtf.Form):
-    created = wtf.DateTimeField(
+    created = wtforms.DateTimeField(
         u'Создано',
         description=u'Дата создания',
         default=datetime.datetime.now(),
-        validators=[wtf.validators.required()]
+        validators=[wtforms.validators.required()]
     )
-    title = wtf.TextField(
+    title = wtforms.StringField(
         u'Заголовок',
         description=u'Введите заголовок записи',
-        validators=[wtf.validators.required()]
+        validators=[wtforms.validators.required()]
     )
-    is_public = wtf.BooleanField(
+    is_public = wtforms.BooleanField(
         u'Публичная?',
         description=u'Отметьте, чтобы показывать новость на сайте',
         default=False,
-        validators=[wtf.validators.optional()]
+        validators=[wtforms.validators.optional()]
     )
     tags = TagListField(
         u'Тэги',
         description=u'Список тегов',
-        validators=[wtf.validators.optional()]
+        validators=[wtforms.validators.optional()]
     )
-    short_text = wtf.TextAreaField(
+    short_text = wtforms.TextAreaField(
         u'Краткое описание',
         description=u'Введите краткое описание',
-        validators=[wtf.validators.required()]
+        validators=[wtforms.validators.required()]
     )
-    text = wtf.TextAreaField(
+    text = wtforms.TextAreaField(
         u'Текст',
         description=u'Введите основной текст записи',
-        validators=[wtf.validators.optional()]
+        validators=[wtforms.validators.optional()]
     )

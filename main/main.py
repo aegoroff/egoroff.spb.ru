@@ -4,6 +4,7 @@ import logging
 
 import sys
 from urlparse import urljoin
+from jinja2 import Environment
 import site_map
 import typographus
 
@@ -26,7 +27,7 @@ app.jinja_env.globals.update(
     update_query_argument=util.update_query_argument,
   )
 
-app.jinja_env.add_extension('jinja2htmlcompress.SelectiveHTMLCompress')
+app.jinja_env.add_extension('apps.compressinja.html.SelectiveHtmlCompressor')
 
 import admin
 import auth

@@ -1,26 +1,27 @@
 # -*- coding: utf-8 -*-
 
-from flaskext import wtf
+from flask.ext import wtf
+import wtforms
 
 class FolderForm(wtf.Form):
-    title = wtf.TextField(
+    title = wtforms.StringField(
         u'Название папки',
-        validators=[wtf.validators.required()]
+        validators=[wtforms.validators.required()]
     )
-    is_public = wtf.BooleanField(
+    is_public = wtforms.BooleanField(
         u'Публичная?',
         default=False,
-        validators=[wtf.validators.optional()]
+        validators=[wtforms.validators.optional()]
     )
 
 class FileForm(wtf.Form):
-    file = wtf.FileField(
+    file = wtforms.FileField(
         u'Файл',
         description=u'Выберите файл для загрузки',
-        validators=[wtf.validators.required()]
+        validators=[wtforms.validators.required()]
     )
-    description = wtf.TextAreaField(
+    description = wtforms.TextAreaField(
         u'Описание',
         description=u'Введите краткое описание для файла',
-        validators=[wtf.validators.optional()]
+        validators=[wtforms.validators.optional()]
     )

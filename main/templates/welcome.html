@@ -1,31 +1,34 @@
 # extends 'base.html'
 
-# block header
-  <div class="jumbotron">
-    <div class="container">
-      <h1>{{config.CONFIG_DB.brand_name}}</h1>
-      <p>Hello, world!</p>
-    </div>
-  </div>
+# block head
+    <meta name="google-site-verification" content="PHs3gMRw0_sIAdVqjk38_fbq9h3VGHkkIq3w1chJXWs"/>
+# endblock
+
+# block searchscript
+# include 'bit/searchscript.html'
 # endblock
 
 # block content
-  <div class="row">
-    <div class="col-sm-6 col-md-4 col-lg-3">
-      <h2>Heading</h2>
-      <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+{% strip %}
+# include 'bit/search.html'
+
+<div class="row">
+    <div class="col-md-6">
+        <h2><a href="{{ url_for('news.index') }}">Блог</a></h2>
+        {% if posts %}
+            <dl id="log">
+                {% for post in posts %}
+                    {% include 'news/post_box.html' %}
+                {% endfor %}
+            </dl>
+        {% else %}
+            <p>Пока ничего нового.</p>
+        {% endif %}
     </div>
-    <div class="col-sm-6 col-md-4 col-lg-3">
-      <h2>Heading</h2>
-      <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+    <div class="col-md-6">
+        <h2>Про апачей</h2>
+        {% include 'portfolio/apache_documents_list.html' %}
     </div>
-    <div class="col-sm-6 col-md-4 col-lg-3">
-      <h2>Heading</h2>
-      <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-    </div>
-    <div class="col-sm-6 col-md-12 col-lg-3">
-      <h2>Heading</h2>
-      <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-    </div>
-  </div>
+</div>
+{% endstrip %}
 # endblock
