@@ -9,7 +9,7 @@
 {% block content %}
     <div class="row">
         <div class="col-md-9">
-            <p class="muted"><i class="icon-calendar"></i>&nbsp;<span class="date-from-now">{{ main_post.created }}</span></p>
+            <p class="muted"><i class="fa fa-calendar"></i>&nbsp;<span class="date-from-now">{{ main_post.created }}</span></p>
             {% if content %}
                 {{ content | typo | safe }}
             {% else %}
@@ -19,13 +19,13 @@
                 <div class="well well-small">
                     Метки:&nbsp;
                     {% for tag in main_post.tags %}
-                       <a href="{{ url_for('news.index') }}#tag={{ tag }}" class="btn">{{ tag }}</a>
+                       <a href="{{ url_for('news.index') }}#tag={{ tag }}" class="btn btn-default btn-sm">{{ tag }}</a>
                     {% endfor %}
                 </div>
             {% endif %}
-            <div class="well well-small">
+            <div class="well well-sm">
                 <h3>
-                    <small><i class="icon-calendar"></i> <span class="shortDateFormat">{{ main_post.created }}</span></small>
+                    <small><i class="fa fa-calendar"></i> <span class="shortDateFormat">{{ main_post.created }}</span></small>
                     {% include 'bit/social.html' %}
                 </h3>
             </div>
