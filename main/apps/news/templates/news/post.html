@@ -9,14 +9,14 @@
 {% block content %}
     <div class="row">
         <div class="col-md-9">
-            <p class="muted"><i class="fa fa-calendar"></i>&nbsp;<span class="date-from-now">{{ main_post.created }}</span></p>
+            <p class="text-muted"><i class="fa fa-calendar"></i>&nbsp;<span class="date-from-now">{{ main_post.created }}</span></p>
             {% if content %}
                 {{ content | typo | safe }}
             {% else %}
                 {{ main_post.short_text | typo | safe }}
             {% endif %}
             {% if main_post.tags %}
-                <div class="well well-small">
+                <div class="well well-sm">
                     Метки:&nbsp;
                     {% for tag in main_post.tags %}
                        <a href="{{ url_for('news.index') }}#tag={{ tag }}" class="btn btn-default btn-sm">{{ tag }}</a>
@@ -24,10 +24,10 @@
                 </div>
             {% endif %}
             <div class="well well-sm">
-                <h3>
+                <h4>
                     <small><i class="fa fa-calendar"></i> <span class="shortDateFormat">{{ main_post.created }}</span></small>
                     {% include 'bit/social.html' %}
-                </h3>
+                </h4>
             </div>
             {% include 'bit/disqus.html' %}
         </div>
