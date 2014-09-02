@@ -1,11 +1,13 @@
 {% strip %}
 {% for download in downloads %}
     <h3> {{ download }}</h3>
+    <ul class="list-unstyled">
     {% for f in downloads[download] %}
-        <li class="thumbnails">
+        <li>
             <a class="fa fa-download" href="{{ f.url }}" title="Размер:&nbsp;{{ f.human_readable_size }}" onclick="_gaq.push(['_trackPageview', '{{ f.title_filename }}']);">&nbsp;{{ f.description }}</a>&nbsp;
             <small><i class="fa fa-calendar"></i>&nbsp;<span class="shortDateFormat">{{ f.created }}</span></small>
         </li>
     {% endfor %}
+    </ul>
 {% endfor %}
 {% endstrip %}
