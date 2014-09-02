@@ -62,6 +62,14 @@ window.show_notification = (message, category='warning') ->
       </div>
     """
 
+window.user_lang = () ->
+  language = 'en'
+  if navigator.userLanguage
+    language = navigator.userLanguage
+  else if navigator.language
+    language = navigator.language
+  return language
+
 window.createDate = (v) ->
   mmt = moment.utc v
   mmt.locale(user_lang())
@@ -73,6 +81,6 @@ window.formatDateWith = (v, formatSting) ->
 
 window.formatElementWith = (elem, formatSting) ->
   if $(elem).is(":input")
-    $(elem).val formatDateWith $(elem).val(), formatSting
+    $(elem).val formatDateWith($(elem).val(), formatSting)
   else
-    $(elem).text formatDateWith $(elem).text(), formatSting
+    $(elem).text formatDateWith($(elem).text(), formatSting)

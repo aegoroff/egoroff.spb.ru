@@ -44,7 +44,7 @@ SCRIPTS = [
     ('libs', [
         'ext/js/jquery/jquery.js',
         'ext/js/jquery-ui/jquery-ui.js',
-        'ext/js/momentjs/moment.js',
+        'ext/js/momentjs/moment-with-locales.js',
         'ext/js/nprogress/nprogress.js',
         'ext/js/knockout/knockout.js',
         'ext/js/knockoutmapping/knockout.mapping.js',
