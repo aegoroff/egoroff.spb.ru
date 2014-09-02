@@ -8,8 +8,8 @@ window.BlogViewModel = ->
 
   @getPostsUsingQuery = (query, append) ->
     NProgress.start()
-    service_call "get", "/api/v2/posts.json", query, (data) ->
-                                                        self.successfullyRetrievedPosts(data.result, append)
+    service_call "get", "/api/v2/posts.json", query, (v,data) ->
+                                                        self.successfullyRetrievedPosts(data, append)
     return
 
   @getPosts = ->
