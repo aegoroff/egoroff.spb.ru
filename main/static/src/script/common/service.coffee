@@ -34,6 +34,6 @@ window.service_call = (method, url, params, data, callback) ->
       try
         error = $.parseJSON(jqXHR.responseText) if jqXHR.responseText
       catch e
-        error = error
+        error = e
       LOG 'service_call error', error
       callback? error
