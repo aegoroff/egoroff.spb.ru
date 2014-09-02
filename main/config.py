@@ -69,9 +69,20 @@ SCRIPTS = [
         'src/script/site/signin.coffee',
         'src/script/site/user.coffee',
         'src/script/site/format.date.coffee',
-        'src/script/site/rotate.post.coffee',
         'src/script/site/blog.model.coffee',
         'src/script/site/blog.async.reader.coffee',
+      ]),
+    ('syntaxhighlighter', [
+        'src/script/syntax-highlighter/shCore.js',
+        'src/script/syntax-highlighter/shBrushCpp.js',
+        'src/script/syntax-highlighter/shBrushCSharp.js',
+        'src/script/syntax-highlighter/shBrushXml.js',
+        'src/script/syntax-highlighter/shBrushJScript.js',
+        'src/script/syntax-highlighter/shBrushParser.js',
+        'src/script/syntax-highlighter/shBrushSql.js',
+        'src/script/syntax-highlighter/shBrushNasm8086.js',
+        'src/script/syntax-highlighter/shBrushIL.js',
+        'src/script/syntax-highlighter/shBrushHashQuery.js',
       ]),
   ]
   
