@@ -34,19 +34,17 @@
                class="next">{{ older | safe }}</a>
         </li>
     </ul>
-    <div class="pagination">
-        <ul style="float: left;">
-            {% for page in posts.paginator.page_range %}
-                {% if page %}
-                    <li {% if page == posts.number %} class="active" {% endif %}>
-                        <a href="{{ url_for('news.index', page=page) }}{{ tag_query }}"
-                           class="page">{{ page }}</a>
-                    </li>
-                {% else %}
-                    ......
-                {% endif %}
-            {% endfor %}
-        </ul>
-    </div>
+    <ul class="pagination pagination-sm">
+        {% for page in posts.paginator.page_range %}
+            {% if page %}
+                <li {% if page == posts.number %} class="active" {% endif %}>
+                    <a href="{{ url_for('news.index', page=page) }}{{ tag_query }}"
+                       class="page">{{ page }}</a>
+                </li>
+            {% else %}
+                ......
+            {% endif %}
+        {% endfor %}
+    </ul>
 {% endif %}
 {% endstrip %}
