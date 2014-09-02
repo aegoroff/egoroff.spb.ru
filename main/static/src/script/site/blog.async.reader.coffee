@@ -3,10 +3,10 @@ $ ->
 
   removePager = ->
     $("ul.pager").remove()
-    $("div.pagination").remove()
+    $("ul.pagination").remove()
 
   removeSelection = ->
-    $('div.tags > ul > li > a').removeClass('btn')
+    $('div.tags > ul > li > a').removeClass('btn btn-default')
     $('div#accordion > div > a').removeClass('active')
 
   setBreadcrumbsText = (txt) ->
@@ -40,7 +40,7 @@ $ ->
   tag = $('div.tags > ul > li > a')
   tag.click (event) ->
     removeSelection()
-    $(this).addClass('btn')
+    $(this).addClass('btn btn-default')
     href = event.target.hash
     $("dl#blogcontainer").remove()
     t = href.split('=')[1]
