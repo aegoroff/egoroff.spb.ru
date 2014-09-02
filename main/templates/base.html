@@ -25,7 +25,10 @@
   </head>
 
   <body>
+<!--noindex-->
     # include 'bit/header.html'
+    # include 'bit/breadcrumbs.html'
+<!--/noindex-->
     # include 'bit/announcement.html'
     # block header
     # endblock
@@ -34,9 +37,11 @@
       # block content
       # endblock
     </div>
+<!--noindex-->
     # include 'bit/footer.html'
     # include 'bit/script.html'
     # block scripts
     # endblock
+<!--/noindex-->
   </body>
 </html>

@@ -65,7 +65,7 @@ app.register_blueprint(api_mod)
 
 
 def create_breadcrumbs(parents):
-    breadcrumbs = [('welcome', u'Главная', 'icon-home')]
+    breadcrumbs = [('welcome', u'Главная', 'fa fa-home')]
     append = lambda item: breadcrumbs.append((item[site_map.ID], item[site_map.TITLE], item[site_map.CLASS]))
     map(append, parents)
     return breadcrumbs

@@ -1,22 +1,21 @@
 {% strip %}
 # if breadcrumbs
 <div class="container-fluid">
-    <div class="row-fluid">
-        <div class="span12">
-            <ul class="breadcrumb">
+    <div class="row">
+        <div class="col-md-12">
+            <ol class="breadcrumb">
                 {% block breadcrumbs %}
                     {% for item in breadcrumbs %}
                         <li>
                             <a href="{{ url_for(item[0]) }}">{% if item[2] %}<i class="{{ item[2] }}"></i>
                                 &nbsp;{% endif %}{{ item[1] }}</a>
-                            <span class="divider"> &rarr; </span>
                         </li>
                     {% endfor %}
                     <li class="active">
                         {{ title }}
                     </li>
                 {% endblock %}
-            </ul>
+            </ol>
         </div>
         <hr>
     </div>
