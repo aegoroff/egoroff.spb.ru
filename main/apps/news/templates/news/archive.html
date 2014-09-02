@@ -5,12 +5,10 @@
     <div id="accordion">
         {% for year in archieve | sort(reverse=True) %}
             <h3>{{ year }}</h3>
-            <div>
-                <ul class="nav nav-list">
-                    {% for month in archieve[year] %}
-                        <li><a href="#year={{ year }}&month={{ month[0] }}">{{ month | month_tuple_to_string }}</a></li>
-                    {% endfor %}
-                </ul>
+            <div class="list-group">
+                {% for month in archieve[year] %}
+                    <a class="list-group-item" href="#year={{ year }}&month={{ month[0] }}">{{ month | month_tuple_to_string }}</a>
+                {% endfor %}
             </div>
         {% endfor %}
     </div>

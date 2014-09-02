@@ -7,16 +7,16 @@ $ ->
 
   removeSelection = ->
     $('div.tags > ul > li > a').removeClass('btn')
-    $('div#accordion > div > ul > li').removeClass('active')
+    $('div#accordion > div > a').removeClass('active')
 
   setBreadcrumbsText = (txt) ->
-    $('ul.breadcrumb > li.active').text(txt)
+    $('ol.breadcrumb > li.active').text(txt)
 
-  month = $('div#accordion > div > ul > li > a')
+  month = $('div#accordion > div > a')
   month.click (event) ->
     href = event.target.hash
     removeSelection()
-    $(this).parent('li').addClass('active')
+    $(this).addClass('active')
     vars = href.split('&')
     y = 1
     m = 1
