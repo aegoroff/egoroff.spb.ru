@@ -6,18 +6,18 @@
       <b class="caret"></b>
     </a>
     <ul class="dropdown-menu">
-      <li><a href="{{url_for('profile')}}"><i class="fa fa-fw fa-edit"></i> Profile Settings</a></li>
+      <li><a href="{{url_for('profile')}}"><i class="fa fa-fw fa-edit"></i> Настройки профиля</a></li>
       # if current_user.admin
         <li class="divider"></li>
-        <li><a href="{{url_for('admin_config_update')}}"><i class="fa fa-fw fa-cog"></i> Admin Config</a></li>
-        <li><a href="{{url_for('user_list', order='-modified', active=True)}}"><i class="fa fa-fw fa-group"></i> User List</a></li>
+        <li><a href="{{url_for('admin_config_update')}}"><i class="fa fa-fw fa-cog"></i> Админка</a></li>
+        <li><a href="{{url_for('user_list', order='-modified', active=True)}}"><i class="fa fa-fw fa-group"></i> Список пользователей</a></li>
         <li class="divider"></li>
       # endif
-      <li><a href="{{url_for('signout')}}"><i class="fa fa-fw fa-sign-out"></i> Sign out</a></li>
+      <li><a href="{{url_for('signout')}}"><i class="fa fa-fw fa-sign-out"></i> Выход</a></li>
     </ul>
   </li>
 # else
   <li class="{{'active' if html_class == 'signin'}}">
-    <a href="{{url_for('signin')}}"><i class="fa fa-sign-in"></i> Sign in</a>
+    <a href="{{url_for('signin')}}"><i class="fa fa-sign-in"></i> Войти</a>
   </li>
 # endif
