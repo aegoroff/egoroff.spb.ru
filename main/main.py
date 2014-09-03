@@ -4,7 +4,6 @@ import logging
 
 import sys
 from urlparse import urljoin
-from jinja2 import Environment
 import site_map
 import typographus
 
