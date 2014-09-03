@@ -1,10 +1,14 @@
-{% extends 'admin.html' %}
+{% extends 'base.html' %}
 
-{% block head %}
+# block topnav
+   # include 'admin/top_bar.html'
+# endblock
+
+# block head
     <link type="text/css" rel='stylesheet' href="/p/css/redactor.css">
-{% endblock %}
+# endblock
 
-{% block scripts %}
+# block scripts
     <script>
         $(function(){
             $('.redactor').redactor({
@@ -12,11 +16,11 @@
             });
         });
     </script>
-{% endblock %}
+# endblock
 
-{% block content %}
+# block content
 <div class="row">
-    <div class="span12">
+    <div class="col-md-12">
         <h1 class="page-header">Редактирование поста <small>{{ post.title }}</small></h1>
         <form method="POST">
             {% include 'news/admin/post_fields.html' %}
@@ -36,4 +40,4 @@
     </div>
 </div>
 
-{% endblock %}
+# endblock

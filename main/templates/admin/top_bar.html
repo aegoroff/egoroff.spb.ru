@@ -1,0 +1,28 @@
+<header class="navbar navbar-default navbar-static-top" role="banner">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="{{url_for('admin_config_update')}}">
+                {{ config.BRAND_NAME }}
+            </a>
+        </div>
+        <nav class="collapse navbar-collapse" role="navigation" id="adminka">
+            <ul class="nav navbar-nav">
+                <li>
+                    <a href="{{ url_for('admin.news.index') }}">Блог</a>
+                </li>
+                <li>
+                    <a href="{{ url_for('admin.file.index') }}">Файлы</a>
+                </li>
+            </ul>
+
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="{{ url_for('welcome') }}">
+                        <i class="fa fa-backward"></i>
+                        Вернуться на сайт
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</header>

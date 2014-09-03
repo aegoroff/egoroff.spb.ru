@@ -1,16 +1,20 @@
-{% extends 'admin.html' %}
+{% extends 'base.html' %}
+
+# block topnav
+   # include 'admin/top_bar.html'
+# endblock
 
 {% block content %}
     <h1 class="page-header">Блог</h1>
     <div class="row">
-        <div class="span12">
+        <div class="col-md-10">
             <a
-                class="btn hero-unit"
+                class="btn btn-default btn-lg"
                 href="{{ url_for('admin.news.new_post') }}">
                 Добавить пост
             </a>
         </div>
-        <div class="span12">
+        <div class="col-md-10">
             <table class="table table-bordered">
                 <thead>
                 <tr>

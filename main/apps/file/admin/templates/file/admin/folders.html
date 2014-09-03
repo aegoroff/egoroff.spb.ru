@@ -1,8 +1,12 @@
-{% extends 'admin.html' %}
+{% extends 'base.html' %}
+
+# block topnav
+   # include 'admin/top_bar.html'
+# endblock
 
 {% block content %}
     <div class="row">
-        <div class="span5">
+        <div class="col-md-5">
             {% block side %}
             <h2>Папки</h2>
             <a class="btn" href="{{ url_for('admin.file.add_folder') }}">
@@ -25,7 +29,7 @@
             </ul>
             {% endblock %}
         </div>
-        <div class="span7">
+        <div class="col-md-7">
             {% block file_content %}
             {% endblock %}
         </div>
