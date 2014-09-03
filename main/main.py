@@ -199,7 +199,7 @@ def profile():
   if form.validate_on_submit():
     email = form.email.data
     if email and not user_db.is_email_available(email, user_db.key):
-      form.email.errors.append('This email is already taken.')
+      form.email.errors.append(u'Этот email уже занят')
 
     if not form.errors:
       send_verification = not user_db.token or user_db.email != email
@@ -254,7 +254,7 @@ def feedback():
 
   return flask.render_template(
       'feedback.html',
-      title='Feedback',
+      title=u'Feedback',
       html_class='feedback',
       form=form,
     )

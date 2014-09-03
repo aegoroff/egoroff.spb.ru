@@ -166,7 +166,7 @@ def signin():
 
   return flask.render_template(
       'signin.html',
-      title='Please sign in',
+      title=u'Пожалуйста войдите',
       html_class='signin',
       google_signin_url=google_signin_url,
       twitter_signin_url=twitter_signin_url,
@@ -178,7 +178,7 @@ def signin():
 @app.route('/signout/')
 def signout():
   login.logout_user()
-  flask.flash(u'You have been signed out.', category='success')
+  flask.flash(u'Вы вышли.', category='success')
   return flask.redirect(flask.url_for('welcome'))
 
 
@@ -196,7 +196,7 @@ def signin_google():
 def google_authorized():
   google_user = users.get_current_user()
   if google_user is None:
-    flask.flash(u'You denied the request to sign in.')
+    flask.flash(u'Вы отвергли запрос на вход.')
     return flask.redirect(util.get_next_url())
 
   user_db = retrieve_user_from_google(google_user)
@@ -243,7 +243,7 @@ twitter = twitter_oauth.remote_app(
 @twitter.authorized_handler
 def twitter_authorized(resp):
   if resp is None:
-    flask.flash(u'You denied the request to sign in.')
+    flask.flash(u'Вы отвергли запрос на вход.')
     return flask.redirect(util.get_next_url())
 
   flask.session['oauth_token'] = (
@@ -267,7 +267,7 @@ def signin_twitter():
     return twitter.authorize(callback=flask.url_for('twitter_authorized'))
   except:
     flask.flash(
-        'Something went wrong with Twitter sign in. Please try again.',
+        u'Что-то пошло не так при входе через Twitter. Попытайтесь еще раз.',
         category='danger',
       )
     return flask.redirect(flask.url_for('signin', next=util.get_next_url()))
@@ -307,7 +307,7 @@ facebook = facebook_oauth.remote_app(
 @facebook.authorized_handler
 def facebook_authorized(resp):
   if resp is None:
-    flask.flash(u'You denied the request to sign in.')
+    flask.flash(u'Вы отвергли запрос на вход.')
     return flask.redirect(util.get_next_url())
 
   flask.session['oauth_token'] = (resp['access_token'], '')
