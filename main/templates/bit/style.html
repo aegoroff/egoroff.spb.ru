@@ -1,7 +1,10 @@
+{% strip %}
 # for style in config.STYLES
   # if config.DEVELOPMENT
-    <link rel="stylesheet" href="/p/{{style.replace('.less', '.css').replace('src/style/', 'dst/style/')}}?{{config.CURRENT_VERSION_ID}}">
+    {% set link = style.replace('.less', '.css').replace('src/style/', 'dst/style/') %}
   # else
-    <link rel="stylesheet" href="/p/{{style.replace('.less', '.min.css').replace('src/style/', 'min/style/')}}?{{config.CURRENT_VERSION_ID}}">
+    {% set link = style.replace('.less', '.min.css').replace('src/style/', 'min/style/') %}
   # endif
+  <link rel="stylesheet" type="text/css" href="/p/{{ link }}?{{config.CURRENT_VERSION_ID}}">
 # endfor
+{% endstrip %}
