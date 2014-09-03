@@ -227,13 +227,13 @@ def profile():
 # Feedback
 ###############################################################################
 class FeedbackForm(wtf.Form):
-  subject = wtforms.StringField('Subject',
+  subject = wtforms.StringField(u'Тема',
       [wtforms.validators.required()], filters=[util.strip_filter],
     )
-  message = wtforms.TextAreaField('Message',
+  message = wtforms.TextAreaField(u'Сообщение',
       [wtforms.validators.required()], filters=[util.strip_filter],
     )
-  email = wtforms.StringField('Your email (optional)',
+  email = wtforms.StringField(u'Ваша электропочта (необязательно)',
       [wtforms.validators.optional(), wtforms.validators.email()],
       filters=[util.email_filter],
     )
