@@ -249,7 +249,7 @@ def feedback():
     body = '%s\n\n%s' % (form.message.data, form.email.data)
     kwargs = {'reply_to': form.email.data} if form.email.data else {}
     task.send_mail_notification(form.subject.data, body, **kwargs)
-    flask.flash('Thank you for your feedback!', category='success')
+    flask.flash(u'Спасибо за обратную связь!', category='success')
     return flask.redirect(flask.url_for('welcome'))
 
   return flask.render_template(
