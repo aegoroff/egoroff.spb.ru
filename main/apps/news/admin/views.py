@@ -25,7 +25,7 @@ def index():
 @mod.route('/new/', methods=['GET', 'POST'])
 @admin_required
 def new_post():
-    form = PostForm()
+    form = PostForm(name=u'post')
     if form.validate_on_submit():
         post = Post()
         form.populate_obj(post)
