@@ -19,10 +19,24 @@ libraries:
   version: "2.3"
 
 handlers:
-- url: /(favicon\.ico|robots\.txt|googlee53c87e9e3e91020\.html)
+- url: /(robots\.txt|googlee53c87e9e3e91020\.html)
   static_files: static/\1
   upload: static/(.*)
-  
+
+- url: /favicon.ico
+  static_files: static/img/favicon.ico
+  upload: static/img/favicon.ico
+
+- url: /p/images/(.*\.gif)
+  static_files: static/ext/img/jquery-ui-less/\1
+  upload: static/ext/img/jquery-ui-less/(.*\.gif)
+  expiration: 1000d
+
+- url: /p/images/(.*\.png)
+  static_files: static/ext/img/jquery-ui-less/\1
+  upload: static/ext/img/jquery-ui-less/(.*\.png)
+  expiration: 1000d
+
 - url: /p/(.*\.ttf)
   static_files: static/\1
   upload: static/(.*\.ttf)
@@ -60,6 +74,7 @@ skip_files:
 - ^static/ext/css/.*
 - ^static/ext/js/.*
 - ^static/ext/less/.*
+- ^static/ext/img/.*
 - ^static/src/.*
-- ^static/lib/.*
-- ^static/dst/.*
+
+

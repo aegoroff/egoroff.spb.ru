@@ -5,6 +5,7 @@
     "font-awesome": "~4",
     "jquery": "~2",
     "jquery-ui": "~1",
+    "jquery-ui-less": "https://github.com/DC-development/jquery-ui-less.git#master",
     "momentjs": "~2",
     "moment-timezone": "~0",
     "jstz": "https://github.com/bower-packages/bower-jstz.git",
@@ -27,8 +28,11 @@
       "js": "dist/jquery.js"
     },
     "jquery-ui": {
-      "js": "jquery-ui.js",
-      "less": "themes/base/*.css"
+      "js": "jquery-ui.js"
+    },
+    "jquery-ui-less": {
+      "less": "less/*.less",
+      "img": "less/images/*"
     },
     "momentjs": {
       "js": "min/moment-with-locales.js"
