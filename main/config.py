@@ -59,6 +59,7 @@ SCRIPTS = [
         'ext/js/bootstrap/tooltip.js',
         'ext/js/moment-timezone/moment-timezone-with-data.js',
         'ext/js/jstz/jstz.js',
+        'src/script/redactor/redactor.js',
       ]),
     ('scripts', [
         'src/script/common/service.coffee',
