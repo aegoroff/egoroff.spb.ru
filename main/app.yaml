@@ -27,14 +27,8 @@ handlers:
   static_files: static/img/favicon.ico
   upload: static/img/favicon.ico
 
-- url: /p/images/(.*\.gif)
-  static_files: static/ext/img/jquery-ui-less/\1
-  upload: static/ext/img/jquery-ui-less/(.*\.gif)
-  expiration: 1000d
-
-- url: /p/images/(.*\.png)
-  static_files: static/ext/img/jquery-ui-less/\1
-  upload: static/ext/img/jquery-ui-less/(.*\.png)
+- url: /p/min/style/images/
+  static_dir: static/ext/img/jquery-ui-less/
   expiration: 1000d
 
 - url: /p/(.*\.ttf)
@@ -74,7 +68,6 @@ skip_files:
 - ^static/ext/css/.*
 - ^static/ext/js/.*
 - ^static/ext/less/.*
-- ^static/ext/img/.*
 - ^static/src/.*
 
 
