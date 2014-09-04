@@ -1,8 +1,4 @@
-{% extends 'base.html' %}
-
-# block topnav
-   # include 'admin/top_bar.html'
-# endblock
+{% extends 'admin/base.html' %}
 
 # block scripts
     <script>
@@ -16,7 +12,7 @@
 
 # block content
 <div class="row">
-    <div class="col-md-8">
+    <div class="col-md-12">
         <h1 class="page-header">Редактирование поста <small>{{ post.title }}</small></h1>
         <form method="POST">
             {% include 'news/admin/post_fields.html' %}
