@@ -5,9 +5,7 @@ from flask.ext import wtf
 import wtforms
 
 
-class TagListField(wtforms.Field):
-    widget = wtforms.StringField()
-
+class TagListField(wtforms.StringField):
     def _value(self):
         if self.data:
             return u', '.join(self.data)

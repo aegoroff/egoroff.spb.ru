@@ -61,7 +61,7 @@ SCRIPTS = [
         'ext/js/jstz/jstz.js',
         'src/script/redactor/redactor.js',
         'src/script/jquery.plugins/jquery.form.js',
-        'src/script/jquery.plugins/jquery.gmaps.js',
+        #'src/script/jquery.plugins/jquery.gmaps.js',
         'src/script/jquery.plugins/jquery.metadata.js',
         'src/script/jquery.plugins/jquery.mosaic.js',
         'src/script/jquery.plugins/jquery.tablesorter.js',
