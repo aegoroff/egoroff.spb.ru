@@ -1,18 +1,9 @@
+# import 'macro/forms.html' as forms
+
 {{form.csrf_token}}
-{% set form_field = form.created %}
-{% include 'bit/form_text_field.html' %}
-
-{% set form_field = form.title %}
-{% include 'bit/form_text_field.html' %}
-
-{% set form_field = form.is_public %}
-{% include 'bit/form_text_field.html' %}
-
-{% set form_field = form.tags %}
-{% include 'bit/form_text_field.html' %}
-
-{% set form_field = form.short_text %}
-{% include 'bit/form_textarea_field.html' %}
-
-{% set form_field = form.text %}
-{% include 'bit/form_textarea_field.html' %}
+{{forms.text_field(form.created)}}
+{{forms.text_field(form.title, autofocus=True)}}
+{{forms.text_field(form.is_public)}}
+{{forms.text_field(form.tags)}}
+{{forms.textarea_field(form.short_text)}}
+{{forms.textarea_field(form.text)}}
