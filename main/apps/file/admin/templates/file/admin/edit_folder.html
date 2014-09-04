@@ -1,5 +1,7 @@
 {% extends 'file/admin/folders.html' %}
 
+# import 'macro/forms.html' as forms
+
 {% block side %}
     <a href="{{ url_for('admin.file.index')}}" class="btn">&larr; Назад</a><br>
     <h2 class="page-header">Редактирование папки</h2>
@@ -28,10 +30,9 @@
     <h2 class="page-header">Добавление файла</h2>
     <form method="POST" action="{{ add_url }}" enctype="multipart/form-data">
         {{ file_form.csrf_token }}
-        {% set form_field = file_form.file %}
-        {% include 'bit/form_text_field.html' %}
-        {% set form_field = file_form.description %}
-        {% include 'bit/form_text_field.html' %}
+        {{forms.text_field(file_form.file)}}
+        {{forms.text_field(file_form.description)}}
+
         <div class="form-actions">
             <button type="submit"
                     class="btn btn-primary btn-loading"
