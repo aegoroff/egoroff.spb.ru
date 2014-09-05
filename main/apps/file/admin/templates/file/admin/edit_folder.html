@@ -7,9 +7,9 @@
     <h2 class="page-header">Редактирование папки</h2>
     <form class="form-actions" method="POST" action="">
         <fieldset>
-            {{ form.csrf_token }}
-            {{forms.text_field(form.title)}}
-            {{forms.checkbox_field(form.is_public)}}
+            {{ folder_form.csrf_token }}
+            {{forms.text_field(folder_form.title)}}
+            {{forms.checkbox_field(folder_form.is_public)}}
 
 
             <div class="form-actions">

@@ -53,16 +53,16 @@ def edit_folder(key_id):
     if flask.request.method == 'POST' and 'delete_folder' in flask.request.form:
         folder.key.delete()
         return flask.redirect(flask.url_for('admin.file.index'))
-    form = FolderForm(obj=folder)
-    if form.validate_on_submit():
-        form.populate_obj(folder)
+    folder_form = FolderForm(obj=folder)
+    if folder_form.validate_on_submit():
+        folder_form.populate_obj(folder)
         folder.put()
         return flask.redirect(flask.url_for('admin.file.index'))
     file_form = FileForm()
     add_url = blobstore.create_upload_url(flask.url_for('admin.file.add_file', key_id=folder.key.id()))
     return flask.render_template(
         'file/admin/edit_folder.html',
-        form=form,
+        folder_form=folder_form,
         folder=folder,
         active_folder=folder.key,
         file_form=file_form,
