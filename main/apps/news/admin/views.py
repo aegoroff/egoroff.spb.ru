@@ -19,7 +19,8 @@ def index():
     posts = Post.query().order(-Post.created)
     return render_template(
         'news/admin/posts.html',
-        posts=posts
+        posts=posts,
+        title=u'Блог'
     )
 
 @mod.route('/new/', methods=['GET', 'POST'])
@@ -34,7 +35,8 @@ def new_post():
         return redirect(url_for('admin.news.index'))
     return render_template(
         'news/admin/post_new.html',
-        form=form
+        form=form,
+        title=u'Новый пост'
     )
 
 @mod.route('/<int:key_id>/', methods=['GET', 'POST'])
@@ -56,5 +58,6 @@ def edit_post(key_id):
     return render_template(
         'news/admin/post_edit.html',
         form=form,
-        post=post
+        post=post,
+        title=post.title
     )

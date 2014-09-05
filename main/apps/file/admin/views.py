@@ -23,7 +23,8 @@ def index():
     folders = Folder.query()
     return flask.render_template(
         'file/admin/folders.html',
-        folders=folders
+        folders=folders,
+        title=u'Файлы и папки'
     )
 
 @mod.route('/add/', methods=['GET', 'POST'])
@@ -39,7 +40,8 @@ def add_folder():
     return flask.render_template(
         'file/admin/add_folder.html',
         form=form,
-        folders=folders
+        folders=folders,
+        title=u'Добавить папку'
     )
 
 @mod.route('/<int:key_id>/', methods=['GET', 'POST'])
@@ -64,7 +66,8 @@ def edit_folder(key_id):
         folder=folder,
         active_folder=folder.key,
         file_form=file_form,
-        add_url=add_url
+        add_url=add_url,
+        title='Edit'
     )
 
 
