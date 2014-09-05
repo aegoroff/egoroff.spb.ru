@@ -47,7 +47,7 @@ SCRIPTS = [
     ('libs', [
         'ext/js/jquery/jquery.js',
         'ext/js/jquery-ui/jquery-ui.js',
-        'ext/js/momentjs/moment-with-locales.js',
+        'ext/js/moment/moment-with-locales.js',
         'ext/js/nprogress/nprogress.js',
         'ext/js/knockout/knockout.js',
         'ext/js/knockoutmapping/knockout.mapping.js',
@@ -61,7 +61,6 @@ SCRIPTS = [
         'ext/js/jstz/jstz.js',
         'src/script/redactor/redactor.js',
         'src/script/jquery.plugins/jquery.form.js',
-        #'src/script/jquery.plugins/jquery.gmaps.js',
         'src/script/jquery.plugins/jquery.metadata.js',
         'src/script/jquery.plugins/jquery.mosaic.js',
         'src/script/jquery.plugins/jquery.tablesorter.js',

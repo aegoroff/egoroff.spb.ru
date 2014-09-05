@@ -34,7 +34,7 @@
       "less": "less/*.less",
       "img": "less/images/*"
     },
-    "momentjs": {
+    "moment": {
       "js": "min/moment-with-locales.js"
     },
     "moment-timezone": {
