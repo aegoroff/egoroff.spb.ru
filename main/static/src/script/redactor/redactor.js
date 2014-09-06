@@ -128,7 +128,6 @@ var RLANG = {
 			execCommandCallback: false, // function
 		
 			path: false,
-			css: 'style.css',
 			focus: false,
 			resize: true,
 			autoresize: false,
@@ -813,7 +812,7 @@ var RLANG = {
 		setDoc: function(html)
 		{
 			var frameHtml = '<!DOCTYPE html>\n' +
-			'<html><head><link media="all" type="text/css" href="' + this.opts.path + '/css/' + this.opts.css + '" rel="stylesheet"></head>' +
+			'<html><head></head>' +
 			'<body><div id="page" contenteditable="true" dir="' + this.opts.direction + '">' +
 			html + 
 			'</div></body></html>';
