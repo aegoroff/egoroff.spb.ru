@@ -15,13 +15,9 @@ class FolderForm(wtf.Form):
     )
 
 class FileForm(wtf.Form):
-    file = wtforms.FileField(
-        u'Файл',
-        description=u'Выберите файл для загрузки',
-        validators=[wtforms.validators.required()]
-    )
+    file = wtforms.FileField(u'Файл', [wtforms.validators.required()], tuple(), u'Выберите файл для загрузки')
     description = wtforms.TextAreaField(
         u'Описание',
-        description=u'Введите краткое описание для файла',
-        validators=[wtforms.validators.optional()]
+        validators=[wtforms.validators.optional()],
+        description=u'Введите краткое описание для файла'
     )
