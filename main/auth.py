@@ -382,7 +382,7 @@ def create_user_db(auth_id, name, username, email='', verified=False, **props):
       auth_ids=[auth_id],
       verified=verified,
       token=util.uuid(),
-      **params
+      **props
     )
   user_db.put()
   task.new_user_notification(user_db)
