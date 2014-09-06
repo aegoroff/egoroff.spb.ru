@@ -1276,7 +1276,7 @@ var RLANG = {
 			var properties = ['color', 'background-color', 'font-style', 'margin', 'margin-top', 'margin-bottom', 'margin-left', 'margin-right', 'text-align', 'width', 'height', 'cursor', 'float'];
 			
 			// remove attributes
-			var matches = html.match(/([\w\-.:]+)\s*=\s*("[^"]*"|'[^']*'|[\w\-.:]+)/gi);
+			var matches = html.match(/((\w|[\-.:])+)\s*=\s*("[^"]*"|'[^']*'|(\w|[\-.:])+)/gi);
 			$.each(matches, $.proxy(function(i,m)
 			{
 				var attr = m.split('=');
