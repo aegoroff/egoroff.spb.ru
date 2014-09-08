@@ -7,7 +7,15 @@ window.init_common = ->
   init_password_show_button()
   init_time()
   init_announcement()
+  renderPlusone()
 
+window.renderPlusone = ->
+  po = document.createElement('script')
+  po.type = 'text/javascript'
+  po.async = true
+  po.src = 'https://apis.google.com/js/plusone.js'
+  s = document.getElementsByTagName('script')[0]
+  s.parentNode.insertBefore(po, s)
 
 window.init_loading_button = ->
   $('body').on 'click', '.btn-loading', ->
