@@ -6,7 +6,7 @@
     "jquery": "~2",
     "jquery-ui": "~1",
     "jquery-ui-less": "https://github.com/DC-development/jquery-ui-less.git#master",
-    "momentjs": "~2",
+    "moment": "~2",
     "moment-timezone": "~0",
     "jstz": "https://github.com/bower-packages/bower-jstz.git",
     "nprogress": "https://github.com/lipis/nprogress.git#master",
