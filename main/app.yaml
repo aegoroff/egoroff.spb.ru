@@ -31,6 +31,10 @@ handlers:
   static_dir: static/ext/img/jquery-ui-less/
   expiration: 1000d
 
+- url: /p/dst/style/images/
+  static_dir: static/ext/img/jquery-ui-less/
+  expiration: 1000d
+
 - url: /p/(.*\.ttf)
   static_files: static/\1
   upload: static/(.*\.ttf)
