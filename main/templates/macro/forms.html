@@ -15,7 +15,7 @@
 # macro input_field(field, type='text')
   <div class="form-group {{'has-error' if field.errors}}">
     {{field.label(class='control-label')}}
-    {{field(class='form-control', type=type, **kwargs)}}
+    {{field(class='form-control', **kwargs)}}
     {{field_errors(field)}}
     {{field_description(field)}}
   </div>
