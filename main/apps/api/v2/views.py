@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 import random
 from apps.news.views import get_posts_ids, create_posts_query
 import config
@@ -10,6 +11,10 @@ from apps.api.utils import except_wrap, ApiException
 import datetime
 from apps.news.models import Post
 import util
+import flask
+from auth import admin_required
+from apps.file.models import Folder, File
+from apps.utils.blobstore import get_uploads
 
 mod = Blueprint(
     'api.v2',
@@ -69,4 +74,27 @@ def get_post_json(key_id):
 @except_wrap
 def post_json():
     return get_post_json(param('id', int))
+
+
+@mod.route('/<int:key_id>/add_file/', methods=['POST'])
+@admin_required
+def add_file(key_id):
+    folder = Folder.retrieve_by_id(key_id)
+    if not folder:
+        return
+    upload_files = get_uploads(flask.request, 'file')
+    if len(upload_files):
+        blob_info = upload_files[0]
+        if blob_info.size:
+            f = File.create(
+                blob_info.key(),
+                size=blob_info.size,
+                filename=os.path.basename(blob_info.filename.replace('\\','/')),
+                content_type=blob_info.content_type)
+            f.put()
+            if f.get_cached_url():
+                folder.files.append(f.key)
+                folder.put()
+        else:
+            blob_info.delete()
 
