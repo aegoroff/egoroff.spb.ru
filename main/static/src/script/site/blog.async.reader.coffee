@@ -9,9 +9,6 @@ $ ->
     $('div.tags > ul > li > a').removeClass('btn btn-default')
     $('div#accordion > div > a').removeClass('active')
 
-  setBreadcrumbsText = (txt) ->
-    $('ol.breadcrumb > li.active').text(txt)
-
   month = $('div#accordion > div > a')
   month.click (event) ->
     href = event.target.hash
@@ -32,8 +29,8 @@ $ ->
     mmt = moment(new Date(y, m - 1, 10))
     mmt.locale(user_lang())
 
-    setBreadcrumbsText("Записи за " + mmt.format('MMMM YYYY'))
-    window.LoadBlog({ "year" : y, "month" : m })
+    txt = "записи за " + mmt.format('MMMM YYYY');
+    window.LoadBlog({ "year" : y, "month" : m }, txt)
     removePager()
   month.button()
 
@@ -44,8 +41,8 @@ $ ->
     href = event.target.hash
     $("dl#blogcontainer").remove()
     t = href.split('=')[1]
-    setBreadcrumbsText('Все посты по метке: ' + t)
-    window.LoadBlog({ "tag" : t })
+    txt = 'все посты по метке: ' + t
+    window.LoadBlog({ "tag" : t }, txt)
     removePager()
   tag.button()
 

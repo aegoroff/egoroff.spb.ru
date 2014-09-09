@@ -17,9 +17,13 @@
 <script>
     vm = new window.BlogViewModel();
     ko.applyBindings(vm);
+    vm.titleExt("тут я пишу");
 
-    window.LoadBlog = function(query) {
+    window.LoadBlog = function(query, tExt) {
         vm.getPostsUsingQuery(query, false);
+        if(tExt){
+            vm.titleExt(tExt)
+        }
     };
 
     $( document ).ready(function() {
@@ -49,9 +53,7 @@
     <div class="page-header">
         <h1>
             {{ title }}
-            <small>
-                тут я пишу
-            </small>
+            <small data-bind="text: titleExt">тут я пишу</small>
         </h1>
     </div>
     <div class="row">

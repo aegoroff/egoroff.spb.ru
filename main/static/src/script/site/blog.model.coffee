@@ -5,6 +5,7 @@ window.BlogViewModel = ->
   @offset = parseInt($("input#offsetValue").val(), 10)
   @hideAddButton = false
   @blogPosts = ko.mapping.fromJS([])
+  @titleExt = ko.observable('')
 
   @getPostsUsingQuery = (query, append) ->
     NProgress.start()
