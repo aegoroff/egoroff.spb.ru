@@ -298,7 +298,7 @@ def error_handler(e):
 
   return flask.render_template(
       'error.html',
-      title='Error %d (%s)!!1' % (e.code, e.name),
+      title= u'Ошибка %d (%s)!!!' % (e.code, e.name),
       html_class='error-page',
       error=e,
     ), e.code
