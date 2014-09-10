@@ -4,7 +4,8 @@
     <script>
         $(function(){
             $('.redactor').redactor({
-                linebreaks: true
+                linebreaks: true,
+                imageUpload: '{{ image_upload_handler }}'
             });
         });
     </script>

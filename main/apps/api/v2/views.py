@@ -2,6 +2,7 @@
 import os
 import random
 from apps.news.views import get_posts_ids, create_posts_query
+from apps.utils import blobstore_handlers
 import config
 
 from flask import Blueprint, render_template, current_app, request
@@ -77,17 +78,17 @@ def post_json():
     return get_post_json(param('id', int))
 
 
-@mod.route('/<int:key_id>/add_file/', methods=['POST'])
+@mod.route('/add_file/', methods=['POST'])
 @admin_required
-def add_file(key_id):
+def add_blob_content():
 
     response_object = {
       'status': 'success',
       'now': datetime.utcnow().isoformat(),
-      'result': None,
+      'filelink': None,
     }
 
-    folder = Folder.retrieve_by_id(key_id)
+    folder = Folder.retrieve_by_id(3001)
     if not folder:
         response_object['status'] = 'failure'
         return util.jsonpify(response_object)
@@ -104,8 +105,7 @@ def add_file(key_id):
             if f.get_cached_url():
                 folder.files.append(f.key)
                 folder.put()
-                response_object['result'] = f.get_cached_url()
+                response_object['filelink'] = f.get_cached_url()
         else:
             blob_info.delete()
     return util.jsonpify(response_object)
-

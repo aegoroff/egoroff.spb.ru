@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from flask import Blueprint, redirect, render_template, url_for, request
+import flask
 from google.appengine.api import memcache
+from google.appengine.ext import blobstore
 from auth import admin_required
 from apps.news.models import Post
 from apps.news.admin.forms import PostForm
@@ -36,7 +38,8 @@ def new_post():
     return render_template(
         'news/admin/post_new.html',
         form=form,
-        title=u'Новый пост'
+        title=u'Новый пост',
+        image_upload_handler = blobstore.create_upload_url(flask.url_for('api.v2.add_blob_content'))
     )
 
 @mod.route('/<int:key_id>/', methods=['GET', 'POST'])
@@ -59,5 +62,6 @@ def edit_post(key_id):
         'news/admin/post_edit.html',
         form=form,
         post=post,
-        title=post.title
+        title=post.title,
+        image_upload_handler = blobstore.create_upload_url(flask.url_for('api.v2.add_blob_content'))
     )
