@@ -15,6 +15,7 @@ import flask
 from auth import admin_required
 from apps.file.models import Folder, File
 from apps.utils.blobstore import get_uploads
+from datetime import datetime
 
 mod = Blueprint(
     'api.v2',
@@ -79,9 +80,17 @@ def post_json():
 @mod.route('/<int:key_id>/add_file/', methods=['POST'])
 @admin_required
 def add_file(key_id):
+
+    response_object = {
+      'status': 'success',
+      'now': datetime.utcnow().isoformat(),
+      'result': None,
+    }
+
     folder = Folder.retrieve_by_id(key_id)
     if not folder:
-        return
+        response_object['status'] = 'failure'
+        return util.jsonpify(response_object)
     upload_files = get_uploads(flask.request, 'file')
     if len(upload_files):
         blob_info = upload_files[0]
@@ -95,6 +104,8 @@ def add_file(key_id):
             if f.get_cached_url():
                 folder.files.append(f.key)
                 folder.put()
+                response_object['result'] = f.get_cached_url()
         else:
             blob_info.delete()
+    return util.jsonpify(response_object)
 
