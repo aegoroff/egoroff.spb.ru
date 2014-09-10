@@ -1,4 +1,5 @@
 {% extends 'admin/base.html' %}
+# import 'macro/forms.html' as forms
 
 # block scripts
     <script>
@@ -13,24 +14,35 @@
 
 # block content
 <div class="row">
-    <div class="col-md-12">
-        <h1 class="page-header">Редактирование поста <small>{{ post.title }}</small></h1>
-        <form method="POST">
-            {% include 'news/admin/post_fields.html' %}
-            <div class="form-actions">
-                <button type="submit"
-                    class="btn btn-primary">
-                    Сохранить пост
-                </button>
-                <button type="submit" class="btn btn-danger" name="delete_post">
-                    Удалить
-                </button>
-                <a class="btn" href="{{ url_for('admin.news.index') }}">
-                    Отмена
-                </a>
-            </div>
-        </form>
-    </div>
+    <form method="POST">
+        <div class="col-md-4">
+            <h1 class="page-header">Редактирование поста <small>{{ post.title }}</small></h1>
+
+                {{form.csrf_token}}
+                {{forms.text_field(form.created)}}
+                {{forms.text_field(form.title, autofocus=True)}}
+                {{forms.checkbox_field(form.is_public)}}
+                {{forms.text_field(form.tags)}}
+
+                <div class="form-actions">
+                    <button type="submit"
+                        class="btn btn-primary">
+                        Сохранить пост
+                    </button>
+                    <button type="submit" class="btn btn-danger" name="delete_post">
+                        Удалить
+                    </button>
+                    <a class="btn" href="{{ url_for('admin.news.index') }}">
+                        Отмена
+                    </a>
+                </div>
+        </div>
+        <div class="col-md-8">
+            <h1 class="page-header">Тексты</h1>
+            {{forms.redactor_field(form.short_text)}}
+            {{forms.redactor_field(form.text, rows=10)}}
+        </div>
+    </form>
 </div>
 
 # endblock
