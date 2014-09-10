@@ -70,6 +70,7 @@ SCRIPTS = [
         'src/script/syntax-highlighter/shBrushNasm8086.js',
         'src/script/syntax-highlighter/shBrushIL.js',
         'src/script/syntax-highlighter/shBrushHashQuery.js',
+        'src/script/syntax-highlighter/shBrushPython.js',
         'src/script/jquery.plugins/jquery.form.js',
         'src/script/jquery.plugins/jquery.metadata.js',
         'src/script/jquery.plugins/jquery.mosaic.js',
