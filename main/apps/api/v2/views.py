@@ -9,7 +9,7 @@ from util import param, jsonify_model_db
 from apps.api.utils import except_wrap, ApiException
 from apps.news.models import Post
 import util
-from datetime import datetime
+import datetime
 
 mod = Blueprint(
     'api.v2',
