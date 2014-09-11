@@ -50,14 +50,14 @@
 
 {% block content %}
     {% strip %}
-    <div class="page-header">
-        <h1>
-            {{ title }}
-            <small data-bind="text: titleExt">тут я пишу</small>
-        </h1>
-    </div>
     <div class="row">
         <div class="col-lg-9">
+            <div class="page-header">
+                <h1>
+                    {{ title }}
+                    <small data-bind="text: titleExt">тут я пишу</small>
+                </h1>
+            </div>
             {% if not posts %}
                 Ничего нет
             {% else %}
