@@ -10,7 +10,7 @@
                 xhtml: true,
                 imageUpload: '{{ image_upload_handler }}',
                 clipboardUploadUrl: '{{ image_upload_handler }}',
-                allowedTags: ['p', 'blockquote', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'pre', 'code', 'br', 'em', 'strong', 'i', 'a', 'img', 'example', 'ul', 'ol', 'li', 'table', 'tr', 'td', 'link', 'abbr', 'acronym', 'dd', 'dt', 'dl', 'dfn', 'del', 'small', 'article', 'cite' ]
+                allowedTags: [ {{ allowed | safe }} ]
             });
         });
     </script>

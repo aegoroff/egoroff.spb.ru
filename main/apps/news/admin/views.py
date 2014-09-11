@@ -5,6 +5,7 @@ from flask import Blueprint, redirect, render_template, url_for, request
 import flask
 from google.appengine.api import memcache
 from google.appengine.ext import blobstore
+from apps.news.admin import tags
 from auth import admin_required
 from apps.news.models import Post
 from apps.news.admin.forms import PostForm
@@ -45,6 +46,7 @@ def new_post():
         'news/admin/post_new.html',
         form=form,
         title=u'Новый пост',
+        allowed=tags.allowed(),
         image_upload_handler = blobstore.create_upload_url(flask.url_for('admin.news.add_blob_content'))
     )
 
@@ -69,6 +71,7 @@ def edit_post(key_id):
         form=form,
         post=post,
         title=post.title,
+        allowed=tags.allowed(),
         image_upload_handler = blobstore.create_upload_url(flask.url_for('admin.news.add_blob_content'))
     )
 
