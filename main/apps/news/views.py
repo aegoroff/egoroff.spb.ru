@@ -168,24 +168,11 @@ def get_post(key_id):
 
         content = unicode(transform(xml_input))
 
-    original_limit = 5
-    limit = original_limit
-    offset = 0
-    while True:
-        posts = get_posts_ids(limit, offset)
-        if key_id in posts: break
-        limit += original_limit
-
     return render_template(
         'news/post.html',
         title=post.title,
         main_post=post,
-        content=content,
-        seed=original_limit,
-        limit=limit,
-        key_id=post.key.id(),
-        offset=0,
-        full_uri=urljoin(flask.request.url_root, flask.url_for('news.post', key_id=key_id)),
+        content=content
     )
 
 

@@ -8,7 +8,7 @@
 
 {% block content %}
     <div class="row">
-        <div class="col-lg-9">
+        <div class="col-lg-12">
             <p class="text-muted"><i class="fa fa-calendar"></i>&nbsp;<span class="date-from-now">{{ main_post.created }}</span></p>
             {% if content %}
                 {{ content | typo | safe }}
@@ -31,28 +31,6 @@
             </div>
             {% include 'bit/disqus.html' %}
         </div>
-        <div class="col-lg-3">
-            <!--noindex-->
-            <h4>
-                Из последнего
-            </h4>
-            <dl id="log" data-bind="template: {
-                        name: 'blog',
-                        foreach: blogPosts,
-                        afterRender: postProcessingLogic
-                        }"></dl>
-
-            <div class="col-md-12" data-bind="template: {
-                        name: 'morePosts',
-                        data: blogPosts
-                        }">
-
-            </div>
-            <input type="hidden" name="offset" id="offsetValue" value="{{ offset }}"/>
-            <input type="hidden" name="limit" id="limitValue" value="{{ limit }}"/>
-            <input type="hidden" name="seed" id="seedValue" value="{{ seed }}"/>
-            <!--/noindex-->
-        </div>
     </div>
 {% endblock %}
 
@@ -61,14 +39,6 @@
 <script type="text/javascript">
     SyntaxHighlighter.defaults['toolbar'] = false;
     SyntaxHighlighter.all();
-</script>
-
-# include 'news/blog_model.html'
-
-<script>
-    vm = new window.BlogViewModel();
-    vm.getPosts();
-    ko.applyBindings(vm);
 </script>
 
 # endblock
