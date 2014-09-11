@@ -19,7 +19,7 @@
 # block content
 <div class="row">
     <form method="POST">
-        <div class="col-md-4">
+        <div class="col-lg-4">
             <h1 class="page-header">Редактирование поста <small>{{ post.title }}</small></h1>
 
                 {{form.csrf_token}}
@@ -41,7 +41,7 @@
                     </a>
                 </div>
         </div>
-        <div class="col-md-8">
+        <div class="col-lg-8">
             <h1 class="page-header">Тексты</h1>
             {{forms.redactor_field(form.short_text)}}
             {{forms.redactor_field(form.text, rows=10)}}
