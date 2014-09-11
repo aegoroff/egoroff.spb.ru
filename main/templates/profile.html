@@ -11,7 +11,7 @@
   </div>
   <form method="POST" action="." novalidate>
     <div class="row">
-      <div class="col-md-4 col-sm-6">
+      <div class="col-lg-4 col-sm-6">
         {{form.csrf_token}}
         <div class="form-group ">
           <label class="control-label" for="username">Логин</label>
@@ -20,7 +20,7 @@
         {{forms.text_field(form.name, autofocus=True)}}
         # include 'user/user_email_field.html'
       </div>
-      <div class="col-md-2 col-sm-3">
+      <div class="col-lg-2 col-sm-3">
         <div class="form-group">
           <label class="control-label">Аватар</label>
           <div>
@@ -34,7 +34,7 @@
       </div>
     </div>
     <div class="row">
-      <div class="col-md-6 col-sm-9">
+      <div class="col-lg-6 col-sm-9">
         <div class="controls">
           <button type="submit" class="btn btn-primary btn-block btn-loading" data-loading-text="Updating Profile..">
             Обновить профиль
