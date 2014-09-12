@@ -28,7 +28,7 @@ def current_section():
 
 
 @app.context_processor
-def inject_current_section():
+def inject_context_data():
     root, curr, uri = current_section()
 
     current_id = ''
