@@ -29,7 +29,7 @@ def get_paginator(posts, page, posts_per_page=20):
     return posts
 
 
-main_section_item = site_map.MAP[1]
+main_section_item = site_map.MAP[0][site_map.CHILDS][1]
 
 
 TAG_RANK = ("tagRank10", "tagRank9",

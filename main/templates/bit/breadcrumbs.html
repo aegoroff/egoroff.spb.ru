@@ -7,8 +7,7 @@
                 {% block breadcrumbs %}
                     {% for item in breadcrumbs %}
                         <li>
-                            <a href="{{ url_for(item[0]) }}">{% if item[2] %}<i class="{{ item[2] }}"></i>
-                                &nbsp;{% endif %}{{ item[1] }}</a>
+                            <a href="{{ url_for(item[0]) }}">{% if item[2] %}<i class="{{ item[2] }}"></i>&nbsp;{% endif %}{{ item[1] }}</a>
                         </li>
                     {% endfor %}
                     <li class="active">

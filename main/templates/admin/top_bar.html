@@ -7,12 +7,13 @@
         </div>
         <nav class="collapse navbar-collapse" role="navigation" id="adminka">
             <ul class="nav navbar-nav">
-                <li>
-                    <a href="{{ url_for('admin.news.index') }}">Блог</a>
-                </li>
-                <li>
-                    <a href="{{ url_for('admin.file.index') }}">Файлы</a>
-                </li>
+                {% for item in sections %}
+                    <li {% if item["id"] == current_id %}class="active"{% endif %}>
+                        <a href={{ url_for(item['id']) }}>&nbsp;{% if item["class"] %}<i class="{{ item["class"] }}"></i>&nbsp;{% endif %}
+                            {{ item['title'] }}
+                        </a>
+                    </li>
+                {% endfor %}
             </ul>
 
             <ul class="nav navbar-nav navbar-right">

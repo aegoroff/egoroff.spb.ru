@@ -44,7 +44,7 @@ def create_apache_docs():
     return result
 
 
-main_section_item = site_map.MAP[0]
+main_section_item = site_map.MAP[0][site_map.CHILDS][0]
 
 
 @mod.route('/')

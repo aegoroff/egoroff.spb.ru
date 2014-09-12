@@ -63,39 +63,58 @@ from apps.api.v2.views import mod as api_mod
 app.register_blueprint(api_mod)
 
 
-def create_breadcrumbs(parents):
-    breadcrumbs = [('welcome', u'Главная', 'fa fa-home')]
+def create_breadcrumbs(breadcrumbs, parents):
     append = lambda item: breadcrumbs.append((item[site_map.ID], item[site_map.TITLE], item[site_map.CLASS]))
     map(append, parents)
     return breadcrumbs
 
 
 def current_section():
-    for section in site_map.MAP:
-        index = section[site_map.ID]
-        section_uri = flask.url_for(index)
-        if section_uri in request.path:
-            return section, section_uri
-    return None, None
+    for root in site_map.MAP:
+        section_uri = flask.url_for(root[site_map.ID])
+        if section_uri == request.path:
+            return root, None, section_uri
+
+        for child in root[site_map.CHILDS]:
+            child_uri = flask.url_for(child[site_map.ID])
+            if child_uri in request.path:
+                return root, child, child_uri
+    return site_map.MAP[0], None, request.path
+
 
 @app.context_processor
 def inject_current_section():
-    curr, uri = current_section()
-    if curr:
-        return dict(current_id=curr[site_map.ID])
-    return dict(current_id="")
+    root, curr, uri = current_section()
 
-
-@app.context_processor
-def inject_breadcrumbs():
-    if request.path == '/':
-        return dict(breadcrumbs=None)
-    curr, uri = current_section()
+    current_id = ''
+    root_id = ''
+    breadcrumbs = None
+    sections = None
     if curr:
-        if request.path == uri and (not request.query_string or request.query_string == ''):
-            return dict(breadcrumbs=create_breadcrumbs([]))
-        return dict(breadcrumbs=create_breadcrumbs([curr]))
-    return dict(breadcrumbs=create_breadcrumbs([]))
+        current_id = curr[site_map.ID]
+    if root:
+        root_id = root[site_map.ID]
+
+    for s in site_map.MAP:
+        if s[site_map.ID] == root_id:
+            sections = s[site_map.CHILDS]
+            break
+
+    if request.path != flask.url_for('welcome'):
+        start = [(root[site_map.ID], root[site_map.TITLE], root[site_map.CLASS])]
+        if curr:
+            if request.path == uri and (not request.query_string or request.query_string == ''):
+                breadcrumbs = create_breadcrumbs(start, [])
+            else:
+                breadcrumbs = create_breadcrumbs(start, [curr])
+        else:
+            breadcrumbs = create_breadcrumbs(start, [])
+    return dict(
+        current_id=current_id,
+        root_id=root_id,
+        breadcrumbs=breadcrumbs,
+        sections=sections,
+        main_section_item=curr)
 
 
 
@@ -150,7 +169,7 @@ def sitemap():
 
     pages = [util.create_page(create(''), "weekly")]
 
-    for item in site_map.MAP:
+    for item in site_map.MAP[0][site_map.CHILDS]:
         if item[site_map.ID] == 'search': # filter search because it disabled it robots.txt
             continue
         p = util.create_page(full_uri(item[site_map.ID]), "weekly", '0.7')
