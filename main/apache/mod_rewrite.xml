@@ -358,7 +358,7 @@ SCRIPT_URI=http://en1.engelschall.com/u/rse/
 
 <note type="securitywarning"><title>Безопасность</title>
 
-Смотрите <a href="../misc/security_tips.html">Apache Security Tips</a> документ
+Смотрите <a href="http://httpd.apache.org/docs/current/misc/security_tips.html">Apache Security Tips</a> документ
 в котором есть более подробная информация о том, почему вы можете быть уязвимы если
 разрешили запись в каталоги с файлами журналов кому угодно, кроме пользователя от имени которого запускается сервер.
 </note>
