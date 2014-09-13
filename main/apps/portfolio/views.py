@@ -7,8 +7,6 @@ from google.appengine.api import memcache
 from lxml import etree
 import time
 from apps.file.models import Folder
-
-import site_map
 import util
 
 
@@ -44,9 +42,6 @@ def create_apache_docs():
     return result
 
 
-main_section_item = site_map.MAP[0][site_map.CHILDS][0]
-
-
 @mod.route('/')
 def index():
     folders = Folder.query(Folder.is_public == True).fetch(use_memcache=True, use_cache=True)
@@ -58,8 +53,6 @@ def index():
         downloads[f.title] = files
     return render_template(
         'portfolio/index.html',
-        parent_id=main_section_item[site_map.ID],
-        title=main_section_item[site_map.TITLE],
         downloads=downloads,
         apache_docs=create_apache_docs()
     )

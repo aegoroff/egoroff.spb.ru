@@ -8,7 +8,6 @@ from apps.news.models import Post, Tag
 import flask
 import config
 from flask import abort
-import site_map
 import itertools
 import util
 from werkzeug.contrib.atom import AtomFeed
@@ -28,8 +27,6 @@ def get_paginator(posts, page, posts_per_page=20):
         posts = paginator.page(paginator.num_pages)
     return posts
 
-
-main_section_item = site_map.MAP[0][site_map.CHILDS][1]
 
 
 TAG_RANK = ("tagRank10", "tagRank9",
@@ -100,7 +97,7 @@ mod.add_app_template_filter(month_tuple_to_string, 'month_tuple_to_string')
 @mod.route('/page/<int:page>/')
 def index(page):
     posts = create_posts_query()
-    title = main_section_item[site_map.TITLE]
+    title = ''
 
     if page > 1:
         title = u" {0}-я страница".format(page)
@@ -124,7 +121,6 @@ def index(page):
         posts=posts,
         archieve=archieve,
         tags=create_tag_rank(all_posts),
-        key=main_section_item[site_map.ID],
     )
 
 

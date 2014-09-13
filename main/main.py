@@ -98,13 +98,11 @@ def welcome():
 
 @app.route('/search/')
 def search():
-    title=u'Поиск'
     q = util.param('q')
     if q:
         title = u"Результаты по запросу: {0}".format(q)
     return flask.render_template(
         'search.html',
-        title=title,
         html_class='search'
     )
 
@@ -222,7 +220,6 @@ def feedback():
 
   return flask.render_template(
       'feedback.html',
-      title=u'Фидбек',
       html_class='feedback',
       form=form,
     )

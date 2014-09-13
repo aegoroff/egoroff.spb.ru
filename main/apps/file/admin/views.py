@@ -23,8 +23,7 @@ def index():
     folders = Folder.query()
     return flask.render_template(
         'file/admin/folders.html',
-        folders=folders,
-        title=u'Файлы и папки'
+        folders=folders
     )
 
 @mod.route('/add/', methods=['GET', 'POST'])

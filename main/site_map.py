@@ -37,6 +37,7 @@ def inject_context_data():
     root_id = ''
     breadcrumbs = None
     sections = None
+    current_title = None
     if curr:
         current_id = curr[ID]
     if root:
@@ -50,6 +51,7 @@ def inject_context_data():
     if request.path != flask.url_for('welcome') and request.path != flask.url_for('admin_config_update'):
         start = [(root[ID], root[TITLE], root[CLASS])]
         if curr:
+            current_title = curr[TITLE]
             if request.path == uri and (not request.query_string or request.query_string == ''):
                 breadcrumbs = create_breadcrumbs(start, [])
             else:
@@ -61,7 +63,8 @@ def inject_context_data():
         root_id=root_id,
         breadcrumbs=breadcrumbs,
         sections=sections,
-        current_section=curr)
+        current_section=curr,
+        current_title=current_title)
 
 MAP = [
     {

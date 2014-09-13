@@ -28,8 +28,7 @@ def index():
     posts = Post.query().order(-Post.created)
     return render_template(
         'news/admin/posts.html',
-        posts=posts,
-        title=u'Блог'
+        posts=posts
     )
 
 @mod.route('/new/', methods=['GET', 'POST'])

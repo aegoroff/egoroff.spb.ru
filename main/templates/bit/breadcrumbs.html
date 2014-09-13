@@ -11,7 +11,7 @@
                         </li>
                     {% endfor %}
                     <li class="active">
-                        {{ title }}
+                        {{ title if title else current_title }}
                     </li>
                 {% endblock %}
             </ol>
