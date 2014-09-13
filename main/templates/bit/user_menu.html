@@ -1,3 +1,4 @@
+{% strip %}
 # if current_user.id > 0
   <li class="dropdown">
     <a class="dropdown-toggle" data-toggle="dropdown" href="#">
@@ -21,3 +22,4 @@
     <a href="{{url_for('signin')}}"><i class="fa fa-sign-in"></i> Войти</a>
   </li>
 # endif
+{% endstrip %}

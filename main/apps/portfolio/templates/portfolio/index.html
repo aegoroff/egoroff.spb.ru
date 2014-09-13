@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
+    {% strip %}
     <div class="page-header">
         <h1>
             {{ current_title }}
@@ -19,4 +20,5 @@
             {% include 'portfolio/downloads.html' %}
         </div>
     </div>
+    {% endstrip %}
 {% endblock %}
