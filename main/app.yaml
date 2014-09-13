@@ -4,6 +4,11 @@ runtime: python27
 api_version: 1
 threadsafe: yes
 
+instance_class: F1
+automatic_scaling:
+  max_idle_instances: 2
+  max_concurrent_requests: 50
+
 builtins:
 - remote_api: on
 - deferred: on
