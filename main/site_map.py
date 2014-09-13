@@ -98,13 +98,13 @@ MAP = [
         CHILDS : [
             {
                 ID: "admin.news.index",
-                CLASS: "fa fa-book",
+                CLASS: "fa fa-fw fa-edit",
                 TITLE: u"Блог"
             },
             {
                 ID: "admin.file.index",
-                CLASS: "fa fa-cloud-upload",
-                TITLE: u"Файло"
+                CLASS: "fa fa-archive",
+                TITLE: u"Файловый менеджер"
             },
         ]
     },
