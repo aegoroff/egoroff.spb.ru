@@ -8,7 +8,7 @@ import site_map
 import typographus
 
 from flask.ext import wtf
-from flask import request, current_app
+from flask import request, current_appk
 import flask
 import wtforms
 
@@ -33,7 +33,6 @@ import auth
 import model
 import task
 import user
-import context
 
 from apps.file.views import mod as file_view
 
@@ -63,6 +62,10 @@ from apps.api.v2.views import mod as api_mod
 
 app.register_blueprint(api_mod)
 
+
+@app.context_processor
+def inject_context_data():
+    return site_map.inject_context_data()
 
 
 @app.template_filter('typo')
