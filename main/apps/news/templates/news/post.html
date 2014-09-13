@@ -15,20 +15,18 @@
             {% else %}
                 {{ main_post.short_text | typo | safe }}
             {% endif %}
-            {% if main_post.tags %}
+
                 <div class="well well-sm">
-                    Метки:&nbsp;
-                    {% for tag in main_post.tags %}
-                       <a href="{{ url_for('news.index') }}#tag={{ tag }}" class="btn btn-default btn-sm">{{ tag }}</a>
-                    {% endfor %}
-                </div>
-            {% endif %}
-            <div class="well well-sm">
-                <h4>
-                    <small><i class="fa fa-calendar"></i> <span class="shortDateFormat">{{ main_post.created }}</span></small>
+                    <i class="fa fa-calendar"></i> <span class="shortDateFormat">{{ main_post.created }}</span>&nbsp;
+                    {% if main_post.tags %}
+                        {% for tag in main_post.tags %}
+                           <a href="{{ url_for('news.index') }}#tag={{ tag }}" class="btn btn-default btn-sm">{{ tag }}</a>
+                        {% endfor %}
+                    {% endif %}
                     {% include 'bit/social.html' %}
-                </h4>
-            </div>
+                </div>
+
+
             {% include 'bit/disqus.html' %}
         </div>
     </div>
@@ -40,5 +38,15 @@
     SyntaxHighlighter.defaults['toolbar'] = false;
     SyntaxHighlighter.all();
 </script>
+
+<script type="text/javascript">(function() {
+  if (window.pluso)if (typeof window.pluso.start == "function") return;
+  if (window.ifpluso==undefined) { window.ifpluso = 1;
+    var d = document, s = d.createElement('script'), g = 'getElementsByTagName';
+    s.type = 'text/javascript'; s.charset='UTF-8'; s.async = true;
+    s.src = ('https:' == window.location.protocol ? 'https' : 'http')  + '://share.pluso.ru/pluso-like.js';
+    var h=d[g]('body')[0];
+    h.appendChild(s);
+  }})();</script>
 
 # endblock
