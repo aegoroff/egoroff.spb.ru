@@ -8,7 +8,7 @@ import site_map
 import typographus
 
 from flask.ext import wtf
-from flask import request, current_appk
+from flask import request, current_app
 import flask
 import wtforms
 
