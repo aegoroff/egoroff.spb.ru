@@ -47,7 +47,7 @@ def inject_context_data():
             sections = s[CHILDS]
             break
 
-    if request.path != flask.url_for('welcome'):
+    if request.path != flask.url_for('welcome') and request.path != flask.url_for('admin_config_update'):
         start = [(root[ID], root[TITLE], root[CLASS])]
         if curr:
             if request.path == uri and (not request.query_string or request.query_string == ''):
