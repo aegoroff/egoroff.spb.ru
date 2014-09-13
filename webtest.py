@@ -15,13 +15,41 @@ class EgoroffTest(unittest.TestCase):
         capabilities = {}
         self.driver = webdriver.Remote(s.service_url, capabilities)
 
-    def home_page_nav(self):
+    def test_top_nav_count(self):
         driver = self.driver
         driver.get('http://localhost:8080/')
         nav = driver.find_elements_by_css_selector('nav > ul.nav.navbar-nav > li > a')
-        #self.assertIn(5, nav.__len__())
-        self.assertIsNotNone(nav)
+        self.assertEquals(6, nav.__len__())
 
+    def test_portfolio_click(self):
+        driver = self.driver
+        driver.get('http://localhost:8080/')
+        a = driver.find_element_by_css_selector('body > header > div > nav > ul:nth-child(1) > li:nth-child(1) > a')
+        a.click()
+
+    def test_blog_click(self):
+        driver = self.driver
+        driver.get('http://localhost:8080/')
+        a = driver.find_element_by_css_selector('body > header > div > nav > ul:nth-child(1) > li:nth-child(2) > a')
+        a.click()
+
+    def test_search_click(self):
+        driver = self.driver
+        driver.get('http://localhost:8080/')
+        a = driver.find_element_by_css_selector('body > header > div > nav > ul:nth-child(1) > li:nth-child(3) > a')
+        a.click()
+
+    def test_rss_click(self):
+        driver = self.driver
+        driver.get('http://localhost:8080/')
+        a = driver.find_element_by_css_selector('body > header > div > nav > ul:nth-child(1) > li:nth-child(4) > a')
+        a.click()
+
+    def test_feedback_click(self):
+        driver = self.driver
+        driver.get('http://localhost:8080/')
+        a = driver.find_element_by_css_selector('body > header > div > nav > ul:nth-child(1) > li:nth-child(5) > a')
+        a.click()
 
     def tearDown(self):
         self.driver.close()
