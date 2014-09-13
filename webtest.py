@@ -5,6 +5,7 @@ __author__ = 'egr'
 import unittest
 from selenium import webdriver
 import selenium.webdriver.chrome.service as service
+import time
 
 
 class EgoroffTest(unittest.TestCase):
@@ -21,35 +22,30 @@ class EgoroffTest(unittest.TestCase):
         nav = driver.find_elements_by_css_selector('nav > ul.nav.navbar-nav > li > a')
         self.assertEquals(6, nav.__len__())
 
-    def test_portfolio_click(self):
+    def test_blog_tags(self):
         driver = self.driver
-        driver.get('http://localhost:8080/')
-        a = driver.find_element_by_css_selector('body > header > div > nav > ul:nth-child(1) > li:nth-child(1) > a')
-        a.click()
+        driver.get('http://localhost:8080/blog/')
+        tags = driver.find_elements_by_css_selector('div.tags > ul > li > a')
+        for tag in tags:
+            tag.click()
+            time.sleep(1)
+            links = driver.find_elements_by_css_selector('#log > dt > a')
+            self.assertTrue(links.__len__() > 0)
 
-    def test_blog_click(self):
+    def test_blog_archive(self):
         driver = self.driver
-        driver.get('http://localhost:8080/')
-        a = driver.find_element_by_css_selector('body > header > div > nav > ul:nth-child(1) > li:nth-child(2) > a')
-        a.click()
+        driver.get('http://localhost:8080/blog/')
+        years = driver.find_elements_by_css_selector('div#accordion > div.list-group')
+        for year in years:
+            months = year.find_elements_by_css_selector('a.list-group-item')
+            for month in months:
+                if month.is_displayed():
+                    month.click()
+                    time.sleep(1)
+                    links = driver.find_elements_by_css_selector('#log > dt > a')
+                    self.assertTrue(links.__len__() > 0)
 
-    def test_search_click(self):
-        driver = self.driver
-        driver.get('http://localhost:8080/')
-        a = driver.find_element_by_css_selector('body > header > div > nav > ul:nth-child(1) > li:nth-child(3) > a')
-        a.click()
 
-    def test_rss_click(self):
-        driver = self.driver
-        driver.get('http://localhost:8080/')
-        a = driver.find_element_by_css_selector('body > header > div > nav > ul:nth-child(1) > li:nth-child(4) > a')
-        a.click()
-
-    def test_feedback_click(self):
-        driver = self.driver
-        driver.get('http://localhost:8080/')
-        a = driver.find_element_by_css_selector('body > header > div > nav > ul:nth-child(1) > li:nth-child(5) > a')
-        a.click()
 
     def tearDown(self):
         self.driver.close()
