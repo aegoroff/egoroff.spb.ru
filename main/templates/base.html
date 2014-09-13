@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html class="{% block html_class %}{{html_class}}{% endblock %}" lang="ru">
+{% strip %}
   <head>
     <meta charset="utf-8">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -26,7 +27,7 @@
     # endblock
     # include 'bit/analytics.html'
   </head>
-
+{% endstrip %}
   <body>
 <!--noindex-->
     # block topnav

@@ -15,7 +15,7 @@
             {% else %}
                 {{ main_post.short_text | typo | safe }}
             {% endif %}
-
+                {% strip %}
                 <div class="well well-sm">
                     <i class="fa fa-calendar"></i> <span class="shortDateFormat">{{ main_post.created }}</span>&nbsp;
                     {% if main_post.tags %}
@@ -25,7 +25,7 @@
                     {% endif %}
                     {% include 'bit/social.html' %}
                 </div>
-
+                {% endstrip %}
 
             {% include 'bit/disqus.html' %}
         </div>
