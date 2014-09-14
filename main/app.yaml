@@ -6,7 +6,7 @@ threadsafe: yes
 
 instance_class: F1
 automatic_scaling:
-  max_concurrent_requests: 50
+  max_concurrent_requests: 25
 
 builtins:
 - remote_api: on
