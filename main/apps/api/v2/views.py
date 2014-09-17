@@ -60,9 +60,8 @@ def get_post_json(key_id):
     product = None
     if key_id:
         product = Post.retrieve_by_id(key_id)
-    if not product:
-        if key_id:
-            raise ApiException('Post with "%s" == %s not found' % ('id', key_id), status=404)
+    if not product and key_id:
+        raise ApiException('Post with "%s" == %s not found' % ('id', key_id), status=404)
     return jsonify_model_db(product)
 
 @mod.route('/post.json')
