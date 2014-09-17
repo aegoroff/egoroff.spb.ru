@@ -13,3 +13,4 @@ main/static/ext
 main/static/min
 node_modules
 temp/
+.sonar/
