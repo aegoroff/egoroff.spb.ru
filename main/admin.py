@@ -27,6 +27,7 @@ class ConfigUpdateForm(wtf.Form):
   twitter_consumer_key = wtforms.StringField('Consumer Key', filters=[util.strip_filter])
   twitter_consumer_secret = wtforms.StringField('Consumer Secret', filters=[util.strip_filter])
   verify_email = wtforms.BooleanField('Verify user emails')
+  search_api_key = wtforms.StringField('Search API key', filters=[util.strip_filter])
 
 
 @app.route('/_s/admin/config/', endpoint='admin_config_update_service')
