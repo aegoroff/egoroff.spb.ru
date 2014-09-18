@@ -114,6 +114,11 @@ MAP = [
                 CLASS: "fa fa-archive",
                 TITLE: u"Файловый менеджер"
             },
+            {
+                ID: "user_list",
+                CLASS: "fa fa-fw fa-group",
+                TITLE: u"Список пользователей"
+            },
         ]
     },
 ]

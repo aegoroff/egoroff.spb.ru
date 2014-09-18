@@ -11,7 +11,6 @@
       # if current_user.admin
         <li class="divider"></li>
         <li><a href="{{url_for('admin_config_update')}}"><i class="fa fa-fw fa-cog"></i> Админка</a></li>
-        <li><a href="{{url_for('user_list', order='-modified', active=True)}}"><i class="fa fa-fw fa-group"></i> Список пользователей</a></li>
         <li class="divider"></li>
       # endif
       <li><a href="{{url_for('signout')}}"><i class="fa fa-fw fa-sign-out"></i> Выход</a></li>
