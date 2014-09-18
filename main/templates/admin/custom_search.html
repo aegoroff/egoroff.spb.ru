@@ -1,0 +1,23 @@
+# extends 'admin/base.html'
+# import 'macro/forms.html' as forms
+
+# block content
+
+  <form method="GET" action="https://www.googleapis.com/customsearch/v1" novalidate>
+    <div class="row">
+      <fieldset class="col-lg-12">
+        {{forms.text_field(form.q, autofocus=True)}}
+      </fieldset>
+      {{forms.hidden_field(form.key)}}
+      {{forms.hidden_field(form.cx)}}
+    </div>
+    <hr>
+    <div class="row">
+      <div class="col-md-12">
+        <button type="submit" class="btn btn-primary btn-lg btn-block btn-loading" data-loading-text="Updating Config..">
+          Search
+        </button>
+      </div>
+    </div>
+  </form>
+# endblock
