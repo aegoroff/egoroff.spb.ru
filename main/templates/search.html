@@ -69,7 +69,7 @@
 
         $('#search-pager > li').removeClass('active');
         $(this).parent('li').addClass('active');
-        var start = m.count * ix + 1;
+        var start = 10 * ix + 1;
         searchquery = {
             "q" : $( "#q" ).val(),
             "key" : "{{ search.key }}",
