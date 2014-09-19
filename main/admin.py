@@ -72,24 +72,18 @@ class Search():
   key = config.CONFIG_DB.search_api_key
   cx = '006596644808879549558:dwgc4vapbog'
 
-class SearchForm(wtf.Form):
-    q = wtforms.StringField('Query', filters=[util.strip_filter])
-    key = wtforms.HiddenField()
-    cx = wtforms.HiddenField()
-
 @app.route('/admin/search/', methods=['GET', 'POST'])
 @auth.admin_required
 def admin_custom_search():
     s = Search()
-    form = SearchForm(obj=s)
-    action_uri='https://www.googleapis.com/customsearch/'
+    action_uri='https://www.googleapis.com/customsearch/v1'
     if config.DEVELOPMENT:
         action_uri = flask.url_for('do_search')
     return flask.render_template(
       'admin/custom_search.html',
       title='Custom search',
       html_class='admin-config',
-      form=form,
+      search=s,
       action_uri=action_uri,
       has_json=True,
     )

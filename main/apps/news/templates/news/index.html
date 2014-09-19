@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 # block scripts
-<script>
+<script type="text/javascript">
     $(function () {
         $("#accordion").accordion({
             collapsible: true,
@@ -14,7 +14,7 @@
 
 # include 'news/blog_model.html'
 
-<script>
+<script type="text/javascript">
     vm = new window.BlogViewModel();
     ko.applyBindings(vm);
     vm.titleExt("тут я пишу");
