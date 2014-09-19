@@ -119,11 +119,6 @@ MAP = [
                 CLASS: "fa fa-fw fa-group",
                 TITLE: u"Список пользователей"
             },
-            {
-                ID: "admin_custom_search",
-                CLASS: "fa fa-search",
-                TITLE: u"Поиск"
-            },
         ]
     },
 ]

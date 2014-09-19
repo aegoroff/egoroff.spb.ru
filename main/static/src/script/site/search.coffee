@@ -1,6 +1,7 @@
 window.SearchModel = ->
   self = this
   @items = ko.mapping.fromJS([])
+  @pages = ko.mapping.fromJS([])
   @totalResults = ko.observable('')
   @searchTime = ko.observable('')
   @displayResults = ko.observable(false)
@@ -17,7 +18,7 @@ window.SearchModel = ->
     NProgress.done()
     self.displayResults true
     self.totalResults  r.searchInformation.totalResults
-    self.searchTime  r.searchInformation.searchTime
+    self.searchTime  r.searchInformation.formattedSearchTime
     ko.mapping.fromJS r.items, mapping, self.items
 
     return

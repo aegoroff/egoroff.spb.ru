@@ -96,15 +96,21 @@ def welcome():
         posts=posts
     )
 
+class Search():
+  key = config.CONFIG_DB.search_api_key
+  cx = '006596644808879549558:dwgc4vapbog'
 
 @app.route('/search/')
 def search():
-    q = util.param('q')
-    if q:
-        title = u"Результаты по запросу: {0}".format(q)
+    action_uri='https://www.googleapis.com/customsearch/v1'
+    if config.DEVELOPMENT:
+        action_uri = flask.url_for('do_search')
     return flask.render_template(
-        'search.html',
-        html_class='search'
+      'search.html',
+      html_class='search',
+      search=Search(),
+      action_uri=action_uri,
+      has_json=True
     )
 
 @app.route('/dosearch/')
