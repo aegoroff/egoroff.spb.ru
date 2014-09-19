@@ -82,10 +82,12 @@ class SearchForm(wtf.Form):
 def admin_custom_search():
     s = Search()
     form = SearchForm(obj=s)
+    action_uri = flask.url_for('do_search')
     return flask.render_template(
       'admin/custom_search.html',
       title='Custom search',
       html_class='admin-config',
       form=form,
+      action_uri=action_uri,
       has_json=True,
     )

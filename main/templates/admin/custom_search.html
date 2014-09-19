@@ -3,7 +3,7 @@
 
 # block content
 
-  <form method="GET" action="https://www.googleapis.com/customsearch/v1" novalidate>
+  <form method="GET" action=" {{ action_uri }}" novalidate>
     <div class="row">
       <fieldset class="col-lg-12">
         {{forms.text_field(form.q, autofocus=True)}}

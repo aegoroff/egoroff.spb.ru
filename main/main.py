@@ -1,4 +1,5 @@
 # coding: utf-8
+import json
 
 import logging
 
@@ -105,6 +106,12 @@ def search():
         'search.html',
         html_class='search'
     )
+
+@app.route('/dosearch/')
+def do_search():
+    obj = util.readJson("customsearchresponse.json")
+    return current_app.response_class(json.dumps(obj), mimetype='application/json')
+
 
 
 ###############################################################################
