@@ -82,7 +82,9 @@ class SearchForm(wtf.Form):
 def admin_custom_search():
     s = Search()
     form = SearchForm(obj=s)
-    action_uri = flask.url_for('do_search')
+    action_uri='https://www.googleapis.com/customsearch/'
+    if config.DEVELOPMENT:
+        action_uri = flask.url_for('do_search')
     return flask.render_template(
       'admin/custom_search.html',
       title='Custom search',
