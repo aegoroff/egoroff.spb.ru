@@ -24,7 +24,7 @@ window.SearchModel = ->
     @total = parseInt(r.searchInformation.totalResults, 10)
     pagesCount = Math.ceil(@total / self.count)
     @pa = []
-    @pa.push { title: x, link: '#' + x, cacheId: x } for x in [1..pagesCount]
+    @pa.push { title: x, link: '#' + x, cacheId: x, cls: 'active' if x == 1 } for x in [1..pagesCount]
 
     ko.mapping.fromJS @pa, mapping, self.pages
 
