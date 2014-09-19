@@ -1,16 +1,17 @@
 # extends 'base.html'
 
 # block content
-
   <form method="GET" class="form-inline" action=" {{ action_uri }}" novalidate>
+    {% strip %}
     <div class="row">
       <div class="col-lg-12">
           <input id="q" name="q" class="form-control" type="text" value=""/>
           <a id="start_search" class="btn btn-primary fa fa-search"> Поиск</a>
       </div>
     </div>
+    {% endstrip %}
   </form>
-    <div class="row">
+  <div class="row">
           <div class="col-lg-12">
                 <br/>
                 <div class="text-muted" data-bind="if: displayResults">Результатов: примерно <span data-bind="text: totalResults"></span><nobr> (<span data-bind="text: searchTime"></span> cек.)</nobr><p/></div>
@@ -19,7 +20,7 @@
               <ul class="pagination" data-bind="template: { name: 'pages', foreach: pages }">
                </ul>
           </div>
-    </div>
+  </div>
 # endblock
 
 # block scripts
