@@ -92,3 +92,6 @@ window.formatElementWith = (elem, formatSting) ->
     $(elem).val formatDateWith($(elem).val(), formatSting)
   else
     $(elem).text formatDateWith($(elem).text(), formatSting)
+
+window.formatDateFromNow = (v) ->
+  return createDate(v).fromNow()
