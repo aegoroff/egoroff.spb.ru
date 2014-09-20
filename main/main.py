@@ -105,10 +105,15 @@ def search():
     action_uri='https://www.googleapis.com/customsearch/v1'
     if config.DEVELOPMENT:
         action_uri = flask.url_for('do_search')
+    title = ''
+    q = util.param('q')
+    if q:
+        title = q
     return flask.render_template(
       'search.html',
       html_class='search',
       search=Search(),
+      title=title,
       action_uri=action_uri,
       has_json=True
     )
