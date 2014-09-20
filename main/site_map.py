@@ -88,11 +88,6 @@ MAP = [
                 TITLE: u"Поиск"
             },
             {
-                ID: "news.recent_feed",
-                CLASS: "fa fa-rss",
-                TITLE: u"RSS"
-            },
-            {
                 ID: "feedback",
                 CLASS: "fa fa-comment",
                 TITLE: u"Фидбек"
