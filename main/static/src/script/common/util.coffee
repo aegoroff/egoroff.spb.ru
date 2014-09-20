@@ -95,3 +95,9 @@ window.formatElementWith = (elem, formatSting) ->
 
 window.formatDateFromNow = (v) ->
   return createDate(v).fromNow()
+
+window.getParameterByName = (name) ->
+  name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]")
+  regex = new RegExp("[\\?&]" + name + "=([^&#]*)")
+  results = regex.exec(location.search)
+  return (if not results? then "" else decodeURIComponent(results[1].replace(/\+/g, " ")))
