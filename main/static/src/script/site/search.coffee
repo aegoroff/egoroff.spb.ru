@@ -23,10 +23,10 @@ window.SearchModel = ->
     self.count = r.queries.request[0].count
     @total = parseInt(r.searchInformation.totalResults, 10)
     pagesCount = Math.ceil(@total / 10)
-    @pa = []
-    @pa.push { title: x, link: '#' + x, cacheId: x, cls: 'active' if x == 1 } for x in [1..pagesCount]
-
-    ko.mapping.fromJS @pa, mapping, self.pages
+    if pagesCount > 1
+      @pa = []
+      @pa.push { title: x, link: '#' + x, cacheId: x, cls: 'active' if x == 1 } for x in [1..pagesCount]
+      ko.mapping.fromJS @pa, mapping, self.pages
 
     self.totalResults  r.searchInformation.totalResults
     self.searchTime  r.searchInformation.formattedSearchTime
