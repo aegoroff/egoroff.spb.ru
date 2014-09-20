@@ -24,24 +24,6 @@ body {
   display: block;
 }
 
-#gs_tti50 > input {
-  margin-top:-1px !important;
-}
-
-
-/* Option 2B: Reset an entire region with a custom LESS mixin */
-.reset-box-sizing {
-  &,
-  *,
-  *:before,
-  *:after {
-    .box-sizing(content-box);
-  }
-}
-.gsc-input, .gsc-search-button {
-  .reset-box-sizing();
-}
-
 .nav, .navbar, .breadcrumb, .well, .text-muted {
   font-family:    @font-family-sans-serif;
 }
