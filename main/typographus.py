@@ -356,11 +356,11 @@ class Typographus:
         safeBlocks[openTag] = closeTag
         
     def getSafeBlockPattern(self):
-        pattern = u'(';
+        pattern = u'('
         for key, value in safeBlocks.items():
             pattern += u"%s.*%s|" % (key, value)
             
-        pattern+= u'<[^>]*[\s][^>]*>)';
+        pattern+= u'<[^>]*[\s][^>]*>)'
         return pattern
     
     
