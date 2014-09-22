@@ -17,6 +17,7 @@ UNITS = [
     u"Йб"
 ]
 
+
 def ilog(x):
     """Calculates integer logarithm
 
@@ -36,6 +37,7 @@ def ilog(x):
     n -= x >> (INT64_BITS_COUNT - 1)
     return (INT64_BITS_COUNT - 1) - (n - x)
 
+
 def normalize(bytesValue):
     if not bytesValue:
         return 0, bytesValue
@@ -45,6 +47,7 @@ def normalize(bytesValue):
     else:
         value = float(bytesValue) / pow(BINARY_THOUSAND, units)
     return units, value
+
 
 def formatToHumanSize(bytesValue, precision=2):
     units, value = normalize(bytesValue)
