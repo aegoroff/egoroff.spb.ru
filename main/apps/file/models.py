@@ -24,7 +24,7 @@ class File(Base):
     blob_key = ndb.BlobKeyProperty(verbose_name=u'Ключ файла')
     filename = ndb.StringProperty(verbose_name=u'Оригинальное название файла', indexed=False)
     size = ndb.IntegerProperty(verbose_name=u'Размер файла', indexed=False)
-    human_readable_size = ndb.ComputedProperty(lambda self: units.formatToHumanSize(self.size))
+    human_readable_size = ndb.ComputedProperty(lambda self: units.format4human(self.size))
     content_type = ndb.StringProperty(verbose_name=u'Тип файла')
 
     ext = ndb.ComputedProperty(lambda self: path.splitext(self.filename)[1][1:] if self.filename is not None else '')

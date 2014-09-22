@@ -38,19 +38,19 @@ def ilog(x):
     return (INT64_BITS_COUNT - 1) - (n - x)
 
 
-def normalize(bytesValue):
-    if not bytesValue:
-        return 0, bytesValue
-    units = ilog(bytesValue) / ilog(BINARY_THOUSAND)
+def normalize(bytes_value):
+    if not bytes_value:
+        return 0, bytes_value
+    units = ilog(bytes_value) / ilog(BINARY_THOUSAND)
     if not units:
-        value = bytesValue
+        value = bytes_value
     else:
-        value = float(bytesValue) / pow(BINARY_THOUSAND, units)
+        value = float(bytes_value) / pow(BINARY_THOUSAND, units)
     return units, value
 
 
-def formatToHumanSize(bytesValue, precision=2):
-    units, value = normalize(bytesValue)
+def format4human(bytes_value, precision=2):
+    units, value = normalize(bytes_value)
     f = u'{0:.{2}f} {1}'
     if not units:
         f = u'{0} {1}'
