@@ -100,7 +100,7 @@ def index(page):
     y = util.param('year')
     m = util.param('month')
     if tag or y or m:
-        return flask.abort(404)
+        return abort(404)
 
     posts = create_posts_query()
     title = ''
