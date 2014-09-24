@@ -96,6 +96,12 @@ mod.add_app_template_filter(month_tuple_to_string, 'month_tuple_to_string')
 @mod.route('/', defaults={'page': 1})
 @mod.route('/page/<int:page>/')
 def index(page):
+    tag = util.param('tag')
+    y = util.param('year')
+    m = util.param('month')
+    if tag or y or m:
+        return flask.abort(404)
+
     posts = create_posts_query()
     title = ''
 
