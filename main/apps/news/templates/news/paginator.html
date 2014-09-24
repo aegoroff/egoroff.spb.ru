@@ -1,5 +1,6 @@
 {% strip %}
 {% if posts.paginator.num_pages > 1 %}
+<!--noindex-->
     {% if "tag" in request.args %}
         {% set tag_query = "?tag=" + request.args["tag"] %}
     {% else %}
@@ -46,5 +47,6 @@
             {% endif %}
         {% endfor %}
     </ul>
+<!--/noindex-->
 {% endif %}
 {% endstrip %}
