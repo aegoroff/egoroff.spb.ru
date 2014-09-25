@@ -57,6 +57,7 @@ SCRIPTS = [
         'ext/js/bootstrap/collapse.js',
         'ext/js/bootstrap/dropdown.js',
         'ext/js/bootstrap/tooltip.js',
+        'ext/js/bootstrapvalidator/bootstrapValidator.js',
         'ext/js/moment-timezone/moment-timezone-with-data.js',
         'ext/js/jstz/jstz.js',
         'ext/js/redactor/redactor.js',

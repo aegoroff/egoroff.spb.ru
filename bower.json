@@ -2,6 +2,7 @@
   "name": "egoroff",
   "dependencies": {
     "bootstrap": "~3",
+    "bootstrapvalidator": "~0",
     "font-awesome": "~4",
     "jquery": "~2",
     "jquery-ui": "~1",
@@ -24,6 +25,10 @@
     "font-awesome": {
       "less": "less/*.less",
       "font": "fonts/*"
+    },
+    "bootstrapvalidator": {
+      "js": "dist/js/bootstrapValidator.js",
+      "less": "dist/css/bootstrapValidator.css"
     },
     "jquery": {
       "js": "dist/jquery.js"
