@@ -8,7 +8,7 @@
 
   <div class="row">
     <div class="col-lg-8">
-      <form method="POST" action="." novalidate>
+      <form id="feedback" method="POST" action="." novalidate>
         {{form.csrf_token}}
 
         {{forms.text_field(form.subject, autofocus=True)}}
@@ -21,4 +21,30 @@
       </form>
     </div>
   </div>
+# endblock
+
+# block scripts
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#feedback').bootstrapValidator({
+            feedbackIcons: {
+                valid: 'fa fa-check',
+                invalid: 'fa fa-times',
+                validating: 'fa fa-refresh'
+            },
+            fields: {
+                subject: {
+                    validators: {
+                        notEmpty : {}
+                    }
+                },
+                email: {
+                    validators: {
+                        emailAddress : {}
+                    }
+                }
+            }
+        });
+    });
+</script>
 # endblock
