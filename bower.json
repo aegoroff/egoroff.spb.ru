@@ -28,8 +28,7 @@
     },
     "bootstrapvalidator": {
       "js": "dist/js/bootstrapValidator.js",
-      "js/language": "dist/js/language/*.js",
-      "less": "dist/css/bootstrapValidator.css"
+      "js/language": "dist/js/language/*.js"
     },
     "jquery": {
       "js": "dist/jquery.js"
