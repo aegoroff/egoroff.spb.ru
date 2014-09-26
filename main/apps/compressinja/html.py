@@ -37,20 +37,17 @@ def _make_dict_from_listing(listing):
 
 
 class HtmlCompressor(Extension):
-    isolated_elements = set(['script', 'style', 'noscript', 'textarea'])
-    void_elements = set(['br', 'img', 'area', 'hr', 'param', 'input',
-                         'embed', 'col'])
-    block_elements = set(['div', 'p', 'form', 'ul', 'ol', 'li', 'table', 'tr',
-                          'tbody', 'thead', 'tfoot', 'tr', 'td', 'th', 'dl',
-                          'dt', 'dd', 'blockquote', 'h1', 'h2', 'h3', 'h4',
-                          'h5', 'h6', 'pre'])
+    isolated_elements = {'script', 'style', 'noscript', 'textarea'}
+    void_elements = {'br', 'img', 'area', 'hr', 'param', 'input', 'embed', 'col'}
+    block_elements = {'div', 'p', 'form', 'ul', 'ol', 'li', 'table', 'tr', 'tbody', 'thead', 'tfoot', 'tr', 'td', 'th',
+                      'dl', 'dt', 'dd', 'blockquote', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'pre'}
     breaking_rules = _make_dict_from_listing([
-        (['p'], set(['#block'])),
-        (['li'], set(['li'])),
-        (['td', 'th'], set(['td', 'th', 'tr', 'tbody', 'thead', 'tfoot'])),
-        (['tr'], set(['tr', 'tbody', 'thead', 'tfoot'])),
-        (['thead', 'tbody', 'tfoot'], set(['thead', 'tbody', 'tfoot'])),
-        (['dd', 'dt'], set(['dl', 'dt', 'dd']))
+        (['p'], {'#block'}),
+        (['li'], {'li'}),
+        (['td', 'th'], {'td', 'th', 'tr', 'tbody', 'thead', 'tfoot'}),
+        (['tr'], {'tr', 'tbody', 'thead', 'tfoot'}),
+        (['thead', 'tbody', 'tfoot'], {'thead', 'tbody', 'tfoot'}),
+        (['dd', 'dt'], {'dl', 'dt', 'dd'})
     ])
 
     def is_isolated(self, stack):
