@@ -26,6 +26,7 @@ class Config(model.Base):
   twitter_consumer_secret = ndb.StringProperty(default='')
   verify_email = ndb.BooleanProperty(default=True)
   search_api_key = ndb.StringProperty(default='')
+  google_site_id = ndb.StringProperty(default='')
 
   @property
   def has_facebook(self):
@@ -54,6 +55,7 @@ class Config(model.Base):
       'twitter_consumer_secret',
       'verify_email',
       'search_api_key',
+      'google_site_id'
     })
 
   @classmethod
