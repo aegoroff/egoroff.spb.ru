@@ -14,10 +14,11 @@ import config
 import model
 import task
 import util
+from blinker import Namespace
 
 from main import app
 
-_signals = flask.signals.Namespace()
+_signals = Namespace()
 
 ###############################################################################
 # Flask Login
