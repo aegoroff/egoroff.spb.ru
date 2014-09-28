@@ -98,7 +98,7 @@ def welcome():
 
 class Search():
   key = config.CONFIG_DB.search_api_key
-  cx = '006596644808879549558:dwgc4vapbog'
+  cx = config.CONFIG_DB.google_site_id
 
 @app.route('/search/')
 def search():
