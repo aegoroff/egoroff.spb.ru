@@ -3,11 +3,11 @@ blacklist:
   description: IP address of Process terminated because the request deadline was exceeded. (Error code 123)
 - subnet: 37.57.231.226
   description: It seems spammers
-- subnet: 193.201.224.0/24
+- subnet: 193.201.224.0/22
+  description: It seems spammers
+- subnet: 195.248.234.0/23
   description: It seems spammers
 - subnet: 146.185.232.0/24
   description: It seems spammers
-- subnet: 31.41.218.0/24
-  description: It seems spammers
-- subnet: 31.41.216.0/24
+- subnet: 31.41.216.0/21
   description: It seems spammers
