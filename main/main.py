@@ -221,6 +221,7 @@ class FeedbackForm(wtf.Form):
       [wtforms.validators.optional(), wtforms.validators.email()],
       filters=[util.email_filter],
     )
+  recaptcha = wtf.RecaptchaField(u'Вы человек?')
 
 
 @app.route('/feedback/', methods=['GET', 'POST'])
@@ -229,6 +230,8 @@ def feedback():
     return flask.abort(418)
 
   form = FeedbackForm(obj=auth.current_user_db())
+  if not config.CONFIG_DB.has_anonymous_recaptcha or auth.is_logged_in():
+    del form.recaptcha
   if form.validate_on_submit():
     body = '%s\n\n%s' % (form.message.data, form.email.data)
     kwargs = {'reply_to': form.email.data} if form.email.data else {}

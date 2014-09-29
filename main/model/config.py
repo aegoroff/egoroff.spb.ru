@@ -15,6 +15,7 @@ class Config(model.Base):
   announcement_type = ndb.StringProperty(default='info', choices=[
       'info', 'warning', 'success', 'danger',
     ])
+  anonymous_recaptcha = ndb.BooleanProperty(default=False)
   brand_name = ndb.StringProperty(default=config.APPLICATION_ID)
   check_unique_email = ndb.BooleanProperty(default=True)
   facebook_app_id = ndb.StringProperty(default='')
@@ -31,8 +32,16 @@ class Config(model.Base):
   google_site_id = ndb.StringProperty(default='')
 
   @property
+  def has_anonymous_recaptcha(self):
+    return bool(self.anonymous_recaptcha and self.has_recaptcha)
+
+  @property
   def has_facebook(self):
     return bool(self.facebook_app_id and self.facebook_app_secret)
+
+  @property
+  def has_recaptcha(self):
+    return bool(self.recaptcha_private_key and self.recaptcha_public_key)
 
   @property
   def has_twitter(self):
@@ -46,6 +55,7 @@ class Config(model.Base):
       'analytics_id',
       'announcement_html',
       'announcement_type',
+      'anonymous_recaptcha',
       'brand_name',
       'check_unique_email',
       'facebook_app_id',
