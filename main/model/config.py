@@ -22,6 +22,8 @@ class Config(model.Base):
   feedback_email = ndb.StringProperty(default='')
   flask_secret_key = ndb.StringProperty(default=util.uuid())
   notify_on_new_user = ndb.BooleanProperty(default=True)
+  recaptcha_private_key = ndb.StringProperty(default='')
+  recaptcha_public_key = ndb.StringProperty(default='')
   twitter_consumer_key = ndb.StringProperty(default='')
   twitter_consumer_secret = ndb.StringProperty(default='')
   verify_email = ndb.BooleanProperty(default=True)
