@@ -265,19 +265,19 @@ MONTH = 30 * DAY
 YEAR = 365 * DAY
 
 
-def declension(number, nominative, genitiveSingular, genitivePlural):
+def declension(number, nominative, genitive_singular, genitive_plural):
     if number < 0:
         number = 0 - number
-    lastDigit = number % 10
-    lastTwoDigits = number % 100
-    if lastDigit == 1 and lastTwoDigits != 11:
+    last_digit = number % 10
+    last_two_digits = number % 100
+    if last_digit == 1 and last_two_digits != 11:
         return nominative
-    if lastDigit == 2 and lastTwoDigits != 12 or lastDigit == 3 and lastTwoDigits != 13 or lastDigit == 4 and lastTwoDigits != 14:
-        return genitiveSingular
-    return genitivePlural
+    if last_digit == 2 and last_two_digits != 12 or last_digit == 3 and last_two_digits != 13 or last_digit == 4 and last_two_digits != 14:
+        return genitive_singular
+    return genitive_plural
 
 
-def readJson(path):
+def read_json(path):
     with open(path) as f:
         return json.load(f, encoding="UTF-8")
 
@@ -296,6 +296,7 @@ def create_page(loc, changefreq, priority="1.0"):
         "changefreq": changefreq,
         "priority": priority
     }
+
 
 def run_query(q, limit=None, **options):
     opts = {

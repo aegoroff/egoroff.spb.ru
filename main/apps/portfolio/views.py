@@ -26,7 +26,7 @@ APACHE_DOC_PATH_TEMPLATE = 'apache/{0}.xml'
 
 
 def create_apache_docs():
-    config = util.readJson("apache/config.json")
+    config = util.read_json("apache/config.json")
     result = []
     for item in config:
         path = APACHE_DOC_PATH_TEMPLATE.format(item)

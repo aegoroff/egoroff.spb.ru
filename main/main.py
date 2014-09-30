@@ -120,7 +120,7 @@ def search():
 
 @app.route('/dosearch/')
 def do_search():
-    obj = util.readJson("customsearchresponse.json")
+    obj = util.read_json("customsearchresponse.json")
     return current_app.response_class(json.dumps(obj), mimetype='application/json')
 
 
