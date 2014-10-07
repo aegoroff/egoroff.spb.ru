@@ -14,7 +14,7 @@
 	"knockout": "~3",
 	"knockoutmapping": "https://github.com/SteveSanderson/knockout.mapping.git#master",
 	"redactor": "https://github.com/aegoroff/redactor-js.git#master",
-    "bootstrap-material-design": "https://github.com/FezVrasta/bootstrap-material-design.git#master"
+    "bootstrap-material-design": "https://github.com/aegoroff/bootstrap-material-design.git#master"
   },
   "exportsOverride": {
     "bootstrap": {
