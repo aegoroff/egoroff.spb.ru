@@ -10,6 +10,7 @@ CLASS = "class"
 TITLE = "title"
 CHILDS = "childs"
 DESCR = "description"
+KEYWORDS = "keywords"
 
 
 def create_breadcrumbs(breadcrumbs, parents):
@@ -40,12 +41,15 @@ def inject_context_data():
     sections = None
     current_title = None
     meta_description = None
+    keywords = None
     if curr:
         current_id = curr[ID]
     if root:
         root_id = root[ID]
         if DESCR in root:
             meta_description = root[DESCR]
+        if KEYWORDS in root:
+            keywords = root[KEYWORDS]
 
     for s in MAP:
         if s[ID] == root_id:
@@ -59,12 +63,17 @@ def inject_context_data():
             if DESCR in curr:
                 meta_description = curr[DESCR]
             else:
-                meta_description = None  # reset welcome meta in no section description defined
+                meta_description = None  # reset welcome keywords in no section description defined
+            if KEYWORDS in curr:
+                keywords = curr[KEYWORDS]
+            else:
+                keywords = None  # reset welcome keywords in no section description defined
             if request.path == uri and (not request.query_string or request.query_string == ''):
                 breadcrumbs = create_breadcrumbs(start, [])
             else:
                 breadcrumbs = create_breadcrumbs(start, [curr])
-                meta_description = None  # reset meta for section root
+                meta_description = None  # reset meta of the section root
+                keywords = None  # reset keywords of the section root
         else:
             breadcrumbs = create_breadcrumbs(start, [])
     return dict(
@@ -74,6 +83,7 @@ def inject_context_data():
         sections=sections,
         current_section=curr,
         current_title=current_title,
+        keywords=keywords,
         meta_description=meta_description)
 
 MAP = [
@@ -82,18 +92,21 @@ MAP = [
         CLASS: "fa fa-home",
         TITLE: u'Главная',
         DESCR: u'Сайт об обычном программировании и веб технологиях, вроде apache, парсера и других. Есть инструменты для вычисления хэшей и восстановления строк',
+        KEYWORDS: u'apache,mod_rewrite,перевод,документация,хэш,md5,sha1,восстановление,logviewer,программирование,веб,примеры,код',
         CHILDS : [
             {
                 ID: "portfolio.index",
                 CLASS: "fa fa-briefcase",
                 TITLE: u"Портфель",
-                DESCR: u'Из портфеля можно загрузить разные полезные вещи. Также тут есть переводы документации Apache'
+                DESCR: u'Из портфеля можно загрузить разные полезные вещи. Также тут есть переводы документации Apache',
+                KEYWORDS: u'apache,mod_rewrite,перевод,документация,хэш,md5,sha1,загрузки,инструменты,восстановление,пароль'
             },
             {
                 ID: "news.index",
                 CLASS: "fa fa-book",
                 TITLE: u"Блог",
-                DESCR: u'Блог. тут я пишу на разные айтишные темы.'
+                DESCR: u'Блог. тут я пишу на разные айтишные темы.',
+                KEYWORDS: u'блог,IT,web,программирование,программинг,статьи,c,c++,parser,xslt,c#'
             },
             {
                 ID: "search",
