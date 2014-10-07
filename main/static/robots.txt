@@ -5,3 +5,4 @@ Disallow: /_ah/
 Disallow: /api/v2/
 Disallow: /signin/
 Disallow: /search/
+Disallow: /*?
