@@ -6,6 +6,12 @@
 </style>
 # endblock
 
+# block meta
+{% if main_post.tags %}
+    <meta name="keywords" content="{% for tag in main_post.tags %}{{ tag }}, {% endfor %}">
+{% endif %}
+# endblock
+
 {% block content %}
     <div class="row">
         <div class="col-lg-12">
