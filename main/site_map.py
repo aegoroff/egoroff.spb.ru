@@ -9,6 +9,7 @@ ID = "id"
 CLASS = "class"
 TITLE = "title"
 CHILDS = "childs"
+DESCR = "description"
 
 
 def create_breadcrumbs(breadcrumbs, parents):
@@ -38,10 +39,13 @@ def inject_context_data():
     breadcrumbs = None
     sections = None
     current_title = None
+    meta_description = None
     if curr:
         current_id = curr[ID]
     if root:
         root_id = root[ID]
+        if DESCR in root:
+            meta_description = root[DESCR]
 
     for s in MAP:
         if s[ID] == root_id:
@@ -52,10 +56,15 @@ def inject_context_data():
         start = [(root[ID], root[TITLE], root[CLASS])]
         if curr:
             current_title = curr[TITLE]
+            if DESCR in curr:
+                meta_description = curr[DESCR]
+            else:
+                meta_description = None  # reset welcome meta in no section description defined
             if request.path == uri and (not request.query_string or request.query_string == ''):
                 breadcrumbs = create_breadcrumbs(start, [])
             else:
                 breadcrumbs = create_breadcrumbs(start, [curr])
+                meta_description = None  # reset meta for section root
         else:
             breadcrumbs = create_breadcrumbs(start, [])
     return dict(
@@ -64,33 +73,39 @@ def inject_context_data():
         breadcrumbs=breadcrumbs,
         sections=sections,
         current_section=curr,
-        current_title=current_title)
+        current_title=current_title,
+        meta_description=meta_description)
 
 MAP = [
     {
         ID: "welcome",
         CLASS: "fa fa-home",
         TITLE: u'Главная',
+        DESCR: u'Сайт об обычном программировании и веб технологиях, вроде apache, парсера и других. Есть инструменты для вычисления хэшей и восстановления строк',
         CHILDS : [
             {
                 ID: "portfolio.index",
                 CLASS: "fa fa-briefcase",
-                TITLE: u"Портфель"
+                TITLE: u"Портфель",
+                DESCR: u'Из портфеля можно загрузить разные полезные вещи. Также тут есть переводы документации Apache'
             },
             {
                 ID: "news.index",
                 CLASS: "fa fa-book",
-                TITLE: u"Блог"
+                TITLE: u"Блог",
+                DESCR: u'Блог. тут я пишу на разные айтишные темы.'
             },
             {
                 ID: "search",
                 CLASS: "fa fa-search",
-                TITLE: u"Поиск"
+                TITLE: u"Поиск",
+                DESCR: u'Поиск по сайту с использованием поиска Google. Применяется асинхронный java script AJAX'
             },
             {
                 ID: "feedback",
                 CLASS: "fa fa-comment",
-                TITLE: u"Фидбек"
+                TITLE: u"Фидбек",
+                DESCR: u'Форма для обратной связи со мной.'
             },
         ]
     },
