@@ -61,6 +61,8 @@ SCRIPTS = [
         'ext/js/bootstrap/tooltip.js',
         'ext/js/bootstrapvalidator/bootstrapValidator.js',
         'ext/js/bootstrapvalidator/language/ru_RU.js',
+        'ext/js/bootstrap-material-design/material.js',
+        'ext/js/bootstrap-material-design/ripples.js',
         'ext/js/moment-timezone/moment-timezone-with-data.js',
         'ext/js/jstz/jstz.js',
         'ext/js/redactor/redactor.js',
