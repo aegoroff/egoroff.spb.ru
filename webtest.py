@@ -20,7 +20,7 @@ class EgoroffTest(unittest.TestCase):
         driver = self.driver
         driver.get('http://localhost:8080/')
         nav = driver.find_elements_by_css_selector('nav > ul.nav.navbar-nav > li > a')
-        self.assertEquals(6, nav.__len__())
+        self.assertEquals(5, nav.__len__())
 
     def test_blog_tags(self):
         driver = self.driver
