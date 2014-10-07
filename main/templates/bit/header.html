@@ -15,6 +15,13 @@
         # include 'bit/top_nav.html'
       </ul>
 
+     <form method="GET" id="search-form-top" class="navbar-form navbar-left" role="search" action="{{url_for('search')}}" novalidate>
+        <div class="form-control-wrapper">
+            <label class="sr-only" for="q_top">форма поиска</label>
+            <input id="q_top" name="q" class="form-control col-lg-8 empty" placeholder="Поиск" type="text" value=""/>
+        </div>
+     </form>
+
       <ul class="nav navbar-nav navbar-right">
         # include 'bit/user_menu.html'
       </ul>
