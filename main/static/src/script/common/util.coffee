@@ -80,7 +80,7 @@ window.user_lang = () ->
 
 window.createDate = (v) ->
   mmt = moment.utc v
-  mmt.locale(user_lang())
+  mmt.locale('ru')
   timez = jstz.determine().name()
   return mmt.tz(timez)
 
