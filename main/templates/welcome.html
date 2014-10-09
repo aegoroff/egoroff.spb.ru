@@ -23,7 +23,7 @@
     <div class="col-lg-6">
         <h2><a href="{{ url_for('news.index') }}">Блог</a></h2>
         {% if posts %}
-            <dl id="log">
+            <dl itemscope itemtype="http://schema.org/BlogPosting" id="log">
                 {% for post in posts %}
                     {% include 'news/post_box.html' %}
                 {% endfor %}
