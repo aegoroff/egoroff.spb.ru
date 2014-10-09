@@ -36,6 +36,7 @@ def create_apache_docs():
             "stylesheet": config[item][0],
             "title": config[item][1],
             "descr": config[item][2],
+            "keywords": config[item][3],
             "modified": time.strftime("%Y-%m-%d %H:%M:%S", t)
         }
         result.append(r)
@@ -93,5 +94,7 @@ def get_doc(doc):
         title=data["title"],
         html=content,
         doc=doc,
+        meta_description=data["descr"],
+        keywords=data["keywords"],
         full_uri=urljoin(flask.request.url_root, flask.url_for('portfolio.get_doc', doc=doc)),
     )
