@@ -35,9 +35,13 @@ def posts_json():
     year = util.param('year', int)
     month = util.param('month', int)
     q = create_posts_query()
-    if year and month:
-        current_month = datetime.datetime(year, month, 1)
-        next_month = util.add_months(datetime.datetime(year, month, 1), 1)
+    if year:
+        if year and month:
+            current_month = datetime.datetime(year, month, 1)
+            next_month = util.add_months(datetime.datetime(year, month, 1), 1)
+        else:
+            current_month = datetime.datetime(year, 1, 1)
+            next_month = datetime.datetime(year+1, 1, 1)
 
         q = q.filter(Post.created >= current_month, Post.created < next_month)
         q = util.run_query(q)

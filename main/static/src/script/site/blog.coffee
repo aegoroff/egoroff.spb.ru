@@ -64,7 +64,7 @@ $ ->
     $(this).addClass('active')
     vars = href.split('&')
     y = 1
-    m = 1
+    m = 0
     for v in vars
       pair = v.split('=')
       if pair[0] == 'month'
@@ -78,7 +78,10 @@ $ ->
     mmt.locale(user_lang())
 
     txt = "записи за " + mmt.format('MMMM YYYY');
-    window.LoadBlog({ "year" : y, "month" : m }, txt)
+    if m == 0
+      window.LoadBlog({ "year" : y, "month" : m }, txt)
+    else
+      window.LoadBlog({ "year" : y }, txt)
     removePager()
   month.button()
 
