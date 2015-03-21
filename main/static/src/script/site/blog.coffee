@@ -74,14 +74,16 @@ $ ->
 
     $("dl#blogcontainer").remove()
 
-    mmt = moment(new Date(y, m - 1, 10))
-    mmt.locale(user_lang())
-
-    txt = "записи за " + mmt.format('MMMM YYYY');
     if m == 0
-      window.LoadBlog({ "year" : y, "month" : m }, txt)
-    else
+      mmt = moment(new Date(y, 1, 10))
+      mmt.locale(user_lang())
+      txt = "записи за " + mmt.format('YYYY год')
       window.LoadBlog({ "year" : y }, txt)
+    else
+      mmt = moment(new Date(y, m - 1, 10))
+      mmt.locale(user_lang())
+      txt = "записи за " + mmt.format('MMMM YYYY')
+      window.LoadBlog({ "year" : y, "month" : m }, txt)
     removePager()
   month.button()
 
