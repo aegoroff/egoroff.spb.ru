@@ -87,6 +87,7 @@ MONTHS = {
 }
 
 
+# flask jinja filter definition
 def month_tuple_to_string(month):
     ix = int(month[0])
     if ix > 12:
