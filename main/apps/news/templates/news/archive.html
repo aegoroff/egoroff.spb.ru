@@ -8,11 +8,11 @@
             <h3>{{ year }}</h3>
             <div class="list-group">
                 {% for month in archieve[year] %}
-                    {% if month[0] > 12 %}
-                        <a class="list-group-item" href="#year={{ year }}">{{ month | month_tuple_to_string }}</a>
-                    {% else %}
-                        <a class="list-group-item" href="#year={{ year }}&month={{ month[0] }}">{{ month | month_tuple_to_string }}</a>
+                    {% set link = "#year=" ~ year  %}
+                    {% if month[0] <= 12 %}
+                        {% set link = link ~ "&month=" ~ month[0] %}
                     {% endif %}
+                    <a class="list-group-item" href="{{ link }}">{{ month | month_tuple_to_string }}</a>
                 {% endfor %}
             </div>
         {% endfor %}
