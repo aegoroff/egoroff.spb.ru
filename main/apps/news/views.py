@@ -90,6 +90,7 @@ MONTHS = {
 def month_tuple_to_string(month):
     ix = int(month[0])
     if ix > 12:
+        # year's posts case
         name = u"За весь год"
     else:
         name = MONTHS[ix]
@@ -119,16 +120,19 @@ def index(page):
     for year_and_month, group in itertools.groupby(all_posts, key=lambda post: (post.created.year, post.created.month)):
         if year_and_month[0] not in archieve:
             archieve[year_and_month[0]] = []
+        # iterate each month in the year and month group
         for m, months in itertools.groupby(group, key=lambda p: p.created.month):
             posts_count = len(filter(None, months))
             item = (m, posts_count)
             archieve[year_and_month[0]].append(item)
 
+    # all posts for each year counting
     for y in archieve:
         total = 0
         for year_and_month in archieve[y]:
             total += year_and_month[1]
         item = (y, total)
+        # all posts for a year fake item to output year's statistic
         archieve[y].insert(0, item)
 
     posts = get_paginator(util.run_query(posts), page)
