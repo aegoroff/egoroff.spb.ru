@@ -7,9 +7,12 @@
         {% for year in archieve | sort(reverse=True) %}
             <h3>{{ year }}</h3>
             <div class="list-group">
-                <a class="list-group-item" href="#year={{ year }}">За весь год</a>
                 {% for month in archieve[year] %}
-                    <a class="list-group-item" href="#year={{ year }}&month={{ month[0] }}">{{ month | month_tuple_to_string }}</a>
+                    {% if month[0] > 12 %}
+                        <a class="list-group-item" href="#year={{ year }}">{{ month | month_tuple_to_string }}</a>
+                    {% else %}
+                        <a class="list-group-item" href="#year={{ year }}&month={{ month[0] }}">{{ month | month_tuple_to_string }}</a>
+                    {% endif %}
                 {% endfor %}
             </div>
         {% endfor %}

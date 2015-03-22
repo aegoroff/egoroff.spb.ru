@@ -88,7 +88,12 @@ MONTHS = {
 
 
 def month_tuple_to_string(month):
-    return u'{0} ({1})'.format(MONTHS[month[0]], month[1])
+    ix = int(month[0])
+    if ix > 12:
+        name = u"За весь год"
+    else:
+        name = MONTHS[ix]
+    return u'{0} ({1})'.format(name, month[1])
 
 mod.add_app_template_filter(month_tuple_to_string, 'month_tuple_to_string')
 
@@ -118,6 +123,13 @@ def index(page):
             posts_count = len(filter(None, months))
             k = (m, posts_count)
             archieve[ym[0]].append(k)
+
+    for y in archieve:
+        total = 0
+        for ym in archieve[y]:
+            total += ym[1]
+        tuple = (y, total)
+        archieve[y].insert(0, tuple)
 
     posts = get_paginator(util.run_query(posts), page)
 
