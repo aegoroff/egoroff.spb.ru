@@ -77,6 +77,7 @@ $ ->
     q = { "year" : y, "month" : m }
     dmonth = m - 1
     fmt = 'MMMM YYYY'
+    # year's posts case
     if m == 0
       fmt = 'YYYY год'
       q = { "year" : y }

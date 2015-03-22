@@ -116,20 +116,20 @@ def index(page):
     all_posts = util.run_query(create_posts_query())
 
     archieve = {}
-    for ym, group in itertools.groupby(all_posts, key=lambda post: (post.created.year, post.created.month)):
-        if ym[0] not in archieve:
-            archieve[ym[0]] = []
+    for year_and_month, group in itertools.groupby(all_posts, key=lambda post: (post.created.year, post.created.month)):
+        if year_and_month[0] not in archieve:
+            archieve[year_and_month[0]] = []
         for m, months in itertools.groupby(group, key=lambda p: p.created.month):
             posts_count = len(filter(None, months))
-            k = (m, posts_count)
-            archieve[ym[0]].append(k)
+            item = (m, posts_count)
+            archieve[year_and_month[0]].append(item)
 
     for y in archieve:
         total = 0
-        for ym in archieve[y]:
-            total += ym[1]
-        tuple = (y, total)
-        archieve[y].insert(0, tuple)
+        for year_and_month in archieve[y]:
+            total += year_and_month[1]
+        item = (y, total)
+        archieve[y].insert(0, item)
 
     posts = get_paginator(util.run_query(posts), page)
 
