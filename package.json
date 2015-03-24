@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "coffee-script": "~1",
-    "less": "~1",
+    "less": "~2",
     "uglify-js": "~2"
   },
   "devDependencies": {
