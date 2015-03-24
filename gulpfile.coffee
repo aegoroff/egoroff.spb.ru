@@ -6,7 +6,7 @@ exec = require('child_process').exec
 minimist = require 'minimist'
 
 
-root_dir = 'main'
+root_dir = './main'
 static_dir = "#{root_dir}/static"
 paths =
   clean: [
