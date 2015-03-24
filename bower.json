@@ -15,53 +15,42 @@
 	"knockoutmapping": "https://github.com/SteveSanderson/knockout.mapping.git#master",
 	"redactor": "https://github.com/aegoroff/redactor-js.git#master"
   },
-  "exportsOverride": {
+  "overrides": {
     "bootstrap": {
-      "js": "js/*.js",
-      "less": "less/*.less",
-      "less/mixins": "less/mixins/*.less",
-      "font": "fonts/*"
+      "main": ["less/**", "fonts/*", "js/*"]
     },
     "font-awesome": {
-      "less": "less/*.less",
-      "font": "fonts/*"
-    },
-    "bootstrapvalidator": {
-      "js": "dist/js/bootstrapValidator.js",
-      "js/language": "dist/js/language/*.js"
-    },
-    "jquery": {
-      "js": "dist/jquery.js"
+      "main": ["less/*", "fonts/*"]
     },
     "jquery-ui": {
-      "js": "jquery-ui.js"
+      "main": "jquery-ui.js"
     },
     "jquery-ui-less": {
-      "less": "less/*.less",
-      "img": "less/images/*"
-    },
-    "moment": {
-      "js": "min/moment-with-locales.js"
-    },
-    "moment-timezone": {
-      "js": "builds/moment-timezone-with-data.js"
+      "main": ["less/*.less", "less/images/*"]
     },
     "jstz": {
-      "js": "jstz.js"
+      "main": "jstz.js"
     },
     "nprogress": {
-      "js": "*.js",
-      "less": "*.less"
+      "main": ["*.js", "*.less"]
+    },
+    "moment": {
+      "main": "min/moment-with-locales.js"
+    },
+    "moment-timezone": {
+      "main": "builds/moment-timezone-with-data.js"
     },
     "knockout": {
-      "js": "dist/knockout.js"
+      "main": "dist/knockout.js"
     },
     "knockoutmapping": {
-      "js": "*.js"
+      "main": "*.js"
+    },
+    "bootstrapvalidator": {
+      "main": ["dist/js/bootstrapValidator.js", "dist/js/language/*.js"]
     },
     "redactor": {
-      "js": "redactor/*.js",
-      "less": "redactor/*.less"
+      "main": ["redactor/*.js", "redactor/*.less"]
     }
   }
 }
