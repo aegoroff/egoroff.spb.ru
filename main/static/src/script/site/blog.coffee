@@ -17,20 +17,17 @@ window.BlogViewModel = ->
     self.getPostsUsingQuery({"offset": self.offset, "limit": self.limit}, true)
     return
 
-  mapping = key: (item) ->
-    ko.utils.unwrapObservable item.id
-
   @successfullyRetrievedPosts = (posts, append) ->
     NProgress.done()
     if append
       unmapped = ko.mapping.toJS(self.blogPosts)
       if unmapped.length > 0
         Array::push.apply unmapped, posts
-        ko.mapping.fromJS unmapped, mapping, self.blogPosts
+        ko.mapping.fromJS unmapped, {}, self.blogPosts
       else
-        ko.mapping.fromJS posts, mapping, self.blogPosts
+        ko.mapping.fromJS posts, {}, self.blogPosts
     else
-      ko.mapping.fromJS posts, mapping, self.blogPosts
+      ko.mapping.fromJS posts, {}, self.blogPosts
     self.offset += self.limit
     self.limit = self.seed
     self.hideAddButton = posts.length < self.limit
