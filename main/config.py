@@ -77,10 +77,6 @@ SCRIPTS = [
         'src/script/syntax-highlighter/shBrushPython.js',
         'src/script/syntax-highlighter/shBrushCss.js',
         'src/script/syntax-highlighter/shBrushLess.js',
-        'src/script/jquery.plugins/jquery.form.js',
-        'src/script/jquery.plugins/jquery.metadata.js',
-        'src/script/jquery.plugins/jquery.mosaic.js',
-        'src/script/jquery.plugins/jquery.tablesorter.js',
       ]),
     ('scripts', [
         'src/script/common/service.coffee',
