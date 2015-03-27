@@ -50,7 +50,17 @@
     ko.applyBindings(m);
 
     function runSearch(params) {
-        m.runSearch("{{ search.key }}", "{{ search.cx }}", params, '{{ action_uri }}');
+        searchquery = {
+            "q" : $( "#q" ).val(),
+            "key" : "{{ search.key }}",
+            "cx" : "{{ search.cx }}"
+        };
+        if(params) {
+            for (var attrname in params) {
+                searchquery[attrname] = params[attrname];
+            }
+        }
+        m.dosearch('{{ action_uri }}', searchquery);
     }
 
     $( "#q").keypress(function(e) {

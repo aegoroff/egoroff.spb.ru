@@ -8,18 +8,6 @@ window.SearchModel = ->
   @displayResults = ko.observable(false)
   @count = 0
 
-  @runSearch = (key, cx, params, action_uri) ->
-    searchquery = {
-      "q" : $( "#q" ).val(),
-      "key" : key,
-      "cx" : cx
-    }
-    if params
-      for attrname in params
-        searchquery[attrname] = params[attrname]
-
-    self.dosearch(action_uri, searchquery)
-
   @dosearch = (addr, query) ->
     NProgress.start()
     service_call "get", addr, query, (v,data) ->
