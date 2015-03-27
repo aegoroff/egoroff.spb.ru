@@ -2,6 +2,10 @@
 # import 'macro/forms.html' as forms
 
 # block scripts
+  # if config.DEVELOPMENT
+  # else
+    <script src="/p/min/script/admin.min.js?{{config.CURRENT_VERSION_ID}}"></script>
+  # endif
     <script>
         $(function(){
             $('.redactor').redactor({

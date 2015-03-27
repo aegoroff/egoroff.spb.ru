@@ -43,6 +43,7 @@ SITE = site_map.MAP
 ###############################################################################
 STYLES = [
     'src/style/style.less',
+    'src/style/adminstyle.less',
   ]
 
 SCRIPTS = [
@@ -63,7 +64,6 @@ SCRIPTS = [
         'ext/bootstrapvalidator/dist/js/language/ru_RU.js',
         'ext/moment-timezone/builds/moment-timezone-with-data.js',
         'ext/jstz/jstz.js',
-        'ext/redactor/redactor/redactor.js',
         'src/script/syntax-highlighter/shCore.js',
         'src/script/syntax-highlighter/shBrushCpp.js',
         'src/script/syntax-highlighter/shBrushCSharp.js',
@@ -77,6 +77,9 @@ SCRIPTS = [
         'src/script/syntax-highlighter/shBrushPython.js',
         'src/script/syntax-highlighter/shBrushCss.js',
         'src/script/syntax-highlighter/shBrushLess.js',
+      ]),
+    ('admin', [
+        'ext/redactor/redactor/redactor.js',
       ]),
     ('scripts', [
         'src/script/common/service.coffee',

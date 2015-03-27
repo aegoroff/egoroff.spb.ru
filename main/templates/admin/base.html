@@ -11,3 +11,16 @@
   # endblock
 </div>
 # endblock
+
+# block head
+# for style in config.STYLES
+  # if config.DEVELOPMENT
+    {% set link = style.replace('.less', '.css').replace('src/style/', 'dst/style/') %}
+  # else
+    {% set link = style.replace('.less', '.min.css').replace('src/style/', 'min/style/') %}
+  # endif
+  # if link.find('adminstyle') >= 0
+    <link rel="stylesheet" type="text/css" href="/p/{{ link }}?{{config.CURRENT_VERSION_ID}}">
+  # endif
+# endfor
+# endblock
