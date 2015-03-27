@@ -8,9 +8,6 @@ window.SearchModel = ->
   @displayResults = ko.observable(false)
   @count = 0
 
-  mapping = key: (item) ->
-    ko.utils.unwrapObservable item.cacheId
-
   @dosearch = (addr, query) ->
     NProgress.start()
     service_call "get", addr, query, (v,data) ->
@@ -26,11 +23,11 @@ window.SearchModel = ->
     if pagesCount > 1
       @pa = []
       @pa.push { title: x, link: '#' + x, cacheId: x, cls: 'active' if x == 1 } for x in [1..pagesCount]
-      ko.mapping.fromJS @pa, mapping, self.pages
+      ko.mapping.fromJS @pa, {}, self.pages
 
     self.totalResults  r.searchInformation.totalResults
     self.searchTime  r.searchInformation.formattedSearchTime
-    ko.mapping.fromJS r.items, mapping, self.items
+    ko.mapping.fromJS r.items, {}, self.items
 
     return
   return
