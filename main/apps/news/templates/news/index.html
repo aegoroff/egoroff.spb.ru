@@ -20,11 +20,24 @@
     vm.titleExt("тут я пишу");
 
     window.LoadBlog = function(query, tExt) {
-        vm.loadBlog(query, tExt);
+        vm.getPostsUsingQuery(query, false);
+        if(tExt){
+            vm.titleExt(tExt)
+        }
     };
 
     $( document ).ready(function() {
-        vm.setEventHandlers();
+        if(window.location.hash) {
+            var href = window.location.hash;
+            var vars = href.split('&');
+            vars.forEach(function (v) {
+                var pair = v.split('=');
+                if(pair[0] == '#tag') {
+                    var e = $.Event("click");
+                    $('#t_' + pair[1]).trigger(e);
+                }
+            });
+        }
     });
 
 </script>

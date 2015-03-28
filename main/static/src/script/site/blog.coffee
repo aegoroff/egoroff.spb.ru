@@ -13,25 +13,9 @@ window.BlogViewModel = ->
                                                         self.successfullyRetrievedPosts(data, append)
     return
 
-  @loadBlog = (query, tExt) ->
-    self.getPostsUsingQuery(query, false)
-    if tExt
-      self.titleExt tExt
-
   @getPosts = ->
     self.getPostsUsingQuery({"offset": self.offset, "limit": self.limit}, true)
     return
-
-  @setEventHandlers = ->
-    href = window.location.hash
-    if href
-      vars = href.split('&')
-      vars.forEach(v) ->
-        pair = v.split('=')
-        if pair[0] == '#tag'
-          e = $.Event("click")
-          $('#t_' + pair[1]).trigger(e)
-
 
   @successfullyRetrievedPosts = (posts, append) ->
     NProgress.done()
