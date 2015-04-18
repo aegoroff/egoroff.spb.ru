@@ -1,5 +1,9 @@
 # extends 'base.html'
 
+# block bodyTag
+    <body ng-controller="SearchController">
+# endblock
+
 # block content
     {% strip %}
 
@@ -18,36 +22,28 @@
     <div class="row">
           <div class="col-lg-12">
                 <br/>
-                <div class="text-muted" data-bind="if: displayResults">Результатов: примерно <span data-bind="text: totalResults"></span><nobr> (<span data-bind="text: searchTime"></span> cек.)</nobr><p/></div>
-                <dl data-bind="template: { name: 'customsearch', foreach: items }"></dl>
+                <div class="text-muted" ng-bind="displayResults">Результатов: примерно <span ng-bind="totalResults"></span><nobr> (<span ng-bind="searchTime"></span> cек.)</nobr><p/></div>
+                <dl ng-repeat="item in items">
+                    <dt>
+                        <a ng-bind-html="htmlTitle" ng-href="link"></a><br/>
+                        <span class="text-muted small" ng-bind-html="htmlFormattedUrl"></span>
+                    </dt>
+                    <dd class="small" ng-bind-html="htmlSnippet"></dd>
+                    <br/>
+                </dl>
 
-              <ul class="pagination" id="search-pager" data-bind="template: { name: 'pages', foreach: pages }">
-               </ul>
+                <ul class="pagination" id="search-pager" ng-repeat="page in pages">
+                  <li ng-class="cls">
+                    <a ng-bind="title" ng-href="link"></a>
+                  </li>
+                </ul>
           </div>
     </div>
 # endblock
 
 # block scripts
 
-<script id="customsearch" type="text/html">
-    <dt>
-        <a data-bind="html: htmlTitle, attr: { href: link  }"></a><br/>
-        <span class="text-muted small" data-bind="html: htmlFormattedUrl"></span>
-    </dt>
-    <dd class="small" data-bind="html: htmlSnippet"></dd>
-    <br/>
-</script>
-
-<script id="pages" type="text/html">
-    <li data-bind="attr: { class: cls  }">
-        <a data-bind="text: title, attr: { href: link }"></a>
-    </li>
-</script>
-
 <script type="text/javascript">
-
-    m = new window.SearchModel();
-    ko.applyBindings(m);
 
     function runSearch(params) {
         searchquery = {
@@ -60,7 +56,7 @@
                 searchquery[attrname] = params[attrname];
             }
         }
-        m.dosearch('{{ action_uri }}', searchquery);
+        dosearch('{{ action_uri }}', searchquery);
     }
 
     $( "#q").keypress(function(e) {
