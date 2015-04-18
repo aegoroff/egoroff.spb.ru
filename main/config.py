@@ -52,6 +52,8 @@ SCRIPTS = [
         'ext/jquery-ui/jquery-ui.js',
         'ext/moment/min/moment-with-locales.js',
         'ext/nprogress/nprogress.js',
+        'ext/angular/angular.js',
+        'ext/angular-sanitize/angular-sanitize.js',
         'ext/knockout/dist/knockout.js',
         'ext/knockoutmapping/knockout.mapping.js',
         'ext/bootstrap/js/alert.js',
