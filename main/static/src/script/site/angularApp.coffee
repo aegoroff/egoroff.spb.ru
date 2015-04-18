@@ -1,1 +1,1 @@
-angular.module 'egoroffApp', ['searchController']
+angular.module 'egoroffApp', ['controllers']
