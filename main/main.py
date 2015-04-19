@@ -120,11 +120,8 @@ def search():
 
 @app.route('/dosearch/')
 def do_search():
-    args = flask.request.args
-    cb = args["callback"]
     obj = util.read_json("customsearchresponse.json")
-    resp = '%s(%s)' % (cb, json.dumps(obj))
-    return current_app.response_class(resp, mimetype='application/json')
+    return current_app.response_class(json.dumps(obj), mimetype='application/json')
 
 
 
