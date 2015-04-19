@@ -3,7 +3,7 @@ angular.module 'controllers', ['services']
 angular.module('controllers').controller 'SearchController', ['$scope', ($scope) ->
   $scope.dosearch = (addr, query) ->
       NProgress.start()
-      service_call "get", addr, query, searchCompleted
+      service_call "get", addr, query, @.searchCompleted
 
   searchCompleted = (r) ->
     NProgress.done()
