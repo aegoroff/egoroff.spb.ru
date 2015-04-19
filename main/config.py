@@ -93,9 +93,6 @@ SCRIPTS = [
         'src/script/site/user.coffee',
         'src/script/site/format.date.coffee',
         'src/script/site/blog.coffee',
-        'src/script/site/angularApp.coffee',
-        'src/script/site/controllers.coffee',
-        'src/script/site/services.coffee',
         'src/script/site/search.coffee',
       ]),
   ]
