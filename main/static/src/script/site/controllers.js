@@ -21,7 +21,7 @@ angular.module('controllers').controller('SearchController', ['$scope', 'SearchS
               title: x,
               link: '#' + x,
               cacheId: x,
-              cls: x === 1 ? 'active' : void 0
+              cls: x === 1 ? 'active' : ''
             });
           }
         }
