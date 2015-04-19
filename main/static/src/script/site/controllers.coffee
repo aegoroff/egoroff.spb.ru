@@ -1,9 +1,9 @@
 angular.module 'controllers', ['services']
 
-angular.module('controllers').controller 'SearchController', ['$scope', ($scope) ->
+angular.module('controllers').controller 'SearchController', ['$scope', 'SearchService', ($scope, SearchService) ->
   $scope.dosearch = (addr, query) ->
       NProgress.start()
-      service_call "get", addr, query, searchCompleted
+      SearchService.search addr, query, searchCompleted
 
   searchCompleted = (r) ->
     NProgress.done()
