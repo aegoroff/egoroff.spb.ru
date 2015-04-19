@@ -96,6 +96,5 @@ SCRIPTS = [
         'src/script/site/angularApp.coffee',
         'src/script/site/controllers.coffee',
         'src/script/site/services.coffee',
-        'src/script/site/search.coffee',
       ]),
   ]
