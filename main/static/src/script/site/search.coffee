@@ -11,8 +11,12 @@ window.SearchModel = ->
   mapping = key: (item) ->
     ko.utils.unwrapObservable item.cacheId
 
-  @dosearch = (addr, query) ->
+  @dosearch = (addr, query, params) ->
     NProgress.start()
+    if params
+      for attrname in params
+        query[attrname] = params[attrname]
+
     service_call "get", addr, query, (v,data) ->
         self.searchCompleted(v)
 
