@@ -2,8 +2,13 @@ angular.module('controllers', ['services']);
 
 angular.module('controllers').controller('SearchController', ['$scope', 'SearchService',
   function($scope, SearchService) {
-      $scope.dosearch = function(addr, query) {
+      $scope.dosearch = function(addr, query, params) {
         NProgress.start();
+        if(params) {
+            for (var attrname in params) {
+                query[attrname] = params[attrname];
+            }
+        }
         SearchService.search(addr, query, searchCompleted);
       };
 

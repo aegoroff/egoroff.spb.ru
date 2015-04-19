@@ -47,14 +47,9 @@
             "key" : "{{ search.key }}",
             "cx" : "{{ search.cx }}"
         };
-        if(params) {
-            for (var attrname in params) {
-                searchquery[attrname] = params[attrname];
-            }
-        }
         var $element = $('div[ng-controller="SearchController"]');
         var scope = angular.element($element).scope();
-        scope.dosearch('{{ action_uri }}', searchquery);
+        scope.dosearch('{{ action_uri }}', searchquery, params);
     }
 
     $( "#q").keypress(function(e) {
