@@ -12,8 +12,6 @@
     "jstz": "https://github.com/bower-packages/bower-jstz.git",
     "nprogress": "https://github.com/lipis/nprogress.git#master",
 	"knockout": "~3",
-    "angular": "~1",
-    "angular-sanitize": "~1",
 	"knockoutmapping": "https://github.com/SteveSanderson/knockout.mapping.git#master",
 	"redactor": "https://github.com/aegoroff/redactor-js.git#master"
   },
@@ -41,12 +39,6 @@
     },
     "moment-timezone": {
       "main": "builds/moment-timezone-with-data.js"
-    },
-    "angular": {
-      "main": "angular.js"
-    },
-    "angular-sanitize": {
-      "main": "angular-sanitize.js"
     },
     "knockout": {
       "main": "dist/knockout.js"
