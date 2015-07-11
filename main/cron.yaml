@@ -6,6 +6,6 @@ cron:
   target: ah-builtin-python-bundle
 - description: egoroff.spb.ru Config Backup
   url: /_ah/datastore_admin/backup.create?name=ConfigBackupToBlobstore&kind=Config&filesystem=gs&gs_bucket_name=egoroffbackup
-  schedule: every day 05:00
+  schedule: every sunday 05:00
   timezone: Europe/Moscow
   target: ah-builtin-python-bundle
