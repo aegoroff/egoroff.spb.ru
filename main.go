@@ -13,7 +13,7 @@ import (
 
 func main() {
 	r := gin.Default()
-	r.LoadHTMLGlob("templates/*")
+	r.LoadHTMLFiles("templates/index.html")
 
 	r.GET("/", func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
