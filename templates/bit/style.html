@@ -1,13 +1,13 @@
-{% strip %}
+
     <link href='http://fonts.googleapis.com/css?family=Noto+Serif:400,700,400italic,700italic|Open+Sans:700,400&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
-# for style in config.STYLES
-  # if config.DEVELOPMENT
+{% for style in config.STYLES %}
+    {% if config.DEVELOPMENT %}
     {% set link = style.replace('.less', '.css').replace('src/style/', 'dst/style/') %}
-  # else
+    {% else %}
     {% set link = style.replace('.less', '.min.css').replace('src/style/', 'min/style/') %}
-  # endif
-  # if link.find('adminstyle') < 0
+    {% endif %}
+    {% if link.find('adminstyle') < 0 %}
     <link rel="stylesheet" type="text/css" href="/p/{{ link }}?{{config.CURRENT_VERSION_ID}}">
-  # endif
-# endfor
-{% endstrip %}
+    {% endif %}
+{% endfor %}
+

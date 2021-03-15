@@ -1,5 +1,5 @@
-{% strip %}
-# if breadcrumbs
+
+{% if breadcrumbs %}
 <div class="container">
     <div class="row">
         <div class="col-lg-12">
@@ -7,11 +7,11 @@
                 {% block breadcrumbs %}
                     {% for item in breadcrumbs %}
                         <li>
-                            <a href="{{ url_for(item[0]) }}">{% if item[2] %}<i class="{{ item[2] }}"></i>&nbsp;{% endif %}{{ item[1] }}</a>
+
                         </li>
                     {% endfor %}
                     <li class="active">
-                        {{ title if title else current_title }}
+                        {{ title }}
                     </li>
                 {% endblock %}
             </ol>
@@ -19,5 +19,4 @@
         <hr>
     </div>
 </div>
-# endif
-{% endstrip %}
+{% endif %}

@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html class="{% block html_class %}{{html_class}}{% endblock %}" lang="ru">
-{% strip %}
   <head>
     <meta charset="utf-8">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -13,47 +12,46 @@
     {% if keywords %}
         <meta name="keywords" content="{{ keywords }}">
     {% endif %}
-    # block meta
-    # endblock
+      {% block meta %}
+      {% endblock %}
     <title>
-      # block title
-        {{title + ' |' if title}}
-        {{current_title + ' |' if current_title}}
-      # endblock
+        {% block title %}
+        {{ title + ' |' }}
+        {{ current_title + ' |' }}
+        {% endblock %}
       {{config.CONFIG_DB.brand_name}}
     </title>
     <link href="{{ url_for('news.recent_feed') }}"
       rel="alternate"
       title="Recent Posts"
       type="application/atom+xml">
-    # include 'bit/style.html'
-    # block head
-    # endblock
-    # include 'bit/analytics.html'
+      {% include 'bit/style.html' %}
+      {% block head %}
+      {% endblock %}
+      {% include 'bit/analytics.html' %}
   </head>
-{% endstrip %}
   <body>
 <!--noindex-->
-    # block topnav
-        # include 'bit/header.html'
-    # endblock
-    # include 'bit/breadcrumbs.html'
+{% block topnav %}
+{% include 'bit/header.html' %}
+{% endblock %}
+{% include 'bit/breadcrumbs.html' %}
 <!--/noindex-->
-    # include 'bit/announcement.html'
-    # block header
-    # endblock
-    # block maincontainer
+{% include 'bit/announcement.html' %}
+{% block header %}
+{% endblock %}
+{% block maincontainer %}
     <div class="container">
-      # include 'bit/notifications.html'
-      # block content
-      # endblock
+        {% include 'bit/notifications.html' %}
+        {% block content %}
+        {% endblock %}
     </div>
-    # endblock
+{% endblock %}
 <!--noindex-->
-    # include 'bit/footer.html'
-    # include 'bit/script.html'
-    # block scripts
-    # endblock
+{% include 'bit/footer.html' %}
+{% include 'bit/script.html' %}
+{% block scripts %}
+{% endblock %}
 <!--/noindex-->
   </body>
 </html>

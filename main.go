@@ -5,9 +5,11 @@ import (
 	"cloud.google.com/go/datastore"
 	"context"
 	"fmt"
+	"github.com/flosch/pongo2"
 	"github.com/gin-gonic/gin"
 	"github.com/jbowtie/gokogiri/xml"
 	"github.com/jbowtie/ratago/xslt"
+	"github.com/stnc/pongo2gin"
 	"log"
 	"net/http"
 	"os"
@@ -17,8 +19,9 @@ import (
 
 func main() {
 	r := gin.Default()
-	r.LoadHTMLFiles("templates/index.html")
-	r.LoadHTMLFiles("templates/apache.html")
+	r.HTMLRender = pongo2gin.TemplatePath("templates")
+	//r.LoadHTMLFiles("templates/index.html")
+	//r.LoadHTMLFiles("templates/apache.html")
 
 	r.GET("/portfolio/apache/:document.html", func(c *gin.Context) {
 		doc := c.Param("document.html")
@@ -30,7 +33,9 @@ func main() {
 		//process the input
 		input, _ := xml.ReadFile(fmt.Sprintf("apache/%s.xml", doc), xml.StrictParseOption)
 		output, _ := stylesheet.Process(input, xslt.StylesheetOptions{false, nil})
-		c.HTML(http.StatusOK, "apache.html", output)
+		c.HTML(http.StatusOK, "apache.html", pongo2.Context{
+			"content": output,
+		})
 	})
 
 	r.GET("/", func(c *gin.Context) {
@@ -75,7 +80,7 @@ func main() {
 			log.Print(err)
 		}
 
-		c.HTML(http.StatusOK, "index.html", gin.H{
+		c.HTML(http.StatusOK, "welcome.html", pongo2.Context{
 			"posts":   posts,
 			"configs": configs,
 			"users":   users,

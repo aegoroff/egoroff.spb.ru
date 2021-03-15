@@ -1,4 +1,4 @@
-{% strip %}
+
 <header class="navbar navbar-default navbar-static-top" role="banner">
   <div class="container">
     <div class="navbar-header">
@@ -12,7 +12,7 @@
     </div>
     <nav class="collapse navbar-collapse" role="navigation">
       <ul class="nav navbar-nav">
-        # include 'bit/top_nav.html'
+          {% include 'top_nav.html' %}
       </ul>
 
      <form method="GET" id="search-form-top" class="navbar-form navbar-left" role="search" action="{{url_for('search')}}" novalidate>
@@ -24,9 +24,9 @@
      </form>
 
       <ul class="nav navbar-nav navbar-right">
-        # include 'bit/user_menu.html'
+          {%  include 'user_menu.html' %}
       </ul>
     </nav>
   </div>
 </header>
-{% endstrip %}
+
