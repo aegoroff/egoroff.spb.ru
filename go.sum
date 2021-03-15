@@ -138,6 +138,10 @@ github.com/hashicorp/golang-lru v0.5.0/go.mod h1:/m3WP610KZHVQ1SGc6re/UDhFvYD7pJ
 github.com/hashicorp/golang-lru v0.5.1/go.mod h1:/m3WP610KZHVQ1SGc6re/UDhFvYD7pJ4Ao+sR/qLZy8=
 github.com/ianlancetaylor/demangle v0.0.0-20181102032728-5e5cf60278f6/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
 github.com/ianlancetaylor/demangle v0.0.0-20200824232613-28f6c0f3b639/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
+github.com/jbowtie/gokogiri v0.0.0-20190301021639-37f655d3078f h1:6UIvzqlGM38lOpKP380Wbl0kUyyjutcc7KJUaDM/U4o=
+github.com/jbowtie/gokogiri v0.0.0-20190301021639-37f655d3078f/go.mod h1:C3R3VzPq+DAwilxue7DiV6F2QL1rrQX0L56GyI+sBxM=
+github.com/jbowtie/ratago v0.0.0-20200401224626-3140c0a9b186 h1:8N1+ik35JbbQVslv63BvyO1yv0TC5Ol/ip26fOy+MP0=
+github.com/jbowtie/ratago v0.0.0-20200401224626-3140c0a9b186/go.mod h1:0ZLxKWdtG2yYN5kJTy71ALuAcl/gFhkxuGbKCMufBwI=
 github.com/json-iterator/go v1.1.9/go.mod h1:KdQUCv79m/52Kvf8AW2vK1V8akMuk1QjK/uOdHXbAo4=
 github.com/json-iterator/go v1.1.10 h1:Kz6Cvnvv2wGdaG/V8yMvfkmNiXq9Ya2KUv4rouJJr68=
 github.com/json-iterator/go v1.1.10/go.mod h1:KdQUCv79m/52Kvf8AW2vK1V8akMuk1QjK/uOdHXbAo4=
