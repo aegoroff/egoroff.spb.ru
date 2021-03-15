@@ -6,11 +6,9 @@
 .hg*
 bower_components
 main/index.yaml
-main/lib
-main/lib.zip
-main/static/dst
-main/static/ext
-main/static/min
+static/dst
+static/ext
+static/min
 node_modules
 temp/
 .sonar/
