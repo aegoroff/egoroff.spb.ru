@@ -1,0 +1,9 @@
+{% strip %}
+{% for item in sections %}
+    <li {% if item["id"] == current_id %}class="active"{% endif %}>
+        <a href={{ url_for(item['id']) }}>&nbsp;{% if item["class"] %}<i class="{{ item["class"] }}"></i>&nbsp;{% endif %}
+            {{ item['title'] }}
+        </a>
+    </li>
+{% endfor %}
+{% endstrip %}

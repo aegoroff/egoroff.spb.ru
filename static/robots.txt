@@ -1,0 +1,8 @@
+User-agent: *
+Disallow: /signout/
+Disallow: /_s/
+Disallow: /_ah/
+Disallow: /api/v2/
+Disallow: /signin/
+Disallow: /search/
+Disallow: /*?

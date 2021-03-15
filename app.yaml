@@ -1,0 +1,40 @@
+runtime: go115
+
+inbound_services:
+  - warmup
+
+handlers:
+- url: /.*
+  script: auto
+
+- url: /(robots\.txt|googlee53c87e9e3e91020\.html)
+  static_files: static/\1
+  upload: static/(.*)
+
+- url: /favicon.ico
+  static_files: static/img/favicon.ico
+  upload: static/img/favicon.ico
+
+- url: /p/min/style/images/
+  static_dir: static/ext/jquery-ui-less/less/images/
+  expiration: 1000d
+
+- url: /p/dst/style/images/
+  static_dir: static/ext/jquery-ui-less/less/images/
+  expiration: 1000d
+
+- url: /p/(.*\.ttf)
+  static_files: static/\1
+  upload: static/(.*\.ttf)
+  mime_type: font/ttf
+  expiration: 1000d
+
+- url: /p/
+  static_dir: static/
+  expiration: 1000d
+
+- url: /apache/images
+  static_dir: apache/images
+
+- url: /apache/css
+  static_dir: apache/css

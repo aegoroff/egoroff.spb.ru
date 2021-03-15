@@ -1,0 +1,51 @@
+# extends 'base.html'
+# import 'macro/forms.html' as forms
+
+# block content
+  <div class="page-header">
+    <h1>{{title}} <small>Есть вопросы и предложения? Всегда пожалуйста :)</small></h1>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-8">
+      <form id="feedback" method="POST" action="." novalidate>
+        {{form.csrf_token}}
+
+        {{forms.text_field(form.subject, autofocus=True)}}
+        {{forms.textarea_field(form.message, rows=8)}}
+        {{forms.email_field(form.email)}}
+        {{forms.recaptcha_field(form.recaptcha)}}
+
+        <button type="submit" class="btn btn-primary btn-block btn-loading" data-loading-text="Идет отправка ...">
+          Отправить
+        </button>
+      </form>
+    </div>
+  </div>
+# endblock
+
+# block scripts
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#feedback').bootstrapValidator({
+            feedbackIcons: {
+                valid: 'fa fa-check',
+                invalid: 'fa fa-times',
+                validating: 'fa fa-refresh'
+            },
+            fields: {
+                subject: {
+                    validators: {
+                        notEmpty : {}
+                    }
+                },
+                email: {
+                    validators: {
+                        emailAddress : {}
+                    }
+                }
+            }
+        });
+    });
+</script>
+# endblock

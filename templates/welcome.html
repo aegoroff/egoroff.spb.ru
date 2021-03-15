@@ -1,0 +1,42 @@
+# extends 'base.html'
+
+# block meta
+    <meta name="google-site-verification" content="PHs3gMRw0_sIAdVqjk38_fbq9h3VGHkkIq3w1chJXWs"/>
+    <meta name='yandex-verification' content='4c9a9332153bb06f' />
+# endblock
+
+# block content
+{% strip %}
+
+<div class="page-header">
+    <h1>
+        egoroff.spb.ru
+        <small>
+            блог о программировании, веб, apache, инструментах, хаках и пр.
+        </small>
+    </h1>
+</div>
+
+
+
+<div class="row">
+    <div class="col-lg-6">
+        <h2><a href="{{ url_for('news.index') }}">Блог</a></h2>
+        {% if posts %}
+            <dl itemscope itemtype="http://schema.org/BlogPosting" id="log">
+                {% for post in posts %}
+                    {% include 'news/post_box.html' %}
+                {% endfor %}
+            </dl>
+        {% else %}
+            <p>Пока ничего нового.</p>
+        {% endif %}
+    </div>
+    <div class="col-lg-6">
+        <h2>Про апачей</h2>
+        {% include 'portfolio/apache_documents_list.html' %}
+    </div>
+</div>
+
+{% endstrip %}
+# endblock
