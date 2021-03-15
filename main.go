@@ -5,6 +5,8 @@ import (
 	"cloud.google.com/go/datastore"
 	"context"
 	"github.com/gin-gonic/gin"
+	"github.com/jbowtie/gokogiri/xml"
+	"github.com/jbowtie/ratago/xslt"
 	"log"
 	"net/http"
 	"os"
@@ -14,6 +16,14 @@ import (
 func main() {
 	r := gin.Default()
 	r.LoadHTMLFiles("templates/index.html")
+
+	style, _ := xml.ReadFile("apache/apache_manualpage.xsl", xml.StrictParseOption)
+	stylesheet, _ := xslt.ParseStylesheet(style, "apache/apache_manualpage.xsl")
+
+	//process the input
+	input, _ := xml.ReadFile("apache/rewriteguide.xml", xml.StrictParseOption)
+	output, _ := stylesheet.Process(input, xslt.StylesheetOptions{false, nil})
+	log.Print(output)
 
 	r.GET("/", func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
