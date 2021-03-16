@@ -17,10 +17,6 @@ import config
 PARSER = argparse.ArgumentParser()
 
 PARSER.add_argument(
-    '-c', '--clean', dest='clean', action='store_true',
-    help='recompiles files when running the development web server',
-)
-PARSER.add_argument(
     '-C', '--clean-all', dest='clean_all', action='store_true',
     help='''Cleans all the pip, Node & Bower related tools / libraries and
     updates them to their latest versions''',
@@ -35,7 +31,7 @@ ARGS = PARSER.parse_args()
 ###############################################################################
 # Globals
 ###############################################################################
-BAD_ENDINGS = ['pyc', 'pyo', '~']
+BAD_ENDINGS = ['~']
 IS_WINDOWS = platform.system() == 'Windows'
 
 ###############################################################################
@@ -67,11 +63,9 @@ DIR_MIN_SCRIPT = os.path.join(DIR_MIN, DIR_SCRIPT)
 
 DIR_LIB = os.path.join(DIR_MAIN, 'lib')
 DIR_LIBX = os.path.join(DIR_MAIN, 'libx')
-FILE_LIB = '%s.zip' % DIR_LIB
 FILE_REQUIREMENTS = 'requirements.txt'
 FILE_BOWER = 'bower.json'
 FILE_PACKAGE = 'package.json'
-FILE_PIP_GUARD = os.path.join(DIR_TEMP, 'pip.guard')
 FILE_NPM_GUARD = os.path.join(DIR_TEMP, 'npm.guard')
 FILE_BOWER_GUARD = os.path.join(DIR_TEMP, 'bower.guard')
 
@@ -244,10 +238,6 @@ def guard_is_newer(guard, watched):
     return False
 
 
-def check_if_pip_should_run():
-    return not guard_is_newer(FILE_PIP_GUARD, FILE_REQUIREMENTS)
-
-
 def check_if_npm_should_run():
     return not guard_is_newer(FILE_NPM_GUARD, FILE_PACKAGE)
 
@@ -324,7 +314,7 @@ def run_clean_all():
         DIR_BOWER_COMPONENTS, DIR_NODE_MODULES, DIR_EXT, DIR_MIN, DIR_DST
     ])
     remove_file_dir([
-        FILE_PIP_GUARD, FILE_NPM_GUARD, FILE_BOWER_GUARD
+        FILE_NPM_GUARD, FILE_BOWER_GUARD
     ])
     clean_files()
 
@@ -378,9 +368,6 @@ def run():
 
     if doctor_says_ok():
         install_dependencies()
-
-    if ARGS.clean:
-        run_clean()
 
     if ARGS.minify:
         run_minify()
