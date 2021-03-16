@@ -7,11 +7,11 @@ handlers:
 - url: /p/
   static_dir: static/
 
-- url: /apache/images/
-  static_dir: apache/images/
+- url: /apache/images
+  static_dir: apache/images
 
-- url: /apache/css/
-  static_dir: apache/css/
+- url: /apache/css
+  static_dir: apache/css
 
 - url: /(robots\.txt|googlee53c87e9e3e91020\.html)
   static_files: static/\1

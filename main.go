@@ -29,6 +29,14 @@ func main() {
 		apache_docs_map[doc.ID] = doc
 	}
 
+	r.Static("/apache/images", "apache/images").
+		Static("/apache/css", "apache/css").
+		Static("/p/", "static/")
+
+	r.StaticFile("/favicon.ico", "static/img/favicon.ico").
+		StaticFile("/robots.txt", "static/robots.txt").
+		StaticFile("/googlee53c87e9e3e91020.html", "static/googlee53c87e9e3e91020.html")
+
 	r.GET("/portfolio/apache/:document.html", func(c *gin.Context) {
 		doc := c.Param("document.html")
 		doc = strings.TrimRight(doc, ".html")
