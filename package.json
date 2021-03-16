@@ -14,7 +14,7 @@
   "dependencies": {
     "coffeescript": "^2.5.1",
     "less": "~4",
-    "uglify-js": "~2.6.0"
+    "uglify-js": "~3"
   },
   "devDependencies": {
     "bower": "~1",
