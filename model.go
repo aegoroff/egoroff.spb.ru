@@ -87,3 +87,11 @@ type Folder struct {
 	Title    string           `datastore:"title"`
 	Files    []*datastore.Key `datastore:"files"`
 }
+
+type Apache struct {
+	ID          string
+	Stylesheet  string
+	Title       string
+	Description string
+	Keywords    string
+}

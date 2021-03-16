@@ -4,6 +4,7 @@ package main
 import (
 	"cloud.google.com/go/datastore"
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/flosch/pongo2"
 	"github.com/gin-gonic/gin"
@@ -20,15 +21,27 @@ import (
 func main() {
 	r := gin.Default()
 	r.HTMLRender = pongo2gin.TemplatePath("templates")
-	//r.LoadHTMLFiles("templates/index.html")
-	//r.LoadHTMLFiles("templates/apache.html")
+
+	apache_docs := create_apache_docs()
+
+	apache_docs_map := make(map[string]*Apache)
+	for _, doc := range apache_docs {
+		apache_docs_map[doc.ID] = doc
+	}
 
 	r.GET("/portfolio/apache/:document.html", func(c *gin.Context) {
 		doc := c.Param("document.html")
 		doc = strings.TrimRight(doc, ".html")
 
-		style, _ := xml.ReadFile("apache/apache_manualpage.xsl", xml.StrictParseOption)
-		stylesheet, _ := xslt.ParseStylesheet(style, "apache/apache_manualpage.xsl")
+		apache, ok := apache_docs_map[doc]
+
+		if !ok {
+			return
+		}
+
+		sheet := fmt.Sprintf("apache/%s.xsl", apache.Stylesheet)
+		style, _ := xml.ReadFile(sheet, xml.StrictParseOption)
+		stylesheet, _ := xslt.ParseStylesheet(style, sheet)
 
 		//process the input
 		input, _ := xml.ReadFile(fmt.Sprintf("apache/%s.xml", doc), xml.StrictParseOption)
@@ -67,9 +80,10 @@ func main() {
 		}
 
 		c.HTML(http.StatusOK, "welcome.html", pongo2.Context{
-			"posts":      posts,
-			"html_class": "welcome",
-			"config":     config,
+			"posts":       posts,
+			"html_class":  "welcome",
+			"config":      config,
+			"apache_docs": apache_docs,
 		})
 	})
 
@@ -79,4 +93,31 @@ func main() {
 	}
 	log.Printf("Defaulting to port %s", port)
 	r.Run(":" + port)
+}
+
+func create_apache_docs() []*Apache {
+	f, err := os.Open("apache/config.json")
+	if err != nil {
+		log.Println(err)
+	}
+	dec := json.NewDecoder(f)
+	for {
+		var v map[string][]string
+		if err := dec.Decode(&v); err != nil {
+			log.Println(err)
+			return nil
+		}
+		var result = make([]*Apache, 0, len(v))
+		for k, val := range v {
+			a := Apache{
+				ID:          k,
+				Stylesheet:  val[0],
+				Title:       val[1],
+				Description: val[2],
+				Keywords:    val[3],
+			}
+			result = append(result, &a)
+		}
+		return result
+	}
 }
