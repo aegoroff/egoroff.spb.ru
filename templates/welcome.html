@@ -24,7 +24,7 @@
         {% if posts %}
             <dl itemscope itemtype="http://schema.org/BlogPosting" id="log">
                 {% for post in posts %}
-                    {{ post.Title }}
+                    {% include 'blog/post_box.html' %}
                 {% endfor %}
             </dl>
         {% else %}
