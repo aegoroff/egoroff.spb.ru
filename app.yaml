@@ -4,8 +4,14 @@ inbound_services:
   - warmup
 
 handlers:
-- url: /.*
-  script: auto
+- url: /p/
+  static_dir: static/
+
+- url: /apache/images/
+  static_dir: apache/images/
+
+- url: /apache/css/
+  static_dir: apache/css/
 
 - url: /(robots\.txt|googlee53c87e9e3e91020\.html)
   static_files: static/\1
@@ -29,12 +35,5 @@ handlers:
   mime_type: font/ttf
   expiration: 1000d
 
-- url: /p/
-  static_dir: static/
-  expiration: 1000d
-
-- url: /apache/images
-  static_dir: apache/images
-
-- url: /apache/css
-  static_dir: apache/css
+- url: /.*
+  script: auto
