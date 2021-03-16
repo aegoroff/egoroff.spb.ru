@@ -1,0 +1,56 @@
+{
+  "name": "egoroff",
+  "dependencies": {
+    "bootstrap": "~3",
+    "bootstrapvalidator": "~0",
+    "font-awesome": "~4",
+    "jquery": "~2",
+    "jquery-ui": "~1",
+    "jquery-ui-less": "https://github.com/DC-development/jquery-ui-less.git#master",
+    "moment": "~2",
+    "moment-timezone": "~0",
+    "jstz": "https://github.com/bower-packages/bower-jstz.git",
+    "nprogress": "https://github.com/lipis/nprogress.git#master",
+	"knockout": "~3",
+	"knockoutmapping": "https://github.com/SteveSanderson/knockout.mapping.git#master",
+	"redactor": "https://github.com/aegoroff/redactor-js.git#master"
+  },
+  "overrides": {
+    "bootstrap": {
+      "main": ["less/**", "fonts/*", "js/*"]
+    },
+    "font-awesome": {
+      "main": ["less/*", "fonts/*"]
+    },
+    "jquery-ui": {
+      "main": "jquery-ui.js"
+    },
+    "jquery-ui-less": {
+      "main": ["less/*.less", "less/images/*"]
+    },
+    "jstz": {
+      "main": "jstz.js"
+    },
+    "nprogress": {
+      "main": ["*.js", "*.less"]
+    },
+    "moment": {
+      "main": "min/moment-with-locales.js"
+    },
+    "moment-timezone": {
+      "main": "builds/moment-timezone-with-data.js"
+    },
+    "knockout": {
+      "main": "dist/knockout.js"
+    },
+    "knockoutmapping": {
+      "main": "*.js"
+    },
+    "bootstrapvalidator": {
+      "main": ["dist/js/bootstrapValidator.js", "dist/js/language/*.js"]
+    },
+    "redactor": {
+      "main": ["redactor/*.js", "redactor/*.less"]
+    }
+  }
+}
