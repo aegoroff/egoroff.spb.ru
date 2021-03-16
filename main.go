@@ -14,6 +14,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sort"
 	"strings"
 	"time"
 )
@@ -29,9 +30,14 @@ func main() {
 		apache_docs_map[doc.ID] = doc
 	}
 
-	r.Static("/apache/images", "apache/images").
-		Static("/apache/css", "apache/css").
-		Static("/p/", "static/")
+	r.Static("/p/", "static/")
+
+	// Apache static
+	ag := r.Group("/apache")
+	{
+		ag.Static("images", "apache/images")
+		ag.Static("css", "apache/css")
+	}
 
 	r.StaticFile("/favicon.ico", "static/img/favicon.ico").
 		StaticFile("/robots.txt", "static/robots.txt").
@@ -126,6 +132,9 @@ func create_apache_docs() []*Apache {
 			}
 			result = append(result, &a)
 		}
+		sort.Slice(result, func(i, j int) bool {
+			return result[i].ID < result[j].ID
+		})
 		return result
 	}
 }
