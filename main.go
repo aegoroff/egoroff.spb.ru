@@ -46,33 +46,19 @@ func main() {
 		projectID := "egoroff"
 
 		var posts []*Post
-		var configs []*Config
-		var users []*User
-		var files []*File
-		var folders []*Folder
+		var config Config
 
 		// Create a datastore client. In a typical application, you would create
 		// a single client which is reused for every datastore operation.
 		dsClient, err := datastore.NewClient(ctx, projectID)
 		if err == nil {
 			defer dsClient.Close()
-			_, err = dsClient.GetAll(ctx, datastore.NewQuery("Post").Order("-created"), &posts)
+			_, err = dsClient.GetAll(ctx, datastore.NewQuery("Post").Order("-created").Limit(5), &posts)
 			if err != nil {
 				log.Print(err)
 			}
-			_, err = dsClient.GetAll(ctx, datastore.NewQuery("Config"), &configs)
-			if err != nil {
-				log.Print(err)
-			}
-			_, err = dsClient.GetAll(ctx, datastore.NewQuery("User"), &users)
-			if err != nil {
-				log.Print(err)
-			}
-			_, err = dsClient.GetAll(ctx, datastore.NewQuery("File"), &files)
-			if err != nil {
-				log.Print(err)
-			}
-			_, err = dsClient.GetAll(ctx, datastore.NewQuery("Folder"), &folders)
+			k := datastore.NameKey("Config", "master", nil)
+			err = dsClient.Get(ctx, k, &config)
 			if err != nil {
 				log.Print(err)
 			}
@@ -81,9 +67,9 @@ func main() {
 		}
 
 		c.HTML(http.StatusOK, "welcome.html", pongo2.Context{
-			"posts":   posts,
-			"configs": configs,
-			"users":   users,
+			"posts":      posts,
+			"html_class": "welcome",
+			"config":     config,
 		})
 	})
 

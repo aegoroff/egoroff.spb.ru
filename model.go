@@ -6,13 +6,14 @@ import (
 )
 
 type Model struct {
-	Created     time.Time `datastore:"created"`
-	Modified    time.Time `datastore:"modified"`
-	Version     int       `datastore:"version"`
-	CreatedAgo  string    `datastore:"created_ago"`
-	CreatedUtc  string    `datastore:"created_utc"`
-	ModifiedAgo string    `datastore:"modified_ago"`
-	ModifiedUtc string    `datastore:"modified_utc"`
+	Key         *datastore.Key `datastore:"__key__"`
+	Created     time.Time      `datastore:"created"`
+	Modified    time.Time      `datastore:"modified"`
+	Version     int            `datastore:"version"`
+	CreatedAgo  string         `datastore:"created_ago"`
+	CreatedUtc  string         `datastore:"created_utc"`
+	ModifiedAgo string         `datastore:"modified_ago"`
+	ModifiedUtc string         `datastore:"modified_utc"`
 }
 
 type Post struct {
