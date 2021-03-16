@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -47,11 +48,18 @@ func (w *welcome) route(r *gin.Engine) {
 			log.Print(err)
 		}
 
+		styles := []string{
+			"min/style/style.min.css",
+			"min/style/adminstyle.min.css",
+		}
+
 		c.HTML(http.StatusOK, "welcome.html", pongo2.Context{
-			"posts":       posts,
-			"html_class":  "welcome",
-			"config":      config,
-			"apache_docs": w.apacheDocs,
+			"posts":              posts,
+			"html_class":         "welcome",
+			"config":             config,
+			"apache_docs":        w.apacheDocs,
+			"current_version_id": os.Getenv("CURRENT_VERSION_ID"),
+			"styles":             styles,
 		})
 	})
 }
