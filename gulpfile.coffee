@@ -14,16 +14,9 @@ paths =
       "#{static_dir}/ext"
       "#{static_dir}/min"
     ]
-  watch: [
-      "#{static_dir}/**/*.css"
-      "#{static_dir}/**/*.js"
-      "#{root_dir}/**/*.html"
-      "#{root_dir}/**/*.py"
-    ]
-
 
 run = (option) ->
-  proc = exec "python -u run.py -#{option}"
+  proc = exec "python3 -u run.py -#{option}"
   proc.stderr.on 'data', (data) -> process.stderr.write data
   proc.stdout.on 'data', (data) -> process.stdout.write data
 
@@ -34,7 +27,7 @@ gulp.task 'clean', ->
 gulp.task 'bower_install', ->
   $.bower()
 
-gulp.task 'ext', ['bower_install'], ->
+gulp.task 'ext', gulp.series('bower_install'), ->
   gulp.src(main_bower_files(),
     base: 'bower_components'
   ).pipe gulp.dest("#{static_dir}/ext")
@@ -42,9 +35,6 @@ gulp.task 'ext', ['bower_install'], ->
 gulp.task 'reload', ->
   $.livereload.listen()
   gulp.watch(paths.watch).on 'change', $.livereload.changed
-
-gulp.task 'watch', ->
-  run 'w'
 
 gulp.task 'run', ->
   argv = process.argv.slice(2)
@@ -59,11 +49,10 @@ gulp.task 'run', ->
         h: false
         m: false
         s: false
-        w: false
     options = minimist argv, known_options
     for k of known_options.default
       if options[k]
         run k
         break
 
-gulp.task 'default', ['reload', 'run', 'watch']
+gulp.task 'default', gulp.series('reload', 'run')

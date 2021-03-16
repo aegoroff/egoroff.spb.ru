@@ -12,7 +12,7 @@
     "url": "https://github.com/aegoroff/egoroff.spb.ru"
   },
   "dependencies": {
-    "coffee-script": "~1",
+    "coffeescript": "^2.5.1",
     "less": "~2",
     "uglify-js": "~2.6.0"
   },

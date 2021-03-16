@@ -296,18 +296,6 @@ def doctor_says_ok():
 ###############################################################################
 # Main
 ###############################################################################
-def run_clean():
-    print_out('CLEAN')
-    clean_files()
-    if IS_WINDOWS:
-        clean_files(['css', 'js'], DIR_DST)
-    else:
-        remove_file_dir(DIR_DST)
-    make_dirs(DIR_DST)
-    compile_all_dst()
-    print_out('DONE')
-
-
 def run_clean_all():
     print_out('CLEAN ALL')
     remove_file_dir([
