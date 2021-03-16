@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "coffeescript": "^2.5.1",
-    "less": "~2",
+    "less": "~4",
     "uglify-js": "~2.6.0"
   },
   "devDependencies": {
