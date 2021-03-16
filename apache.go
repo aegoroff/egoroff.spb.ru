@@ -17,9 +17,10 @@ import (
 type apacher struct {
 	documents    []*Apache
 	documentsMap map[string]*Apache
+	styles       []string
 }
 
-func newApacher(path string) *apacher {
+func newApacher(path string, styles []string) *apacher {
 	docs := readApacheDocs(path)
 	docsMap := make(map[string]*Apache)
 	for _, doc := range docs {
@@ -28,6 +29,7 @@ func newApacher(path string) *apacher {
 	return &apacher{
 		documents:    docs,
 		documentsMap: docsMap,
+		styles:       styles,
 	}
 }
 
@@ -50,7 +52,9 @@ func (a *apacher) route(r *gin.Engine) {
 		input, _ := xml.ReadFile(fmt.Sprintf("apache/%s.xml", doc), xml.StrictParseOption)
 		output, _ := stylesheet.Process(input, xslt.StylesheetOptions{false, nil})
 		c.HTML(http.StatusOK, "apache.html", pongo2.Context{
-			"content": output,
+			"content":            output,
+			"current_version_id": os.Getenv("CURRENT_VERSION_ID"),
+			"styles":             a.styles,
 		})
 	})
 }

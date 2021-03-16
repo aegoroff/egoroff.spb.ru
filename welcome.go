@@ -13,10 +13,11 @@ import (
 
 type welcome struct {
 	apacheDocs []*Apache
+	styles     []string
 }
 
-func newWelcome(apacheDocs []*Apache) *welcome {
-	return &welcome{apacheDocs: apacheDocs}
+func newWelcome(apacheDocs []*Apache, styles []string) *welcome {
+	return &welcome{apacheDocs: apacheDocs, styles: styles}
 }
 
 func (w *welcome) route(r *gin.Engine) {
@@ -48,18 +49,13 @@ func (w *welcome) route(r *gin.Engine) {
 			log.Print(err)
 		}
 
-		styles := []string{
-			"min/style/style.min.css",
-			"min/style/adminstyle.min.css",
-		}
-
 		c.HTML(http.StatusOK, "welcome.html", pongo2.Context{
 			"posts":              posts,
 			"html_class":         "welcome",
 			"config":             config,
 			"apache_docs":        w.apacheDocs,
 			"current_version_id": os.Getenv("CURRENT_VERSION_ID"),
-			"styles":             styles,
+			"styles":             w.styles,
 		})
 	})
 }
