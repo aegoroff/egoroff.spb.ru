@@ -21,7 +21,6 @@
     "del": "~1",
     "gulp": "^4.0.2",
     "gulp-bower": "~0",
-    "gulp-livereload": "^4.0.2",
     "gulp-load-plugins": "^2.0.6",
     "main-bower-files": "~2",
     "minimist": "~1"
