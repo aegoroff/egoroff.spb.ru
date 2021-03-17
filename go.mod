@@ -1,4 +1,4 @@
-module egoroffspbru
+module egoroff.spb.ru
 
 go 1.15
 

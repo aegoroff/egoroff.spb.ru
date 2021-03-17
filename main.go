@@ -1,6 +1,7 @@
 package main
 
 import (
+	"egoroff.spb.ru/app"
 	"github.com/gin-gonic/gin"
 	"github.com/stnc/pongo2gin"
 	"log"
@@ -16,11 +17,11 @@ func main() {
 		"min/style/adminstyle.min.css",
 	}
 
-	apacher := newApacher("apache/config.json", styles)
-	static := &staticRouter{}
-	welcome := newWelcome(apacher.documents, styles)
+	apacher := app.NewApacher("apache/config.json", styles)
+	static := app.NewStaticRouter()
+	welcome := app.NewWelcome(apacher.Documents(), styles)
 
-	routers := []router{static, apacher, welcome}
+	routers := []app.Router{static, apacher, welcome}
 
 	route(r, routers)
 
@@ -32,8 +33,8 @@ func main() {
 	r.Run(":" + port)
 }
 
-func route(r *gin.Engine, routers []router) {
+func route(r *gin.Engine, routers []app.Router) {
 	for _, rout := range routers {
-		rout.route(r)
+		rout.Route(r)
 	}
 }

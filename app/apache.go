@@ -1,4 +1,4 @@
-package main
+package app
 
 import (
 	"encoding/json"
@@ -14,26 +14,30 @@ import (
 	"strings"
 )
 
-type apacher struct {
+type Apacher struct {
 	documents    []*Apache
 	documentsMap map[string]*Apache
 	styles       []string
 }
 
-func newApacher(path string, styles []string) *apacher {
+func NewApacher(path string, styles []string) *Apacher {
 	docs := readApacheDocs(path)
 	docsMap := make(map[string]*Apache)
 	for _, doc := range docs {
 		docsMap[doc.ID] = doc
 	}
-	return &apacher{
+	return &Apacher{
 		documents:    docs,
 		documentsMap: docsMap,
 		styles:       styles,
 	}
 }
 
-func (a *apacher) route(r *gin.Engine) {
+func (a *Apacher) Documents() []*Apache {
+	return a.documents
+}
+
+func (a *Apacher) Route(r *gin.Engine) {
 	r.GET("/portfolio/apache/:document.html", func(c *gin.Context) {
 		doc := c.Param("document.html")
 		doc = strings.TrimRight(doc, ".html")

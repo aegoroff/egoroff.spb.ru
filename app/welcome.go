@@ -1,4 +1,4 @@
-package main
+package app
 
 import (
 	"cloud.google.com/go/datastore"
@@ -11,16 +11,16 @@ import (
 	"time"
 )
 
-type welcome struct {
+type Welcome struct {
 	apacheDocs []*Apache
 	styles     []string
 }
 
-func newWelcome(apacheDocs []*Apache, styles []string) *welcome {
-	return &welcome{apacheDocs: apacheDocs, styles: styles}
+func NewWelcome(apacheDocs []*Apache, styles []string) *Welcome {
+	return &Welcome{apacheDocs: apacheDocs, styles: styles}
 }
 
-func (w *welcome) route(r *gin.Engine) {
+func (w *Welcome) Route(r *gin.Engine) {
 	r.GET("/", func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()

@@ -1,4 +1,4 @@
-package main
+package app
 
 import (
 	"github.com/gin-gonic/gin"
@@ -6,7 +6,11 @@ import (
 
 type staticRouter struct{}
 
-func (*staticRouter) route(r *gin.Engine) {
+func NewStaticRouter() Router {
+	return &staticRouter{}
+}
+
+func (*staticRouter) Route(r *gin.Engine) {
 	r.Static("/p/", "static/")
 
 	// Apache static
