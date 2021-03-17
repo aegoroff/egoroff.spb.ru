@@ -12,9 +12,10 @@
 # below:
 .git
 
+!static/ext/bootstrap/fonts
+!static/ext/font-awesome/fonts
 
 # Binaries for programs and plugins
-*.exe
 *.exe~
 *.dll
 *.so
@@ -27,7 +28,7 @@
 *.pyo
 .idea/
 .DS_Store
-.hg*
+gulpfile.coffee
 bower_components
 static/dst
 static/ext
