@@ -17,7 +17,6 @@ func (*staticRouter) Route(r *gin.Engine) {
 	ag := r.Group("/apache")
 	{
 		ag.Static("images", "apache/images")
-		ag.Static("css", "apache/css")
 	}
 
 	r.StaticFile("/favicon.ico", "static/img/favicon.ico").

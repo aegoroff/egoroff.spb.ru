@@ -12,8 +12,9 @@
 # below:
 .git
 
-!static/ext/bootstrap/fonts
-!static/ext/font-awesome/fonts
+!static/ext/bootstrap/fonts/
+!static/ext/font-awesome/fonts/
+!static/ext/jquery-ui-less/less/images/
 
 # Binaries for programs and plugins
 *.exe~
@@ -26,6 +27,7 @@
 *.out
 *.pyc
 *.pyo
+*.py
 .idea/
 .DS_Store
 gulpfile.coffee
