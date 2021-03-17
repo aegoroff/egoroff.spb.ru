@@ -305,7 +305,7 @@ def uniq(seq):
 def run_clean_all():
     print_out('CLEAN ALL')
     remove_file_dir([
-        DIR_BOWER_COMPONENTS, DIR_NODE_MODULES, DIR_EXT, DIR_MIN, DIR_DST, DIR_FONTS
+        DIR_BOWER_COMPONENTS, DIR_NODE_MODULES, DIR_EXT, DIR_MIN, DIR_DST, DIR_FONTS, DIR_TEMPLATES_APACHE
     ])
     remove_file_dir([
         FILE_NPM_GUARD, FILE_BOWER_GUARD
