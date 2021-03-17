@@ -2,14 +2,12 @@ package app
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/flosch/pongo2"
 	"github.com/gin-gonic/gin"
-	"github.com/jbowtie/gokogiri/xml"
-	"github.com/jbowtie/ratago/xslt"
 	"log"
 	"net/http"
 	"os"
+	"path"
 	"sort"
 	"strings"
 )
@@ -40,9 +38,8 @@ func (a *Apacher) Documents() []*Apache {
 func (a *Apacher) Route(r *gin.Engine) {
 	r.GET("/portfolio/apache/:document.html", func(c *gin.Context) {
 		doc := c.Param("document.html")
-		doc = strings.TrimRight(doc, ".html")
 
-		apache, ok := a.documentsMap[doc]
+		_, ok := a.documentsMap[strings.TrimRight(doc, ".html")]
 
 		if !ok {
 			c.HTML(http.StatusNotFound, "error.html", pongo2.Context{
@@ -52,15 +49,14 @@ func (a *Apacher) Route(r *gin.Engine) {
 			return
 		}
 
-		sheet := fmt.Sprintf("apache/%s.xsl", apache.Stylesheet)
-		style, _ := xml.ReadFile(sheet, xml.DefaultParseOption)
-		stylesheet, _ := xslt.ParseStylesheet(style, sheet)
+		filer := NewFiler(os.Stdout)
+		b, err := filer.Read(path.Join("templates", "apache", doc))
+		if err != nil {
+			log.Println(err)
+		}
 
-		//process the input
-		input, _ := xml.ReadFile(fmt.Sprintf("apache/%s.xml", doc), xml.DefaultParseOption)
-		output, _ := stylesheet.Process(input, xslt.StylesheetOptions{})
 		c.HTML(http.StatusOK, "apache.html", pongo2.Context{
-			"content":            output,
+			"content":            string(b),
 			"current_version_id": os.Getenv("CURRENT_VERSION_ID"),
 			"styles":             a.styles,
 		})

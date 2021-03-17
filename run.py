@@ -2,11 +2,14 @@
 # coding: utf-8
 
 import argparse
+import json
 import os
 import platform
 import shutil
 import sys
 from datetime import datetime
+
+from lxml import etree
 
 import config
 
@@ -44,6 +47,9 @@ DIR_SCRIPT = 'script'
 DIR_TEMP = 'temp'
 
 DIR_STATIC = os.path.join(DIR_MAIN, 'static')
+DIR_APACHE = os.path.join(DIR_MAIN, 'apache')
+DIR_TEMPLATES = os.path.join(DIR_MAIN, 'templates')
+DIR_TEMPLATES_APACHE = os.path.join(DIR_TEMPLATES, 'apache')
 
 DIR_SRC = os.path.join(DIR_STATIC, 'src')
 DIR_SRC_SCRIPT = os.path.join(DIR_SRC, DIR_SCRIPT)
@@ -72,6 +78,11 @@ FILE_LESS = os.path.join(DIR_BIN, 'lessc')
 FILE_UGLIFYJS = os.path.join(DIR_BIN, 'uglifyjs')
 
 FILE_UPDATE = os.path.join(DIR_TEMP, 'update.json')
+
+
+class FileResolver(etree.Resolver):
+    def resolve(self, url, identifier, context):
+        return self.resolve_filename(url, context)
 
 
 ###############################################################################
@@ -190,6 +201,41 @@ def compile_all_dst():
             compile_script(os.path.join(DIR_STATIC, source), DIR_DST_SCRIPT)
 
 
+def read_json(path):
+    with open(path) as f:
+        return json.load(f, encoding="UTF-8")
+
+
+def create_apache_docs():
+    conf = read_json(os.path.join(DIR_APACHE, "config.json"))
+    result = []
+    for item in conf:
+        r = {
+            "file": item,
+            "xml": os.path.join(DIR_APACHE, item + ".xml"),
+            "stylesheet": os.path.join(DIR_APACHE, conf[item][0] + ".xsl"),
+        }
+        result.append(r)
+    return result
+
+
+def compile_xslt():
+    docs = create_apache_docs()
+    make_dirs(DIR_TEMPLATES_APACHE)
+    for d in docs:
+        parser = etree.XMLParser(load_dtd=False, dtd_validation=False)
+        parser.resolvers.add(FileResolver())
+
+        xml_input = etree.parse(d["xml"], parser)
+        stylesheet = d["stylesheet"]
+        xslt_root = etree.parse(stylesheet, parser)
+        transform = etree.XSLT(xslt_root)
+        content = transform(xml_input)
+        fout = open(os.path.join(DIR_TEMPLATES_APACHE, d["file"] + ".html"), 'w')
+        fout.write(str(content))
+        fout.close()
+
+
 def update_path_separators():
     def fixit(path):
         return path.replace('\\', '/').replace('/', os.sep)
@@ -273,6 +319,7 @@ def run_minify():
     remove_file_dir(DIR_MIN)
     make_dirs(DIR_MIN_SCRIPT)
 
+    compile_xslt()
     for source in config.STYLES:
         compile_style(os.path.join(DIR_STATIC, source), DIR_MIN_STYLE)
 

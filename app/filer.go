@@ -1,0 +1,121 @@
+package app
+
+import (
+	"bytes"
+	"fmt"
+	"io"
+	"log"
+	"os"
+	"path/filepath"
+	"sync"
+)
+
+// NewFiler creates new Filer instance
+func NewFiler(w io.Writer) *Filer {
+	return &Filer{
+		w: w,
+	}
+}
+
+// Filer provides methods to work with files i.e. reading, writing
+// checking existence and remove
+type Filer struct {
+	w io.Writer
+}
+
+// CheckExistence validates files passed to be present in file system
+// The list of non exist files returned
+func (f *Filer) CheckExistence(files []string) []string {
+	var mu sync.RWMutex
+	result := make([]string, 0)
+	var restrict = make(chan struct{}, 32)
+	defer close(restrict)
+
+	var wg sync.WaitGroup
+	wg.Add(len(files))
+	for _, file := range files {
+		restrict <- struct{}{}
+		go func(file string, restrict chan struct{}) {
+			defer wg.Done()
+			defer func() { <-restrict }()
+
+			if f.fileNotExists(file) {
+				mu.Lock()
+				result = append(result, file)
+				mu.Unlock()
+			}
+		}(file, restrict)
+	}
+
+	wg.Wait()
+	return result
+}
+
+func (f *Filer) fileNotExists(path string) bool {
+	_, err := os.Stat(path)
+	return os.IsNotExist(err)
+}
+
+// Remove removes files from file system
+func (f *Filer) Remove(files []string) {
+	for _, file := range files {
+		err := os.Remove(file)
+		if err != nil {
+			log.Printf("%v\n", err)
+		} else {
+			_, _ = fmt.Fprintf(f.w, "File: %s removed successfully.\n", file)
+		}
+	}
+}
+
+func (f *Filer) Write(path string, content []byte) {
+	if content == nil {
+		return
+	}
+
+	fi, err := os.Create(filepath.Clean(path))
+	if err != nil {
+		return
+	}
+	defer Close(fi)
+
+	_, err = fi.Write(content)
+	if err != nil {
+		_, _ = fmt.Fprintf(f.w, "%v\n", err)
+	}
+}
+
+func (f *Filer) Read(path string) ([]byte, error) {
+	file, err := os.Open(filepath.Clean(path))
+	if err != nil {
+		return nil, err
+	}
+	defer Close(file)
+
+	s, err := file.Stat()
+	if err != nil {
+		return nil, err
+	}
+
+	b := make([]byte, 0, s.Size())
+
+	buf := bytes.NewBuffer(b)
+	_, err = io.Copy(buf, file)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}
+
+// Close wraps io.Closer Close func with error handling
+func Close(c io.Closer) {
+	if c == nil {
+		return
+	}
+	err := c.Close()
+	if err != nil {
+		log.Println(err)
+	}
+}

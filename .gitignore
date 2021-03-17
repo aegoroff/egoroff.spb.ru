@@ -9,6 +9,7 @@ static/dst
 static/ext
 static/fonts
 static/min
+templates/apache/
 node_modules
 temp/
 .sonar/
