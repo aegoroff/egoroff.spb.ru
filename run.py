@@ -7,7 +7,6 @@ import platform
 import shutil
 import sys
 from datetime import datetime
-from distutils import spawn
 
 import config
 
@@ -43,7 +42,6 @@ DIR_NODE_MODULES = 'node_modules'
 DIR_STYLE = 'style'
 DIR_SCRIPT = 'script'
 DIR_TEMP = 'temp'
-DIR_VENV = os.path.join(DIR_TEMP, 'venv')
 
 DIR_STATIC = os.path.join(DIR_MAIN, 'static')
 
@@ -61,9 +59,6 @@ DIR_MIN = os.path.join(DIR_STATIC, 'min')
 DIR_MIN_STYLE = os.path.join(DIR_MIN, DIR_STYLE)
 DIR_MIN_SCRIPT = os.path.join(DIR_MIN, DIR_SCRIPT)
 
-DIR_LIB = os.path.join(DIR_MAIN, 'lib')
-DIR_LIBX = os.path.join(DIR_MAIN, 'libx')
-FILE_REQUIREMENTS = 'requirements.txt'
 FILE_BOWER = 'bower.json'
 FILE_PACKAGE = 'package.json'
 FILE_NPM_GUARD = os.path.join(DIR_TEMP, 'npm.guard')
@@ -74,11 +69,7 @@ FILE_COFFEE = os.path.join(DIR_BIN, 'coffee')
 FILE_GULP = os.path.join(DIR_BIN, 'gulp')
 FILE_LESS = os.path.join(DIR_BIN, 'lessc')
 FILE_UGLIFYJS = os.path.join(DIR_BIN, 'uglifyjs')
-FILE_VENV = os.path.join(DIR_VENV, 'Scripts', 'activate.bat') \
-    if IS_WINDOWS \
-    else os.path.join(DIR_VENV, 'bin', 'activate')
 
-DIR_STORAGE = os.path.join(DIR_TEMP, 'storage')
 FILE_UPDATE = os.path.join(DIR_TEMP, 'update.json')
 
 
@@ -220,13 +211,6 @@ def listdir(directory, split_ext=False):
         return []
 
 
-def site_packages_path():
-    if IS_WINDOWS:
-        return os.path.join(DIR_VENV, 'Lib', 'site-packages')
-    py_version = 'python%s.%s' % sys.version_info[:2]
-    return os.path.join(DIR_VENV, 'lib', py_version, 'site-packages')
-
-
 def make_guard(fname, cmd, spec):
     with open(fname, 'w') as guard:
         guard.write('Prevents %s execution if newer than %s' % (cmd, spec))
@@ -254,6 +238,7 @@ def install_dependencies():
     if check_if_bower_should_run():
         make_guard(FILE_BOWER_GUARD, 'bower', FILE_BOWER)
         os.system('"%s" ext' % FILE_GULP)
+        os.system('"%s" copy' % FILE_GULP)
 
 
 def update_missing_args():
@@ -264,33 +249,6 @@ def update_missing_args():
 def uniq(seq):
     seen = set()
     return [e for e in seq if e not in seen and not seen.add(e)]
-
-
-###############################################################################
-# Doctor
-###############################################################################
-
-def check_requirement(check_func):
-    result, name, help_url_id = check_func()
-    if not result:
-        print_out('NOT FOUND', name)
-        return False
-    return True
-
-
-def check_git():
-    return bool(spawn.find_executable('git')), 'Git', '#git'
-
-
-def check_nodejs():
-    return bool(spawn.find_executable('node')), 'Node.js', '#nodejs'
-
-
-def doctor_says_ok():
-    checkers = [check_git, check_nodejs]
-    if False in [check_requirement(check) for check in checkers]:
-        sys.exit(1)
-    return True
 
 
 ###############################################################################
@@ -354,10 +312,8 @@ def run():
     if ARGS.clean_all:
         run_clean_all()
 
-    if doctor_says_ok():
-        install_dependencies()
-
     if ARGS.minify:
+        install_dependencies()
         run_minify()
 
 

@@ -28,11 +28,11 @@ gulp.task 'bower_install', ->
   $.bower()
 
 gulp.task 'ext', gulp.series('bower_install'), ->
-  gulp.src main_bower_files(), base: 'bower_components'
+  gulp.src main_bower_files(), {base: 'bower_components'}
   .pipe gulp.dest "#{static_dir}/ext"
 
 gulp.task 'copy', ->
-  gulp.src 'bower_components/**/*'
+  gulp.src main_bower_files(), {base: 'bower_components'}
     .pipe gulp.dest "#{static_dir}/ext"
 
 gulp.task 'reload', ->
