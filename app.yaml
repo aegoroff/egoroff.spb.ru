@@ -4,17 +4,17 @@ inbound_services:
   - warmup
 
 handlers:
-- url: /p/min/style/images/(.*)
-  static_files: static/ext/jquery-ui-less/less/images/\1
-  upload: static/ext/jquery-ui-less/less/images/(.*)
+- url: /p/min/style/images/
+  static_dir: static/ext/jquery-ui-less/less/images/
+  expiration: 1000d
 
-- url: /p/ext/font-awesome/fonts/(.*)
-  static_files: static/ext/font-awesome/fonts/\1
-  upload: static/ext/font-awesome/fonts/(.*)
+- url: /p/ext/font-awesome/fonts/
+  static_dir: static/fonts/font-awesome/
+  expiration: 1000d
 
-- url: /p/ext/bootstrap/fonts/(.*)
-  static_files: static/ext/bootstrap/fonts/\1
-  upload: static/ext/bootstrap/fonts/(.*)
+- url: /p/ext/bootstrap/fonts/
+  static_dir: static/fonts/bootstrap/
+  expiration: 1000d
 
 - url: /p/
   static_dir: static/

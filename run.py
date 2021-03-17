@@ -54,6 +54,7 @@ DIR_DST_STYLE = os.path.join(DIR_DST, DIR_STYLE)
 DIR_DST_SCRIPT = os.path.join(DIR_DST, DIR_SCRIPT)
 
 DIR_EXT = os.path.join(DIR_STATIC, 'ext')
+DIR_FONTS = os.path.join(DIR_STATIC, 'fonts')
 
 DIR_MIN = os.path.join(DIR_STATIC, 'min')
 DIR_MIN_STYLE = os.path.join(DIR_MIN, DIR_STYLE)
@@ -239,6 +240,7 @@ def install_dependencies():
         make_guard(FILE_BOWER_GUARD, 'bower', FILE_BOWER)
         os.system('"%s" ext' % FILE_GULP)
         os.system('"%s" copy' % FILE_GULP)
+        os.system('"%s" fonts' % FILE_GULP)
 
 
 def update_missing_args():
@@ -257,7 +259,7 @@ def uniq(seq):
 def run_clean_all():
     print_out('CLEAN ALL')
     remove_file_dir([
-        DIR_BOWER_COMPONENTS, DIR_NODE_MODULES, DIR_EXT, DIR_MIN, DIR_DST
+        DIR_BOWER_COMPONENTS, DIR_NODE_MODULES, DIR_EXT, DIR_MIN, DIR_DST, DIR_FONTS
     ])
     remove_file_dir([
         FILE_NPM_GUARD, FILE_BOWER_GUARD

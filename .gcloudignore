@@ -11,10 +11,11 @@
 # from your .gitignore file, remove the corresponding line
 # below:
 .git
-
-!static/ext/bootstrap/fonts/
-!static/ext/font-awesome/fonts/
-!static/ext/jquery-ui-less/less/images/
+.gitignore
+.bowerrc
+package-lock.json
+package.json
+bower.json
 
 # Binaries for programs and plugins
 *.exe~
@@ -31,11 +32,10 @@
 .idea/
 .DS_Store
 gulpfile.coffee
-bower_components
-static/dst
-static/ext
+bower_components/
+static/dst/
+static/ext/
 static/src/
-node_modules
+node_modules/
 temp/
-.sonar/
 intodev.bat

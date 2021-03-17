@@ -35,6 +35,12 @@ gulp.task 'copy', ->
   gulp.src main_bower_files(), {base: 'bower_components'}
     .pipe gulp.dest "#{static_dir}/ext"
 
+gulp.task 'fonts', ->
+  gulp.src "#{static_dir}/ext/font-awesome/fonts/*"
+    .pipe gulp.dest "#{static_dir}/fonts/font-awesome"
+  gulp.src "#{static_dir}/ext/bootstrap/fonts/*"
+    .pipe gulp.dest "#{static_dir}/fonts/bootstrap"
+
 gulp.task 'reload', ->
   $.livereload.listen()
   gulp.watch(paths.watch).on 'change', $.livereload.changed
