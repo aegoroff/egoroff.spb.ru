@@ -11,8 +11,7 @@
 # from your .gitignore file, remove the corresponding line
 # below:
 .git
-.gitignore
-#!include:.gitignore
+
 
 # Binaries for programs and plugins
 *.exe
@@ -24,4 +23,16 @@
 *.test
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+*.pyc
+*.pyo
+.idea/
+.DS_Store
+.hg*
+bower_components
+static/dst
+static/ext
 static/src/
+node_modules
+temp/
+.sonar/
+intodev.bat

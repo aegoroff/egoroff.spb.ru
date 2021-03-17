@@ -5,12 +5,10 @@
 .git*
 .hg*
 bower_components
-main/index.yaml
 static/dst
 static/ext
 static/min
 node_modules
 temp/
 .sonar/
-venv/
 intodev.bat
