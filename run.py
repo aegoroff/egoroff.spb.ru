@@ -127,8 +127,8 @@ def clean_files(bad_endings=BAD_ENDINGS, in_dir='.'):
 
 
 def merge_files(source, target):
-    fout = open(target, 'a')
-    for line in open(source):
+    fout = open(target, 'a', encoding='utf-8')
+    for line in open(source, encoding='utf-8'):
         fout.write(line)
     fout.close()
 
