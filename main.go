@@ -14,7 +14,7 @@ func main() {
 
 	styles := []string{
 		"min/style/style.min.css",
-		"min/style/adminstyle.min.css",
+		//"min/style/adminstyle.min.css",
 	}
 
 	apacher := app.NewApacher("apache/config.json", styles)
