@@ -8,14 +8,14 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-       <a class="navbar-brand" href="{{url_for('welcome')}}">{{config.BrandName}}</a>
+       <a class="navbar-brand" href="/">{{config.BrandName}}</a>
     </div>
     <nav class="collapse navbar-collapse" role="navigation">
       <ul class="nav navbar-nav">
           {% include 'top_nav.html' %}
       </ul>
 
-     <form method="GET" id="search-form-top" class="navbar-form navbar-left" role="search" action="{{url_for('search')}}" novalidate>
+     <form method="GET" id="search-form-top" class="navbar-form navbar-left" role="search" action="/search/" novalidate>
         <div class="form-group form-group-sm">
             <label class="sr-only" for="q_top">форма поиска</label>
             <input id="q_top" name="q" class="form-control" type="text" value=""/>

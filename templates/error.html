@@ -1,6 +1,6 @@
-# extends 'base.html'
+{% extends 'base.html' %}
 
-# block header
+{% block header %}
   <div class="jumbotron">
     <div class="container">
       <h2>
@@ -10,8 +10,8 @@
       <p>Возможно моя вина ... возможно ваша, но в любом случае, запрашиваемая страница недоступна!</p>
     </div>
   </div>
-# endblock
+{% endblock %}
 
-# block content
+{% block content %}
   <img src="//i.imgur.com/wzBcYCV.png" class="img-error" alt="xkcd: Wisdom of the Ancients" title="xkcd: Wisdom of the Ancients">
-# endblock
+{% endblock %}

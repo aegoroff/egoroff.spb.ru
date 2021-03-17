@@ -45,16 +45,20 @@ func (a *Apacher) Route(r *gin.Engine) {
 		apache, ok := a.documentsMap[doc]
 
 		if !ok {
+			c.HTML(http.StatusNotFound, "error.html", pongo2.Context{
+				"current_version_id": os.Getenv("CURRENT_VERSION_ID"),
+				"styles":             a.styles,
+			})
 			return
 		}
 
 		sheet := fmt.Sprintf("apache/%s.xsl", apache.Stylesheet)
-		style, _ := xml.ReadFile(sheet, xml.StrictParseOption)
+		style, _ := xml.ReadFile(sheet, xml.DefaultParseOption)
 		stylesheet, _ := xslt.ParseStylesheet(style, sheet)
 
 		//process the input
-		input, _ := xml.ReadFile(fmt.Sprintf("apache/%s.xml", doc), xml.StrictParseOption)
-		output, _ := stylesheet.Process(input, xslt.StylesheetOptions{false, nil})
+		input, _ := xml.ReadFile(fmt.Sprintf("apache/%s.xml", doc), xml.DefaultParseOption)
+		output, _ := stylesheet.Process(input, xslt.StylesheetOptions{})
 		c.HTML(http.StatusOK, "apache.html", pongo2.Context{
 			"content":            output,
 			"current_version_id": os.Getenv("CURRENT_VERSION_ID"),
