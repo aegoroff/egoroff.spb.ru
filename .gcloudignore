@@ -29,6 +29,9 @@ bower.json
 *.pyc
 *.pyo
 *.py
+apache/*.xsl
+apache/*.dtd
+apache/*.xml
 .idea/
 .DS_Store
 gulpfile.coffee
