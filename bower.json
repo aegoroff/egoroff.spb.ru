@@ -4,7 +4,7 @@
     "bootstrap": "~3",
     "bootstrapvalidator": "~0",
     "font-awesome": "~4",
-    "jquery": "~2",
+    "jquery": "~3",
     "jquery-ui": "~1",
     "jquery-ui-less": "https://github.com/DC-development/jquery-ui-less.git#master",
     "moment": "~2",
