@@ -33,13 +33,15 @@ func (a *Apacher) Documents() []*Apache {
 }
 
 func (a *Apacher) Route(r *gin.Engine) {
-	r.GET("/portfolio/apache/:document.html", func(c *gin.Context) {
+	r.GET("/portfolio/:document.html", func(c *gin.Context) {
 		doc := c.Param("document.html")
 
-		_, ok := a.documentsMap[strings.TrimRight(doc, ".html")]
+		d, ok := a.documentsMap[strings.TrimRight(doc, ".html")]
 
 		if !ok {
-			c.HTML(http.StatusNotFound, "error.html", NewContext("", c))
+			ctx := NewContext("", c)
+			ctx["title"] = "404"
+			c.HTML(http.StatusNotFound, "error.html", ctx)
 			return
 		}
 
@@ -51,6 +53,7 @@ func (a *Apacher) Route(r *gin.Engine) {
 
 		ctx := NewContext("", c)
 		ctx["content"] = string(b)
+		ctx["title"] = d.Title
 
 		c.HTML(http.StatusOK, "apache.html", ctx)
 	})

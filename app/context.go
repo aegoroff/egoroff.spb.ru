@@ -25,7 +25,35 @@ func NewContext(htmlClass string, gctx *gin.Context) pongo2.Context {
 	if err != nil {
 		log.Println(err)
 	}
-	log.Println(gctx.Request.RequestURI)
+	sections := readSiteMap()
+
+	var root *SiteSection
+	for _, section := range sections {
+		if section.Id == "/" {
+			root = section
+			break
+		}
+	}
+
+	ctx := &Context{
+		htmlClass:      htmlClass,
+		currentVersion: os.Getenv("CURRENT_VERSION_ID"),
+		styles:         styles,
+		conf:           c,
+	}
+
+	result := pongo2.Context{
+		"ctx": ctx,
+	}
+
+	if gctx.Request.RequestURI != "/" {
+		result["breadcrumbs"] = []*SiteSection{root}
+	}
+
+	return result
+}
+
+func readSiteMap() []*SiteSection {
 	fi := NewFiler(os.Stdout)
 	b, err := fi.Read("static/map.json")
 	if err != nil {
@@ -37,15 +65,5 @@ func NewContext(htmlClass string, gctx *gin.Context) pongo2.Context {
 	if err != nil {
 		log.Println(err)
 	}
-
-	ctx := &Context{
-		htmlClass:      htmlClass,
-		currentVersion: os.Getenv("CURRENT_VERSION_ID"),
-		styles:         styles,
-		conf:           c,
-	}
-
-	return pongo2.Context{
-		"ctx": ctx,
-	}
+	return sections
 }
