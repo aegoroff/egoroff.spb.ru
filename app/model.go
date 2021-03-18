@@ -95,3 +95,12 @@ type Apache struct {
 	Description string
 	Keywords    string
 }
+
+type SiteSection struct {
+	Id       string         `json:"id"`
+	Class    string         `json:"class"`
+	Title    string         `json:"title"`
+	Descr    string         `json:"descr"`
+	Keywords string         `json:"keywords"`
+	Children []*SiteSection `json:"children"`
+}

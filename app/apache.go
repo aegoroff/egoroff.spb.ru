@@ -39,7 +39,7 @@ func (a *Apacher) Route(r *gin.Engine) {
 		_, ok := a.documentsMap[strings.TrimRight(doc, ".html")]
 
 		if !ok {
-			c.HTML(http.StatusNotFound, "error.html", NewContext(""))
+			c.HTML(http.StatusNotFound, "error.html", NewContext("", c))
 			return
 		}
 
@@ -49,7 +49,7 @@ func (a *Apacher) Route(r *gin.Engine) {
 			log.Println(err)
 		}
 
-		ctx := NewContext("")
+		ctx := NewContext("", c)
 		ctx["content"] = string(b)
 
 		c.HTML(http.StatusOK, "apache.html", ctx)

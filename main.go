@@ -29,7 +29,6 @@ func main() {
 }
 
 func route(r *gin.Engine, routers []app.Router) {
-	log.Println(r.BasePath())
 	for _, rout := range routers {
 		rout.Route(r)
 	}

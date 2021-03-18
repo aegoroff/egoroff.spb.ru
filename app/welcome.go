@@ -22,7 +22,7 @@ func (w *Welcome) Route(r *gin.Engine) {
 			log.Println(err)
 		}
 
-		ctx := NewContext("welcome")
+		ctx := NewContext("welcome", c)
 		ctx["apache_docs"] = w.apacheDocs
 		ctx["posts"] = posts
 
