@@ -1,8 +1,7 @@
-
 {% for item in sections %}
-    <li class="active">
-
-            {{ item }}
-
-    </li>
+<li>
+<a href={{ item.Id }}>&nbsp;{% if item.Class %}<i class="{{ item.Class }}"></i>&nbsp;{% endif %}
+{{ item.Title }}
+</a>
+</li>
 {% endfor %}

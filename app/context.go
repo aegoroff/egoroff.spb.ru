@@ -45,6 +45,9 @@ func NewContext(htmlClass string, gctx *gin.Context) pongo2.Context {
 	result := pongo2.Context{
 		"ctx": ctx,
 	}
+	if root != nil {
+		result["sections"] = root.Children
+	}
 
 	if gctx.Request.RequestURI != "/" {
 		result["breadcrumbs"] = []*SiteSection{root}
