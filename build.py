@@ -6,7 +6,6 @@ import json
 import os
 import platform
 import shutil
-import sys
 from datetime import datetime
 
 from lxml import etree
@@ -20,12 +19,8 @@ PARSER = argparse.ArgumentParser()
 
 PARSER.add_argument(
     '-C', '--clean-all', dest='clean_all', action='store_true',
-    help='''Cleans all the pip, Node & Bower related tools / libraries and
+    help='''Cleans all the Node & Bower related tools / libraries and
     updates them to their latest versions''',
-)
-PARSER.add_argument(
-    '-m', '--minify', dest='minify', action='store_true',
-    help='compiles files into minified version before deploying'
 )
 
 ARGS = PARSER.parse_args()
@@ -349,10 +344,6 @@ def run_minify():
 
 
 def run():
-    if len(sys.argv) == 1:
-        PARSER.print_help()
-        sys.exit(1)
-
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
     update_path_separators()
@@ -361,9 +352,8 @@ def run():
     if ARGS.clean_all:
         run_clean_all()
 
-    if ARGS.minify:
-        install_dependencies()
-        run_minify()
+    install_dependencies()
+    run_minify()
 
 
 if __name__ == '__main__':

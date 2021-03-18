@@ -1,7 +1,7 @@
 # coding: utf-8
 
 ###############################################################################
-# Client modules, also used by the run.py script.
+# Client modules, also used by the build.py script.
 ###############################################################################
 STYLES = [
     'src/style/style.less',
