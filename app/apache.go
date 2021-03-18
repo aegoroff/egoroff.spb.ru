@@ -2,7 +2,6 @@ package app
 
 import (
 	"encoding/json"
-	"github.com/flosch/pongo2"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
@@ -15,10 +14,9 @@ import (
 type Apacher struct {
 	documents    []*Apache
 	documentsMap map[string]*Apache
-	styles       []string
 }
 
-func NewApacher(path string, styles []string) *Apacher {
+func NewApacher(path string) *Apacher {
 	docs := readApacheDocs(path)
 	docsMap := make(map[string]*Apache)
 	for _, doc := range docs {
@@ -27,7 +25,6 @@ func NewApacher(path string, styles []string) *Apacher {
 	return &Apacher{
 		documents:    docs,
 		documentsMap: docsMap,
-		styles:       styles,
 	}
 }
 
@@ -42,10 +39,7 @@ func (a *Apacher) Route(r *gin.Engine) {
 		_, ok := a.documentsMap[strings.TrimRight(doc, ".html")]
 
 		if !ok {
-			c.HTML(http.StatusNotFound, "error.html", pongo2.Context{
-				"current_version_id": os.Getenv("CURRENT_VERSION_ID"),
-				"styles":             a.styles,
-			})
+			c.HTML(http.StatusNotFound, "error.html", NewContext(""))
 			return
 		}
 
@@ -55,11 +49,10 @@ func (a *Apacher) Route(r *gin.Engine) {
 			log.Println(err)
 		}
 
-		c.HTML(http.StatusOK, "apache.html", pongo2.Context{
-			"content":            string(b),
-			"current_version_id": os.Getenv("CURRENT_VERSION_ID"),
-			"styles":             a.styles,
-		})
+		ctx := NewContext("")
+		ctx["content"] = string(b)
+
+		c.HTML(http.StatusOK, "apache.html", ctx)
 	})
 }
 

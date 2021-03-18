@@ -12,14 +12,9 @@ func main() {
 	r := gin.Default()
 	r.HTMLRender = pongo2gin.TemplatePath("templates")
 
-	styles := []string{
-		"min/style/style.min.css",
-		//"min/style/adminstyle.min.css",
-	}
-
-	apacher := app.NewApacher("apache/config.json", styles)
+	apacher := app.NewApacher("apache/config.json")
 	static := app.NewStaticRouter()
-	welcome := app.NewWelcome(apacher.Documents(), styles)
+	welcome := app.NewWelcome(apacher.Documents())
 
 	routers := []app.Router{static, apacher, welcome}
 
