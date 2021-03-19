@@ -26,7 +26,8 @@ type Post struct {
 }
 
 type TagContainter struct {
-	Tags []string `datastore:"tags"`
+	Tags    []string  `datastore:"tags"`
+	Created time.Time `datastore:"created"`
 }
 
 type Config struct {

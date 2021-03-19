@@ -40,6 +40,7 @@ func (r *Repository) Config() (*Config, error) {
 func (r *Repository) Tags() (map[string]int, int) {
 	c, err := r.conn.Connect()
 	if err != nil {
+		log.Println(err)
 		return nil, 0
 	}
 	defer Close(c)
@@ -47,9 +48,12 @@ func (r *Repository) Tags() (map[string]int, int) {
 	ctx, cancel := r.conn.newContext()
 	defer cancel()
 
-	q := datastore.NewQuery("Post").Filter("is_public=", true).Project("tags")
+	q := datastore.NewQuery("Post").Filter("is_public=", true).Project("tags", "created")
 	var tags []*TagContainter
 	_, err = c.GetAll(ctx, q, &tags)
+	if err != nil {
+		log.Println(err)
+	}
 	grouped := make(map[string]int)
 	for _, tag := range tags {
 		for _, t := range tag.Tags {
