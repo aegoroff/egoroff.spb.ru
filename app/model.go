@@ -26,6 +26,14 @@ type Post struct {
 	Text      string   `datastore:"text"`
 }
 
+type SmallPost struct {
+	Key       *datastore.Key `datastore:"__key__"`
+	Created   time.Time      `datastore:"created"`
+	Id        int64          `json:"id"`
+	Title     string         `datastore:"title"`
+	ShortText string         `datastore:"short_text"`
+}
+
 type TagContainter struct {
 	Tags    []string  `datastore:"tags"`
 	Created time.Time `datastore:"created"`

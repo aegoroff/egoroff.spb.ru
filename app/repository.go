@@ -131,8 +131,8 @@ func makeRange(min, max int) []int {
 	return a
 }
 
-func (p *Poster) Posts() []*Post {
-	var posts []*Post
+func (p *Poster) Posts() []*SmallPost {
+	var posts []*SmallPost
 	err := p.pager.Results(&posts)
 	if err != nil {
 		log.Println(err)
@@ -153,7 +153,9 @@ func NewDatastoreAdaptor(query *datastore.Query) *DatastoreAdaptor {
 }
 
 func NewPostsAdaptor() *DatastoreAdaptor {
-	return NewDatastoreAdaptor(datastore.NewQuery("Post").Filter("is_public=", true).Order("-created"))
+	q := datastore.NewQuery("Post").Filter("is_public=", true).Order("-created")
+	q = q.Project("__key__", "created", "title", "short_text")
+	return NewDatastoreAdaptor(q)
 }
 
 func (a *DatastoreAdaptor) Nums() (int64, error) {
