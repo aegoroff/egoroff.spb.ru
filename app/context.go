@@ -14,6 +14,7 @@ type Context struct {
 	currentVersion string
 	styles         []string
 	htmlClass      string
+	graph          *Graph
 }
 
 func NewContext(htmlClass string, gctx *gin.Context) pongo2.Context {
@@ -29,17 +30,18 @@ func NewContext(htmlClass string, gctx *gin.Context) pongo2.Context {
 
 	root := readSiteMap()
 
+	gr := NewGraph(root)
 	ctx := &Context{
 		htmlClass:      htmlClass,
 		currentVersion: os.Getenv("CURRENT_VERSION_ID"),
 		styles:         styles,
 		conf:           c,
+		graph:          gr,
 	}
 
 	result := pongo2.Context{"ctx": ctx}
 
 	result["sections"] = root.Children
-	gr := NewGraph(root)
 
 	if gctx.Request.RequestURI != "/" {
 		result["breadcrumbs"] = breadcrumbs(gr, gctx.Request.RequestURI)
@@ -48,16 +50,18 @@ func NewContext(htmlClass string, gctx *gin.Context) pongo2.Context {
 	return result
 }
 
+func (c *Context) PathFor(id string) string {
+	return c.graph.FullPath(id)
+}
+
 func breadcrumbs(gr *Graph, uri string) []*SiteSection {
 	parts := strings.Split(uri, "/")
 	root := gr.g.Node(1).(*SiteSection)
-	root.fullPath = "/"
 	result := []*SiteSection{root}
 
 	for _, part := range parts {
 		s := gr.Section(part)
 		if s != nil {
-			s.fullPath = gr.FullPath(s.Id)
 			result = append(result, s)
 		}
 	}

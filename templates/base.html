@@ -21,7 +21,7 @@
         {% endblock %}
       {{ctx.conf.BrandName}}
     </title>
-    <link href="/blog/recent.atom"
+    <link href="{{ctx.PathFor('blog')}}recent.atom"
       rel="alternate"
       title="Recent Posts"
       type="application/atom+xml">

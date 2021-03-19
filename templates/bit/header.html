@@ -15,7 +15,7 @@
           {% include 'top_nav.html' %}
       </ul>
 
-     <form method="GET" id="search-form-top" class="navbar-form navbar-left" role="search" action="/search/" novalidate>
+     <form method="GET" id="search-form-top" class="navbar-form navbar-left" role="search" action="{{ctx.PathFor('search')}}" novalidate>
         <div class="form-group form-group-sm">
             <label class="sr-only" for="q_top">форма поиска</label>
             <input id="q_top" name="q" class="form-control" type="text" value=""/>
