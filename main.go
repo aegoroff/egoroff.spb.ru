@@ -16,9 +16,10 @@ func main() {
 	static := app.NewStaticRouter()
 	search := app.NewSearch()
 	blog := app.NewBlog()
+	api := app.NewApi()
 	welcome := app.NewWelcome(portfolio.Documents())
 
-	routers := []app.Router{static, portfolio, welcome, search, blog}
+	routers := []app.Router{static, portfolio, welcome, search, blog, api}
 
 	route(r, routers)
 

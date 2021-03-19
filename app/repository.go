@@ -74,6 +74,12 @@ func NewPoster(page int) *Poster {
 	}
 }
 
+func NewCustomPoster(adaptor *DatastoreAdaptor, page int) *Poster {
+	return &Poster{
+		pager: paginator.New(adaptor, page),
+	}
+}
+
 func (p *Poster) HasPages() bool {
 	r, _ := p.pager.HasPages()
 	return r
