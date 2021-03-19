@@ -14,9 +14,10 @@ func main() {
 
 	apacher := app.NewApacher("apache/config.json")
 	static := app.NewStaticRouter()
+	search := app.NewSearch()
 	welcome := app.NewWelcome(apacher.Documents())
 
-	routers := []app.Router{static, apacher, welcome}
+	routers := []app.Router{static, apacher, welcome, search}
 
 	route(r, routers)
 
