@@ -8,7 +8,6 @@ import (
 	"os"
 	"path"
 	"sort"
-	"strings"
 )
 
 type Apacher struct {
@@ -36,7 +35,9 @@ func (a *Apacher) Route(r *gin.Engine) {
 	r.GET("/portfolio/:document.html", func(c *gin.Context) {
 		doc := c.Param("document.html")
 
-		d, ok := a.documentsMap[strings.TrimRight(doc, ".html")]
+		k := doc[:len(doc)-5]
+
+		d, ok := a.documentsMap[k]
 
 		if !ok {
 			ctx := NewContext("", c)
