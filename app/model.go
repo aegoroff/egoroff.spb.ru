@@ -97,10 +97,16 @@ type Apache struct {
 }
 
 type SiteSection struct {
+	key      int64
 	Id       string         `json:"id"`
 	Class    string         `json:"class"`
 	Title    string         `json:"title"`
 	Descr    string         `json:"descr"`
 	Keywords string         `json:"keywords"`
 	Children []*SiteSection `json:"children"`
+}
+
+// ID gets section's key
+func (s *SiteSection) ID() int64 {
+	return s.key
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"os"
+	"strings"
 )
 
 type Context struct {
@@ -35,15 +36,23 @@ func NewContext(htmlClass string, gctx *gin.Context) pongo2.Context {
 		conf:           c,
 	}
 
-	result := pongo2.Context{
-		"ctx": ctx,
-	}
-	if root != nil {
-		result["sections"] = root.Children
-	}
+	result := pongo2.Context{"ctx": ctx}
+
+	result["sections"] = root.Children
+	gr := NewGraph(root)
 
 	if gctx.Request.RequestURI != "/" {
-		result["breadcrumbs"] = []*SiteSection{root}
+		parts := strings.Split(gctx.Request.RequestURI, "/")
+
+		breadcrumbs := []*SiteSection{root}
+
+		for _, part := range parts {
+			s := gr.Section(part)
+			if s != nil {
+				breadcrumbs = append(breadcrumbs, s)
+			}
+		}
+		result["breadcrumbs"] = breadcrumbs
 	}
 
 	return result

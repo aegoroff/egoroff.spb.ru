@@ -17,6 +17,7 @@ require (
 	golang.org/x/mod v0.4.2 // indirect
 	golang.org/x/net v0.0.0-20210315170653-34ac3e1c2000 // indirect
 	golang.org/x/sys v0.0.0-20210315160823-c6e025ad8005 // indirect
+	gonum.org/v1/gonum v0.9.0
 	google.golang.org/api v0.42.0 // indirect
 	google.golang.org/genproto v0.0.0-20210315173758-2651cd453018 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
