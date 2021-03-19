@@ -56,7 +56,7 @@ func (a *Apacher) Route(r *gin.Engine) {
 		ctx["content"] = string(b)
 		ctx["title"] = d.Title
 
-		c.HTML(http.StatusOK, "apache.html", ctx)
+		c.HTML(http.StatusOK, "portfolio/apache.html", ctx)
 	})
 }
 
