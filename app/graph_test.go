@@ -8,6 +8,60 @@ import (
 func Test_FullPath(t *testing.T) {
 	// Arrange
 	ass := assert.New(t)
+	gr := newTestGraph()
+
+	var tests = []struct {
+		node string
+		path string
+	}{
+		{"aa", "/a/aa/"},
+		{"a", "/a/"},
+		{"b", "/b/"},
+		{"bb", "/b/bb/"},
+		{"ab", ""},
+		{"/", "/"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.node, func(t *testing.T) {
+			// Act
+			fp := gr.FullPath(test.node)
+
+			// Assert
+			ass.Equal(test.path, fp)
+		})
+	}
+}
+
+func Test_breadcrumbs(t *testing.T) {
+	// Arrange
+	ass := assert.New(t)
+	gr := newTestGraph()
+
+	var tests = []struct {
+		path  string
+		nodes int
+	}{
+		{"/a/aa/", 3},
+		{"/a/", 2},
+		{"/b/", 2},
+		{"/b/bb/", 3},
+		{"", 1},
+		{"/", 1},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			// Act
+			b := breadcrumbs(gr, test.path)
+
+			// Assert
+			ass.Equal(test.nodes, len(b))
+		})
+	}
+}
+
+func newTestGraph() *Graph {
 	root := SiteSection{
 		Id:       "/",
 		Children: make([]*SiteSection, 0),
@@ -32,26 +86,5 @@ func Test_FullPath(t *testing.T) {
 	b.Children = append(b.Children, &bb)
 
 	gr := NewGraph(&root)
-
-	var tests = []struct {
-		node string
-		path string
-	}{
-		{"aa", "/a/aa/"},
-		{"a", "/a/"},
-		{"b", "/b/"},
-		{"bb", "/b/bb/"},
-		{"ab", ""},
-		{"/", "/"},
-	}
-
-	for _, test := range tests {
-		t.Run(test.node, func(t *testing.T) {
-			// Act
-			fp := gr.FullPath(test.node)
-
-			// Assert
-			ass.Equal(test.path, fp)
-		})
-	}
+	return gr
 }

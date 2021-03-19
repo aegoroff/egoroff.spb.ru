@@ -42,21 +42,25 @@ func NewContext(htmlClass string, gctx *gin.Context) pongo2.Context {
 	gr := NewGraph(root)
 
 	if gctx.Request.RequestURI != "/" {
-		parts := strings.Split(gctx.Request.RequestURI, "/")
-
-		root.fullPath = "/"
-		breadcrumbs := []*SiteSection{root}
-
-		for _, part := range parts {
-			s := gr.Section(part)
-			if s != nil {
-				s.fullPath = gr.FullPath(s.Id)
-				breadcrumbs = append(breadcrumbs, s)
-			}
-		}
-		result["breadcrumbs"] = breadcrumbs
+		result["breadcrumbs"] = breadcrumbs(gr, gctx.Request.RequestURI)
 	}
 
+	return result
+}
+
+func breadcrumbs(gr *Graph, uri string) []*SiteSection {
+	parts := strings.Split(uri, "/")
+	root := gr.g.Node(1).(*SiteSection)
+	root.fullPath = "/"
+	result := []*SiteSection{root}
+
+	for _, part := range parts {
+		s := gr.Section(part)
+		if s != nil {
+			s.fullPath = gr.FullPath(s.Id)
+			result = append(result, s)
+		}
+	}
 	return result
 }
 
