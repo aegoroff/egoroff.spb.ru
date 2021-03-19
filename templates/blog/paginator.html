@@ -1,0 +1,50 @@
+{% if poster.HasPages() %}
+<!--noindex-->
+    {% if "tag" in request.args %}
+        {% set tag_query = "?tag=" + request.args.tag %}
+    {% else %}
+        {% set tag_query = "" %}
+    {% endif %}
+    {% set older = "старее &rarr;" %}
+    {% set newer = "&larr; новее" %}
+    <ul class="pager">
+        {% if poster.HasPrev() %}
+            {% set li_class = "previous" %}
+            {% set href = ctx.PathFor('blog') + poster.PrevPage() + "/" + tag_query %}
+        {% else %}
+            {% set li_class = "disabled previous" %}
+            {% set href = "#" %}
+        {% endif %}
+
+        <li class="{{ li_class }}">
+            <a href="{{ href }}"
+               class="prev">{{ newer | safe }}</a>
+        </li>
+
+        {% if poster.HasNext() %}
+            {% set li_class = "next" %}
+            {% set href = ctx.PathFor('blog') + poster.NextPage() + "/" + tag_query %}
+        {% else %}
+            {% set li_class = "next disabled" %}
+            {% set href = "#" %}
+        {% endif %}
+
+        <li class="{{ li_class }}">
+            <a href="{{ href }}"
+               class="next">{{ older | safe }}</a>
+        </li>
+    </ul>
+    <ul class="pagination pagination-sm">
+        {% for page in poster.Pages() %}
+            {% if page %}
+                <li {% if page == poster.Page() %} class="active" {% endif %}>
+                    <a href="{{ ctx.PathFor('blog') }}{{ page }}/{{ tag_query }}"
+                       class="page">{{ page }}</a>
+                </li>
+            {% else %}
+                ......
+            {% endif %}
+        {% endfor %}
+    </ul>
+<!--/noindex-->
+{% endif %}

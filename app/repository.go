@@ -2,6 +2,8 @@ package app
 
 import (
 	"cloud.google.com/go/datastore"
+	"github.com/vcraescu/go-paginator/v2"
+	"log"
 	"time"
 )
 
@@ -35,21 +37,116 @@ func (r *Repository) Config() (*Config, error) {
 	return &config, nil
 }
 
-func (r *Repository) Posts(limit int) ([]*Post, error) {
-	c, err := r.conn.Connect()
+type Poster struct {
+	pager paginator.Paginator
+}
+
+func NewPoster(page int) *Poster {
+	return &Poster{
+		pager: paginator.New(NewPostsAdaptor(), page),
+	}
+}
+
+func (p *Poster) HasPages() bool {
+	r, _ := p.pager.HasPages()
+	return r
+}
+
+func (p *Poster) HasPrev() bool {
+	r, _ := p.pager.HasPrev()
+	return r
+}
+
+func (p *Poster) HasNext() bool {
+	r, _ := p.pager.HasNext()
+	return r
+}
+
+func (p *Poster) PrevPage() int {
+	r, _ := p.pager.PrevPage()
+	return r
+}
+
+func (p *Poster) NextPage() int {
+	r, _ := p.pager.NextPage()
+	return r
+}
+
+func (p *Poster) Page() int {
+	r, _ := p.pager.Page()
+	return r
+}
+
+func (p *Poster) SetPage(page int) {
+	p.pager.SetPage(page)
+}
+
+func (p *Poster) PageNums() int {
+	r, _ := p.pager.PageNums()
+	return r
+}
+
+func (p *Poster) Pages() []int {
+	return makeRange(1, p.PageNums())
+}
+
+func makeRange(min, max int) []int {
+	a := make([]int, max-min+1)
+	for i := range a {
+		a[i] = min + i
+	}
+	return a
+}
+
+func (p *Poster) Posts() []*Post {
+	var posts []*Post
+	err := p.pager.Results(&posts)
 	if err != nil {
-		return nil, err
+		log.Println(err)
+	}
+	return posts
+}
+
+type DatastoreAdaptor struct {
+	conn  *Connection
+	query *datastore.Query
+}
+
+func NewDatastoreAdaptor(query *datastore.Query) *DatastoreAdaptor {
+	return &DatastoreAdaptor{
+		conn:  NewConnection(5 * time.Second),
+		query: query,
+	}
+}
+
+func NewPostsAdaptor() *DatastoreAdaptor {
+	return NewDatastoreAdaptor(datastore.NewQuery("Post").Filter("is_public=", true).Order("-created"))
+}
+
+func (a *DatastoreAdaptor) Nums() (int64, error) {
+	c, err := a.conn.Connect()
+	if err != nil {
+		return 0, err
 	}
 	defer Close(c)
 
-	ctx, cancel := r.conn.newContext()
+	ctx, cancel := a.conn.newContext()
 	defer cancel()
 
-	var posts []*Post
-	_, err = c.GetAll(ctx, datastore.NewQuery("Post").Order("-created").Limit(limit), &posts)
-	if err != nil {
-		return nil, err
-	}
+	count, err := c.Count(ctx, a.query)
+	return int64(count), err
+}
 
-	return posts, nil
+func (a *DatastoreAdaptor) Slice(offset, length int, data interface{}) error {
+	c, err := a.conn.Connect()
+	if err != nil {
+		return err
+	}
+	defer Close(c)
+
+	ctx, cancel := a.conn.newContext()
+	defer cancel()
+
+	_, err = c.GetAll(ctx, a.query.Limit(length).Offset(offset), data)
+	return err
 }

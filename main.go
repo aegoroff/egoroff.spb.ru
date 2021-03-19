@@ -15,9 +15,10 @@ func main() {
 	portfolio := app.NewPortfolio("apache/config.json")
 	static := app.NewStaticRouter()
 	search := app.NewSearch()
+	blog := app.NewBlog()
 	welcome := app.NewWelcome(portfolio.Documents())
 
-	routers := []app.Router{static, portfolio, welcome, search}
+	routers := []app.Router{static, portfolio, welcome, search, blog}
 
 	route(r, routers)
 

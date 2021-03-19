@@ -2,6 +2,7 @@ package app
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/vcraescu/go-paginator/v2"
 	"log"
 	"net/http"
 )
@@ -16,8 +17,9 @@ func NewWelcome(apacheDocs []*Apache) *Welcome {
 
 func (w *Welcome) Route(r *gin.Engine) {
 	r.GET("/", func(c *gin.Context) {
-		repo := NewRepository()
-		posts, err := repo.Posts(5)
+		pager := paginator.New(NewPostsAdaptor(), 5)
+		var posts []*Post
+		err := pager.Results(&posts)
 		if err != nil {
 			log.Println(err)
 		}
