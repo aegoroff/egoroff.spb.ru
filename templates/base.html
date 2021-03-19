@@ -19,7 +19,7 @@
         {% if title %} {{ title + ' |' }} {% endif %}
         {% if current_title %} {{ current_title + ' |' }} {% endif %}
         {% endblock %}
-      {{config.BrandName}}
+      {{ctx.conf.BrandName}}
     </title>
     <link href="/blog/recent.atom"
       rel="alternate"

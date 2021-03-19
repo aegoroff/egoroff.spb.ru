@@ -25,15 +25,8 @@ func NewContext(htmlClass string, gctx *gin.Context) pongo2.Context {
 	if err != nil {
 		log.Println(err)
 	}
-	sections := readSiteMap()
 
-	var root *SiteSection
-	for _, section := range sections {
-		if section.Id == "/" {
-			root = section
-			break
-		}
-	}
+	root := readSiteMap()
 
 	ctx := &Context{
 		htmlClass:      htmlClass,
@@ -56,17 +49,17 @@ func NewContext(htmlClass string, gctx *gin.Context) pongo2.Context {
 	return result
 }
 
-func readSiteMap() []*SiteSection {
+func readSiteMap() *SiteSection {
 	fi := NewFiler(os.Stdout)
 	b, err := fi.Read("static/map.json")
 	if err != nil {
 		log.Println(err)
 	}
 
-	var sections []*SiteSection
-	err = json.Unmarshal(b, &sections)
+	var root SiteSection
+	err = json.Unmarshal(b, &root)
 	if err != nil {
 		log.Println(err)
 	}
-	return sections
+	return &root
 }
