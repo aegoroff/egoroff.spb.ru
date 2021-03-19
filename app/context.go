@@ -44,11 +44,13 @@ func NewContext(htmlClass string, gctx *gin.Context) pongo2.Context {
 	if gctx.Request.RequestURI != "/" {
 		parts := strings.Split(gctx.Request.RequestURI, "/")
 
+		root.fullPath = "/"
 		breadcrumbs := []*SiteSection{root}
 
 		for _, part := range parts {
 			s := gr.Section(part)
 			if s != nil {
+				s.fullPath = gr.FullPath(s.Id)
 				breadcrumbs = append(breadcrumbs, s)
 			}
 		}

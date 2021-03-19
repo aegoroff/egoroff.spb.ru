@@ -98,6 +98,7 @@ type Apache struct {
 
 type SiteSection struct {
 	key      int64
+	fullPath string
 	Id       string         `json:"id"`
 	Class    string         `json:"class"`
 	Title    string         `json:"title"`

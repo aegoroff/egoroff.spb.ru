@@ -3,6 +3,7 @@ package app
 import (
 	"gonum.org/v1/gonum/graph/path"
 	"gonum.org/v1/gonum/graph/simple"
+	"strings"
 )
 
 // Graph provides site sections graph
@@ -27,34 +28,35 @@ func NewGraph(root *SiteSection) *Graph {
 	return gr
 }
 
-// AllPaths returns a shortest-path tree for shortest paths in the graph g.
-// If the graph does not implement graph.Weighter, UniformCost is used.
-// AllPaths will panic if g has a negative edge weight.
-//
-// The time complexity of AllPaths is O(|V|.|E|+|V|^2.log|V|).
-func (gr *Graph) AllPaths() *path.AllShortest {
-	paths := path.DijkstraAllPaths(gr.g)
-	return &paths
-}
-
-// To returns all nodes in g that can reach directly to n.
-func (gr *Graph) To(n *SiteSection) []*SiteSection {
-	refs := gr.g.To(n.ID())
-	nodes := make([]*SiteSection, refs.Len())
-	i := 0
-	for refs.Next() {
-		nodes[i] = refs.Node().(*SiteSection)
-		i++
-	}
-	return nodes
-}
-
 func (gr *Graph) Section(id string) *SiteSection {
 	key, ok := gr.search[id]
 	if !ok {
 		return nil
 	}
 	return gr.g.Node(key).(*SiteSection)
+}
+
+func (gr *Graph) FullPath(id string) string {
+	s := gr.Section(id)
+	if s == nil {
+		return ""
+	}
+
+	gpaths := path.DijkstraFrom(gr.g.Node(1), gr.g)
+	var paths []string
+	nodes, _ := gpaths.To(s.ID())
+	for _, n := range nodes {
+		if n.ID() == 1 {
+			continue
+		}
+		paths = append(paths, n.(*SiteSection).Id)
+	}
+
+	sep := "/"
+	if len(paths) == 0 {
+		return sep
+	}
+	return sep + strings.Join(paths, sep) + sep
 }
 
 func (gr *Graph) newNode(s *SiteSection) {

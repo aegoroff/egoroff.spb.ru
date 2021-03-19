@@ -7,7 +7,7 @@
                 {% block breadcrumbs %}
                 {% for item in breadcrumbs %}
                 <li>
-                    <a href="{{item.Id}}">{% if item.Class %}<i class="{{ item.Class }}"></i>&nbsp;{% endif %}{{ item.Title }}</a>
+                    <a href="{{item.fullPath}}">{% if item.Class %}<i class="{{ item.Class }}"></i>&nbsp;{% endif %}{{ item.Title }}</a>
                 </li>
                 {% endfor %}
                 <li class="active">
