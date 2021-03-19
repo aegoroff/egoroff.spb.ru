@@ -42,10 +42,10 @@ func Test_breadcrumbs(t *testing.T) {
 		path  string
 		nodes int
 	}{
-		{"/a/aa/", 3},
-		{"/a/", 2},
-		{"/b/", 2},
-		{"/b/bb/", 3},
+		{"/a/aa/", 2},
+		{"/a/", 1},
+		{"/b/", 1},
+		{"/b/bb/", 2},
 		{"", 1},
 		{"/", 1},
 	}

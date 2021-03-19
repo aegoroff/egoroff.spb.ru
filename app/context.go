@@ -50,6 +50,10 @@ func NewContext(htmlClass string, gctx *gin.Context) pongo2.Context {
 	return result
 }
 
+func (c *Context) Section(id string) *SiteSection {
+	return c.graph.Section(id)
+}
+
 func (c *Context) PathFor(id string) string {
 	return c.graph.FullPath(id)
 }
@@ -61,7 +65,7 @@ func breadcrumbs(gr *Graph, uri string) []*SiteSection {
 
 	for _, part := range parts {
 		s := gr.Section(part)
-		if s != nil {
+		if s != nil && gr.FullPath(s.Id) != uri {
 			result = append(result, s)
 		}
 	}

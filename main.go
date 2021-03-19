@@ -12,12 +12,12 @@ func main() {
 	r := gin.Default()
 	r.HTMLRender = pongo2gin.TemplatePath("templates")
 
-	apacher := app.NewApacher("apache/config.json")
+	portfolio := app.NewPortfolio("apache/config.json")
 	static := app.NewStaticRouter()
 	search := app.NewSearch()
-	welcome := app.NewWelcome(apacher.Documents())
+	welcome := app.NewWelcome(portfolio.Documents())
 
-	routers := []app.Router{static, apacher, welcome, search}
+	routers := []app.Router{static, portfolio, welcome, search}
 
 	route(r, routers)
 
