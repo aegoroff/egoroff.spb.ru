@@ -4,6 +4,7 @@ import (
 	"cloud.google.com/go/datastore"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"time"
 )
 
 type Api struct {
@@ -41,6 +42,21 @@ func (a *Api) posts(c *gin.Context) {
 	poster := NewCustomPoster(adaptor, 20)
 
 	posts := poster.Posts()
+	for _, post := range posts {
+		post.Id = post.Key.ID
+	}
 
-	c.JSON(http.StatusOK, posts)
+	c.JSON(http.StatusOK, ApiResult{
+		Status: "success",
+		Count:  len(posts),
+		Now:    time.Now(),
+		Result: posts,
+	})
+}
+
+type ApiResult struct {
+	Status string      `json:"status"`
+	Count  int         `json:"count"`
+	Now    time.Time   `json:"now"`
+	Result interface{} `json:"result"`
 }

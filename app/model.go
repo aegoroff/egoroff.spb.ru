@@ -18,6 +18,7 @@ type Model struct {
 
 type Post struct {
 	Model
+	Id        int64    `json:"id"`
 	IsPublic  bool     `datastore:"is_public"`
 	Tags      []string `datastore:"tags"`
 	Title     string   `datastore:"title"`

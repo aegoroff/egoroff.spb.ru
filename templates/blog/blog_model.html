@@ -3,10 +3,10 @@
         <small>
             <i class="icon-calendar"></i> <span class="shortDateFormat" data-bind="text: Created"></span>
         </small>&nbsp;
-        <!-- ko ifnot: id() == '{{ Key }}' -->
+        <!-- ko ifnot: id() == '{{ key_id }}' -->
         <a data-bind="text: Title, attr: { href: '{{ ctx.PathFor('blog') }}' + id() + '.html'  }"></a>
         <!-- /ko -->
-        <!-- ko if: id() == '{{ Key }}' -->
+        <!-- ko if: id() == '{{ key_id }}' -->
         <span data-bind="text: Title"></span>
         <!-- /ko -->
     </dt>
