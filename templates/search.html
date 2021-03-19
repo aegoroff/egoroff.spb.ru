@@ -1,7 +1,6 @@
-# extends 'base.html'
+{% extends 'base.html'
 
-# block content
-    {% strip %}
+{% block content %}
 
       <div class="row">
         <div class="col-lg-8">
@@ -13,8 +12,6 @@
         </div>
       </div>
 
-    {% endstrip %}
-
     <div class="row">
           <div class="col-lg-12">
                 <br/>
@@ -25,9 +22,9 @@
                </ul>
           </div>
     </div>
-# endblock
+{% endblock %}
 
-# block scripts
+{% block scripts %}
 
 <script id="customsearch" type="text/html">
     <dt>
@@ -93,4 +90,4 @@
 
 </script>
 
-# endblock
+{% endblock %}
