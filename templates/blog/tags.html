@@ -7,8 +7,8 @@
         <ul class="list-inline">
         {% for tag in tags %}
             <li>
-                <a href="{{ ctx.PathFor('blog') }}#tag={{ tag.title }}"
-                       class="{{ tag.tag_level }}" id="t_{{ tag.title }}">{{ tag.title }}</a>
+                <a href="{{ ctx.PathFor('blog') }}#tag={{ tag.Title }}"
+                       class="{{ tag.Level }}" id="t_{{ tag.Title }}">{{ tag.Title }}</a>
             </li>
         {% endfor %}
         </ul>

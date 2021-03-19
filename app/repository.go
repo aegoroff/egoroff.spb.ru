@@ -37,6 +37,29 @@ func (r *Repository) Config() (*Config, error) {
 	return &config, nil
 }
 
+func (r *Repository) Tags() (map[string]int, int) {
+	c, err := r.conn.Connect()
+	if err != nil {
+		return nil, 0
+	}
+	defer Close(c)
+
+	ctx, cancel := r.conn.newContext()
+	defer cancel()
+
+	q := datastore.NewQuery("Post").Filter("is_public=", true).Project("tags")
+	var tags []*TagContainter
+	_, err = c.GetAll(ctx, q, &tags)
+	grouped := make(map[string]int)
+	for _, tag := range tags {
+		for _, t := range tag.Tags {
+			grouped[t] += 1
+		}
+	}
+
+	return grouped, len(tags)
+}
+
 type Poster struct {
 	pager paginator.Paginator
 }

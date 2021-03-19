@@ -25,6 +25,10 @@ type Post struct {
 	Text      string   `datastore:"text"`
 }
 
+type TagContainter struct {
+	Tags []string `datastore:"tags"`
+}
+
 type Config struct {
 	Model
 	AnalyticsId           string `datastore:"analytics_id"`
