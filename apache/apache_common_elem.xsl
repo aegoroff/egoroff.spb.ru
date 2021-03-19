@@ -297,7 +297,7 @@
         </xsl:variable>
 
         <code class="module">
-            <a href="{$path}/{$obs_}{.}.html" itemprop="url">
+            <a href="{$path}/portfolio/{$obs_}{.}.html" itemprop="url">
                 <xsl:value-of select="."/>
             </a>
         </code>
