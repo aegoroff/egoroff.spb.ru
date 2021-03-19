@@ -18,8 +18,9 @@ func (s *Search) Route(r *gin.Engine) {
 	r.GET("/search/", func(c *gin.Context) {
 		ctx := NewContext("search", c)
 		ctx["action_uri"] = "https://www.googleapis.com/customsearch/v1"
-		s.Key = ctx["ctx"].(*Context).conf.SearchApiKey
-		s.Cx = ctx["ctx"].(*Context).conf.GoogleSiteId
+		conf := ctx["ctx"].(*Context).conf
+		s.Key = conf.SearchApiKey
+		s.Cx = conf.GoogleSiteId
 		ctx["search"] = s
 
 		c.HTML(http.StatusOK, "search.html", ctx)
