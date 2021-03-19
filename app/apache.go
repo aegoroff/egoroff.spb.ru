@@ -35,7 +35,7 @@ func (a *Apacher) Route(r *gin.Engine) {
 	r.GET("/portfolio/:document.html", func(c *gin.Context) {
 		doc := c.Param("document.html")
 
-		k := doc[:len(doc)-5]
+		k := doc[:len(doc)-len(".html")]
 
 		d, ok := a.documentsMap[k]
 
