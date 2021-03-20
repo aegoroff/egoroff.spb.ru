@@ -28,8 +28,16 @@ func (a *Api) posts(c *gin.Context) {
 	if err != nil {
 		page = 1
 	}
+	limit, err := strconv.ParseInt(c.Param("limit"), 10, 32)
+	if err != nil {
+		limit = 20
+	}
+	offset, err := strconv.ParseInt(c.Param("limit"), 10, 32)
 
 	q := datastore.NewQuery("Post").Filter("is_public=", true).Order("-created")
+	if offset > 0 {
+		q = q.Offset(int(offset))
+	}
 
 	if y != "" {
 		m := c.Query("month")
@@ -44,7 +52,7 @@ func (a *Api) posts(c *gin.Context) {
 	}
 
 	adaptor := NewDatastoreAdaptor(q)
-	poster := NewCustomPoster(adaptor, 20)
+	poster := NewCustomPoster(adaptor, int(limit))
 	poster.SetPage(int(page))
 
 	posts := poster.Posts()
