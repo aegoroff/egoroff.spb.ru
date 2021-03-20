@@ -57,6 +57,26 @@ func (r *Repository) Tags() []*TagContainter {
 	return containters
 }
 
+func (r *Repository) Post(id int64) *Post {
+	c, err := r.conn.Connect()
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	defer Close(c)
+
+	ctx, cancel := r.conn.newContext()
+	defer cancel()
+
+	k := datastore.IDKey("Post", id, nil)
+	var post Post
+	err = c.Get(ctx, k, &post)
+	if err != nil {
+		log.Println(err)
+	}
+	return &post
+}
+
 type Poster struct {
 	pager paginator.Paginator
 }

@@ -3,6 +3,9 @@ package app
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/jbowtie/gokogiri/xml"
+	"github.com/jbowtie/ratago/xslt"
+	"log"
 	"net/http"
 	"sort"
 	"strconv"
@@ -47,7 +50,8 @@ func (b *Blog) Route(r *gin.Engine) {
 	blog := r.Group("/blog")
 	{
 		blog.GET("/", b.index)
-		blog.GET("/:page/", b.index)
+		//blog.GET("/:page/", b.index)
+		blog.GET("/:id.html", b.post)
 	}
 }
 
@@ -75,6 +79,42 @@ func (*Blog) index(c *gin.Context) {
 	ctx["archive"] = createArchive(times)
 
 	c.HTML(http.StatusOK, "blog/index.html", ctx)
+}
+
+func (*Blog) post(c *gin.Context) {
+	ids := c.Param("id.html")
+	id, err := strconv.ParseInt(ids[:len(ids)-len(".html")], 10, 64)
+	if err != nil {
+		log.Println(err)
+		ctx := NewContext("", c)
+		ctx["title"] = "404"
+		c.HTML(http.StatusNotFound, "error.html", ctx)
+		return
+	}
+
+	rep := NewRepository()
+	post := rep.Post(id)
+
+	sheet := "apache/apache_manualpage.xsl"
+	style, _ := xml.ReadFile(sheet, xml.DefaultParseOption)
+	stylesheet, _ := xslt.ParseStylesheet(style, sheet)
+
+	//process the input
+	input, err := xml.Parse([]byte(post.Text), xml.DefaultEncodingBytes, []byte(""), xml.DefaultParseOption, xml.DefaultEncodingBytes)
+	if err != nil {
+		log.Println(err)
+	}
+	output, err := stylesheet.Process(input, xslt.StylesheetOptions{})
+	if err != nil {
+		log.Println(err)
+	}
+
+	ctx := NewContext("blog", c)
+	ctx["title"] = post.Title
+	ctx["content"] = output
+	ctx["main_post"] = post
+
+	c.HTML(http.StatusOK, "blog/post.html", ctx)
 }
 
 func groupContainers(containers []*TagContainter) (map[string]int, map[int64]time.Time, int) {
