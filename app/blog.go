@@ -3,8 +3,6 @@ package app
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/jbowtie/gokogiri/xml"
-	"github.com/jbowtie/ratago/xslt"
 	"log"
 	"net/http"
 	"sort"
@@ -95,23 +93,9 @@ func (*Blog) post(c *gin.Context) {
 	rep := NewRepository()
 	post := rep.Post(id)
 
-	sheet := "apache/apache_manualpage.xsl"
-	style, _ := xml.ReadFile(sheet, xml.DefaultParseOption)
-	stylesheet, _ := xslt.ParseStylesheet(style, sheet)
-
-	//process the input
-	input, err := xml.Parse([]byte(post.Text), xml.DefaultEncodingBytes, []byte(""), xml.DefaultParseOption, xml.DefaultEncodingBytes)
-	if err != nil {
-		log.Println(err)
-	}
-	output, err := stylesheet.Process(input, xslt.StylesheetOptions{})
-	if err != nil {
-		log.Println(err)
-	}
-
 	ctx := NewContext("blog", c)
 	ctx["title"] = post.Title
-	ctx["content"] = output
+	ctx["content"] = post.Text
 	ctx["main_post"] = post
 
 	c.HTML(http.StatusOK, "blog/post.html", ctx)
