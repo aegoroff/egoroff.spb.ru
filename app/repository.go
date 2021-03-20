@@ -154,7 +154,6 @@ func NewDatastoreAdaptor(query *datastore.Query) *DatastoreAdaptor {
 
 func NewPostsAdaptor() *DatastoreAdaptor {
 	q := datastore.NewQuery("Post").Filter("is_public=", true).Order("-created")
-	q = q.Project("__key__", "created", "title", "short_text")
 	return NewDatastoreAdaptor(q)
 }
 
