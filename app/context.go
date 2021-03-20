@@ -44,7 +44,9 @@ func NewContext(htmlClass string, gctx *gin.Context) pongo2.Context {
 	result["sections"] = root.Children
 
 	if gctx.Request.RequestURI != "/" {
-		result["breadcrumbs"] = breadcrumbs(gr, gctx.Request.RequestURI)
+		bc, curr := breadcrumbs(gr, gctx.Request.RequestURI)
+		result["breadcrumbs"] = bc
+		result["current_section"] = curr
 	}
 
 	return result
@@ -58,18 +60,25 @@ func (c *Context) PathFor(id string) string {
 	return c.graph.FullPath(id)
 }
 
-func breadcrumbs(gr *Graph, uri string) []*SiteSection {
+func breadcrumbs(gr *Graph, uri string) ([]*SiteSection, string) {
 	parts := strings.Split(uri, "/")
 	root := gr.g.Node(1).(*SiteSection)
 	result := []*SiteSection{root}
 
-	for _, part := range parts {
+	var current string
+	for i, part := range parts {
+		if part == "" {
+			continue
+		}
 		s := gr.Section(part)
 		if s != nil && gr.FullPath(s.Id) != uri {
 			result = append(result, s)
 		}
+		if i == 1 {
+			current = part
+		}
 	}
-	return result
+	return result, current
 }
 
 func readSiteMap() *SiteSection {

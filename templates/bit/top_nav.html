@@ -1,5 +1,5 @@
 {% for item in sections %}
-<li>
+<li {% if item.Id == current_section %}class="active"{% endif %}>
 <a href="{{ ctx.PathFor(item.Id) }}">&nbsp;{% if item.Class %}<i class="{{ item.Class }}"></i>&nbsp;{% endif %}
 {{ item.Title }}
 </a>
