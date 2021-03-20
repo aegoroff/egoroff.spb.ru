@@ -55,6 +55,8 @@ func (a *Api) posts(c *gin.Context) {
 	c.JSON(http.StatusOK, ApiResult{
 		Status: "success",
 		Count:  len(posts),
+		Page:   int(page),
+		Pages:  poster.PageNums(),
 		Now:    time.Now(),
 		Result: posts,
 	})
@@ -63,6 +65,8 @@ func (a *Api) posts(c *gin.Context) {
 type ApiResult struct {
 	Status string      `json:"status"`
 	Count  int         `json:"count"`
+	Page   int         `json:"page"`
+	Pages  int         `json:"pages"`
 	Now    time.Time   `json:"now"`
 	Result interface{} `json:"result"`
 }
