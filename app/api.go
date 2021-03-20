@@ -24,15 +24,15 @@ func (a *Api) Route(r *gin.Engine) {
 
 func (a *Api) posts(c *gin.Context) {
 	y := c.Query("year")
-	page, err := strconv.ParseInt(c.Param("page"), 10, 32)
+	page, err := strconv.ParseInt(c.Query("page"), 10, 32)
 	if err != nil {
 		page = 1
 	}
-	limit, err := strconv.ParseInt(c.Param("limit"), 10, 32)
+	limit, err := strconv.ParseInt(c.Query("limit"), 10, 32)
 	if err != nil {
 		limit = 20
 	}
-	offset, err := strconv.ParseInt(c.Param("limit"), 10, 32)
+	offset, err := strconv.ParseInt(c.Query("limit"), 10, 32)
 
 	q := datastore.NewQuery("Post").Filter("is_public=", true).Order("-created")
 	if offset > 0 {

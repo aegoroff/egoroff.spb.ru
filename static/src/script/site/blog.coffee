@@ -44,8 +44,6 @@ window.BlogViewModel = ->
   return
 
 $ ->
-  api_uri = '/api/v2/posts.json'
-
   removePager = ->
     $("ul.pager").remove()
     $("ul.pagination").remove()
@@ -94,7 +92,7 @@ $ ->
     $("dl#blogcontainer").remove()
     t = href.split('=')[1]
     txt = 'все посты по метке: ' + t
-    window.LoadBlog({ "tag" : t }, txt)
+    window.LoadBlog({ "tag" : t, "limit": 100 }, txt)
     removePager()
   tag.button()
 
