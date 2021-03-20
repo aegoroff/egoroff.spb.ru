@@ -4,6 +4,7 @@ import (
 	"cloud.google.com/go/datastore"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -23,6 +24,10 @@ func (a *Api) Route(r *gin.Engine) {
 
 func (a *Api) posts(c *gin.Context) {
 	y := c.Query("year")
+	page, err := strconv.ParseInt(c.Param("page"), 10, 32)
+	if err != nil {
+		page = 1
+	}
 
 	q := datastore.NewQuery("Post").Filter("is_public=", true).Order("-created")
 
@@ -40,6 +45,7 @@ func (a *Api) posts(c *gin.Context) {
 
 	adaptor := NewDatastoreAdaptor(q)
 	poster := NewCustomPoster(adaptor, 20)
+	poster.SetPage(int(page))
 
 	posts := poster.Posts()
 	for _, post := range posts {

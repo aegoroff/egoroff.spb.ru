@@ -36,7 +36,10 @@ func (b *Blog) Route(r *gin.Engine) {
 func (*Blog) index(c *gin.Context) {
 	ctx := NewContext("blog", c)
 	appContext := ctx["ctx"].(*Context)
-	page, _ := strconv.ParseInt(c.Param("page"), 10, 32)
+	page, err := strconv.ParseInt(c.Param("page"), 10, 32)
+	if err != nil {
+		page = 1
+	}
 
 	rep := NewRepository()
 	tags, total := rep.Tags()
