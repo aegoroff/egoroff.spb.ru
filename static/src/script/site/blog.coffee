@@ -69,13 +69,13 @@ $ ->
 
     $("dl#blogcontainer").remove()
 
-    q = { "year" : y, "month" : m }
+    q = { "year" : y, "month" : m, "limit": 100 }
     dmonth = m - 1
     fmt = 'MMMM YYYY'
     # year's posts case
     if m == 0
       fmt = 'YYYY год'
-      q = { "year" : y }
+      q = { "year" : y, "limit": 100 }
       dmonth = 1
 
     mmt = moment(new Date(y, dmonth, 10))

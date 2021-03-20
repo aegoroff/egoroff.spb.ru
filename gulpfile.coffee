@@ -8,6 +8,7 @@ minimist = require 'minimist'
 
 root_dir = '.'
 static_dir = "#{root_dir}/static"
+bower_dir = "#{root_dir}/bower_components"
 paths =
   clean: [
       "#{static_dir}/dst"
@@ -34,4 +35,8 @@ gulp.task 'fonts', ->
     .pipe gulp.dest "#{static_dir}/fonts/font-awesome"
   gulp.src "#{static_dir}/ext/bootstrap/fonts/*"
     .pipe gulp.dest "#{static_dir}/fonts/bootstrap"
+
+gulp.task 'images', ->
+  gulp.src "#{bower_dir}/jquery-ui-less/images/*"
+    .pipe gulp.dest "#{static_dir}/min/images"
 

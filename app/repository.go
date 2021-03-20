@@ -37,31 +37,24 @@ func (r *Repository) Config() (*Config, error) {
 	return &config, nil
 }
 
-func (r *Repository) Tags() (map[string]int, int) {
+func (r *Repository) Tags() []*TagContainter {
 	c, err := r.conn.Connect()
 	if err != nil {
 		log.Println(err)
-		return nil, 0
+		return nil
 	}
 	defer Close(c)
 
 	ctx, cancel := r.conn.newContext()
 	defer cancel()
 
-	q := datastore.NewQuery("Post").Filter("is_public=", true).Project("tags", "created")
-	var tags []*TagContainter
-	_, err = c.GetAll(ctx, q, &tags)
+	q := datastore.NewQuery("Post").Filter("is_public=", true).Project("tags", "created", "__key__")
+	var containters []*TagContainter
+	_, err = c.GetAll(ctx, q, &containters)
 	if err != nil {
 		log.Println(err)
 	}
-	grouped := make(map[string]int)
-	for _, tag := range tags {
-		for _, t := range tag.Tags {
-			grouped[t] += 1
-		}
-	}
-
-	return grouped, len(tags)
+	return containters
 }
 
 type Poster struct {

@@ -40,6 +40,7 @@ DIR_NODE_MODULES = 'node_modules'
 DIR_STYLE = 'style'
 DIR_SCRIPT = 'script'
 DIR_TEMP = 'temp'
+DIR_IMG = 'images'
 
 DIR_STATIC = os.path.join(DIR_MAIN, 'static')
 DIR_APACHE = os.path.join(DIR_MAIN, 'apache')
@@ -60,6 +61,7 @@ DIR_FONTS = os.path.join(DIR_STATIC, 'fonts')
 DIR_MIN = os.path.join(DIR_STATIC, 'min')
 DIR_MIN_STYLE = os.path.join(DIR_MIN, DIR_STYLE)
 DIR_MIN_SCRIPT = os.path.join(DIR_MIN, DIR_SCRIPT)
+DIR_MIN_IMG = os.path.join(DIR_MIN, DIR_IMG)
 
 FILE_BOWER = 'bower.json'
 FILE_PACKAGE = 'package.json'
@@ -354,6 +356,8 @@ def run():
 
     install_dependencies()
     run_minify()
+    make_dirs(DIR_MIN_IMG)
+    os.system('"%s" images' % FILE_GULP)
 
 
 if __name__ == '__main__':

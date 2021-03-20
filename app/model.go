@@ -35,8 +35,9 @@ type SmallPost struct {
 }
 
 type TagContainter struct {
-	Tags    []string  `datastore:"tags"`
-	Created time.Time `datastore:"created"`
+	Key     *datastore.Key `datastore:"__key__"`
+	Tags    []string       `datastore:"tags"`
+	Created time.Time      `datastore:"created"`
 }
 
 type Config struct {

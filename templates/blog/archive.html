@@ -1,17 +1,18 @@
 
 <!--noindex-->
-{% if not archieve %}
+{% if not archive %}
     <p>Ничего нет</p>
 {% else %}
-    <div id="accordion">
-        {% for year in archieve %}
-            <h3>{{ year }}</h3>
-            <div class="list-group">
-                {% for month in archieve %}
-                    <a class="list-group-item" href="{{ link }}">{{ month }}</a>
-                {% endfor %}
-            </div>
+<div id="accordion">
+    {% for year in archive %}
+    <h3>{{ year.Year }}</h3>
+    <div class="list-group">
+        <a class="list-group-item" href="#year={{ year.Year }}">За весь год ({{year.Posts}})</a>
+        {% for month in year.Months %}
+        <a class="list-group-item" href="#year={{ year.Year }}&month={{ month.Month}}">{{ month.Name }} ({{month.Posts}})</a>
         {% endfor %}
     </div>
+    {% endfor %}
+</div>
 {% endif %}
 <!--/noindex-->
