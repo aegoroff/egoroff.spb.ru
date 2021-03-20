@@ -23,7 +23,6 @@ func (a *Api) Route(r *gin.Engine) {
 }
 
 func (a *Api) posts(c *gin.Context) {
-	y := c.Query("year")
 	page, err := strconv.ParseInt(c.Query("page"), 10, 32)
 	if err != nil {
 		page = 1
@@ -32,18 +31,28 @@ func (a *Api) posts(c *gin.Context) {
 	if err != nil {
 		limit = 20
 	}
-	offset, err := strconv.ParseInt(c.Query("limit"), 10, 32)
+	offset, err := strconv.ParseInt(c.Query("offset"), 10, 32)
 
 	q := datastore.NewQuery("Post").Filter("is_public=", true).Order("-created")
 	if offset > 0 {
 		q = q.Offset(int(offset))
 	}
 
-	if y != "" {
-		m := c.Query("month")
-		if m != "" {
+	y, _ := strconv.ParseInt(c.Query("year"), 10, 32)
+	m, _ := strconv.ParseInt(c.Query("month"), 10, 32)
 
+	if y != 0 {
+		loc := time.Now().Location()
+		var currMonth time.Time
+		var nextMonth time.Time
+		if m != 0 {
+			currMonth = time.Date(int(y), time.Month(m), 1, 0, 0, 0, 0, loc)
+			nextMonth = currMonth.AddDate(0, 1, 0)
+		} else {
+			currMonth = time.Date(int(y), time.January, 1, 0, 0, 0, 0, loc)
+			nextMonth = time.Date(int(y+1), time.January, 1, 0, 0, 0, 0, loc)
 		}
+		q = q.Filter("created>=", currMonth).Filter("created<", nextMonth)
 	} else {
 		tag := c.Query("tag")
 		if tag != "" {
