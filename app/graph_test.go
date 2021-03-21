@@ -39,24 +39,26 @@ func Test_breadcrumbs(t *testing.T) {
 	gr := newTestGraph()
 
 	var tests = []struct {
-		path  string
-		nodes int
+		path            string
+		nodes           int
+		expectedCurrent string
 	}{
-		{"/a/aa/", 2},
-		{"/a/", 1},
-		{"/b/", 1},
-		{"/b/bb/", 2},
-		{"", 1},
-		{"/", 1},
+		{"/a/aa/", 2, "a"},
+		{"/a/", 1, "a"},
+		{"/b/", 1, "b"},
+		{"/b/bb/", 2, "b"},
+		{"", 1, ""},
+		{"/", 1, ""},
 	}
 
 	for _, test := range tests {
 		t.Run(test.path, func(t *testing.T) {
 			// Act
-			b := breadcrumbs(gr, test.path)
+			b, curr := breadcrumbs(gr, test.path)
 
 			// Assert
 			ass.Equal(test.nodes, len(b))
+			ass.Equal(test.expectedCurrent, curr)
 		})
 	}
 }
