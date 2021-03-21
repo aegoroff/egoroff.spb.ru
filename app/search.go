@@ -16,7 +16,7 @@ func NewSearch() *Search {
 
 func (s *Search) Route(r *gin.Engine) {
 	r.GET("/search/", func(c *gin.Context) {
-		ctx := NewContext("search", c)
+		ctx := NewContext(c)
 		ctx["action_uri"] = "https://www.googleapis.com/customsearch/v1"
 		context := ctx["ctx"].(*Context)
 		conf := context.conf
@@ -24,6 +24,7 @@ func (s *Search) Route(r *gin.Engine) {
 		s.Cx = conf.GoogleSiteId
 		ctx["search"] = s
 		ctx["title"] = context.Section("search").Title
+		ctx["html_class"] = "search"
 
 		c.HTML(http.StatusOK, "search.html", ctx)
 	})

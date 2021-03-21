@@ -55,7 +55,8 @@ func (b *Blog) Route(r *gin.Engine) {
 }
 
 func (*Blog) index(c *gin.Context) {
-	ctx := NewContext("blog", c)
+	ctx := NewContext(c)
+	ctx["html_class"] = "blog"
 	appContext := ctx["ctx"].(*Context)
 	id := c.Param("id")
 
@@ -95,9 +96,7 @@ func (b *Blog) post(c *gin.Context) {
 	id, err := strconv.ParseInt(ids[:len(ids)-len(".html")], 10, 64)
 	if err != nil {
 		log.Println(err)
-		ctx := NewContext("", c)
-		ctx["title"] = "404"
-		c.HTML(http.StatusNotFound, "error.html", ctx)
+		error404(c)
 		return
 	}
 
@@ -106,16 +105,15 @@ func (b *Blog) post(c *gin.Context) {
 
 	if post == nil || post.Key == nil {
 		log.Println(err)
-		ctx := NewContext("", c)
-		ctx["title"] = "404"
-		c.HTML(http.StatusNotFound, "error.html", ctx)
+		error404(c)
 		return
 	}
 
-	ctx := NewContext("blog", c)
+	ctx := NewContext(c)
 	ctx["title"] = post.Title
 	ctx["content"] = post.Text
 	ctx["main_post"] = post
+	ctx["html_class"] = "blog"
 
 	c.HTML(http.StatusOK, "blog/post.html", ctx)
 }

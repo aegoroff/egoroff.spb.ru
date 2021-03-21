@@ -35,11 +35,12 @@ func (po *Portfolio) Route(r *gin.Engine) {
 	p := r.Group("/portfolio")
 	{
 		p.GET("/", func(c *gin.Context) {
-			ctx := NewContext("portfolio", c)
+			ctx := NewContext(c)
 			appContext := ctx["ctx"].(*Context)
 			s := appContext.Section("portfolio")
 			ctx["apache_docs"] = po.documents
 			ctx["title"] = s.Title
+			ctx["html_class"] = "portfolio"
 
 			c.HTML(http.StatusOK, "portfolio/index.html", ctx)
 		})
@@ -52,9 +53,7 @@ func (po *Portfolio) Route(r *gin.Engine) {
 			d, ok := po.documentsMap[k]
 
 			if !ok {
-				ctx := NewContext("", c)
-				ctx["title"] = "404"
-				c.HTML(http.StatusNotFound, "error.html", ctx)
+				error404(c)
 				return
 			}
 
@@ -64,7 +63,7 @@ func (po *Portfolio) Route(r *gin.Engine) {
 				log.Println(err)
 			}
 
-			ctx := NewContext("", c)
+			ctx := NewContext(c)
 			ctx["content"] = string(b)
 			ctx["title"] = d.Title
 

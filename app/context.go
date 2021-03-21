@@ -13,11 +13,10 @@ type Context struct {
 	conf           *Config
 	currentVersion string
 	styles         []string
-	htmlClass      string
 	graph          *Graph
 }
 
-func NewContext(htmlClass string, gctx *gin.Context) pongo2.Context {
+func NewContext(gctx *gin.Context) pongo2.Context {
 	styles := []string{
 		"min/style/style.min.css",
 		//"min/style/adminstyle.min.css",
@@ -32,7 +31,6 @@ func NewContext(htmlClass string, gctx *gin.Context) pongo2.Context {
 
 	gr := NewGraph(root)
 	ctx := &Context{
-		htmlClass:      htmlClass,
 		currentVersion: os.Getenv("CURRENT_VERSION_ID"),
 		styles:         styles,
 		conf:           c,

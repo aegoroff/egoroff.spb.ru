@@ -24,9 +24,10 @@ func (w *Welcome) Route(r *gin.Engine) {
 			log.Println(err)
 		}
 
-		ctx := NewContext("welcome", c)
+		ctx := NewContext(c)
 		ctx["apache_docs"] = w.apacheDocs
 		ctx["posts"] = posts
+		ctx["html_class"] = "welcome"
 
 		c.HTML(http.StatusOK, "welcome.html", ctx)
 	})
