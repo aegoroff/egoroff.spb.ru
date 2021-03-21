@@ -14,7 +14,7 @@
             {% if poster.PrevPage() == 1 %}
                 {% set href = tag_query %}
             {% else %}
-                {% set href = poster.PrevPage() + "/" + tag_query %}
+                {% set href = "page/" + poster.PrevPage() + "/" + tag_query %}
             {% endif %}
         {% else %}
             {% set li_class = "disabled previous" %}
@@ -34,7 +34,7 @@
         {% endif %}
 
         <li class="{{ li_class }}">
-            <a href="{{ctx.PathFor('blog')}}{{ href }}" class="next">{{ older | safe }}</a>
+            <a href="{{ctx.PathFor('blog')}}page/{{ href }}" class="next">{{ older | safe }}</a>
         </li>
     </ul>
     <ul class="pagination pagination-sm">
@@ -44,7 +44,7 @@
                     {% if page == 1 %}
                     <a href="{{ ctx.PathFor('blog') }}{{ tag_query }}" class="page">{{ page }}</a>
                     {% else %}
-                    <a href="{{ ctx.PathFor('blog') }}{{ page }}/{{ tag_query }}"
+                    <a href="{{ ctx.PathFor('blog') }}page/{{ page }}/{{ tag_query }}"
                        class="page">{{ page }}</a>
                     {% endif %}
                 </li>
