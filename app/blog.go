@@ -104,6 +104,14 @@ func (b *Blog) post(c *gin.Context) {
 	rep := NewRepository()
 	post := rep.Post(id)
 
+	if post == nil || post.Key == nil {
+		log.Println(err)
+		ctx := NewContext("", c)
+		ctx["title"] = "404"
+		c.HTML(http.StatusNotFound, "error.html", ctx)
+		return
+	}
+
 	ctx := NewContext("blog", c)
 	ctx["title"] = post.Title
 	ctx["content"] = post.Text
