@@ -24,12 +24,6 @@
       "class": "fa fa-search",
       "title": "Поиск",
       "descr": "Поиск по сайту с использованием поиска Google. Применяется асинхронный java script AJAX"
-    },
-    {
-      "id": "feedback",
-      "class": "fa fa-comment",
-      "title": "Фидбек",
-      "descr": "Форма для обратной связи со мной."
     }
   ]
 }
