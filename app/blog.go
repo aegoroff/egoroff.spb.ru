@@ -111,7 +111,13 @@ func (b *Blog) post(c *gin.Context) {
 
 	ctx := NewContext(c)
 	ctx["title"] = post.Title
-	ctx["content"] = post.Text
+
+	if post.Text != "" && strings.HasPrefix(post.Text, "<?xml version=\"1.0\"?>") {
+		ctx["content"] = convert(post.Text)
+	} else {
+		ctx["content"] = post.Text
+	}
+
 	ctx["main_post"] = post
 	ctx["html_class"] = "blog"
 

@@ -7,7 +7,6 @@ import (
 
 func Test_FullPath(t *testing.T) {
 	// Arrange
-	ass := assert.New(t)
 	gr := newTestGraph()
 
 	var tests = []struct {
@@ -24,6 +23,8 @@ func Test_FullPath(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.node, func(t *testing.T) {
+			ass := assert.New(t)
+
 			// Act
 			fp := gr.FullPath(test.node)
 
