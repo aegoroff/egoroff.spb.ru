@@ -13,10 +13,44 @@ var tagsMap = map[string]string{
 	"center":  "div",
 }
 
-var decorations = map[string][]xml.Attr{
-	"table":   {{Name: xml.Name{Local: "class"}, Value: "table table-condensed table-striped"}},
-	"a":       {{Name: xml.Name{Local: "itemprop"}, Value: "url"}},
-	"acronym": {{Name: xml.Name{Local: "class"}, Value: "initialism"}},
+type decorator func([]xml.Attr) []xml.Attr
+
+var decorations = map[string]decorator{
+	"table":   tableDecorator,
+	"a":       linkDecorator,
+	"acronym": acronymDecorator,
+}
+
+func tableDecorator(attr []xml.Attr) []xml.Attr {
+	a := xml.Attr{Name: xml.Name{Local: "class"}, Value: "table table-condensed table-striped"}
+	return append(attr, a)
+}
+
+func acronymDecorator(attr []xml.Attr) []xml.Attr {
+	a := xml.Attr{Name: xml.Name{Local: "class"}, Value: "initialism"}
+	return append(attr, a)
+}
+
+func linkDecorator(attr []xml.Attr) []xml.Attr {
+	a := xml.Attr{Name: xml.Name{Local: "itemprop"}, Value: "url"}
+	result := []xml.Attr{a}
+	for _, x := range attr {
+		href := xml.Attr{Name: xml.Name{Local: "href"}}
+		if x.Name.Local == "id" {
+			switch x.Value {
+			case "1", "53", "62":
+				href.Value = "/portfolio/"
+			case "2":
+				href.Value = "/blog/"
+			default:
+				href.Value = "/"
+			}
+			result = append(result, href)
+		} else {
+			result = append(result, x)
+		}
+	}
+	return result
 }
 
 var decorationsIfNone = map[string][]xml.Attr{
@@ -67,7 +101,7 @@ func convert(x string) string {
 			}
 
 			if attr, ok := decorations[start.Name.Local]; ok {
-				start.Attr = append(start.Attr, attr...)
+				start.Attr = attr(start.Attr)
 			}
 			encode(start)
 		case xml.CharData:
