@@ -22,7 +22,7 @@ func NewContext(gctx *gin.Context) pongo2.Context {
 		//"min/style/adminstyle.min.css",
 	}
 	repo := NewRepository()
-	c, err := repo.Config()
+	config, err := repo.Config()
 	if err != nil {
 		log.Println(err)
 	}
@@ -33,7 +33,7 @@ func NewContext(gctx *gin.Context) pongo2.Context {
 	ctx := &Context{
 		currentVersion: os.Getenv("CURRENT_VERSION_ID"),
 		styles:         styles,
-		conf:           c,
+		conf:           config,
 		graph:          gr,
 	}
 
@@ -45,9 +45,26 @@ func NewContext(gctx *gin.Context) pongo2.Context {
 		bc, curr := breadcrumbs(gr, gctx.Request.RequestURI)
 		result["breadcrumbs"] = bc
 		result["current_section"] = curr
+		result["title_path"] = revertPath(bc, config.BrandName)
 	}
 
 	return result
+}
+
+func revertPath(sections []*SiteSection, main string) string {
+	var path []string
+	for _, section := range sections {
+		path = append(path, section.Title)
+	}
+	if len(path) == 0 {
+		return ""
+	}
+	path = path[1:]
+	for i, j := 0, len(path)-1; i < j; i, j = i+1, j-1 {
+		path[i], path[j] = path[j], path[i]
+	}
+	path = append(path, main)
+	return strings.Join(path, " | ")
 }
 
 func (c *Context) Section(id string) *SiteSection {

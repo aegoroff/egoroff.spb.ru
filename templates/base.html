@@ -14,13 +14,7 @@
     {% endif %}
       {% block meta %}
       {% endblock %}
-    <title>
-        {% block title %}
-        {% if title %} {{ title + ' |' }} {% endif %}
-        {% if current_title %} {{ current_title + ' |' }} {% endif %}
-        {% endblock %}
-      {{ctx.conf.BrandName}}
-    </title>
+    <title>{{title}}{% if title_path %}{{" | "}}{{title_path}}{% endif %}</title>
     <link href="{{ctx.PathFor('blog')}}recent.atom"
       rel="alternate"
       title="Recent Posts"

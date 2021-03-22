@@ -23,7 +23,9 @@ func (s *Search) Route(r *gin.Engine) {
 		s.Key = conf.SearchApiKey
 		s.Cx = conf.GoogleSiteId
 		ctx["search"] = s
-		ctx["title"] = context.Section("search").Title
+		section := context.Section("search")
+		ctx["title"] = section.Title
+		ctx["meta_description"] = section.Descr
 		ctx["html_class"] = "search"
 
 		c.HTML(http.StatusOK, "search.html", ctx)

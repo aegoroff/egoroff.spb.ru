@@ -121,11 +121,14 @@ func (*Blog) index(c *gin.Context) {
 	rep := NewRepository()
 	containers := rep.Tags()
 	tags, times, total := groupContainers(containers)
-	title := appContext.Section("blog").Title
+	section := appContext.Section("blog")
+	title := section.Title
 	if page > 1 {
 		title = fmt.Sprintf("%d-я страница", page)
 	}
 	ctx["title"] = title
+	ctx["keywords"] = section.Keywords
+	ctx["meta_description"] = section.Descr
 	poster := NewPoster(20)
 
 	poster.SetPage(int(page))
@@ -200,6 +203,7 @@ func (b *Blog) showPost(c *gin.Context, id int64) {
 
 	ctx["main_post"] = post
 	ctx["html_class"] = "blog"
+	ctx["keywords"] = strings.Join(post.Tags, ",")
 
 	c.HTML(http.StatusOK, "blog/post.html", ctx)
 }

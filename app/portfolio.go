@@ -51,6 +51,8 @@ func (po *Portfolio) index(c *gin.Context) {
 	s := appContext.Section("portfolio")
 	ctx["apache_docs"] = po.documents
 	ctx["title"] = s.Title
+	ctx["keywords"] = s.Keywords
+	ctx["meta_description"] = s.Descr
 	ctx["html_class"] = "portfolio"
 
 	c.HTML(http.StatusOK, "portfolio/index.html", ctx)
@@ -88,6 +90,7 @@ func (po *Portfolio) document(c *gin.Context) {
 	ctx := NewContext(c)
 	ctx["content"] = string(b)
 	ctx["title"] = d.Title
+	ctx["keywords"] = d.Keywords
 
 	c.HTML(http.StatusOK, "portfolio/apache.html", ctx)
 }

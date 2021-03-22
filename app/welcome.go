@@ -25,9 +25,12 @@ func (w *Welcome) Route(r *gin.Engine) {
 		}
 
 		ctx := NewContext(c)
+		appContext := ctx["ctx"].(*Context)
 		ctx["apache_docs"] = w.apacheDocs
 		ctx["posts"] = posts
 		ctx["html_class"] = "welcome"
+		ctx["keywords"] = appContext.Section("/").Keywords
+		ctx["title"] = appContext.conf.BrandName
 
 		c.HTML(http.StatusOK, "welcome.html", ctx)
 	})
