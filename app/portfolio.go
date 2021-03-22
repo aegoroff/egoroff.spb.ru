@@ -63,14 +63,10 @@ func (po *Portfolio) document(c *gin.Context) {
 		doc = doc[:len(doc)-len(".html")]
 	}
 
-	ctx := NewContext(c)
-
 	id, err := strconv.ParseInt(doc, 10, 64)
 	if err == nil {
 		if remapped, ok := remapping[id]; ok {
-			appContext := ctx["ctx"].(*Context)
-			s := appContext.Section("blog")
-			uri := fmt.Sprintf("/%s/%d.html", s.Id, remapped)
+			uri := fmt.Sprintf("/blog/%d.html", remapped)
 			c.Redirect(http.StatusMovedPermanently, uri)
 			return
 		}
@@ -89,6 +85,7 @@ func (po *Portfolio) document(c *gin.Context) {
 		log.Println(err)
 	}
 
+	ctx := NewContext(c)
 	ctx["content"] = string(b)
 	ctx["title"] = d.Title
 
