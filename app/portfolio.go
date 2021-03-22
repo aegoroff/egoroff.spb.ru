@@ -2,12 +2,14 @@ package app
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"os"
 	"path"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -61,6 +63,19 @@ func (po *Portfolio) document(c *gin.Context) {
 		doc = doc[:len(doc)-len(".html")]
 	}
 
+	ctx := NewContext(c)
+
+	id, err := strconv.ParseInt(doc, 10, 64)
+	if err == nil {
+		if remapped, ok := remapping[id]; ok {
+			appContext := ctx["ctx"].(*Context)
+			s := appContext.Section("blog")
+			uri := fmt.Sprintf("/%s/%d.html", s.Id, remapped)
+			c.Redirect(http.StatusMovedPermanently, uri)
+			return
+		}
+	}
+
 	d, ok := po.documentsMap[doc]
 
 	if !ok {
@@ -74,7 +89,6 @@ func (po *Portfolio) document(c *gin.Context) {
 		log.Println(err)
 	}
 
-	ctx := NewContext(c)
 	ctx["content"] = string(b)
 	ctx["title"] = d.Title
 
