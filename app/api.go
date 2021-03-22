@@ -25,10 +25,9 @@ func (a *Api) Route(r *gin.Engine) {
 func (a *Api) index(c *gin.Context) {
 	ctx := NewContext(c)
 
-	appContext := ctx["ctx"].(*Context)
 	ctx["html_class"] = "welcome"
 	ctx["request"] = c.Request
-	ctx["title"] = appContext.conf.BrandName
+	ctx["title"] = "API"
 
 	c.HTML(http.StatusOK, "api/index.html", ctx)
 }
