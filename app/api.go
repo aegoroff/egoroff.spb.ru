@@ -18,8 +18,19 @@ func NewApi() *Api {
 func (a *Api) Route(r *gin.Engine) {
 	ap := r.Group("/api/v2")
 	{
+		ap.GET("/", a.index)
 		ap.GET("/posts.json", a.posts)
 	}
+}
+func (a *Api) index(c *gin.Context) {
+	ctx := NewContext(c)
+
+	appContext := ctx["ctx"].(*Context)
+	ctx["html_class"] = "welcome"
+	ctx["request"] = c.Request
+	ctx["title"] = appContext.conf.BrandName
+
+	c.HTML(http.StatusOK, "api/index.html", ctx)
 }
 
 func (a *Api) posts(c *gin.Context) {
