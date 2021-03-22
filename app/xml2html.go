@@ -34,21 +34,27 @@ func acronymDecorator(attr []xml.Attr) []xml.Attr {
 func linkDecorator(attr []xml.Attr) []xml.Attr {
 	a := xml.Attr{Name: xml.Name{Local: "itemprop"}, Value: "url"}
 	result := []xml.Attr{a}
+	dir := ""
+	file := ""
 	for _, x := range attr {
 		if x.Name.Local == "id" {
-			href := xml.Attr{Name: xml.Name{Local: "href"}}
 			switch x.Value {
 			case "1", "53", "62":
-				href.Value = "/portfolio/"
+				dir = "/portfolio/"
 			case "2":
-				href.Value = "/blog/"
+				dir = "/blog/"
 			default:
-				href.Value = "/"
+				dir = "/"
 			}
-			result = append(result, href)
+		} else if x.Name.Local == "name" {
+			file = x.Value + ".html"
 		} else {
 			result = append(result, x)
 		}
+	}
+	if dir != "" {
+		href := xml.Attr{Name: xml.Name{Local: "href"}, Value: dir + file}
+		result = append(result, href)
 	}
 	return result
 }
