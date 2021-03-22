@@ -11,10 +11,15 @@ func Test_convert(t *testing.T) {
 		html string
 	}{
 		{"<example x=\"y\">a</example><p>b</p>", "<pre x=\"y\">a</pre><p>b</p>"},
-		{"<p>a<example>b</example></p>", "<p>a<pre>b</pre></p>"},
+		{"<p>a<example>b</example></p>", "<p>a<pre class=\"code\">b</pre></p>"},
 		{"<p>a<br/></p>", "<p>a<br></br></p>"},
 		{"<br/>", "<br></br>"},
 		{"a", "a"},
+		{"<link id=\"1\">a</link>", "<a itemprop=\"url\" href=\"/portfolio/\">a</a>"},
+		{"<link id=\"53\">a</link>", "<a itemprop=\"url\" href=\"/portfolio/\">a</a>"},
+		{"<link id=\"62\">a</link>", "<a itemprop=\"url\" href=\"/portfolio/\">a</a>"},
+		{"<link id=\"2\">a</link>", "<a itemprop=\"url\" href=\"/blog/\">a</a>"},
+		{"<link id=\"3\">a</link>", "<a itemprop=\"url\" href=\"/\">a</a>"},
 	}
 
 	for _, test := range tests {
