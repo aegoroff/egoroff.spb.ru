@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/xml"
+	"io"
 	"log"
 	"strings"
 )
@@ -83,7 +84,7 @@ func convert(x string) string {
 
 	for {
 		t, err := decoder.Token()
-		if err != nil {
+		if err != nil && err != io.EOF {
 			log.Println(err)
 		}
 		if t == nil {
