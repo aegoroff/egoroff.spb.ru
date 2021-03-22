@@ -35,8 +35,8 @@ func linkDecorator(attr []xml.Attr) []xml.Attr {
 	a := xml.Attr{Name: xml.Name{Local: "itemprop"}, Value: "url"}
 	result := []xml.Attr{a}
 	for _, x := range attr {
-		href := xml.Attr{Name: xml.Name{Local: "href"}}
 		if x.Name.Local == "id" {
+			href := xml.Attr{Name: xml.Name{Local: "href"}}
 			switch x.Value {
 			case "1", "53", "62":
 				href.Value = "/portfolio/"

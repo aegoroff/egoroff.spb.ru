@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"sort"
+	"strings"
 )
 
 type Portfolio struct {
@@ -34,42 +35,63 @@ func (po *Portfolio) Documents() []*Apache {
 func (po *Portfolio) Route(r *gin.Engine) {
 	p := r.Group("/portfolio")
 	{
-		p.GET("/", func(c *gin.Context) {
-			ctx := NewContext(c)
-			appContext := ctx["ctx"].(*Context)
-			s := appContext.Section("portfolio")
-			ctx["apache_docs"] = po.documents
-			ctx["title"] = s.Title
-			ctx["html_class"] = "portfolio"
+		p.GET("/", po.index)
+		r.GET("/apache", po.index)
 
-			c.HTML(http.StatusOK, "portfolio/index.html", ctx)
-		})
-
-		p.GET(":document.html", func(c *gin.Context) {
-			doc := c.Param("document.html")
-
-			k := doc[:len(doc)-len(".html")]
-
-			d, ok := po.documentsMap[k]
-
-			if !ok {
-				error404(c)
-				return
-			}
-
-			filer := NewFiler(os.Stdout)
-			b, err := filer.Read(path.Join("templates", "apache", doc))
-			if err != nil {
-				log.Println(err)
-			}
-
-			ctx := NewContext(c)
-			ctx["content"] = string(b)
-			ctx["title"] = d.Title
-
-			c.HTML(http.StatusOK, "portfolio/apache.html", ctx)
-		})
+		p.GET(":document", po.document)
+		p.GET("/:document/:document", po.document)
 	}
+}
+
+func (po *Portfolio) index(c *gin.Context) {
+	ctx := NewContext(c)
+	appContext := ctx["ctx"].(*Context)
+	s := appContext.Section("portfolio")
+	ctx["apache_docs"] = po.documents
+	ctx["title"] = s.Title
+	ctx["html_class"] = "portfolio"
+
+	c.HTML(http.StatusOK, "portfolio/index.html", ctx)
+}
+
+func (po *Portfolio) document(c *gin.Context) {
+	doc := lastParam(c, "document")
+
+	if strings.HasSuffix(doc, ".html") {
+		doc = doc[:len(doc)-len(".html")]
+	}
+
+	d, ok := po.documentsMap[doc]
+
+	if !ok {
+		error404(c)
+		return
+	}
+
+	filer := NewFiler(os.Stdout)
+	b, err := filer.Read(path.Join("templates", "apache", doc+".html"))
+	if err != nil {
+		log.Println(err)
+	}
+
+	ctx := NewContext(c)
+	ctx["content"] = string(b)
+	ctx["title"] = d.Title
+
+	c.HTML(http.StatusOK, "portfolio/apache.html", ctx)
+}
+
+func lastParam(c *gin.Context, name string) string {
+	var params []string
+	for _, param := range c.Params {
+		if param.Key == name {
+			params = append(params, param.Value)
+		}
+	}
+	if params == nil || len(params) == 0 {
+		return ""
+	}
+	return params[len(params)-1]
 }
 
 func readApacheDocs(path string) []*Apache {
