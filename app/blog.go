@@ -51,6 +51,24 @@ var remapping = map[int64]int64{
 	30: 8002,
 }
 
+var opinionsRemapping = map[int64]int64{
+	1:  25002,
+	4:  31001,
+	8:  6003,
+	11: 30001,
+	13: 3006,
+	18: 29001,
+	21: 9002,
+	22: 2004,
+	24: 25003,
+	25: 22002,
+	26: 27002,
+	27: 27001,
+	28: 14004,
+	29: 8003,
+	30: 6004,
+}
+
 type Blog struct {
 }
 
@@ -82,6 +100,7 @@ func (b *Blog) Route(r *gin.Engine) {
 		blog.GET("/:id", b.post)
 		blog.GET("/:id/:page", b.index)
 	}
+	r.GET("/opinions/:id", b.opinion)
 }
 
 func (*Blog) index(c *gin.Context) {
@@ -134,11 +153,38 @@ func (b *Blog) post(c *gin.Context) {
 		id = remapped
 	}
 
+	b.showPost(c, id)
+}
+
+func (b *Blog) opinion(c *gin.Context) {
+	ids := c.Param("id")
+	if !strings.HasSuffix(ids, ".html") {
+		error404(c)
+		return
+	}
+
+	id, err := strconv.ParseInt(ids[:len(ids)-len(".html")], 10, 64)
+	if err != nil {
+		log.Println(err)
+		error404(c)
+		return
+	}
+
+	if remapped, ok := opinionsRemapping[id]; ok {
+		id = remapped
+	} else {
+		error404(c)
+		return
+	}
+
+	b.showPost(c, id)
+}
+
+func (b *Blog) showPost(c *gin.Context, id int64) {
 	rep := NewRepository()
 	post := rep.Post(id)
 
 	if post == nil || post.Key == nil {
-		log.Println(err)
 		error404(c)
 		return
 	}

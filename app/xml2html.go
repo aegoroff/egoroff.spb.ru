@@ -38,6 +38,9 @@ func linkDecorator(attr []xml.Attr) []xml.Attr {
 	file := ""
 	for _, x := range attr {
 		if x.Name.Local == "id" {
+			if dir != "" {
+				continue
+			}
 			switch x.Value {
 			case "1", "53", "62":
 				dir = "/portfolio/"
@@ -47,6 +50,7 @@ func linkDecorator(attr []xml.Attr) []xml.Attr {
 				dir = "/"
 			}
 		} else if x.Name.Local == "name" {
+			dir = "/blog/"
 			file = x.Value + ".html"
 		} else {
 			result = append(result, x)
