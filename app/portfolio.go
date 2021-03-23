@@ -54,6 +54,7 @@ func (po *Portfolio) index(c *gin.Context) {
 	ctx["keywords"] = s.Keywords
 	ctx["meta_description"] = s.Descr
 	ctx["html_class"] = "portfolio"
+	ctx["downloads"] = downloads()
 
 	c.HTML(http.StatusOK, "portfolio/index.html", ctx)
 }
@@ -136,4 +137,15 @@ func readApacheDocs(path string) []*Apache {
 		})
 		return result
 	}
+}
+
+func downloads() []*Folder {
+	rep := NewRepository()
+	folders := rep.Folders()
+	for _, folder := range folders {
+		for _, key := range folder.FileKeys {
+			folder.Files = append(folder.Files, rep.File(key))
+		}
+	}
+	return folders
 }

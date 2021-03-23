@@ -57,6 +57,45 @@ func (r *Repository) Tags() []*TagContainter {
 	return containters
 }
 
+func (r *Repository) Folders() []*Folder {
+	c, err := r.conn.Connect()
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	defer Close(c)
+
+	ctx, cancel := r.conn.newContext()
+	defer cancel()
+
+	q := datastore.NewQuery("Folder").Filter("is_public=", true)
+	var folders []*Folder
+	_, err = c.GetAll(ctx, q, &folders)
+	if err != nil {
+		log.Println(err)
+	}
+	return folders
+}
+
+func (r *Repository) File(k *datastore.Key) *File {
+	c, err := r.conn.Connect()
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	defer Close(c)
+
+	ctx, cancel := r.conn.newContext()
+	defer cancel()
+
+	var file File
+	err = c.Get(ctx, k, &file)
+	if err != nil {
+		log.Println(err)
+	}
+	return &file
+}
+
 func (r *Repository) Post(id int64) *Post {
 	c, err := r.conn.Connect()
 	if err != nil {

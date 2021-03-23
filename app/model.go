@@ -100,7 +100,8 @@ type Folder struct {
 	Model
 	IsPublic bool             `datastore:"is_public"`
 	Title    string           `datastore:"title"`
-	Files    []*datastore.Key `datastore:"files"`
+	FileKeys []*datastore.Key `datastore:"files"`
+	Files    []*File
 }
 
 type Apache struct {

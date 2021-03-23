@@ -1,10 +1,10 @@
-{% for download in downloads %}
-    <h3> {{ download }}</h3>
+{% for folder in downloads %}
+    <h3> {{ folder.Title }}</h3>
     <ul class="list-unstyled">
-    {% for f in downloads %}
+    {% for f in folder.Files %}
         <li itemscope itemtype="http://schema.org/SoftwareApplication">
-            <a itemprop="downloadUrl" class="fa fa-download" href="{{ f.url }}" title="Размер:&nbsp;{{ f.human_readable_size }}" onclick="_gaq.push(['_trackPageview', '{{ f.title_filename }}']);">&nbsp;<span itemprop="name">{{ f.description }}</span></a>&nbsp;
-            <small><i class="fa fa-calendar"></i>&nbsp;<span itemprop="datePublished" class="shortDateFormat">{{ f.created }}</span></small>
+            <a itemprop="downloadUrl" class="fa fa-download" href="{{ f.Url }}" title="Размер:&nbsp;{{ f.HumanReadableSize }}" onclick="_gaq.push(['_trackPageview', '{{ f.TitleFilename }}']);">&nbsp;<span itemprop="name">{{ f.Description }}</span></a>&nbsp;
+            <small><i class="fa fa-calendar"></i>&nbsp;<span itemprop="datePublished" class="shortDateFormat">{{ f.Created.Format("2006-01-02 15:04:05") }}</span></small>
         </li>
     {% endfor %}
     </ul>
