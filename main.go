@@ -28,7 +28,10 @@ func main() {
 		port = "8080"
 	}
 	log.Printf("Defaulting to port %s", port)
-	r.Run(":" + port)
+	err := r.Run(":" + port)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 func route(r *gin.Engine, routers []app.Router) {
