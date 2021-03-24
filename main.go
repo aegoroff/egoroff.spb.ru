@@ -18,7 +18,7 @@ func main() {
 	sessionName := "goquestsession"
 
 	r := gin.Default()
-	google.Setup("https://4-dot-egoroff.appspot.com", "static/site_credentials.json", scopes, secret)
+	google.Setup("https://4-dot-egoroff.appspot.com/_s/callback/google/authorized/", "static/site_credentials.json", scopes, secret)
 	r.Use(google.Session(sessionName))
 
 	r.HTMLRender = pongo2gin.TemplatePath("templates")
