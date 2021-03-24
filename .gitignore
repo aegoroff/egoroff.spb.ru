@@ -9,6 +9,7 @@ static/dst
 static/ext
 static/fonts
 static/min
+static/site_credentials.json
 templates/apache/
 node_modules
 temp/
