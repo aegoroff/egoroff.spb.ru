@@ -1,11 +1,10 @@
-# extends 'base.html'
-# import 'macro/utils.html' as utils
+{% extends 'base.html' %}
 
-# block head
-  {{utils.prefetch_link(next_url)}}
-# endblock
+{% block head %}
 
-# block content
+{% endblock %}
+
+{% block content %}
   <div class="page-header">
     <h1>{{title}} <small>Займет только 8 секунд!</small></h1>
   </div>
@@ -17,19 +16,19 @@
         Войти с учетной записью Google
       </a>
 
-      # if config.CONFIG_DB.has_facebook
+      {% if config.CONFIG_DB.has_facebook %}
         <a class="btn btn-block btn-lg btn-social btn-facebook" href="{{facebook_signin_url}}" rel="nofollow">
           <i class="fa fa-facebook"></i>
           Войти с учетной записью Facebook
         </a>
-      # endif
+      {% endif %}
 
-      # if config.CONFIG_DB.has_twitter
+      {% if config.CONFIG_DB.has_twitter %}
         <a class="btn btn-block btn-lg btn-social btn-twitter" href="{{twitter_signin_url}}" rel="nofollow">
           <i class="fa fa-twitter"></i>
           Войти с учетной записью Twitter
         </a>
-      # endif
+      {% endif %}
 
       <div class="checkbox remember">
         <label>
@@ -39,4 +38,4 @@
       </div>
     </div>
   </div>
-# endblock
+{% endblock %}
