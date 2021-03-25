@@ -37,6 +37,45 @@ func (r *Repository) Config() (*Config, error) {
 	return &config, nil
 }
 
+func (r *Repository) UserByFederatedId(sub string) (*User, error) {
+	c, err := r.conn.Connect()
+	if err != nil {
+		return nil, err
+	}
+	defer Close(c)
+	var users []*User
+
+	ctx, cancel := r.conn.newContext()
+	defer cancel()
+
+	q := datastore.NewQuery("User").Filter("federated_id=", sub)
+	_, err = c.GetAll(ctx, q, &users)
+	if err != nil || len(users) == 0 {
+		return nil, err
+	}
+
+	return users[0], nil
+}
+
+func (r *Repository) NewUser(user *User) error {
+	c, err := r.conn.Connect()
+	if err != nil {
+		return err
+	}
+	defer Close(c)
+
+	ctx, cancel := r.conn.newContext()
+	defer cancel()
+
+	k := datastore.IncompleteKey("User", nil)
+	_, err = c.Put(ctx, k, user)
+	if err != nil {
+		return nil
+	}
+
+	return nil
+}
+
 func (r *Repository) Tags() []*TagContainter {
 	c, err := r.conn.Connect()
 	if err != nil {

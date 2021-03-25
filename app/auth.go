@@ -20,9 +20,20 @@ func NewAuth() *Auth {
 func (a *Auth) Route(r *gin.Engine) {
 	r.GET("/login", a.signin)
 	r.GET("/signin", a.signin)
+	r.GET("/logout", a.signout)
 
 	callback := r.Group("/_s/callback/google/authorized/")
 	callback.GET("/", a.callback)
+}
+
+func (a *Auth) signout(c *gin.Context) {
+	session := sessions.Default(c)
+	session.Delete("user-sub")
+	err := session.Save()
+	if err != nil {
+		log.Println(err)
+	}
+	c.Redirect(http.StatusFound, "/")
 }
 
 func (a *Auth) signin(c *gin.Context) {
@@ -48,8 +59,27 @@ func (a *Auth) callback(c *gin.Context) {
 		error401(c)
 		return
 	}
-	user := c.MustGet("user").(google.User)
-	log.Println("sub: " + user.Sub)
+	user, ok := c.Get("user")
+	if ok {
+		u := user.(google.User)
+		session := sessions.Default(c)
+		session.Set("user-sub", u.Sub)
+		err := session.Save()
+		if err != nil {
+			log.Println(err)
+		}
+		repo := NewRepository()
+		existing, err := repo.UserByFederatedId(u.Sub)
+		if existing == nil {
+			err = repo.NewUser(&User{
+				Active:      true,
+				Email:       u.Email,
+				FederatedId: u.Sub,
+				Name:        u.Name,
+				Verified:    u.EmailVerified,
+			})
+		}
+	}
 	c.Redirect(http.StatusFound, "/")
 }
 

@@ -1,19 +1,19 @@
 
-{% if current_user.id > 0 %}
+{% if current_user %}
   <li class="dropdown">
     <a class="dropdown-toggle" data-toggle="dropdown" href="#">
       <i class="fa fa-user"></i>
-      {{current_user.name}}
+      {{current_user.Email}}
       <b class="caret"></b>
     </a>
     <ul class="dropdown-menu">
       <li><a href="{{url_for('profile')}}"><i class="fa fa-fw fa-edit"></i> Настройки профиля</a></li>
-      {% if current_user.admin %}
+      {% if current_user.Admin %}
         <li class="divider"></li>
         <li><a href="{{url_for('admin_config_update')}}"><i class="fa fa-fw fa-cog"></i> Админка</a></li>
         <li class="divider"></li>
       {% endif %}
-      <li><a href="{{url_for('signout')}}"><i class="fa fa-fw fa-sign-out"></i> Выход</a></li>
+      <li><a href="/logout"><i class="fa fa-fw fa-sign-out"></i> Выход</a></li>
     </ul>
   </li>
 {% else %}
