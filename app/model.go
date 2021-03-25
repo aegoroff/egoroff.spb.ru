@@ -5,6 +5,11 @@ import (
 	"time"
 )
 
+type Message struct {
+	Type string
+	Text string
+}
+
 type Model struct {
 	Key         *datastore.Key `datastore:"__key__"`
 	Created     time.Time      `datastore:"created"`

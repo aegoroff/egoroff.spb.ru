@@ -20,7 +20,9 @@ func NewAuth() *Auth {
 func (a *Auth) Route(r *gin.Engine) {
 	r.GET("/login", a.signin)
 	r.GET("/signin", a.signin)
-	r.GET("/_s/callback/google/authorized/", a.callback).Use(google.Auth())
+
+	callback := r.Group("/_s/callback/google/authorized/")
+	callback.GET("/", a.callback)
 }
 
 func (a *Auth) signin(c *gin.Context) {
@@ -40,7 +42,14 @@ func (a *Auth) signin(c *gin.Context) {
 }
 
 func (a *Auth) callback(c *gin.Context) {
-	log.Println(c.MustGet("user").(google.User))
+	validator := google.Auth()
+	validator(c)
+	if c.IsAborted() {
+		error401(c)
+		return
+	}
+	user := c.MustGet("user").(google.User)
+	log.Println("sub: " + user.Sub)
 	c.Redirect(http.StatusFound, "/")
 }
 

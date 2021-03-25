@@ -19,7 +19,18 @@ func Close(c io.Closer) {
 }
 
 func error404(c *gin.Context) {
-	ctx := NewContext(c)
-	ctx["title"] = "404"
-	c.HTML(http.StatusNotFound, "error.html", ctx)
+	errorer(c, "404", http.StatusNotFound)
+}
+
+func error401(c *gin.Context) {
+	errorer(c, "401", http.StatusUnauthorized, Message{
+		Type: "danger",
+		Text: "You are not authorized to view this content",
+	})
+}
+
+func errorer(c *gin.Context, title string, code int, messages ...Message) {
+	ctx := NewContext(c, messages...)
+	ctx["title"] = title
+	c.HTML(code, "error.html", ctx)
 }

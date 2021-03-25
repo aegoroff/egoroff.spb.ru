@@ -16,7 +16,7 @@ type Context struct {
 	graph          *Graph
 }
 
-func NewContext(gctx *gin.Context) pongo2.Context {
+func NewContext(gctx *gin.Context, messages ...Message) pongo2.Context {
 	styles := []string{
 		"min/style/style.min.css",
 		//"min/style/adminstyle.min.css",
@@ -40,6 +40,7 @@ func NewContext(gctx *gin.Context) pongo2.Context {
 	result := pongo2.Context{"ctx": ctx}
 
 	result["sections"] = root.Children
+	result["flashed_messages"] = messages
 
 	if gctx.Request.RequestURI != "/" {
 		bc, curr := breadcrumbs(gr, gctx.Request.RequestURI)
