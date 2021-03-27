@@ -8,6 +8,7 @@ import (
 	"github.com/zalando/gin-oauth2/google"
 	"log"
 	"net/http"
+	"time"
 )
 
 type Auth struct {
@@ -72,6 +73,10 @@ func (a *Auth) callback(c *gin.Context) {
 		existing, err := repo.UserByFederatedId(u.Sub)
 		if existing == nil {
 			err = repo.NewUser(&User{
+				Model: Model{
+					Created:  time.Now(),
+					Modified: time.Now(),
+				},
 				Active:      true,
 				Email:       u.Email,
 				FederatedId: u.Sub,
