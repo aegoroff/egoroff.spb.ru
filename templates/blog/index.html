@@ -32,7 +32,7 @@
             var vars = href.split('&');
             vars.forEach(function (v) {
                 var pair = v.split('=');
-                if(pair[0] == '#tag') {
+                if(pair[0] === '#tag') {
                     var e = $.Event("click");
                     $('#t_' + pair[1]).trigger(e);
                 }
