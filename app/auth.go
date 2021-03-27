@@ -11,6 +11,8 @@ import (
 	"time"
 )
 
+const RedirectUrlCookie = "redirect_url_after_signin"
+
 type Auth struct {
 }
 
@@ -34,7 +36,7 @@ func (a *Auth) signout(c *gin.Context) {
 	if err != nil {
 		log.Println(err)
 	}
-	c.Redirect(http.StatusFound, "/")
+	c.Redirect(http.StatusFound, c.Request.Referer())
 }
 
 func (a *Auth) signin(c *gin.Context) {
@@ -42,6 +44,7 @@ func (a *Auth) signin(c *gin.Context) {
 	state := randToken()
 	session := sessions.Default(c)
 	session.Set("state", state)
+	session.Set(RedirectUrlCookie, c.Request.Referer())
 	err := session.Save()
 	if err != nil {
 		log.Println(err)
@@ -60,10 +63,11 @@ func (a *Auth) callback(c *gin.Context) {
 		error401(c)
 		return
 	}
+	session := sessions.Default(c)
 	user, ok := c.Get("user")
 	if ok {
 		u := user.(google.User)
-		session := sessions.Default(c)
+
 		session.Set("user-sub", u.Sub)
 		err := session.Save()
 		if err != nil {
@@ -85,7 +89,12 @@ func (a *Auth) callback(c *gin.Context) {
 			})
 		}
 	}
-	c.Redirect(http.StatusFound, "/")
+	redirectUri := session.Get(RedirectUrlCookie)
+	if redirectUri != nil {
+		c.Redirect(http.StatusFound, redirectUri.(string))
+	} else {
+		c.Redirect(http.StatusFound, "/")
+	}
 }
 
 func randToken() string {
