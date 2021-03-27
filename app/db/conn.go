@@ -1,4 +1,4 @@
-package app
+package db
 
 import (
 	"cloud.google.com/go/datastore"

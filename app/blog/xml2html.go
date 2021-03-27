@@ -1,4 +1,4 @@
-package app
+package blog
 
 import (
 	"encoding/xml"

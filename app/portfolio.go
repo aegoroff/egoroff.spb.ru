@@ -1,6 +1,11 @@
 package app
 
 import (
+	"egoroff.spb.ru/app/blog"
+	"egoroff.spb.ru/app/db"
+	"egoroff.spb.ru/app/domain"
+	"egoroff.spb.ru/app/framework"
+	"egoroff.spb.ru/app/lib"
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -14,13 +19,13 @@ import (
 )
 
 type Portfolio struct {
-	documents    []*Apache
-	documentsMap map[string]*Apache
+	documents    []*domain.Apache
+	documentsMap map[string]*domain.Apache
 }
 
 func NewPortfolio(path string) *Portfolio {
 	docs := readApacheDocs(path)
-	docsMap := make(map[string]*Apache)
+	docsMap := make(map[string]*domain.Apache)
 	for _, doc := range docs {
 		docsMap[doc.ID] = doc
 	}
@@ -30,7 +35,7 @@ func NewPortfolio(path string) *Portfolio {
 	}
 }
 
-func (po *Portfolio) Documents() []*Apache {
+func (po *Portfolio) Documents() []*domain.Apache {
 	return po.documents
 }
 
@@ -46,8 +51,8 @@ func (po *Portfolio) Route(r *gin.Engine) {
 }
 
 func (po *Portfolio) index(c *gin.Context) {
-	ctx := NewContext(c)
-	appContext := ctx["ctx"].(*Context)
+	ctx := framework.NewContext(c)
+	appContext := ctx["ctx"].(*framework.Context)
 	s := appContext.Section("portfolio")
 	ctx["apache_docs"] = po.documents
 	ctx["title"] = s.Title
@@ -68,7 +73,7 @@ func (po *Portfolio) document(c *gin.Context) {
 
 	id, err := strconv.ParseInt(doc, 10, 64)
 	if err == nil {
-		if remapped, ok := remapping[id]; ok {
+		if remapped, ok := blog.Remapping[id]; ok {
 			uri := fmt.Sprintf("/blog/%d.html", remapped)
 			c.Redirect(http.StatusMovedPermanently, uri)
 			return
@@ -78,17 +83,17 @@ func (po *Portfolio) document(c *gin.Context) {
 	d, ok := po.documentsMap[doc]
 
 	if !ok {
-		error404(c)
+		framework.Error404(c)
 		return
 	}
 
-	filer := NewFiler(os.Stdout)
+	filer := lib.NewFiler(os.Stdout)
 	b, err := filer.Read(path.Join("templates", "apache", doc+".html"))
 	if err != nil {
 		log.Println(err)
 	}
 
-	ctx := NewContext(c)
+	ctx := framework.NewContext(c)
 	ctx["content"] = string(b)
 	ctx["title"] = d.Title
 	ctx["keywords"] = d.Keywords
@@ -109,7 +114,7 @@ func lastParam(c *gin.Context, name string) string {
 	return params[len(params)-1]
 }
 
-func readApacheDocs(path string) []*Apache {
+func readApacheDocs(path string) []*domain.Apache {
 	f, err := os.Open(path)
 	if err != nil {
 		log.Println(err)
@@ -121,9 +126,9 @@ func readApacheDocs(path string) []*Apache {
 			log.Println(err)
 			return nil
 		}
-		var result = make([]*Apache, 0, len(v))
+		var result = make([]*domain.Apache, 0, len(v))
 		for k, val := range v {
-			a := Apache{
+			a := domain.Apache{
 				ID:          k,
 				Stylesheet:  val[0],
 				Title:       val[1],
@@ -139,8 +144,8 @@ func readApacheDocs(path string) []*Apache {
 	}
 }
 
-func downloads() []*Folder {
-	rep := NewRepository()
+func downloads() []*domain.Folder {
+	rep := db.NewRepository()
 	folders := rep.Folders()
 	for _, folder := range folders {
 		for _, key := range folder.FileKeys {

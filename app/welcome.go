@@ -1,6 +1,9 @@
 package app
 
 import (
+	"egoroff.spb.ru/app/db"
+	"egoroff.spb.ru/app/domain"
+	"egoroff.spb.ru/app/framework"
 	"github.com/gin-gonic/gin"
 	"github.com/vcraescu/go-paginator/v2"
 	"log"
@@ -8,29 +11,29 @@ import (
 )
 
 type Welcome struct {
-	apacheDocs []*Apache
+	apacheDocs []*domain.Apache
 }
 
-func NewWelcome(apacheDocs []*Apache) *Welcome {
+func NewWelcome(apacheDocs []*domain.Apache) *Welcome {
 	return &Welcome{apacheDocs: apacheDocs}
 }
 
 func (w *Welcome) Route(r *gin.Engine) {
 	r.GET("/", func(c *gin.Context) {
-		pager := paginator.New(NewPostsAdaptor(), 5)
-		var posts []*Post
+		pager := paginator.New(db.NewPostsAdaptor(), 5)
+		var posts []*domain.Post
 		err := pager.Results(&posts)
 		if err != nil {
 			log.Println(err)
 		}
 
-		ctx := NewContext(c)
-		appContext := ctx["ctx"].(*Context)
+		ctx := framework.NewContext(c)
+		appContext := ctx["ctx"].(*framework.Context)
 		ctx["apache_docs"] = w.apacheDocs
 		ctx["posts"] = posts
 		ctx["html_class"] = "welcome"
 		ctx["keywords"] = appContext.Section("/").Keywords
-		ctx["title"] = appContext.conf.BrandName
+		ctx["title"] = appContext.Conf.BrandName
 
 		c.HTML(http.StatusOK, "welcome.html", ctx)
 	})

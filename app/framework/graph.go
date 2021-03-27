@@ -1,6 +1,7 @@
-package app
+package framework
 
 import (
+	"egoroff.spb.ru/app/domain"
 	"gonum.org/v1/gonum/graph/path"
 	"gonum.org/v1/gonum/graph/simple"
 	"strings"
@@ -14,7 +15,7 @@ type Graph struct {
 }
 
 // New creates new graph
-func NewGraph(root *SiteSection) *Graph {
+func NewGraph(root *domain.SiteSection) *Graph {
 	gr := &Graph{
 		g:      simple.NewDirectedGraph(),
 		nextID: 1,
@@ -28,12 +29,12 @@ func NewGraph(root *SiteSection) *Graph {
 	return gr
 }
 
-func (gr *Graph) Section(id string) *SiteSection {
+func (gr *Graph) Section(id string) *domain.SiteSection {
 	key, ok := gr.search[id]
 	if !ok {
 		return nil
 	}
-	return gr.g.Node(key).(*SiteSection)
+	return gr.g.Node(key).(*domain.SiteSection)
 }
 
 func (gr *Graph) FullPath(id string) string {
@@ -49,7 +50,7 @@ func (gr *Graph) FullPath(id string) string {
 		if n.ID() == 1 {
 			continue
 		}
-		paths = append(paths, n.(*SiteSection).Id)
+		paths = append(paths, n.(*domain.SiteSection).Id)
 	}
 
 	sep := "/"
@@ -59,14 +60,14 @@ func (gr *Graph) FullPath(id string) string {
 	return sep + strings.Join(paths, sep) + sep
 }
 
-func (gr *Graph) newNode(s *SiteSection) {
-	s.key = gr.nextID
+func (gr *Graph) newNode(s *domain.SiteSection) {
+	s.Key = gr.nextID
 	gr.search[s.Id] = gr.nextID
 	gr.nextID++
 	gr.g.AddNode(s)
 }
 
-func (gr *Graph) newEdges(root *SiteSection) {
+func (gr *Graph) newEdges(root *domain.SiteSection) {
 	if root.Children == nil {
 		return
 	}

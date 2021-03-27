@@ -1,7 +1,9 @@
-package app
+package db
 
 import (
 	"cloud.google.com/go/datastore"
+	"egoroff.spb.ru/app/domain"
+	"egoroff.spb.ru/app/lib"
 	"github.com/vcraescu/go-paginator/v2"
 	"log"
 	"time"
@@ -17,14 +19,14 @@ func NewRepository() *Repository {
 	}
 }
 
-func (r *Repository) Config() (*Config, error) {
+func (r *Repository) Config() (*domain.Config, error) {
 	c, err := r.conn.Connect()
 	if err != nil {
 		return nil, err
 	}
-	defer Close(c)
+	defer lib.Close(c)
 	k := datastore.NameKey("Config", "master", nil)
-	var config Config
+	var config domain.Config
 
 	ctx, cancel := r.conn.newContext()
 	defer cancel()
@@ -37,13 +39,13 @@ func (r *Repository) Config() (*Config, error) {
 	return &config, nil
 }
 
-func (r *Repository) UserByFederatedId(sub string) (*User, error) {
+func (r *Repository) UserByFederatedId(sub string) (*domain.User, error) {
 	c, err := r.conn.Connect()
 	if err != nil {
 		return nil, err
 	}
-	defer Close(c)
-	var users []*User
+	defer lib.Close(c)
+	var users []*domain.User
 
 	ctx, cancel := r.conn.newContext()
 	defer cancel()
@@ -57,12 +59,12 @@ func (r *Repository) UserByFederatedId(sub string) (*User, error) {
 	return users[0], nil
 }
 
-func (r *Repository) NewUser(user *User) error {
+func (r *Repository) NewUser(user *domain.User) error {
 	c, err := r.conn.Connect()
 	if err != nil {
 		return err
 	}
-	defer Close(c)
+	defer lib.Close(c)
 
 	ctx, cancel := r.conn.newContext()
 	defer cancel()
@@ -76,19 +78,19 @@ func (r *Repository) NewUser(user *User) error {
 	return nil
 }
 
-func (r *Repository) Tags() []*TagContainter {
+func (r *Repository) Tags() []*domain.TagContainter {
 	c, err := r.conn.Connect()
 	if err != nil {
 		log.Println(err)
 		return nil
 	}
-	defer Close(c)
+	defer lib.Close(c)
 
 	ctx, cancel := r.conn.newContext()
 	defer cancel()
 
 	q := datastore.NewQuery("Post").Filter("is_public=", true).Project("tags", "created", "__key__")
-	var containters []*TagContainter
+	var containters []*domain.TagContainter
 	_, err = c.GetAll(ctx, q, &containters)
 	if err != nil {
 		log.Println(err)
@@ -96,19 +98,19 @@ func (r *Repository) Tags() []*TagContainter {
 	return containters
 }
 
-func (r *Repository) Folders() []*Folder {
+func (r *Repository) Folders() []*domain.Folder {
 	c, err := r.conn.Connect()
 	if err != nil {
 		log.Println(err)
 		return nil
 	}
-	defer Close(c)
+	defer lib.Close(c)
 
 	ctx, cancel := r.conn.newContext()
 	defer cancel()
 
 	q := datastore.NewQuery("Folder").Filter("is_public=", true)
-	var folders []*Folder
+	var folders []*domain.Folder
 	_, err = c.GetAll(ctx, q, &folders)
 	if err != nil {
 		log.Println(err)
@@ -116,18 +118,18 @@ func (r *Repository) Folders() []*Folder {
 	return folders
 }
 
-func (r *Repository) File(k *datastore.Key) *File {
+func (r *Repository) File(k *datastore.Key) *domain.File {
 	c, err := r.conn.Connect()
 	if err != nil {
 		log.Println(err)
 		return nil
 	}
-	defer Close(c)
+	defer lib.Close(c)
 
 	ctx, cancel := r.conn.newContext()
 	defer cancel()
 
-	var file File
+	var file domain.File
 	err = c.Get(ctx, k, &file)
 	if err != nil {
 		log.Println(err)
@@ -135,19 +137,19 @@ func (r *Repository) File(k *datastore.Key) *File {
 	return &file
 }
 
-func (r *Repository) Post(id int64) *Post {
+func (r *Repository) Post(id int64) *domain.Post {
 	c, err := r.conn.Connect()
 	if err != nil {
 		log.Println(err)
 		return nil
 	}
-	defer Close(c)
+	defer lib.Close(c)
 
 	ctx, cancel := r.conn.newContext()
 	defer cancel()
 
 	k := datastore.IDKey("Post", id, nil)
-	var post Post
+	var post domain.Post
 	err = c.Get(ctx, k, &post)
 	if err != nil {
 		log.Println(err)
@@ -222,8 +224,8 @@ func makeRange(min, max int) []int {
 	return a
 }
 
-func (p *Poster) Posts() []*SmallPost {
-	var posts []*SmallPost
+func (p *Poster) Posts() []*domain.SmallPost {
+	var posts []*domain.SmallPost
 	err := p.pager.Results(&posts)
 	if err != nil {
 		log.Println(err)
@@ -253,7 +255,7 @@ func (a *DatastoreAdaptor) Nums() (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	defer Close(c)
+	defer lib.Close(c)
 
 	ctx, cancel := a.conn.newContext()
 	defer cancel()
@@ -267,7 +269,7 @@ func (a *DatastoreAdaptor) Slice(offset, length int, data interface{}) error {
 	if err != nil {
 		return err
 	}
-	defer Close(c)
+	defer lib.Close(c)
 
 	ctx, cancel := a.conn.newContext()
 	defer cancel()

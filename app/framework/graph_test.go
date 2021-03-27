@@ -1,6 +1,7 @@
-package app
+package framework
 
 import (
+	"egoroff.spb.ru/app/domain"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -65,25 +66,25 @@ func Test_breadcrumbs(t *testing.T) {
 }
 
 func newTestGraph() *Graph {
-	root := SiteSection{
+	root := domain.SiteSection{
 		Id:       "/",
-		Children: make([]*SiteSection, 0),
+		Children: make([]*domain.SiteSection, 0),
 	}
-	a := SiteSection{
+	a := domain.SiteSection{
 		Id:       "a",
-		Children: make([]*SiteSection, 0),
+		Children: make([]*domain.SiteSection, 0),
 	}
 	root.Children = append(root.Children, &a)
-	b := SiteSection{
+	b := domain.SiteSection{
 		Id:       "b",
-		Children: make([]*SiteSection, 0),
+		Children: make([]*domain.SiteSection, 0),
 	}
 	root.Children = append(root.Children, &b)
-	aa := SiteSection{
+	aa := domain.SiteSection{
 		Id: "aa",
 	}
 	a.Children = append(a.Children, &aa)
-	bb := SiteSection{
+	bb := domain.SiteSection{
 		Id: "bb",
 	}
 	b.Children = append(b.Children, &bb)

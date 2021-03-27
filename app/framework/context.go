@@ -1,6 +1,9 @@
-package app
+package framework
 
 import (
+	"egoroff.spb.ru/app/db"
+	"egoroff.spb.ru/app/domain"
+	"egoroff.spb.ru/app/lib"
 	"encoding/json"
 	"github.com/flosch/pongo2"
 	"github.com/gin-gonic/contrib/sessions"
@@ -11,18 +14,18 @@ import (
 )
 
 type Context struct {
-	conf           *Config
+	Conf           *domain.Config
 	currentVersion string
 	styles         []string
 	graph          *Graph
 }
 
-func NewContext(gctx *gin.Context, messages ...Message) pongo2.Context {
+func NewContext(gctx *gin.Context, messages ...domain.Message) pongo2.Context {
 	styles := []string{
 		"min/style/style.min.css",
 		//"min/style/adminstyle.min.css",
 	}
-	repo := NewRepository()
+	repo := db.NewRepository()
 	config, err := repo.Config()
 	if err != nil {
 		log.Println(err)
@@ -34,7 +37,7 @@ func NewContext(gctx *gin.Context, messages ...Message) pongo2.Context {
 	ctx := &Context{
 		currentVersion: os.Getenv("CURRENT_VERSION_ID"),
 		styles:         styles,
-		conf:           config,
+		Conf:           config,
 		graph:          gr,
 	}
 
@@ -63,7 +66,7 @@ func NewContext(gctx *gin.Context, messages ...Message) pongo2.Context {
 	return result
 }
 
-func revertPath(sections []*SiteSection, main string) string {
+func revertPath(sections []*domain.SiteSection, main string) string {
 	var path []string
 	for _, section := range sections {
 		path = append(path, section.Title)
@@ -79,7 +82,7 @@ func revertPath(sections []*SiteSection, main string) string {
 	return strings.Join(path, " | ")
 }
 
-func (c *Context) Section(id string) *SiteSection {
+func (c *Context) Section(id string) *domain.SiteSection {
 	return c.graph.Section(id)
 }
 
@@ -87,10 +90,10 @@ func (c *Context) PathFor(id string) string {
 	return c.graph.FullPath(id)
 }
 
-func breadcrumbs(gr *Graph, uri string) ([]*SiteSection, string) {
+func breadcrumbs(gr *Graph, uri string) ([]*domain.SiteSection, string) {
 	parts := strings.Split(uri, "/")
-	root := gr.g.Node(1).(*SiteSection)
-	result := []*SiteSection{root}
+	root := gr.g.Node(1).(*domain.SiteSection)
+	result := []*domain.SiteSection{root}
 
 	var current string
 	for i, part := range parts {
@@ -108,14 +111,14 @@ func breadcrumbs(gr *Graph, uri string) ([]*SiteSection, string) {
 	return result, current
 }
 
-func readSiteMap() *SiteSection {
-	fi := NewFiler(os.Stdout)
+func readSiteMap() *domain.SiteSection {
+	fi := lib.NewFiler(os.Stdout)
 	b, err := fi.Read("static/map.json")
 	if err != nil {
 		log.Println(err)
 	}
 
-	var root SiteSection
+	var root domain.SiteSection
 	err = json.Unmarshal(b, &root)
 	if err != nil {
 		log.Println(err)

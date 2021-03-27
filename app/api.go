@@ -2,6 +2,8 @@ package app
 
 import (
 	"cloud.google.com/go/datastore"
+	"egoroff.spb.ru/app/db"
+	"egoroff.spb.ru/app/framework"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
@@ -23,7 +25,7 @@ func (a *Api) Route(r *gin.Engine) {
 	}
 }
 func (a *Api) index(c *gin.Context) {
-	ctx := NewContext(c)
+	ctx := framework.NewContext(c)
 
 	ctx["html_class"] = "welcome"
 	ctx["request"] = c.Request
@@ -70,8 +72,8 @@ func (a *Api) posts(c *gin.Context) {
 		}
 	}
 
-	adaptor := NewDatastoreAdaptor(q)
-	poster := NewCustomPoster(adaptor, int(limit))
+	adaptor := db.NewDatastoreAdaptor(q)
+	poster := db.NewCustomPoster(adaptor, int(limit))
 	poster.SetPage(int(page))
 
 	posts := poster.Posts()

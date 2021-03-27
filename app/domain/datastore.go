@@ -1,14 +1,9 @@
-package app
+package domain
 
 import (
 	"cloud.google.com/go/datastore"
 	"time"
 )
-
-type Message struct {
-	Type string
-	Text string
-}
 
 type Model struct {
 	Key         *datastore.Key `datastore:"__key__"`
@@ -107,27 +102,4 @@ type Folder struct {
 	Title    string           `datastore:"title"`
 	FileKeys []*datastore.Key `datastore:"files"`
 	Files    []*File
-}
-
-type Apache struct {
-	ID          string
-	Stylesheet  string
-	Title       string
-	Description string
-	Keywords    string
-}
-
-type SiteSection struct {
-	key      int64
-	Id       string         `json:"id"`
-	Class    string         `json:"class"`
-	Title    string         `json:"title"`
-	Descr    string         `json:"descr"`
-	Keywords string         `json:"keywords"`
-	Children []*SiteSection `json:"children"`
-}
-
-// ID gets section's key
-func (s *SiteSection) ID() int64 {
-	return s.key
 }
