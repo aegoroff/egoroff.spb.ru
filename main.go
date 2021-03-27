@@ -2,7 +2,7 @@ package main
 
 import (
 	"egoroff.spb.ru/app"
-	blog2 "egoroff.spb.ru/app/blog"
+	"egoroff.spb.ru/app/blog"
 	"egoroff.spb.ru/app/framework"
 	"github.com/gin-gonic/gin"
 	"github.com/stnc/pongo2gin"
@@ -28,12 +28,12 @@ func main() {
 	portfolio := app.NewPortfolio("apache/config.json")
 	static := app.NewStaticRouter()
 	search := app.NewSearch()
-	blog := blog2.NewBlog()
+	bl := blog.NewBlog()
 	api := app.NewApi()
 	auth := framework.NewAuth()
 	welcome := app.NewWelcome(portfolio.Documents())
 
-	routers := []app.Router{static, portfolio, welcome, search, blog, api, auth}
+	routers := []app.Router{static, portfolio, welcome, search, bl, api, auth}
 
 	route(r, routers)
 
