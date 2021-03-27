@@ -11,7 +11,9 @@ import (
 	"time"
 )
 
-const RedirectUrlCookie = "redirect_url_after_signin"
+const redirectUrlCookie = "redirect_url_after_signin"
+const userIdCookie = "user-sub"
+const authStateCookie = "state"
 
 type Auth struct {
 }
@@ -30,25 +32,21 @@ func (a *Auth) Route(r *gin.Engine) {
 }
 
 func (a *Auth) signout(c *gin.Context) {
-	session := sessions.Default(c)
-	session.Delete("user-sub")
-	err := session.Save()
-	if err != nil {
-		log.Println(err)
-	}
+	updateSession(c, func(s sessions.Session) {
+		s.Delete(userIdCookie)
+	})
+
 	c.Redirect(http.StatusFound, c.Request.Referer())
 }
 
 func (a *Auth) signin(c *gin.Context) {
 	ctx := NewContext(c)
 	state := randToken()
-	session := sessions.Default(c)
-	session.Set("state", state)
-	session.Set(RedirectUrlCookie, c.Request.Referer())
-	err := session.Save()
-	if err != nil {
-		log.Println(err)
-	}
+
+	updateSession(c, func(s sessions.Session) {
+		s.Set(authStateCookie, state)
+		s.Set(redirectUrlCookie, c.Request.Referer())
+	})
 
 	ctx["title"] = "Авторизация"
 	ctx["google_signin_url"] = google.GetLoginURL(state)
@@ -63,18 +61,19 @@ func (a *Auth) callback(c *gin.Context) {
 		error401(c)
 		return
 	}
-	session := sessions.Default(c)
 	user, ok := c.Get("user")
 	if ok {
 		u := user.(google.User)
 
-		session.Set("user-sub", u.Sub)
-		err := session.Save()
+		updateSession(c, func(s sessions.Session) {
+			s.Set(userIdCookie, u.Sub)
+		})
+
+		repo := NewRepository()
+		existing, err := repo.UserByFederatedId(u.Sub)
 		if err != nil {
 			log.Println(err)
 		}
-		repo := NewRepository()
-		existing, err := repo.UserByFederatedId(u.Sub)
 		if existing == nil {
 			err = repo.NewUser(&User{
 				Model: Model{
@@ -87,9 +86,12 @@ func (a *Auth) callback(c *gin.Context) {
 				Name:        u.Name,
 				Verified:    u.EmailVerified,
 			})
+			if err != nil {
+				log.Println(err)
+			}
 		}
 	}
-	redirectUri := session.Get(RedirectUrlCookie)
+	redirectUri := sessions.Default(c).Get(redirectUrlCookie)
 	if redirectUri != nil {
 		c.Redirect(http.StatusFound, redirectUri.(string))
 	} else {

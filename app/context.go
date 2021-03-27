@@ -42,9 +42,8 @@ func NewContext(gctx *gin.Context, messages ...Message) pongo2.Context {
 
 	result["sections"] = root.Children
 	result["flashed_messages"] = messages
-	session := sessions.Default(gctx)
 
-	sub := session.Get("user-sub")
+	sub := sessions.Default(gctx).Get(userIdCookie)
 	if sub != nil {
 		u, err := repo.UserByFederatedId(sub.(string))
 		if err != nil {

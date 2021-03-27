@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"io"
 	"log"
@@ -33,4 +34,13 @@ func errorer(c *gin.Context, title string, code int, messages ...Message) {
 	ctx := NewContext(c, messages...)
 	ctx["title"] = title
 	c.HTML(code, "error.html", ctx)
+}
+
+func updateSession(c *gin.Context, action func(s sessions.Session)) {
+	session := sessions.Default(c)
+	action(session)
+	err := session.Save()
+	if err != nil {
+		log.Println(err)
+	}
 }
