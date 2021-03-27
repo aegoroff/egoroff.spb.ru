@@ -1,8 +1,8 @@
-# extends 'base.html'
+{% extends 'base.html' %}
 # import 'macro/forms.html' as forms
 # import 'macro/utils.html' as utils
 
-# block content
+{% block content %}
   <div class="page-header">
     <h1>
       <small class="pull-right" title="Connected Accounts">{{utils.auth_icons(user_db.auth_ids)}}</small>
@@ -43,4 +43,4 @@
       </div>
     </div>
   </form>
-# endblock
+{% endblock %}
