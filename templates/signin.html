@@ -13,7 +13,7 @@
     <div class="col-lg-4 col-lg-offset-4 col-md-4 col-md-offset-4 col-sm-6 col-sm-offset-3">
       <a class="btn btn-block btn-lg btn-social btn-google" href="{{google_signin_url}}" rel="nofollow">
         <i class="fa fa-google-plus"></i>
-        Войти с учетной записью Google
+        Авторизоваться через Google
       </a>
 
       {% if config.CONFIG_DB.has_facebook %}
@@ -29,13 +29,6 @@
           Войти с учетной записью Twitter
         </a>
       {% endif %}
-
-      <div class="checkbox remember">
-        <label>
-          <input type="checkbox" checked>
-          Оставаться залогиненным
-        </label>
-      </div>
     </div>
   </div>
 {% endblock %}
