@@ -31,9 +31,10 @@ func main() {
 	bl := blog.NewBlog()
 	api := app.NewApi()
 	auth := framework.NewAuth()
+	sitemap := app.NewSiteMap(portfolio.Documents())
 	welcome := app.NewWelcome(portfolio.Documents())
 
-	routers := []app.Router{static, portfolio, welcome, search, bl, api, auth}
+	routers := []app.Router{static, portfolio, welcome, search, bl, api, auth, sitemap}
 
 	route(r, routers)
 

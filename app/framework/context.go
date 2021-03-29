@@ -31,7 +31,7 @@ func NewContext(gctx *gin.Context, messages ...domain.Message) pongo2.Context {
 		log.Println(err)
 	}
 
-	root := readSiteMap()
+	root := ReadSiteMap()
 
 	gr := NewGraph(root)
 	ctx := &Context{
@@ -111,7 +111,7 @@ func breadcrumbs(gr *Graph, uri string) ([]*domain.SiteSection, string) {
 	return result, current
 }
 
-func readSiteMap() *domain.SiteSection {
+func ReadSiteMap() *domain.SiteSection {
 	fi := lib.NewFiler(os.Stdout)
 	b, err := fi.Read("static/map.json")
 	if err != nil {

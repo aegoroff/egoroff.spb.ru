@@ -10,15 +10,15 @@ import (
 	"net/http"
 )
 
-type Welcome struct {
+type welcome struct {
 	apacheDocs []*domain.Apache
 }
 
-func NewWelcome(apacheDocs []*domain.Apache) *Welcome {
-	return &Welcome{apacheDocs: apacheDocs}
+func NewWelcome(apacheDocs []*domain.Apache) Router {
+	return &welcome{apacheDocs: apacheDocs}
 }
 
-func (w *Welcome) Route(r *gin.Engine) {
+func (w *welcome) Route(r *gin.Engine) {
 	r.GET("/", func(c *gin.Context) {
 		pager := paginator.New(db.NewPostsAdaptor(), 5)
 		var posts []*domain.Post

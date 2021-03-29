@@ -98,6 +98,26 @@ func (r *Repository) Tags() []*domain.TagContainter {
 	return containters
 }
 
+func (r *Repository) PostKeys() []*datastore.Key {
+	c, err := r.conn.Connect()
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	defer lib.Close(c)
+
+	ctx, cancel := r.conn.newContext()
+	defer cancel()
+
+	q := datastore.NewQuery("Post").KeysOnly()
+	var posts []*domain.Post
+	keys, err := c.GetAll(ctx, q, &posts)
+	if err != nil {
+		log.Println(err)
+	}
+	return keys
+}
+
 func (r *Repository) Folders() []*domain.Folder {
 	c, err := r.conn.Connect()
 	if err != nil {

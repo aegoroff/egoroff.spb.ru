@@ -10,21 +10,21 @@ import (
 	"time"
 )
 
-type Api struct {
+type api struct {
 }
 
-func NewApi() *Api {
-	return &Api{}
+func NewApi() Router {
+	return &api{}
 }
 
-func (a *Api) Route(r *gin.Engine) {
+func (a *api) Route(r *gin.Engine) {
 	ap := r.Group("/api/v2")
 	{
 		ap.GET("/", a.index)
 		ap.GET("/posts.json", a.posts)
 	}
 }
-func (a *Api) index(c *gin.Context) {
+func (a *api) index(c *gin.Context) {
 	ctx := framework.NewContext(c)
 
 	ctx["html_class"] = "welcome"
@@ -34,7 +34,7 @@ func (a *Api) index(c *gin.Context) {
 	c.HTML(http.StatusOK, "api/index.html", ctx)
 }
 
-func (a *Api) posts(c *gin.Context) {
+func (a *api) posts(c *gin.Context) {
 	page, err := strconv.ParseInt(c.Query("page"), 10, 32)
 	if err != nil {
 		page = 1

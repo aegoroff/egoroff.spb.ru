@@ -11,7 +11,7 @@ type Search struct {
 	Cx  string
 }
 
-func NewSearch() *Search {
+func NewSearch() Router {
 	return &Search{}
 }
 
