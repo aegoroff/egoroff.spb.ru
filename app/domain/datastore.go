@@ -2,6 +2,7 @@ package domain
 
 import (
 	"cloud.google.com/go/datastore"
+	"strings"
 	"time"
 )
 
@@ -76,6 +77,14 @@ type User struct {
 	TwitterId   string   `datastore:"twitter_id"`
 	Username    string   `datastore:"username"`
 	Verified    bool     `datastore:"verified"`
+}
+
+func (u *User) String() string {
+	if strings.HasPrefix(u.FederatedId, "github_") {
+		return u.Name
+	} else {
+		return u.Email
+	}
 }
 
 type File struct {
