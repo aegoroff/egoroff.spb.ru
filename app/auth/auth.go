@@ -41,7 +41,7 @@ func (a *Auth) Route(r *gin.Engine) {
 }
 
 func (a *Auth) signout(c *gin.Context) {
-	UpdateSession(c, func(s sessions.Session) {
+	updateSession(c, func(s sessions.Session) {
 		s.Delete(framework.UserIdCookie)
 	})
 
@@ -52,7 +52,7 @@ func (a *Auth) signin(c *gin.Context) {
 	ctx := framework.NewContext(c)
 	state := randToken()
 
-	UpdateSession(c, func(s sessions.Session) {
+	updateSession(c, func(s sessions.Session) {
 		s.Set(authStateCookie, state)
 		s.Set(redirectUrlCookie, c.Request.Referer())
 	})
@@ -75,7 +75,7 @@ func (a *Auth) callbackGoogle(c *gin.Context) {
 	if ok {
 		u := user.(google.User)
 
-		UpdateSession(c, func(s sessions.Session) {
+		updateSession(c, func(s sessions.Session) {
 			s.Set(framework.UserIdCookie, u.Sub)
 		})
 
@@ -122,7 +122,7 @@ func (a *Auth) callbackGithub(c *gin.Context) {
 
 		federatedPrefix := "github_"
 
-		UpdateSession(c, func(s sessions.Session) {
+		updateSession(c, func(s sessions.Session) {
 			s.Set(framework.UserIdCookie, federatedPrefix+u.Login)
 		})
 

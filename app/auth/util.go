@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-func UpdateSession(c *gin.Context, action func(s sessions.Session)) {
+func updateSession(c *gin.Context, action func(s sessions.Session)) {
 	session := sessions.Default(c)
 	action(session)
 	err := session.Save()
