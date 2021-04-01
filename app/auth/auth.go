@@ -1,14 +1,10 @@
 package auth
 
 import (
-	"crypto/rand"
 	"egoroff.spb.ru/app/db"
 	"egoroff.spb.ru/app/domain"
 	"egoroff.spb.ru/app/framework"
 
-	"egoroff.spb.ru/app/lib"
-	"encoding/base64"
-	"encoding/json"
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/zalando/gin-oauth2/github"
@@ -163,42 +159,4 @@ func (a *Auth) callbackGithub(c *gin.Context) {
 	} else {
 		c.Redirect(http.StatusFound, "/")
 	}
-}
-
-func randToken() string {
-	b := make([]byte, 32)
-	_, err := rand.Read(b)
-	if err != nil {
-		log.Println(err)
-	}
-	return base64.StdEncoding.EncodeToString(b)
-}
-
-type GithubUserInfo struct {
-	Login      string `json:"login"`
-	Id         int64  `json:"id"`
-	NodeId     string `json:"node_id"`
-	AvatarUrl  string `json:"avatar_url"`
-	GravatarId string `json:"gravatar_id"`
-	Url        string `json:"url"`
-	HtmlUrl    string `json:"html_url"`
-	Name       string `json:"name"`
-	Company    string `json:"company"`
-	Blog       string `json:"blog"`
-	Location   string `json:"location"`
-}
-
-func fetchGithubUserInfo(url string) (*GithubUserInfo, error) {
-	resp, err := http.Get(url)
-	if err != nil {
-		return nil, err
-	}
-	defer lib.Close(resp.Body)
-
-	var result GithubUserInfo
-
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return nil, err
-	}
-	return &result, nil
 }
