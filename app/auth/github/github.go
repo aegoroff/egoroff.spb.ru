@@ -3,6 +3,8 @@
 package github
 
 import (
+	"context"
+	"egoroff.spb.ru/app/auth/oauth"
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
@@ -18,22 +20,14 @@ import (
 	oauth2gh "golang.org/x/oauth2/github"
 )
 
-// Credentials stores google client-ids.
-type Credentials struct {
-	ClientID     string `json:"clientid"`
-	ClientSecret string `json:"secret"`
-}
-
 var (
 	conf  *oauth2.Config
-	cred  Credentials
-	state string
 	store sessions.CookieStore
 )
 
 func Setup(redirectURL, credFile string, scopes []string, secret []byte) {
 	store = sessions.NewCookieStore(secret)
-	var c Credentials
+	var c oauth.Credentials
 	file, err := ioutil.ReadFile(credFile)
 	if err != nil {
 		glog.Fatalf("[Gin-OAuth] File error: %v\n", err)
@@ -94,14 +88,14 @@ func Auth() gin.HandlerFunc {
 			return
 		}
 
-		// TODO: oauth2.NoContext -> context.Context from stdlib
-		tok, err := conf.Exchange(oauth2.NoContext, ctx.Query("code"))
+		// TODO: oauth.NoContext -> context.Context from stdlib
+		tok, err := conf.Exchange(context.Background(), ctx.Query("code"))
 		if err != nil {
 			ctx.AbortWithError(http.StatusBadRequest, fmt.Errorf("Failed to do exchange: %v", err))
 			return
 		}
-		client := github.NewClient(conf.Client(oauth2.NoContext, tok))
-		user, _, err = client.Users.Get(oauth2.NoContext, "")
+		client := github.NewClient(conf.Client(context.Background(), tok))
+		user, _, err = client.Users.Get(context.Background(), "")
 		if err != nil {
 			ctx.AbortWithError(http.StatusBadRequest, fmt.Errorf("Failed to get user: %v", err))
 			return

@@ -4,6 +4,8 @@
 package google
 
 import (
+	"context"
+	"egoroff.spb.ru/app/auth/oauth"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -16,12 +18,6 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 )
-
-// Credentials stores google client-ids.
-type Credentials struct {
-	ClientID     string `json:"clientid"`
-	ClientSecret string `json:"secret"`
-}
 
 // User is a retrieved and authenticated user.
 type User struct {
@@ -37,15 +33,13 @@ type User struct {
 	Hd            string `json:"hd"`
 }
 
-var cred Credentials
 var conf *oauth2.Config
-var state string
 var store sessions.CookieStore
 
 // Setup the authorization path
 func Setup(redirectURL, credFile string, scopes []string, secret []byte) {
 	store = sessions.NewCookieStore(secret)
-	var c Credentials
+	var c oauth.Credentials
 	file, err := ioutil.ReadFile(credFile)
 	if err != nil {
 		glog.Fatalf("[Gin-OAuth] File error: %v\n", err)
@@ -90,13 +84,13 @@ func Auth() gin.HandlerFunc {
 			return
 		}
 
-		tok, err := conf.Exchange(oauth2.NoContext, ctx.Query("code"))
+		tok, err := conf.Exchange(context.Background(), ctx.Query("code"))
 		if err != nil {
 			ctx.AbortWithError(http.StatusBadRequest, err)
 			return
 		}
 
-		client := conf.Client(oauth2.NoContext, tok)
+		client := conf.Client(context.Background(), tok)
 		email, err := client.Get("https://www.googleapis.com/oauth2/v3/userinfo")
 		if err != nil {
 			ctx.AbortWithError(http.StatusBadRequest, err)
