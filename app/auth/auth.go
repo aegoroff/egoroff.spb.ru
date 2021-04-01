@@ -1,14 +1,14 @@
 package auth
 
 import (
+	"egoroff.spb.ru/app/auth/github"
+	"egoroff.spb.ru/app/auth/google"
 	"egoroff.spb.ru/app/db"
 	"egoroff.spb.ru/app/domain"
 	"egoroff.spb.ru/app/framework"
 
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"github.com/zalando/gin-oauth2/github"
-	"github.com/zalando/gin-oauth2/google"
 	"log"
 	"net/http"
 	"time"

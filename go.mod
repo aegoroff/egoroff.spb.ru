@@ -10,8 +10,9 @@ require (
 	github.com/gin-gonic/contrib v0.0.0-20201101042839-6a891bf89f19
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-playground/validator/v10 v10.4.1 // indirect
+	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/google/go-github v17.0.0+incompatible // indirect
+	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/gorilla/sessions v1.2.1 // indirect
 	github.com/json-iterator/go v1.1.10 // indirect
@@ -22,12 +23,11 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/ugorji/go v1.2.5 // indirect
 	github.com/vcraescu/go-paginator/v2 v2.0.0
-	github.com/zalando/gin-oauth2 v1.5.3
 	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2 // indirect
 	golang.org/x/exp v0.0.0-20210220032938-85be41e4509f // indirect
 	golang.org/x/mod v0.4.2 // indirect
 	golang.org/x/net v0.0.0-20210331060903-cb1fcc7394e5 // indirect
-	golang.org/x/oauth2 v0.0.0-20210323180902-22b0adad7558 // indirect
+	golang.org/x/oauth2 v0.0.0-20210323180902-22b0adad7558
 	gonum.org/v1/gonum v0.9.1
 	google.golang.org/api v0.43.0 // indirect
 	google.golang.org/genproto v0.0.0-20210330181207-2295ebbda0c6 // indirect

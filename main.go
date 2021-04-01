@@ -3,11 +3,11 @@ package main
 import (
 	"egoroff.spb.ru/app"
 	auth2 "egoroff.spb.ru/app/auth"
+	"egoroff.spb.ru/app/auth/github"
+	"egoroff.spb.ru/app/auth/google"
 	"egoroff.spb.ru/app/blog"
 	"github.com/gin-gonic/gin"
 	"github.com/stnc/pongo2gin"
-	"github.com/zalando/gin-oauth2/github"
-	"github.com/zalando/gin-oauth2/google"
 	"log"
 	"os"
 )
