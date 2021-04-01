@@ -1,9 +1,11 @@
-package framework
+package auth
 
 import (
 	"crypto/rand"
 	"egoroff.spb.ru/app/db"
 	"egoroff.spb.ru/app/domain"
+	"egoroff.spb.ru/app/framework"
+
 	"egoroff.spb.ru/app/lib"
 	"encoding/base64"
 	"encoding/json"
@@ -17,7 +19,6 @@ import (
 )
 
 const redirectUrlCookie = "redirect_url_after_signin"
-const userIdCookie = "user-sub"
 const authStateCookie = "state"
 
 type Auth struct {
@@ -41,14 +42,14 @@ func (a *Auth) Route(r *gin.Engine) {
 
 func (a *Auth) signout(c *gin.Context) {
 	UpdateSession(c, func(s sessions.Session) {
-		s.Delete(userIdCookie)
+		s.Delete(framework.UserIdCookie)
 	})
 
 	c.Redirect(http.StatusFound, c.Request.Referer())
 }
 
 func (a *Auth) signin(c *gin.Context) {
-	ctx := NewContext(c)
+	ctx := framework.NewContext(c)
 	state := randToken()
 
 	UpdateSession(c, func(s sessions.Session) {
@@ -67,7 +68,7 @@ func (a *Auth) callbackGoogle(c *gin.Context) {
 	validator := google.Auth()
 	validator(c)
 	if c.IsAborted() {
-		Error401(c)
+		framework.Error401(c)
 		return
 	}
 	user, ok := c.Get("user")
@@ -75,7 +76,7 @@ func (a *Auth) callbackGoogle(c *gin.Context) {
 		u := user.(google.User)
 
 		UpdateSession(c, func(s sessions.Session) {
-			s.Set(userIdCookie, u.Sub)
+			s.Set(framework.UserIdCookie, u.Sub)
 		})
 
 		repo := db.NewRepository()
@@ -112,7 +113,7 @@ func (a *Auth) callbackGithub(c *gin.Context) {
 	validator := github.Auth()
 	validator(c)
 	if c.IsAborted() {
-		Error401(c)
+		framework.Error401(c)
 		return
 	}
 	user, ok := c.Get("user")
@@ -122,7 +123,7 @@ func (a *Auth) callbackGithub(c *gin.Context) {
 		federatedPrefix := "github_"
 
 		UpdateSession(c, func(s sessions.Session) {
-			s.Set(userIdCookie, federatedPrefix+u.Login)
+			s.Set(framework.UserIdCookie, federatedPrefix+u.Login)
 		})
 
 		repo := db.NewRepository()

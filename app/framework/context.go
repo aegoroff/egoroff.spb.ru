@@ -13,6 +13,8 @@ import (
 	"strings"
 )
 
+const UserIdCookie = "user-sub"
+
 type Context struct {
 	Conf           *domain.Config
 	currentVersion string
@@ -46,7 +48,7 @@ func NewContext(gctx *gin.Context, messages ...domain.Message) pongo2.Context {
 	result["sections"] = root.Children
 	result["flashed_messages"] = messages
 
-	sub := sessions.Default(gctx).Get(userIdCookie)
+	sub := sessions.Default(gctx).Get(UserIdCookie)
 	if sub != nil {
 		u, err := repo.UserByFederatedId(sub.(string))
 		if err != nil {

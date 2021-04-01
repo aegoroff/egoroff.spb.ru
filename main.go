@@ -2,8 +2,8 @@ package main
 
 import (
 	"egoroff.spb.ru/app"
+	auth2 "egoroff.spb.ru/app/auth"
 	"egoroff.spb.ru/app/blog"
-	"egoroff.spb.ru/app/framework"
 	"github.com/gin-gonic/gin"
 	"github.com/stnc/pongo2gin"
 	"github.com/zalando/gin-oauth2/github"
@@ -37,7 +37,7 @@ func main() {
 	search := app.NewSearch()
 	bl := blog.NewBlog()
 	api := app.NewApi()
-	auth := framework.NewAuth()
+	auth := auth2.NewAuth()
 	sitemap := app.NewSiteMap(portfolio.Documents())
 	welcome := app.NewWelcome(portfolio.Documents())
 
