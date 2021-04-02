@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html class="{% block html_class %}{{html_class}}{% endblock %}" lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="Александр Егоров">
+    {% if meta_description %}
+        <meta name="description" content="{{ meta_description }}">
+    {% endif %}
+    {% if keywords %}
+        <meta name="keywords" content="{{ keywords }}">
+    {% endif %}
+      {% block meta %}
+      {% endblock %}
+    <title>{{title}}{% if title_path %}{{" | "}}{{title_path}}{% endif %}</title>
+    <link href="{{ctx.PathFor('blog')}}recent.atom"
+      rel="alternate"
+      title="Recent Posts"
+      type="application/atom+xml">
+      {% include 'bit/style.html' %}
+      {% block head %}
+      {% endblock %}
+      {% include 'bit/analytics.html' %}
+  </head>
+  <body>
+<!--noindex-->
+{% block topnav %}
+{% include 'bit/header.html' %}
+{% endblock %}
+{% include 'bit/breadcrumbs.html' %}
+<!--/noindex-->
+{% include 'bit/announcement.html' %}
+{% block header %}
+{% endblock %}
+{% block maincontainer %}
+    <div class="container">
+        {% include 'bit/notifications.html' %}
+        {% block content %}
+        {% endblock %}
+    </div>
+{% endblock %}
+<!--noindex-->
+{% include 'bit/footer.html' %}
+{% include 'bit/script.html' %}
+{% block scripts %}
+{% endblock %}
+<!--/noindex-->
+  </body>
+</html>

@@ -1,0 +1,9 @@
+indexes:
+
+- kind: Post
+  properties:
+    - name: is_public
+    - name: created
+      direction: desc
+    - name: short_text
+    - name: title

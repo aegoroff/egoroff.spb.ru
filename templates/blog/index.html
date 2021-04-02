@@ -1,0 +1,80 @@
+{% extends '../base.html' %}
+
+{% block scripts %}
+<script type="text/javascript">
+    $(function () {
+        $("#accordion").accordion({
+            collapsible: true,
+            heightStyle: "content",
+            header: "h3",
+            icons: false
+        });
+    });
+</script>
+
+{% include 'blog_model.html' %}
+
+<script type="text/javascript">
+    vm = new window.BlogViewModel();
+    ko.applyBindings(vm);
+    vm.titleExt("тут я пишу");
+
+    window.LoadBlog = function(query, tExt) {
+        vm.getPostsUsingQuery(query, false);
+        if(tExt){
+            vm.titleExt(tExt)
+        }
+    };
+
+    $( document ).ready(function() {
+        if(window.location.hash) {
+            var href = window.location.hash;
+            var vars = href.split('&');
+            vars.forEach(function (v) {
+                var pair = v.split('=');
+                if(pair[0] === '#tag') {
+                    var e = $.Event("click");
+                    $('#t_' + pair[1]).trigger(e);
+                }
+            });
+        }
+    });
+
+</script>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-lg-9">
+            <div class="page-header">
+                <h1>
+                    {{ title }}
+                    <small data-bind="text: titleExt">тут я пишу</small>
+                </h1>
+            </div>
+            {% set posts = poster.Posts() %}
+            {% if not posts %}
+                Ничего нет
+            {% else %}
+                <dl itemscope itemtype="http://schema.org/BlogPosting" id="blogcontainer">
+                    {% for post in posts %}
+                        {% include 'post_box.html' %}
+                    {% endfor %}
+                </dl>
+                <dl id="log" data-bind="template: {
+                        name: 'blog',
+                        foreach: blogPosts,
+                        afterRender: postProcessingLogic
+                        }">
+                </dl>
+            {% endif %}
+            {% include 'paginator.html' %}
+        </div>
+        <div class="col-lg-3">
+            <h3>Метки</h3>
+            {% include 'tags.html' %}
+            <h3>Архив</h3>
+            {% include 'archive.html' %}
+        </div>
+    </div>
+{% endblock %}

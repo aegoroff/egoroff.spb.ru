@@ -1,6 +1,0 @@
-{% strip %}
-    <dt><small><i class="icon-calendar"></i>&nbsp;<span itemprop="datePublished" class="shortDateFormat">{{ post.created }}</span></small>&nbsp;
-        <a itemprop="url" href="{{ url_for('news.post', key_id=post.key.id()) }}"><span itemprop="name">{{ post.title }}</span></a>
-    </dt>
-    <dd itemprop="description">{{ post.short_text | safe }}</dd>
-{% endstrip %}

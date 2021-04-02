@@ -12,17 +12,16 @@
     "url": "https://github.com/aegoroff/egoroff.spb.ru"
   },
   "dependencies": {
-    "coffee-script": "~1",
-    "less": "~2",
-    "uglify-js": "~2.6.0"
+    "coffeescript": "^2.5.1",
+    "less": "~4",
+    "uglify-js": "~3"
   },
   "devDependencies": {
     "bower": "~1",
     "del": "~1",
-    "gulp": "~3",
+    "gulp": "^4.0.2",
     "gulp-bower": "~0",
-    "gulp-livereload": "~3",
-    "gulp-load-plugins": "~0",
+    "gulp-load-plugins": "^2.0.6",
     "main-bower-files": "~2",
     "minimist": "~1"
   }

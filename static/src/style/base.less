@@ -1,0 +1,29 @@
+body {
+
+  > .container {
+    padding-top: (@line-height-computed / 4);
+    padding-bottom: (@line-height-computed);
+  }
+}
+
+.alert-announcement {
+  display: none;
+  &.container {
+    border-radius: 0;
+    margin-bottom: 0;
+    padding: @alert-padding;
+  }
+  > .close {
+    right: 0;
+  }
+}
+
+.img-error {
+  max-width: 100%;
+  margin: auto;
+  display: block;
+}
+
+.nav, .navbar, .breadcrumb, .well, .text-muted {
+  font-family:    @font-family-sans-serif;
+}
