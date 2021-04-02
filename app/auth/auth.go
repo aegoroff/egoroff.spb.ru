@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"egoroff.spb.ru/app/auth/facebook"
 	"egoroff.spb.ru/app/auth/github"
 	"egoroff.spb.ru/app/auth/google"
 	"egoroff.spb.ru/app/db"
@@ -34,6 +35,9 @@ func (a *Auth) Route(r *gin.Engine) {
 
 	callbackGh := r.Group("/_s/callback/github/authorized/")
 	callbackGh.GET("/", a.callbackGithub)
+
+	callbackFb := r.Group("/_s/callback/facebook/authorized/")
+	callbackFb.GET("/", a.callbackFacebook)
 }
 
 func (a *Auth) signout(c *gin.Context) {
@@ -56,6 +60,7 @@ func (a *Auth) signin(c *gin.Context) {
 	ctx["title"] = "Авторизация"
 	ctx["google_signin_url"] = google.GetLoginURL(state)
 	ctx["github_signin_url"] = github.GetLoginURL(state)
+	ctx["facebook_signin_url"] = facebook.GetLoginURL(state)
 
 	c.HTML(http.StatusOK, "signin.html", ctx)
 }
@@ -66,6 +71,10 @@ func (a *Auth) callbackGoogle(c *gin.Context) {
 
 func (a *Auth) callbackGithub(c *gin.Context) {
 	a.callback(c, github.Auth())
+}
+
+func (a *Auth) callbackFacebook(c *gin.Context) {
+	a.callback(c, facebook.Auth())
 }
 
 func (a *Auth) callback(c *gin.Context, validator gin.HandlerFunc) {

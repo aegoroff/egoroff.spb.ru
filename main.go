@@ -3,6 +3,7 @@ package main
 import (
 	"egoroff.spb.ru/app"
 	auth2 "egoroff.spb.ru/app/auth"
+	"egoroff.spb.ru/app/auth/facebook"
 	"egoroff.spb.ru/app/auth/github"
 	"egoroff.spb.ru/app/auth/google"
 	"egoroff.spb.ru/app/auth/oauth"
@@ -19,6 +20,7 @@ func main() {
 	oauth.NewStore([]byte("secret"))
 	google.Setup()
 	github.Setup()
+	facebook.Setup()
 	r.Use(oauth.Session("goquestsession"))
 
 	r.HTMLRender = pongo2gin.TemplatePath("templates")

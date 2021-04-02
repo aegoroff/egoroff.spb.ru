@@ -2,7 +2,6 @@ package domain
 
 import (
 	"cloud.google.com/go/datastore"
-	"strings"
 	"time"
 )
 
@@ -80,8 +79,10 @@ type User struct {
 }
 
 func (u *User) String() string {
-	if strings.HasPrefix(u.FederatedId, "github_") {
+	if u.Name != "" {
 		return u.Name
+	} else if u.Username != "" {
+		return u.Username
 	} else {
 		return u.Email
 	}

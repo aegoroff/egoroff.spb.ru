@@ -1,7 +1,4 @@
-// Package google provides you access to Google's OAuth2
-// infrastructure. The implementation is based on this blog post:
-// http://skarlso.github.io/2016/06/12/google-signin-with-go/
-package google
+package facebook
 
 import (
 	"context"
@@ -13,51 +10,33 @@ import (
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/glog"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/facebook"
 	"io/ioutil"
 	"net/http"
-
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
 )
 
-const Provider = "google"
+const Provider = "facebook"
 
 // User is a retrieved and authenticated user.
 type User struct {
-	Sub           string `json:"sub"`
-	Name          string `json:"name"`
-	GivenName     string `json:"given_name"`
-	FamilyName    string `json:"family_name"`
-	Profile       string `json:"profile"`
-	Picture       string `json:"picture"`
-	Email         string `json:"email"`
-	EmailVerified bool   `json:"email_verified"`
-	Gender        string `json:"gender"`
-	Hd            string `json:"hd"`
+	Id    string `json:"id"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
+	Login string `json:"username"`
 }
 
 var conf *oauth2.Config
 
 // Setup the authorization path
 func Setup() {
-	conf = oauth.NewConfig(Provider, google.Endpoint)
+	conf = oauth.NewConfig(Provider, facebook.Endpoint)
 }
 
 func GetLoginURL(state string) string {
 	return conf.AuthCodeURL(state)
 }
 
-// Auth is the google authorization middleware. You can use them to protect a routergroup.
-// Example:
-//
-//        private.Use(google.Auth())
-//        private.GET("/", UserInfoHandler)
-//        private.GET("/api", func(ctx *gin.Context) {
-//            ctx.JSON(200, gin.H{"message": "Hello from private for groups"})
-//        })
-//    func UserInfoHandler(ctx *gin.Context) {
-//        ctx.JSON(http.StatusOK, gin.H{"Hello": "from private", "user": ctx.MustGet("user").(google.User)})
-//    }
 func Auth() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		// Handle the exchange code to initiate a transport.
@@ -75,7 +54,7 @@ func Auth() gin.HandlerFunc {
 		}
 
 		client := conf.Client(context.Background(), tok)
-		resp, err := client.Get("https://www.googleapis.com/oauth2/v3/userinfo")
+		resp, err := client.Get("https://graph.facebook.com/me")
 		if err != nil {
 			ctx.AbortWithError(http.StatusBadRequest, err)
 			return
@@ -100,9 +79,10 @@ func Auth() gin.HandlerFunc {
 		u := domain.User{
 			Active:      true,
 			Email:       user.Email,
-			FederatedId: user.Sub,
+			FederatedId: user.Id,
 			Name:        user.Name,
-			Verified:    user.EmailVerified,
+			Verified:    true,
+			Username:    user.Login,
 		}
 		ctx.Set("user", u)
 	}
