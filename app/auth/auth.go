@@ -61,52 +61,14 @@ func (a *Auth) signin(c *gin.Context) {
 }
 
 func (a *Auth) callbackGoogle(c *gin.Context) {
-	validator := google.Auth()
-	validator(c)
-	if c.IsAborted() {
-		framework.Error401(c)
-		return
-	}
-	user, ok := c.Get("user")
-	if ok {
-		u := user.(google.User)
-
-		updateSession(c, func(s sessions.Session) {
-			s.Set(framework.UserIdCookie, u.Sub)
-		})
-
-		repo := db.NewRepository()
-		existing, err := repo.UserByFederatedId(u.Sub)
-		if err != nil {
-			log.Println(err)
-		}
-		if existing == nil {
-			err = repo.NewUser(&domain.User{
-				Model: domain.Model{
-					Created:  time.Now(),
-					Modified: time.Now(),
-				},
-				Active:      true,
-				Email:       u.Email,
-				FederatedId: u.Sub,
-				Name:        u.Name,
-				Verified:    u.EmailVerified,
-			})
-			if err != nil {
-				log.Println(err)
-			}
-		}
-	}
-	redirectUri := sessions.Default(c).Get(redirectUrlCookie)
-	if redirectUri != nil {
-		c.Redirect(http.StatusFound, redirectUri.(string))
-	} else {
-		c.Redirect(http.StatusFound, "/")
-	}
+	a.callback(c, google.Auth())
 }
 
 func (a *Auth) callbackGithub(c *gin.Context) {
-	validator := github.Auth()
+	a.callback(c, github.Auth())
+}
+
+func (a *Auth) callback(c *gin.Context, validator gin.HandlerFunc) {
 	validator(c)
 	if c.IsAborted() {
 		framework.Error401(c)
@@ -114,40 +76,23 @@ func (a *Auth) callbackGithub(c *gin.Context) {
 	}
 	user, ok := c.Get("user")
 	if ok {
-		u := user.(github.AuthUser)
-
-		federatedPrefix := "github_"
+		u := user.(domain.User)
 
 		updateSession(c, func(s sessions.Session) {
-			s.Set(framework.UserIdCookie, federatedPrefix+u.Login)
+			s.Set(framework.UserIdCookie, u.FederatedId)
 		})
 
 		repo := db.NewRepository()
-		existing, err := repo.UserByFederatedId(federatedPrefix + u.Login)
+		existing, err := repo.UserByFederatedId(u.FederatedId)
 		if err != nil {
 			log.Println(err)
 		}
 		if existing == nil {
-			gu := &GithubUserInfo{}
-			info, err := fetchGithubUserInfo(u.URL)
-			if err != nil {
-				log.Println(err)
-			} else {
-				gu = info
+			u.Model = domain.Model{
+				Created:  time.Now(),
+				Modified: time.Now(),
 			}
-			err = repo.NewUser(&domain.User{
-				Model: domain.Model{
-					Created:  time.Now(),
-					Modified: time.Now(),
-				},
-				Active:      true,
-				Email:       u.Email,
-				Username:    u.Login,
-				FederatedId: federatedPrefix + u.Login,
-				Name:        u.Name,
-				Verified:    true,
-				AvatarUrl:   gu.AvatarUrl,
-			})
+			err = repo.NewUser(&u)
 			if err != nil {
 				log.Println(err)
 			}

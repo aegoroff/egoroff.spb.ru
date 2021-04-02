@@ -112,3 +112,11 @@ type Folder struct {
 	FileKeys []*datastore.Key `datastore:"files"`
 	Files    []*File
 }
+
+type Auth struct {
+	Key          *datastore.Key `datastore:"__key__"`
+	ClientID     string         `datastore:"clientid"`
+	ClientSecret string         `datastore:"secret"`
+	RedirectURL  string         `datastore:"redirect_url"`
+	Scopes       []string       `datastore:"scopes"`
+}

@@ -2,13 +2,10 @@ package auth
 
 import (
 	"crypto/rand"
-	"egoroff.spb.ru/app/lib"
 	"encoding/base64"
-	"encoding/json"
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"log"
-	"net/http"
 )
 
 func randToken() string {
@@ -27,19 +24,4 @@ func updateSession(c *gin.Context, action func(s sessions.Session)) {
 	if err != nil {
 		log.Println(err)
 	}
-}
-
-func fetchGithubUserInfo(url string) (*GithubUserInfo, error) {
-	resp, err := http.Get(url)
-	if err != nil {
-		return nil, err
-	}
-	defer lib.Close(resp.Body)
-
-	var result GithubUserInfo
-
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return nil, err
-	}
-	return &result, nil
 }

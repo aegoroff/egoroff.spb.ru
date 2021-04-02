@@ -4,24 +4,22 @@
 package google
 
 import (
+	"context"
+	"egoroff.spb.ru/app/auth/oauth"
+	"egoroff.spb.ru/app/domain"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
-
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/glog"
+	"io/ioutil"
+	"net/http"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 )
 
-// Credentials stores google client-ids.
-type Credentials struct {
-	ClientID     string `json:"clientid"`
-	ClientSecret string `json:"secret"`
-}
+const Provider = "google"
 
 // User is a retrieved and authenticated user.
 type User struct {
@@ -37,32 +35,11 @@ type User struct {
 	Hd            string `json:"hd"`
 }
 
-var cred Credentials
 var conf *oauth2.Config
-var state string
-var store sessions.CookieStore
 
 // Setup the authorization path
-func Setup(redirectURL, credFile string, scopes []string, secret []byte) {
-	store = sessions.NewCookieStore(secret)
-	var c Credentials
-	file, err := ioutil.ReadFile(credFile)
-	if err != nil {
-		glog.Fatalf("[Gin-OAuth] File error: %v\n", err)
-	}
-	json.Unmarshal(file, &c)
-
-	conf = &oauth2.Config{
-		ClientID:     c.ClientID,
-		ClientSecret: c.ClientSecret,
-		RedirectURL:  redirectURL,
-		Scopes:       scopes,
-		Endpoint:     google.Endpoint,
-	}
-}
-
-func Session(name string) gin.HandlerFunc {
-	return sessions.Sessions(name, store)
+func Setup() {
+	conf = oauth.NewConfig(Provider, google.Endpoint)
 }
 
 func GetLoginURL(state string) string {
@@ -90,13 +67,13 @@ func Auth() gin.HandlerFunc {
 			return
 		}
 
-		tok, err := conf.Exchange(oauth2.NoContext, ctx.Query("code"))
+		tok, err := conf.Exchange(context.Background(), ctx.Query("code"))
 		if err != nil {
 			ctx.AbortWithError(http.StatusBadRequest, err)
 			return
 		}
 
-		client := conf.Client(oauth2.NoContext, tok)
+		client := conf.Client(context.Background(), tok)
 		email, err := client.Get("https://www.googleapis.com/oauth2/v3/userinfo")
 		if err != nil {
 			ctx.AbortWithError(http.StatusBadRequest, err)
@@ -118,6 +95,14 @@ func Auth() gin.HandlerFunc {
 			return
 		}
 		// save userinfo, which could be used in Handlers
-		ctx.Set("user", user)
+
+		u := domain.User{
+			Active:      true,
+			Email:       user.Email,
+			FederatedId: user.Sub,
+			Name:        user.Name,
+			Verified:    user.EmailVerified,
+		}
+		ctx.Set("user", u)
 	}
 }
