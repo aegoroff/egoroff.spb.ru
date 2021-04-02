@@ -59,12 +59,21 @@ func Auth() gin.HandlerFunc {
 
 		u := domain.User{
 			Active:      true,
-			Email:       *user.Email,
+			Email:       dereference(user.Email),
 			FederatedId: fmt.Sprintf("github_%d", user.ID),
-			Name:        *user.Name,
+			Name:        dereference(user.Name),
 			Verified:    true,
-			AvatarUrl:   *user.AvatarURL,
+			AvatarUrl:   dereference(user.AvatarURL),
+			Username:    dereference(user.Login),
 		}
 		ctx.Set("user", u)
 	}
+}
+
+func dereference(s *string) string {
+	result := ""
+	if s != nil {
+		result = *s
+	}
+	return result
 }

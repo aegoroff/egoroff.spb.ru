@@ -30,10 +30,10 @@ func (a *Auth) Route(r *gin.Engine) {
 	r.GET("/logout", a.signout)
 
 	callback := r.Group("/_s/callback/google/authorized/")
-	callback.GET("/", a.callback)
+	callback.GET("/", a.callbackGoogle)
 
 	callbackGh := r.Group("/_s/callback/github/authorized/")
-	callbackGh.GET("/", a.callback)
+	callbackGh.GET("/", a.callbackGithub)
 }
 
 func (a *Auth) signout(c *gin.Context) {
@@ -60,8 +60,15 @@ func (a *Auth) signin(c *gin.Context) {
 	c.HTML(http.StatusOK, "signin.html", ctx)
 }
 
-func (a *Auth) callback(c *gin.Context) {
-	validator := google.Auth()
+func (a *Auth) callbackGoogle(c *gin.Context) {
+	a.callback(c, google.Auth())
+}
+
+func (a *Auth) callbackGithub(c *gin.Context) {
+	a.callback(c, github.Auth())
+}
+
+func (a *Auth) callback(c *gin.Context, validator gin.HandlerFunc) {
 	validator(c)
 	if c.IsAborted() {
 		framework.Error401(c)
