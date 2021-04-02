@@ -77,6 +77,70 @@ func (r *Repository) NewUser(user *domain.User) error {
 	return nil
 }
 
+func (r *Repository) NewAuth(user *domain.Auth, name string) error {
+	c, err := r.conn.Connect()
+	if err != nil {
+		return err
+	}
+	defer lib.Close(c)
+
+	ctx, cancel := r.conn.newContext()
+	defer cancel()
+
+	k := datastore.NameKey("Auth", name, nil)
+	_, err = c.Put(ctx, k, user)
+	if err != nil {
+		return nil
+	}
+
+	return nil
+}
+
+func (r *Repository) Auth(name string) *domain.Auth {
+	c, err := r.conn.Connect()
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	defer lib.Close(c)
+
+	ctx, cancel := r.conn.newContext()
+	defer cancel()
+
+	k := datastore.NameKey("Auth", name, nil)
+	var auth domain.Auth
+	err = c.Get(ctx, k, &auth)
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	return &auth
+}
+
+func (r *Repository) AuthKeys() []string {
+	c, err := r.conn.Connect()
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	defer lib.Close(c)
+
+	ctx, cancel := r.conn.newContext()
+	defer cancel()
+
+	q := datastore.NewQuery("Auth").KeysOnly()
+	var auths []*domain.Auth
+	keys, err := c.GetAll(ctx, q, &auths)
+	if err != nil {
+		log.Println(err)
+	}
+	result := make([]string, len(keys))
+	for i, k := range keys {
+		result[i] = k.Name
+	}
+	return result
+}
+
 func (r *Repository) Tags() []*domain.TagContainter {
 	c, err := r.conn.Connect()
 	if err != nil {

@@ -5,6 +5,7 @@ import (
 	auth2 "egoroff.spb.ru/app/auth"
 	"egoroff.spb.ru/app/auth/github"
 	"egoroff.spb.ru/app/auth/google"
+	"egoroff.spb.ru/app/auth/oauth"
 	"egoroff.spb.ru/app/blog"
 	"github.com/gin-gonic/gin"
 	"github.com/stnc/pongo2gin"
@@ -13,22 +14,12 @@ import (
 )
 
 func main() {
-	google_scopes := []string{
-		"https://www.googleapis.com/auth/userinfo.email",
-		// You have to select your own scope from here -> https://developers.google.com/identity/protocols/googlescopes#google_sign-in
-	}
-
-	github_scopes := []string{
-		"user",
-		// You have to select your own scope from here -> https://developer.github.com/v3/oauth/#scopes
-	}
-	secret := []byte("secret")
-	sessionName := "goquestsession"
-
 	r := gin.Default()
-	google.Setup("https://4-dot-egoroff.appspot.com/_s/callback/google/authorized/", "static/site_credentials.json", google_scopes, secret)
-	github.Setup("https://4-dot-egoroff.appspot.com/_s/callback/github/authorized/", "static/site_credentials_gh.json", github_scopes, secret)
-	r.Use(google.Session(sessionName))
+	auth2.CreateOrUpdateProviders("static/auth_providers.json")
+	oauth.NewStore([]byte("secret"))
+	google.Setup()
+	github.Setup()
+	r.Use(oauth.Session("goquestsession"))
 
 	r.HTMLRender = pongo2gin.TemplatePath("templates")
 

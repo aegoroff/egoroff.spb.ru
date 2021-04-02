@@ -30,10 +30,10 @@ func (a *Auth) Route(r *gin.Engine) {
 	r.GET("/logout", a.signout)
 
 	callback := r.Group("/_s/callback/google/authorized/")
-	callback.GET("/", a.callbackGoogle)
+	callback.GET("/", a.callback)
 
 	callbackGh := r.Group("/_s/callback/github/authorized/")
-	callbackGh.GET("/", a.callbackGithub)
+	callbackGh.GET("/", a.callback)
 }
 
 func (a *Auth) signout(c *gin.Context) {
@@ -60,7 +60,7 @@ func (a *Auth) signin(c *gin.Context) {
 	c.HTML(http.StatusOK, "signin.html", ctx)
 }
 
-func (a *Auth) callbackGoogle(c *gin.Context) {
+func (a *Auth) callback(c *gin.Context) {
 	validator := google.Auth()
 	validator(c)
 	if c.IsAborted() {
@@ -69,85 +69,23 @@ func (a *Auth) callbackGoogle(c *gin.Context) {
 	}
 	user, ok := c.Get("user")
 	if ok {
-		u := user.(google.User)
+		u := user.(domain.User)
 
 		updateSession(c, func(s sessions.Session) {
-			s.Set(framework.UserIdCookie, u.Sub)
+			s.Set(framework.UserIdCookie, u.FederatedId)
 		})
 
 		repo := db.NewRepository()
-		existing, err := repo.UserByFederatedId(u.Sub)
+		existing, err := repo.UserByFederatedId(u.FederatedId)
 		if err != nil {
 			log.Println(err)
 		}
 		if existing == nil {
-			err = repo.NewUser(&domain.User{
-				Model: domain.Model{
-					Created:  time.Now(),
-					Modified: time.Now(),
-				},
-				Active:      true,
-				Email:       u.Email,
-				FederatedId: u.Sub,
-				Name:        u.Name,
-				Verified:    u.EmailVerified,
-			})
-			if err != nil {
-				log.Println(err)
+			u.Model = domain.Model{
+				Created:  time.Now(),
+				Modified: time.Now(),
 			}
-		}
-	}
-	redirectUri := sessions.Default(c).Get(redirectUrlCookie)
-	if redirectUri != nil {
-		c.Redirect(http.StatusFound, redirectUri.(string))
-	} else {
-		c.Redirect(http.StatusFound, "/")
-	}
-}
-
-func (a *Auth) callbackGithub(c *gin.Context) {
-	validator := github.Auth()
-	validator(c)
-	if c.IsAborted() {
-		framework.Error401(c)
-		return
-	}
-	user, ok := c.Get("user")
-	if ok {
-		u := user.(github.AuthUser)
-
-		federatedPrefix := "github_"
-
-		updateSession(c, func(s sessions.Session) {
-			s.Set(framework.UserIdCookie, federatedPrefix+u.Login)
-		})
-
-		repo := db.NewRepository()
-		existing, err := repo.UserByFederatedId(federatedPrefix + u.Login)
-		if err != nil {
-			log.Println(err)
-		}
-		if existing == nil {
-			gu := &GithubUserInfo{}
-			info, err := fetchGithubUserInfo(u.URL)
-			if err != nil {
-				log.Println(err)
-			} else {
-				gu = info
-			}
-			err = repo.NewUser(&domain.User{
-				Model: domain.Model{
-					Created:  time.Now(),
-					Modified: time.Now(),
-				},
-				Active:      true,
-				Email:       u.Email,
-				Username:    u.Login,
-				FederatedId: federatedPrefix + u.Login,
-				Name:        u.Name,
-				Verified:    true,
-				AvatarUrl:   gu.AvatarUrl,
-			})
+			err = repo.NewUser(&u)
 			if err != nil {
 				log.Println(err)
 			}

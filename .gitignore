@@ -16,3 +16,4 @@ node_modules
 temp/
 .sonar/
 intodev.bat
+/static/auth_providers.json
