@@ -57,14 +57,15 @@ func Auth() gin.HandlerFunc {
 			return
 		}
 
+		login := dereference(user.Login)
 		u := domain.User{
 			Active:      true,
 			Email:       dereference(user.Email),
-			FederatedId: fmt.Sprintf("github_%d", user.ID),
+			FederatedId: fmt.Sprintf("github_%d", login),
 			Name:        dereference(user.Name),
 			Verified:    true,
 			AvatarUrl:   dereference(user.AvatarURL),
-			Username:    dereference(user.Login),
+			Username:    login,
 		}
 		ctx.Set("user", u)
 	}
