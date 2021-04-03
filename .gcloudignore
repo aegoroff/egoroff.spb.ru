@@ -42,5 +42,7 @@ static/ext/
 static/src/
 node_modules/
 temp/
-ui/
+ui/*.*
+ui/public/
+ui/src/
 intodev.bat
