@@ -9,7 +9,9 @@
         <b-nav-item
           v-for="section in navigation"
           :key="section.id"
-          v-bind:href="section.id">{{ section.title }}
+          v-bind:href="section.id">
+          <font-awesome-icon v-bind:icon="section.icon" />
+          {{ section.title }}
         </b-nav-item>
       </b-navbar-nav>
 
@@ -39,10 +41,14 @@ import { Component, Prop, Vue } from 'vue-property-decorator'
 export class Section {
   public id: string
   public title: string
+  public class: string
+  public icon: string
 
   constructor () {
     this.id = ''
     this.title = ''
+    this.class = ''
+    this.icon = ''
   }
 }
 

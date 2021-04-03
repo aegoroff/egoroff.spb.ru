@@ -25,8 +25,6 @@ export default class App extends Vue {
     axios.get<Array<Section>>('/api/v2/navigation.json').then(r => {
       this.navigation.push(...r.data)
     })
-
-    console.log(this.navigation)
   }
 }
 
