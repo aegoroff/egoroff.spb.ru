@@ -9,6 +9,7 @@ static/dst
 static/ext
 static/fonts
 static/min
+static/ui
 static/site_credentials.json
 static/site_credentials_gh.json
 templates/apache/
