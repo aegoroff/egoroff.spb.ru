@@ -1,5 +1,5 @@
 <template>
-  <b-navbar toggleable="lg" type="dark" variant="info">
+  <b-navbar toggleable="lg" type="dark" class="navbar-custom">
     <b-navbar-brand href="#">Админка</b-navbar-brand>
 
     <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
@@ -59,6 +59,11 @@ export default class Navigation extends Vue {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="less">
-
+<style scoped lang="scss">
+.navbar-custom {
+  background-color: rgb(104, 148, 216);
+  .navbar-brand, .navbar-text, .navbar-nav .nav-link {
+    color: white;
+  }
+}
 </style>

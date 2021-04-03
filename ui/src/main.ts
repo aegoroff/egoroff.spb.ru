@@ -5,9 +5,7 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import { faBook, faBriefcase, faSearch, faHome, faUser } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
-// Import Bootstrap an BootstrapVue CSS files (order is important)
-import 'bootstrap/dist/css/bootstrap.css'
-import 'bootstrap-vue/dist/bootstrap-vue.css'
+import './App.scss'
 
 Vue.config.productionTip = false
 Vue.use(BootstrapVue)
