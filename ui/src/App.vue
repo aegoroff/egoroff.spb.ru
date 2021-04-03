@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <Navigation msg="Welcome to Your Vue.js + TypeScript App"/>
+    <Navigation/>
   </div>
 </template>
 
