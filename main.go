@@ -10,12 +10,14 @@ import (
 	"egoroff.spb.ru/app/blog"
 	"github.com/gin-gonic/gin"
 	"github.com/stnc/pongo2gin"
+	"github.com/gin-contrib/cors"
 	"log"
 	"os"
 )
 
 func main() {
 	r := gin.Default()
+	r.Use(cors.Default())
 	auth2.CreateOrUpdateProviders("static/auth_providers.json")
 	oauth.NewStore([]byte("secret"))
 	google.Setup()

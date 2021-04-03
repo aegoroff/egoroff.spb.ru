@@ -1,13 +1,16 @@
 <template>
   <b-navbar toggleable="lg" type="dark" variant="info">
-    <b-navbar-brand href="#">egoroff.spb.ru</b-navbar-brand>
+    <b-navbar-brand href="#">Админка</b-navbar-brand>
 
     <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
 
     <b-collapse id="nav-collapse" is-nav>
       <b-navbar-nav>
-        <b-nav-item href="#">Link</b-nav-item>
-        <b-nav-item href="#" disabled>Disabled</b-nav-item>
+        <b-nav-item
+          v-for="section in navigation"
+          :key="section.id"
+          v-bind:href="section.id">{{ section.title }}
+        </b-nav-item>
       </b-navbar-nav>
 
       <!-- Right aligned nav items -->
@@ -31,10 +34,21 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator'
+import { Component, Prop, Vue } from 'vue-property-decorator'
+
+export class Section {
+  public id: string
+  public title: string
+
+  constructor () {
+    this.id = ''
+    this.title = ''
+  }
+}
 
 @Component
 export default class Navigation extends Vue {
+  @Prop() private navigation!: Array<Section>
 }
 </script>
 

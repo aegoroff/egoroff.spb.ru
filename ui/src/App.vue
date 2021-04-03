@@ -1,19 +1,35 @@
 <template>
   <div id="app">
-    <Navigation/>
+    <Navigation v-bind:navigation="navigation"/>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
-import Navigation from './components/Navigation.vue'
+import Navigation, { Section } from './components/Navigation.vue'
+import axios from 'axios'
 
 @Component({
   components: {
     Navigation: Navigation
   }
 })
-export default class App extends Vue {}
+export default class App extends Vue {
+  private navigation: Array<Section>
+
+  constructor () {
+    super()
+
+    this.navigation = new Array<Section>()
+
+    axios.get<Array<Section>>('/api/v2/navigation.json').then(r => {
+      this.navigation.push(...r.data)
+    })
+
+    console.log(this.navigation)
+  }
+}
+
 </script>
 
 <style lang="less">
