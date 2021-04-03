@@ -22,6 +22,7 @@ func (a *api) Route(r *gin.Engine) {
 	{
 		ap.GET("/", a.index)
 		ap.GET("/posts.json", a.posts)
+		ap.GET("/navigation.json", a.navigation)
 	}
 }
 func (a *api) index(c *gin.Context) {
@@ -32,6 +33,11 @@ func (a *api) index(c *gin.Context) {
 	ctx["title"] = "API"
 
 	c.HTML(http.StatusOK, "api/index.html", ctx)
+}
+
+func (a *api) navigation(c *gin.Context) {
+	siteMap := framework.ReadSiteMap()
+	c.JSON(http.StatusOK, siteMap.Children)
 }
 
 func (a *api) posts(c *gin.Context) {
