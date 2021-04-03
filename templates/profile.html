@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
-# import 'macro/forms.html' as forms
-# import 'macro/utils.html' as utils
+{% import 'macro/forms.html' as forms %}
+{% import 'macro/utils.html' as utils %}
 
 {% block content %}
   <div class="page-header">
@@ -18,7 +18,7 @@
           <input id="username" class="form-control" name="username" type="text" value="{{user_db.username}}" readonly="readonly">
         </div>
         {{forms.text_field(form.name, autofocus=True)}}
-        # include 'user/user_email_field.html'
+        {% include 'user/user_email_field.html' %}
       </div>
       <div class="col-lg-2 col-sm-3">
         <div class="form-group">

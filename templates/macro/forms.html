@@ -1,38 +1,38 @@
-# macro field_errors(field)
-  # for error in field.errors
+{% macro field_errors(field) %}
+  {% for error in field.errors %}
     <p class="help-block">{{error}}</p>
-  # endfor
-# endmacro
+  {% endfor %}
+{% endmacro %}
 
 
-# macro field_description(field)
-  # if field.description
+{% macro field_description(field) %}
+  {% if field.description %}
     <p class="help-block">{{field.description}}</p>
-  # endif
-# endmacro
+  {% endif %}
+{% endmacro %}
 
 
-# macro input_field(field, type='text')
+{% macro input_field(field, type='text') %}
   <div class="form-group {{'has-error' if field.errors}}">
     {{field.label(class='control-label')}}
     {{field(class='form-control', **kwargs)}}
     {{field_errors(field)}}
     {{field_description(field)}}
   </div>
-# endmacro
+{% endmacro %}
 
 
-# macro text_field(field)
+{% macro text_field(field) %}
   {{input_field(field, **kwargs)}}
-# endmacro
+{% endmacro %}
 
 
-# macro password_field(field)
+{% macro password_field(field) %}
   {{input_field(field, type='password', **kwargs)}}
-# endmacro
+{% endmacro %}
 
 
-# macro password_visible_field(field, size='')
+{% macro password_visible_field(field, size='') %}
   <div class="form-group {{'has-error' if field.errors}}">
     {{field.label(class='control-label')}}
     <div class="input-group {{'input-group-%s' % size if size}}">
@@ -46,54 +46,54 @@
     {{field_errors(field)}}
     {{field_description(field)}}
   </div>
-# endmacro
+{% endmacro %}
 
 
-# macro number_field(field)
+{% macro number_field(field) %}
   {{input_field(field, type='number', **kwargs)}}
-# endmacro
+{% endmacro %}
 
 
-# macro date_field(field)
+{% macro date_field(field) %}
   {{input_field(field, type='date', **kwargs)}}
-# endmacro
+{% endmacro %}
 
 
-# macro email_field(field)
+{% macro email_field(field) %}
   {{input_field(field, type='email', **kwargs)}}
-# endmacro
+{% endmacro %}
 
 
-# macro select_field(field)
+{% macro select_field(field) %}
   {{input_field(field, **kwargs)}}
-# endmacro
+{% endmacro %}
 
 
-# macro hidden_field(field)
+{% macro hidden_field(field) %}
   {{field(type='hidden', **kwargs)}}
-# endmacro
+{% endmacro %}
 
 
-# macro textarea_field(field, rows=4)
+{% macro textarea_field(field, rows=4) %}
   <div class="form-group {{'has-error' if field.errors}}">
     {{field.label(class='control-label')}}
     {{field(class='form-control', rows=rows, **kwargs)}}
     {{field_errors(field)}}
     {{field_description(field)}}
   </div>
-# endmacro
+{% endmacro %}
 
-# macro redactor_field(field, rows=4)
+{% macro redactor_field(field, rows=4) %}
   <div class="form-group {{'has-error' if field.errors}}">
     {{field.label(class='control-label')}}
     {{field(class='form-control redactor', rows=rows, **kwargs)}}
     {{field_errors(field)}}
     {{field_description(field)}}
   </div>
-# endmacro
+{% endmacro %}
 
 
-# macro checkbox_field(field)
+{% macro checkbox_field(field) %}
   <div class="checkbox {{'has-error' if field.errors}}">
     <label class="{{'text-muted' if 'disabled' in kwargs}}">
       {{field(**kwargs)}} {{field.label.text}}
@@ -101,40 +101,40 @@
     {{field_errors(field)}}
     {{field_description(field)}}
   </div>
-# endmacro
+{% endmacro %}
 
 
-# macro list_input_field(field, type)
+{% macro list_input_field(field, type) %}
   <div class="form-group {{'has-error' if field.errors}}">
     {{field.label(class='control-label')}}
     {{field_description(field)}}
-    # for key, value in field.choices
+    {% for key, value in field.choices %}
       <div class="{{type}}">
         <label>
           <input type="{{type}}" name="{{field.name}}" value="{{key}}"
-            # if field.data and key in field.data
+            {% if field.data and key in field.data %}
               checked
-            # endif
+            {% endif %}
           > {{value}}
         </label>
       </div>
-    # endfor
+    {% endfor %}
     {{field_errors(field)}}
   </div>
-# endmacro
+{% endmacro %}
 
 
-# macro multiple_checkbox_field(field)
+{% macro multiple_checkbox_field(field) %}
   {{list_input_field(field, 'checkbox')}}
-# endmacro
+{% endmacro %}
 
 
-# macro radio_field(field)
+{% macro radio_field(field) %}
   {{list_input_field(field, 'radio')}}
-# endmacro
+{% endmacro %}
 
-# macro recaptcha_field(field)
-  # if field
+{% macro recaptcha_field(field) %}
+  {% if field %}
     <div class="form-group recaptcha {{'has-error' if field.errors}}">
       {{field.widget.server}}
       {{field.widget.script_url}}
@@ -148,10 +148,10 @@
       {{field_errors(field)}}
       {{field_description(field)}}
     </div>
-  # endif
-# endmacro
+  {% endif %}
+{% endmacro %}
 
-# macro oauth_fields(name, fields, help)
+{% macro oauth_fields(name, fields, help) %}
   <div class="panel panel-default">
     <div class="panel-heading">
       <h4 class="panel-title">
@@ -161,17 +161,17 @@
     </div>
     <div id="{{slugify(name)}}" class="panel-collapse collapse">
       <div class="panel-body">
-        # if is_iterable(fields)
-          # for field in fields:
+        {% if is_iterable(fields) %}
+          {% for field in fields: %}
             {{text_field(field)}}
-          # endfor
-        #else
+          {% endfor %}
+        {% else %}
           {{ text_field(fields) }}
-        #endif
-        # if help
+        {% endif %}
+        {% if help %}
           <p class="help-block">{{help|safe}}</p>
-        # endif
+        {% endif %}
       </div>
     </div>
   </div>
-# endmacro
+{% endmacro %}
