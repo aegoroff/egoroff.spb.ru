@@ -4,14 +4,12 @@ import App from './App.vue'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faBook, faBriefcase, faSearch, faHome, faUser } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-// import NProgress from 'vue-nprogress-ts'
 
 import './App.scss'
 
 Vue.config.productionTip = false
 Vue.use(BootstrapVue)
 Vue.use(IconsPlugin)
-// Vue.use(NProgress)
 
 library.add(faBook, faBriefcase, faSearch, faHome, faUser)
 Vue.component('font-awesome-icon', FontAwesomeIcon)
