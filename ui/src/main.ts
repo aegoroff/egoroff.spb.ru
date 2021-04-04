@@ -8,12 +8,11 @@ import {
   faSearch,
   faHome,
   faUser,
-  faCalendar,
   faCalendarAlt
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import VueProgressBar from 'vue-progressbar'
-import Calendar from './components/Calendar.vue'
+import AppIcon from './components/AppIcon.vue'
 import DateFormatter from '@/components/DateFomatter.vue'
 
 import './App.scss'
@@ -23,7 +22,7 @@ Vue.use(BootstrapVue)
 Vue.use(IconsPlugin)
 Vue.use(VueProgressBar)
 
-library.add(faBook, faBriefcase, faSearch, faHome, faUser, faCalendar, faCalendarAlt)
+library.add(faBook, faBriefcase, faSearch, faHome, faUser, faCalendarAlt)
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 
 const app = new App()
@@ -31,7 +30,11 @@ app.$mount('#app')
 
 const calendars = document.querySelectorAll('.calendar')
 calendars.forEach(x => {
-  const calendar = new Calendar()
+  const calendar = new AppIcon({
+    propsData: {
+      icon: 'calendar-alt'
+    }
+  })
   calendar.$mount(x)
 })
 
