@@ -2,9 +2,19 @@ import Vue from 'vue'
 import { BootstrapVue, IconsPlugin } from 'bootstrap-vue/src'
 import App from './App.vue'
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faBook, faBriefcase, faSearch, faHome, faUser } from '@fortawesome/free-solid-svg-icons'
+import {
+  faBook,
+  faBriefcase,
+  faSearch,
+  faHome,
+  faUser,
+  faCalendar,
+  faCalendarAlt
+} from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import VueProgressBar from 'vue-progressbar'
+import Calendar from './components/Calendar.vue'
+import DateFormatter from '@/components/DateFomatter.vue'
 
 import './App.scss'
 
@@ -13,9 +23,34 @@ Vue.use(BootstrapVue)
 Vue.use(IconsPlugin)
 Vue.use(VueProgressBar)
 
-library.add(faBook, faBriefcase, faSearch, faHome, faUser)
+library.add(faBook, faBriefcase, faSearch, faHome, faUser, faCalendar, faCalendarAlt)
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 
-new Vue({
-  render: h => h(App)
-}).$mount('#app')
+const app = new App()
+app.$mount('#app')
+
+const calendars = document.querySelectorAll('.calendar')
+calendars.forEach(x => {
+  const calendar = new Calendar()
+  calendar.$mount(x)
+})
+
+const shortDate = document.querySelectorAll('.shortDate')
+shortDate.forEach(x => {
+  new DateFormatter({
+    propsData: {
+      date: x.innerHTML,
+      formatStr: 'LL'
+    }
+  }).$mount(x)
+})
+
+const longDate = document.querySelectorAll('.longDate')
+longDate.forEach(x => {
+  new DateFormatter({
+    propsData: {
+      date: x.innerHTML,
+      formatStr: 'LLL'
+    }
+  }).$mount(x)
+})
