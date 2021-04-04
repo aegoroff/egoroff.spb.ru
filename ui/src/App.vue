@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+    <NProgressContainer></NProgressContainer>
     <Navigation v-bind:navigation="navigation"/>
   </div>
 </template>
@@ -7,11 +8,13 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
 import Navigation, { Section } from './components/Navigation.vue'
+import NProgressContainer from './components/NProgressContainer.vue'
 import axios from 'axios'
 
 @Component({
   components: {
-    Navigation: Navigation
+    Navigation: Navigation,
+    NProgressContainer: NProgressContainer
   }
 })
 export default class App extends Vue {
