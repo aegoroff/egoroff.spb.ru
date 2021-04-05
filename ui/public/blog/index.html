@@ -1,0 +1,31 @@
+{% extends '../index.html' %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-lg-9">
+            <div class="pb-2 mt-4 mb-2 border-bottom">
+                <h1>
+                    {{ title }}
+                    <small data-bind="text: titleExt">тут я пишу</small>
+                </h1>
+            </div>
+            {% set posts = poster.Posts() %}
+            {% if not posts %}
+                Ничего нет
+            {% else %}
+                <dl itemscope itemtype="http://schema.org/BlogPosting" id="blogcontainer">
+                    {% for post in posts %}
+                        {% include 'post_box.html' %}
+                    {% endfor %}
+                </dl>
+            {% endif %}
+            {% include 'paginator.html' %}
+        </div>
+        <div class="col-lg-3">
+            <h3>Метки</h3>
+            {% include 'tags.html' %}
+            <h3>Архив</h3>
+            {% include 'archive.html' %}
+        </div>
+    </div>
+{% endblock %}

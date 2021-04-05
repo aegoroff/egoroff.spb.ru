@@ -25,7 +25,7 @@ func main() {
 	facebook.Setup()
 	r.Use(oauth.Session("goquestsession"))
 
-	r.HTMLRender = pongo2gin.TemplatePath("templates")
+	r.HTMLRender = pongo2gin.TemplatePath("static/dist")
 
 	portfolio := app.NewPortfolio("apache/config.json")
 	static := app.NewStaticRouter()

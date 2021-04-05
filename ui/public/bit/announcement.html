@@ -1,0 +1,8 @@
+{% if ctx.conf.AnnouncementHtml %}
+  <div class="alert-{{ctx.conf.AnnouncementType}}">
+    <div class="container alert alert-dismissable alert-announcement">
+      <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+      {{ctx.conf.AnnouncementHtml|safe}}
+    </div>
+  </div>
+{% endif %}

@@ -1,0 +1,22 @@
+
+{% if breadcrumbs %}
+<div class="container">
+    <div class="row">
+        <div class="col-lg-12">
+            <ol class="breadcrumb">
+                {% block breadcrumbs %}
+                {% for item in breadcrumbs %}
+                <li>
+                    <a href="{{ctx.PathFor(item.Id)}}">{% if item.Class %}<i class="{{ item.Class }}"></i>&nbsp;{% endif %}{{ item.Title }}</a>
+                </li>
+                {% endfor %}
+                <li class="active">
+                    {{ title }}
+                </li>
+                {% endblock %}
+            </ol>
+        </div>
+        <hr>
+    </div>
+</div>
+{% endif %}

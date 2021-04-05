@@ -7,8 +7,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="author" content="Александр Егоров">
-    <meta name="google-site-verification" content="PHs3gMRw0_sIAdVqjk38_fbq9h3VGHkkIq3w1chJXWs"/>
-    <meta name='yandex-verification' content='4c9a9332153bb06f' />
+    {% block meta %}
+    {% endblock %}
 
     <link rel="icon" href="<%= BASE_URL %>favicon.ico">
     <link href='https://fonts.googleapis.com/css?family=Noto+Serif:400,700,400italic,700italic|Open+Sans:700,400&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
@@ -21,46 +21,17 @@
 </noscript>
 <div id="app"></div>
 <!-- built files will be auto injected -->
-
+<!--noindex-->
+{% include 'bit/breadcrumbs.html' %}
+<!--/noindex-->
+{% include 'bit/announcement.html' %}
+{% block maincontainer %}
 <div class="container">
-    <div class="pb-2 mt-4 mb-2 border-bottom">
-        <h1>
-            egoroff.spb.ru
-            <small>
-                блог о программировании
-            </small>
-        </h1>
-    </div>
-
-    <div class="row">
-        <div class="col-lg-6">
-            <h2><a href="{{ ctx.PathFor('blog') }}">Блог</a></h2>
-            {% if posts %}
-            <dl itemscope itemtype="http://schema.org/BlogPosting" id="log">
-                {% for post in posts %}
-                <dt><small><i class="calendar"></i>&nbsp;<span itemprop="datePublished" class="shortDate">{{ post.Created.Format("2006-01-02 15:04:05") }}</span></small>&nbsp;
-                    <a itemprop="url" href="{{ctx.PathFor('blog')}}{{ post.Key.ID }}.html"><span itemprop="name">{{ post.Title }}</span></a>
-                </dt>
-                <dd itemprop="description">{{ post.ShortText | safe }}</dd>
-                {% endfor %}
-            </dl>
-            {% else %}
-            <p>Пока ничего нового.</p>
-            {% endif %}
-        </div>
-        <div class="col-lg-6">
-            <h2>Про апачей</h2>
-            {% if apache_docs %}
-            <dl>
-                {% for item in apache_docs %}
-                <dt><a href="{{ctx.PathFor('portfolio')}}{{ item.ID }}.html">{{ item.Title }}</a></dt>
-                <dd>{{ item.Description | safe }}</dd>
-                {% endfor %}
-            </dl>
-            {% endif %}
-        </div>
-    </div>
+    {% include 'bit/notifications.html' %}
+    {% block content %}
+    {% endblock %}
 </div>
+{% endblock %}
 
 <footer class="footer" role="contentinfo">
     <div class="container">
