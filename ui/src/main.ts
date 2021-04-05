@@ -16,6 +16,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import VueProgressBar from 'vue-progressbar'
 import AppIcon from './components/AppIcon.vue'
 import DateFormatter from '@/components/DateFomatter.vue'
+import FromNow from '@/components/FromNow.vue'
 
 import './App.scss'
 
@@ -60,6 +61,15 @@ longDate.forEach(x => {
     propsData: {
       date: x.innerHTML,
       formatStr: 'LLL'
+    }
+  }).$mount(x)
+})
+
+const fromNow = document.querySelectorAll('.date-from-now')
+fromNow.forEach(x => {
+  new FromNow({
+    propsData: {
+      date: x.innerHTML
     }
   }).$mount(x)
 })
