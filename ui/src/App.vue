@@ -9,7 +9,7 @@
 import 'reflect-metadata'
 import { Component, Vue } from 'vue-property-decorator'
 import Navigation, { Section } from './components/Navigation.vue'
-import ApiService from './components/ApiService.vue'
+import ApiService from './services/ApiService.vue'
 import { inject } from 'vue-typescript-inject'
 
 @Component({

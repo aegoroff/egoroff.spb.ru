@@ -2,7 +2,7 @@
 import 'reflect-metadata'
 import axios from 'axios'
 import { Vue } from 'vue-property-decorator'
-import { Section } from './Navigation.vue'
+import { Section } from '../components/Navigation.vue'
 import { injectable } from 'vue-typescript-inject'
 
 @injectable()
