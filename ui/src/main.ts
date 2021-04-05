@@ -1,4 +1,5 @@
 import Vue from 'vue'
+import VueTypeScriptInject from 'vue-typescript-inject'
 import { BootstrapVue, IconsPlugin } from 'bootstrap-vue/src'
 import App from './App.vue'
 import { library } from '@fortawesome/fontawesome-svg-core'
@@ -18,6 +19,7 @@ import DateFormatter from '@/components/DateFomatter.vue'
 import './App.scss'
 
 Vue.config.productionTip = false
+Vue.use(VueTypeScriptInject)
 Vue.use(BootstrapVue)
 Vue.use(IconsPlugin)
 Vue.use(VueProgressBar)

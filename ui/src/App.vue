@@ -6,27 +6,25 @@
 </template>
 
 <script lang="ts">
+import 'reflect-metadata'
 import { Component, Vue } from 'vue-property-decorator'
 import Navigation, { Section } from './components/Navigation.vue'
-import axios from 'axios'
+import ApiService from './components/ApiService.vue'
+import { inject } from 'vue-typescript-inject'
 
 @Component({
   components: {
     Navigation
-  }
+  },
+  providers: [ApiService]
 })
 export default class App extends Vue {
-  private navigation: Array<Section>
+  private navigation!: Array<Section>
+  @inject() api!: ApiService
 
   constructor () {
     super()
-
-    this.navigation = new Array<Section>()
-
-    this.$Progress.start()
-    axios.get<Array<Section>>('/api/v2/navigation.json').then(r => {
-      this.navigation.push(...r.data)
-    }).finally(() => this.$Progress.finish())
+    this.navigation = this.api.getNavigation()
   }
 }
 </script>
