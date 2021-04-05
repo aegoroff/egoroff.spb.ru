@@ -1,4 +1,92 @@
+$font-family-sans-serif:  'Open Sans', Verdana, "Helvetica Neue", Helvetica, Arial, sans-serif;
+$font-family-serif:       'Noto Serif', Georgia, "Times New Roman", Times, serif;
+$font-family-base: $font-family-serif;
+$headings-font-family:    $font-family-sans-serif;
+$breadcrumb-separator: "→";
 
 // Then import Bootstrap an BootstrapVue SCSS files (order is important)
 @import '~bootstrap';
 @import '~bootstrap-vue';
+
+$footer-height: ($spacer * 2);
+
+body {
+
+  > .container {
+    padding-top: ($spacer * 2);
+    padding-bottom: ($spacer * 2);
+  }
+
+  margin-bottom: $footer-height;
+}
+
+.alert-announcement {
+  display: none;
+
+  &.container {
+    border-radius: 0;
+    margin-bottom: 0;
+    padding-left: $alert-padding-x;
+    padding-right: $alert-padding-x;
+    padding-top: $alert-padding-y;
+    padding-bottom: $alert-padding-y;
+  }
+
+  > .close {
+    right: 0;
+  }
+}
+
+.img-error {
+  max-width: 100%;
+  margin: auto;
+  display: block;
+}
+
+.nav, .navbar, .breadcrumb, .text-muted {
+  font-family: $font-family-sans-serif;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  display: table;
+  width: 100%;
+  height: $footer-height;
+  border-top: 1px solid $hr-border-color;
+  color: $text-muted;
+  background-color: #f5f5f5;
+  text-align: center;
+  & > .container {
+    display: table-cell;
+    vertical-align: middle;
+    p:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+td {
+  &.ellipsis {
+    max-width: 0;
+  }
+}
+
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  small,
+  .small {
+    color: $gray-500;
+  }
+}

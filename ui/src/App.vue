@@ -12,7 +12,7 @@ import axios from 'axios'
 
 @Component({
   components: {
-    Navigation: Navigation
+    Navigation
   }
 })
 export default class App extends Vue {
