@@ -12,7 +12,8 @@ func NewStaticRouter() Router {
 
 func (*staticRouter) Route(r *gin.Engine) {
 	r.Static("/p/", "static/")
-	r.Static("/admin/", "static/dist/")
+	r.Static("/css/", "static/dist/css/")
+	r.Static("/js/", "static/dist/js/")
 
 	// Apache static
 	ag := r.Group("/apache")

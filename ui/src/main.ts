@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import VueTypeScriptInject from 'vue-typescript-inject'
+import VueGtag from 'vue-gtag'
 import { BootstrapVue, IconsPlugin } from 'bootstrap-vue/src'
 import App from './App.vue'
 import { library } from '@fortawesome/fontawesome-svg-core'
@@ -23,6 +24,9 @@ Vue.use(VueTypeScriptInject)
 Vue.use(BootstrapVue)
 Vue.use(IconsPlugin)
 Vue.use(VueProgressBar)
+Vue.use(VueGtag, {
+  config: { id: 'UA-145548-1' }
+})
 
 library.add(faBook, faBriefcase, faSearch, faHome, faUser, faCalendarAlt)
 Vue.component('font-awesome-icon', FontAwesomeIcon)
