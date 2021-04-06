@@ -47,23 +47,22 @@ icons.forEach(x => {
   appIcon.$mount(x)
 })
 
-const shortDate = document.querySelectorAll('span.date[data-label]')
-shortDate.forEach(x => {
+const dates = document.querySelectorAll('span.date[data-label]')
+dates.forEach(x => {
   const label = x.attributes.getNamedItem('data-label')
   const fmt = label === null ? 'LL' : label.value
-  new DateFormatter({
-    propsData: {
-      date: x.innerHTML,
-      formatStr: fmt
-    }
-  }).$mount(x)
-})
-
-const fromNow = document.querySelectorAll('.date-from-now')
-fromNow.forEach(x => {
-  new FromNow({
-    propsData: {
-      date: x.innerHTML
-    }
-  }).$mount(x)
+  if (fmt === 'from-now') {
+    new FromNow({
+      propsData: {
+        date: x.innerHTML
+      }
+    }).$mount(x)
+  } else {
+    new DateFormatter({
+      propsData: {
+        date: x.innerHTML,
+        formatStr: fmt
+      }
+    }).$mount(x)
+  }
 })
