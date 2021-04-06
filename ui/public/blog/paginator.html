@@ -37,15 +37,15 @@
             <a href="{{ctx.PathFor('blog')}}page/{{ href }}" class="next">{{ older | safe }}</a>
         </li>
     </ul>
-    <ul class="pagination pagination-sm">
+    <ul class="pagination">
         {% for page in poster.Pages() %}
             {% if page %}
-                <li {% if page == poster.Page() %} class="active" {% endif %}>
+                <li {% if page == poster.Page() %} class="active page-item" {% else %} class="page-item" {% endif %}>
                     {% if page == 1 %}
-                    <a href="{{ ctx.PathFor('blog') }}{{ tag_query }}" class="page">{{ page }}</a>
+                    <a href="{{ ctx.PathFor('blog') }}{{ tag_query }}" class="page-link">{{ page }}</a>
                     {% else %}
                     <a href="{{ ctx.PathFor('blog') }}page/{{ page }}/{{ tag_query }}"
-                       class="page">{{ page }}</a>
+                       class="page-link">{{ page }}</a>
                     {% endif %}
                 </li>
             {% else %}
