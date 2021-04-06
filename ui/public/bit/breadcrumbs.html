@@ -6,11 +6,11 @@
             <ol class="breadcrumb">
                 {% block breadcrumbs %}
                 {% for item in breadcrumbs %}
-                <li>
-                    <a href="{{ctx.PathFor(item.Id)}}">{% if item.Class %}<i class="{{ item.Class }}"></i>&nbsp;{% endif %}{{ item.Title }}</a>
+                <li class="breadcrumb-item">
+                    <a href="{{ctx.PathFor(item.Id)}}">{% if item.Icon %}<i class="icon" data-label="{{ item.Icon }}"></i>&nbsp;{% endif %}{{ item.Title }}</a>
                 </li>
                 {% endfor %}
-                <li class="active">
+                <li class="active breadcrumb-item">
                     {{ title }}
                 </li>
                 {% endblock %}

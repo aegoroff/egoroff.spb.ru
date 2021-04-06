@@ -35,14 +35,16 @@ Vue.component('font-awesome-icon', FontAwesomeIcon)
 const app = new App()
 app.$mount('#app')
 
-const calendars = document.querySelectorAll('.calendar')
-calendars.forEach(x => {
-  const calendar = new AppIcon({
+const icons = document.querySelectorAll('i.icon[data-label]')
+icons.forEach(x => {
+  const label = x.attributes.getNamedItem('data-label')
+  const icon = label === null ? '' : label.value
+  const appIcon = new AppIcon({
     propsData: {
-      icon: 'calendar-alt'
+      icon: icon
     }
   })
-  calendar.$mount(x)
+  appIcon.$mount(x)
 })
 
 const shortDate = document.querySelectorAll('.shortDate')
