@@ -76,20 +76,25 @@ type Blog struct {
 }
 
 type Tag struct {
-	Title string
-	Level string
+	Title string `json:"title"`
+	Level string `json:"level"`
 }
 
 type Year struct {
-	Year   int
-	Posts  int
-	Months []*Month
+	Year   int      `json:"year"`
+	Posts  int      `json:"posts"`
+	Months []*Month `json:"months"`
 }
 
 type Month struct {
-	Month int
-	Name  string
-	Posts int
+	Month int    `json:"month"`
+	Name  string `json:"name"`
+	Posts int    `json:"posts"`
+}
+
+type Archive struct {
+	Tags  interface{}  `json:"tags"`
+	Years interface{} `json:"years"`
 }
 
 func NewBlog() *Blog {
@@ -144,6 +149,10 @@ func (*Blog) index(c *gin.Context) {
 
 func (b *Blog) post(c *gin.Context) {
 	ids := c.Param("id")
+	if strings.EqualFold(ids, "archive") {
+		b.archive(c)
+		return
+	}
 	if !strings.HasSuffix(ids, ".html") {
 		b.index(c)
 		return
@@ -209,6 +218,19 @@ func (b *Blog) showPost(c *gin.Context, id int64) {
 	ctx["keywords"] = strings.Join(post.Tags, ",")
 
 	c.HTML(http.StatusOK, "blog/post.html", ctx)
+}
+
+func (*Blog) archive(c *gin.Context) {
+	rep := db.NewRepository()
+	containers := rep.Tags()
+	tags, times, total := groupContainers(containers)
+	t := createTags(tags, total)
+	y := createArchive(times)
+	a := Archive{
+		Tags:  t,
+		Years: y,
+	}
+	c.JSON(http.StatusOK, a)
 }
 
 func groupContainers(containers []*domain.TagContainter) (map[string]int, map[int64]time.Time, int) {

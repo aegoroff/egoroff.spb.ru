@@ -17,6 +17,7 @@ import VueProgressBar from 'vue-progressbar'
 import AppIcon from './components/AppIcon.vue'
 import DateFormatter from '@/components/DateFomatter.vue'
 import FromNow from '@/components/FromNow.vue'
+import BlogNavigation from '@/components/BlogNavigation.vue'
 
 import './App.scss'
 
@@ -34,6 +35,11 @@ Vue.component('font-awesome-icon', FontAwesomeIcon)
 
 const app = new App()
 app.$mount('#app')
+
+if (document.getElementById('blogNavigation')) {
+  const bn = new BlogNavigation()
+  bn.$mount('#blogNavigation')
+}
 
 const icons = document.querySelectorAll('i.icon[data-label]')
 icons.forEach(x => {

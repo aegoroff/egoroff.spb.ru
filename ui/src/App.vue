@@ -20,7 +20,7 @@ import { inject } from 'vue-typescript-inject'
 })
 export default class App extends Vue {
   private navigation!: Array<Section>
-  @inject() api!: ApiService
+  @inject() private api!: ApiService
 
   constructor () {
     super()
