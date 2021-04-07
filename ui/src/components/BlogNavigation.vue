@@ -8,10 +8,12 @@
 </template>
 
 <script lang="ts">
+import 'reflect-metadata'
 import { Component, Prop, Vue } from 'vue-property-decorator'
 import ApiService from '@/services/ApiService.vue'
 import Tags, { Tag } from '@/components/Tags.vue'
 import Chrono, { Year } from '@/components/Chrono.vue'
+import { inject } from 'vue-typescript-inject'
 
 export class Archive {
   public tags!: Array<Tag>
@@ -22,16 +24,12 @@ export class Archive {
   components: {
     Tags,
     Chrono
-  }
+  },
+  providers: [ApiService]
 })
 export default class BlogNavigation extends Vue {
   @Prop() private archive!: Archive
-  private api!: ApiService
-
-  constructor () {
-    super()
-    this.api = new ApiService()
-  }
+  @inject() private api!: ApiService
 
   mounted (): void {
     this.api.getBlogArchive().then(x => {
