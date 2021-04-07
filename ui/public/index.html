@@ -13,6 +13,8 @@
     <link rel="icon" href="<%= BASE_URL %>favicon.ico">
     <link href='https://fonts.googleapis.com/css?family=Noto+Serif:400,700,400italic,700italic|Open+Sans:700,400&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
     <title>{{title}}{% if title_path %}{{" | "}}{{title_path}}{% endif %}</title>
+    {% block head %}
+    {% endblock %}
 </head>
 <body>
 <noscript>
@@ -42,5 +44,8 @@
         <p class="muted">&copy; 2002-2021 - Александр Егоров</p>
     </div>
 </footer>
+<script src="/p/min/script/syntaxhighlighter.min.js?{{current_version_id}}"></script>
+{% block scripts %}
+{% endblock %}
 </body>
 </html>

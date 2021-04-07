@@ -162,3 +162,20 @@ h1, h2, h3, h4, h5, h6,
     color: #F00;
   }
 }
+
+pre.code, code {
+  color: #0d0d97;
+}
+
+code {
+  background-color: transparent;
+  border: none;
+  padding: 0;
+}
+
+pre.code {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 95%;
+  background-color: transparent;
+  border: none;
+}
