@@ -1,5 +1,5 @@
 
-<dt><small><i class="icon" data-label="calendar-alt"></i>&nbsp;<span itemprop="datePublished" class="date" data-label="LL">{{ post.Created.Format("2006-01-02 15:04:05") }}</span></small>&nbsp;
+<dt><small><span itemprop="datePublished" class="date" data-label="LL">{{ post.Created.Format("2006-01-02 15:04:05") }}</span></small>&nbsp;
     <a itemprop="url" href="{{ctx.PathFor('blog')}}{{ post.Key.ID }}.html"><span itemprop="name">{{ post.Title }}</span></a>
 </dt>
 <dd itemprop="description">{{ post.ShortText | safe }}</dd>

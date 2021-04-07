@@ -11,7 +11,7 @@ export default class ApiService extends Vue {
   public getNavigation (): Array<Section> {
     const navigation = new Array<Section>()
 
-    axios.get<Array<Section>>('/api/v2/navigation.json').then(r => {
+    axios.get<Array<Section>>('/api/v2/navigation/').then(r => {
       navigation.push(...r.data)
     })
 
@@ -20,7 +20,7 @@ export default class ApiService extends Vue {
 
   public async getBlogArchive (): Promise<Archive> {
     this.$Progress.start()
-    return await axios.get<Archive>('/blog/archive/').then(r => {
+    return await axios.get<Archive>('/api/v2/blog/archive/').then(r => {
       return r.data
     }).finally(() => this.$Progress.finish())
   }
