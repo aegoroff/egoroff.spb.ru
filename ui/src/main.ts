@@ -20,6 +20,7 @@ import FromNow from '@/components/FromNow.vue'
 import BlogNavigation from '@/components/BlogNavigation.vue'
 
 import './App.scss'
+import Pluso from '@/components/Pluso.vue'
 
 Vue.config.productionTip = false
 Vue.use(VueTypeScriptInject)
@@ -40,6 +41,12 @@ if (document.getElementById('blogNavigation')) {
   const bn = new BlogNavigation()
   bn.$mount('#blogNavigation')
 }
+
+const pluso = document.querySelectorAll('.pluso')
+pluso.forEach(x => {
+  const p = new Pluso()
+  p.$mount(x)
+})
 
 const icons = document.querySelectorAll('i.icon[data-label]')
 icons.forEach(x => {
