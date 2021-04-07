@@ -40,7 +40,3 @@ export default class BlogNavigation extends Vue {
   }
 }
 </script>
-
-<style scoped lang="scss">
-
-</style>
