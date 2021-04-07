@@ -28,8 +28,13 @@ export class Archive {
   providers: [ApiService]
 })
 export default class BlogNavigation extends Vue {
-  @Prop() private archive!: Archive
+  @Prop() private archive: Archive
   @inject() private api!: ApiService
+
+  constructor () {
+    super()
+    this.archive = new Archive()
+  }
 
   mounted (): void {
     this.api.getBlogArchive().then(x => {
