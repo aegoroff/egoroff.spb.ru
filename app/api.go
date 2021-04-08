@@ -60,14 +60,21 @@ func (a *api) navigation(c *gin.Context) {
 }
 
 func (a *api) breadcrumbs(c *gin.Context) {
-	siteMap := framework.ReadSiteMap()
-	gr := framework.NewGraph(siteMap)
-
 	var req BreadcrumbsReq
 	err := c.Bind(&req)
 	if err != nil {
 		log.Println(err)
 	}
+
+	if req.Uri == "/" {
+		c.JSON(http.StatusOK, []*domain.SiteSection{})
+		return
+	}
+	
+	siteMap := framework.ReadSiteMap()
+	gr := framework.NewGraph(siteMap)
+
+
 	bc, _ := framework.Breadcrumbs(gr, req.Uri)
 	c.JSON(http.StatusOK, bc)
 }

@@ -34,7 +34,21 @@ Vue.use(VueGtag, {
 library.add(faBook, faBriefcase, faSearch, faHome, faUser, faCalendarAlt)
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 
-new App().$mount('#app')
+const app = document.getElementById('app')
+
+if (app) {
+  const t = app.getAttribute('datafld')
+  new Vue({
+    el: '#app',
+    render: h => h(
+      App,
+      {
+        props: {
+          title: t
+        }
+      })
+  }).$mount()
+}
 
 if (document.getElementById('blogNavigation')) {
   const bn = new BlogNavigation()

@@ -13,8 +13,8 @@ $footer-height: ($spacer * 2);
 body {
 
   > .container, div#app div#breadcrumbs {
-    padding-top: $spacer;
-    padding-bottom: $spacer;
+    padding-top: $spacer * 2;
+    padding-bottom: $spacer * 2;
   }
 
   margin-bottom: $footer-height;

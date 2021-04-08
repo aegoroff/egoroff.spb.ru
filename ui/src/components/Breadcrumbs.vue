@@ -3,11 +3,12 @@
     <div class="row">
       <div class="col-lg-12">
         <b-breadcrumb>
-          <b-breadcrumb-item v-for="section in breadcrumbs" :key="section.id" v-bind:href="'/'+ section.id + '/'">
+          <b-breadcrumb-item v-for="section in breadcrumbs" :key="section.id"
+                             v-bind:href="section.id === '/' ? section.id : '/'+ section.id + '/'">
             <font-awesome-icon v-bind:icon="section.icon"/>
-            {{section.title}}
+            {{ section.title }}
           </b-breadcrumb-item>
-          <b-breadcrumb-item active>{{title}}</b-breadcrumb-item>
+          <b-breadcrumb-item active>{{ title }}</b-breadcrumb-item>
         </b-breadcrumb>
       </div>
     </div>
