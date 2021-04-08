@@ -5,6 +5,16 @@ import { Vue } from 'vue-property-decorator'
 import { Section } from '../components/Navigation.vue'
 import { injectable } from 'vue-typescript-inject'
 import { Archive } from '@/components/BlogNavigation.vue'
+import { Post } from '@/components/BlogAnnounces.vue'
+
+export class ApiResult {
+  public status!: string
+  public count!: number
+  public page!: number
+  public pages!: number
+  public row!: string
+  public result!: Array<Post>
+}
 
 @injectable()
 export default class ApiService extends Vue {
@@ -21,6 +31,13 @@ export default class ApiService extends Vue {
   public async getBlogArchive (): Promise<Archive> {
     this.$Progress.start()
     return await axios.get<Archive>('/api/v2/blog/archive/').then(r => {
+      return r.data
+    }).finally(() => this.$Progress.finish())
+  }
+
+  public async getPosts (): Promise<ApiResult> {
+    this.$Progress.start()
+    return await axios.get<ApiResult>('/api/v2/blog/posts/').then(r => {
       return r.data
     }).finally(() => this.$Progress.finish())
   }
