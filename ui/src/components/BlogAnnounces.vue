@@ -36,7 +36,6 @@ export default class BlogAnnounces extends Vue {
   mounted (): void {
     this.api.getPosts().then(x => {
       this.posts = x.result
-      console.log(this.posts)
     })
   }
 }
