@@ -1,5 +1,5 @@
 <template>
-  <div class="container" id="breadcrumbs">
+  <div class="container" id="breadcrumbs" v-if="breadcrumbs.length > 0">
     <div class="row">
       <div class="col-lg-12">
         <b-breadcrumb>
@@ -7,6 +7,7 @@
             <font-awesome-icon v-bind:icon="section.icon"/>
             {{section.title}}
           </b-breadcrumb-item>
+          <b-breadcrumb-item active>{{title}}</b-breadcrumb-item>
         </b-breadcrumb>
       </div>
     </div>
@@ -20,6 +21,7 @@ import { Section } from './Navigation.vue'
 @Component
 export default class Breadcrumbs extends Vue {
   @Prop() private breadcrumbs!: Array<Section>
+  @Prop() private title!: string
 }
 </script>
 
