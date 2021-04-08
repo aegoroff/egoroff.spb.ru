@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container" id="breadcrumbs">
     <div class="row">
       <div class="col-lg-12">
         <b-breadcrumb>
