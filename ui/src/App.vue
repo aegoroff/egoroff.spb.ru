@@ -2,6 +2,7 @@
   <div id="app">
     <vue-progress-bar></vue-progress-bar>
     <Navigation v-bind:navigation="navigation"/>
+    <Breadcrumbs v-bind:breadcrumbs="breadcrumbs"/>
   </div>
 </template>
 
@@ -11,10 +12,12 @@ import { Component, Vue } from 'vue-property-decorator'
 import Navigation, { Section } from './components/Navigation.vue'
 import ApiService from './services/ApiService.vue'
 import { inject } from 'vue-typescript-inject'
+import Breadcrumbs from '@/components/Breadcrumbs.vue'
 
 @Component({
   components: {
-    Navigation
+    Navigation,
+    Breadcrumbs
   },
   providers: [ApiService]
 })
