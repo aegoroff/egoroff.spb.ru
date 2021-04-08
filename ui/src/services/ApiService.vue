@@ -16,6 +16,15 @@ export class ApiResult {
   public result!: Array<Post>
 }
 
+export class Query {
+  public limit!: string
+  public offset!: string
+  public tag!: string
+  public year!: string
+  public month!: string
+  public page!: string
+}
+
 @injectable()
 export default class ApiService extends Vue {
   public getNavigation (): Array<Section> {
@@ -35,11 +44,26 @@ export default class ApiService extends Vue {
     }).finally(() => this.$Progress.finish())
   }
 
-  public async getPosts (): Promise<ApiResult> {
+  public async getPosts (q?: Query): Promise<ApiResult> {
     this.$Progress.start()
-    return await axios.get<ApiResult>('/api/v2/blog/posts/').then(r => {
+    return await axios.get<ApiResult>('/api/v2/blog/posts/' + this.toQuery(q)).then(r => {
       return r.data
     }).finally(() => this.$Progress.finish())
+  }
+
+  toQuery (q?: Query): string {
+    if (q === undefined) {
+      return ''
+    }
+    let str = '?'
+    for (const key in q) {
+      if (str !== '?') {
+        str += '&'
+      }
+      const v = Reflect.get(q, key)
+      str += key + '=' + encodeURIComponent(v)
+    }
+    return str
   }
 
   public getBreadcrumbs (): Array<Section> {
