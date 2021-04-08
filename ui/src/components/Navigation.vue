@@ -1,7 +1,7 @@
 <template>
   <b-navbar toggleable="lg" type="dark" class="navbar-custom navbar-static-top">
     <div class="container">
-    <b-navbar-brand href="<%= BASE_URL %>">egoroff.spb.ru</b-navbar-brand>
+    <b-navbar-brand href="/">egoroff.spb.ru</b-navbar-brand>
 
     <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
 

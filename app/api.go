@@ -70,7 +70,7 @@ func (a *api) breadcrumbs(c *gin.Context) {
 		c.JSON(http.StatusOK, []*domain.SiteSection{})
 		return
 	}
-	
+
 	siteMap := framework.ReadSiteMap()
 	gr := framework.NewGraph(siteMap)
 

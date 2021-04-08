@@ -18,7 +18,6 @@ type Apache struct {
 type SiteSection struct {
 	Key      int64
 	Id       string         `json:"id"`
-	Class    string         `json:"class"`
 	Icon     string         `json:"icon"`
 	Title    string         `json:"title"`
 	Descr    string         `json:"descr"`

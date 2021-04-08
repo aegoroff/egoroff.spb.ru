@@ -60,7 +60,6 @@ func NewContext(gctx *gin.Context, messages ...domain.Message) pongo2.Context {
 
 	if gctx.Request.RequestURI != "/" {
 		bc, curr := Breadcrumbs(gr, gctx.Request.RequestURI)
-		result["breadcrumbs"] = bc
 		result["current_section"] = curr
 		result["title_path"] = revertPath(bc, config.BrandName)
 	}
