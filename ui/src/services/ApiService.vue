@@ -24,5 +24,15 @@ export default class ApiService extends Vue {
       return r.data
     }).finally(() => this.$Progress.finish())
   }
+
+  public getBreadcrumbs (): Array<Section> {
+    const navigation = new Array<Section>()
+
+    axios.post<Array<Section>>('/api/v2/breadcrumbs/', { uri: document.location.pathname }).then(r => {
+      navigation.push(...r.data)
+    })
+
+    return navigation
+  }
 }
 </script>

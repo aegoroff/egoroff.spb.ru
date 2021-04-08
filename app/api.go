@@ -6,6 +6,7 @@ import (
 	"egoroff.spb.ru/app/domain"
 	"egoroff.spb.ru/app/framework"
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
 	"sort"
 	"strconv"
@@ -34,6 +35,7 @@ func (a *api) Route(r *gin.Engine) {
 	{
 		ap.GET("/", a.index)
 		ap.GET("/navigation/", a.navigation)
+		ap.POST("/breadcrumbs/", a.breadcrumbs)
 
 		b := ap.Group("/blog")
 		{
@@ -55,6 +57,19 @@ func (a *api) index(c *gin.Context) {
 func (a *api) navigation(c *gin.Context) {
 	siteMap := framework.ReadSiteMap()
 	c.JSON(http.StatusOK, siteMap.Children)
+}
+
+func (a *api) breadcrumbs(c *gin.Context) {
+	siteMap := framework.ReadSiteMap()
+	gr := framework.NewGraph(siteMap)
+
+	var req BreadcrumbsReq
+	err := c.Bind(&req)
+	if err != nil {
+		log.Println(err)
+	}
+	bc, _ := framework.Breadcrumbs(gr, req.Uri)
+	c.JSON(http.StatusOK, bc)
 }
 
 func (a *api) posts(c *gin.Context) {
@@ -125,6 +140,10 @@ func (*api) archive(c *gin.Context) {
 		Years: y,
 	}
 	c.JSON(http.StatusOK, a)
+}
+
+type BreadcrumbsReq struct {
+	Uri string `json:"uri"`
 }
 
 type ApiResult struct {

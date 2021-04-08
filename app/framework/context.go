@@ -59,7 +59,7 @@ func NewContext(gctx *gin.Context, messages ...domain.Message) pongo2.Context {
 	}
 
 	if gctx.Request.RequestURI != "/" {
-		bc, curr := breadcrumbs(gr, gctx.Request.RequestURI)
+		bc, curr := Breadcrumbs(gr, gctx.Request.RequestURI)
 		result["breadcrumbs"] = bc
 		result["current_section"] = curr
 		result["title_path"] = revertPath(bc, config.BrandName)
@@ -92,7 +92,7 @@ func (c *Context) PathFor(id string) string {
 	return c.graph.FullPath(id)
 }
 
-func breadcrumbs(gr *Graph, uri string) ([]*domain.SiteSection, string) {
+func Breadcrumbs(gr *Graph, uri string) ([]*domain.SiteSection, string) {
 	parts := strings.Split(uri, "/")
 	root := gr.g.Node(1).(*domain.SiteSection)
 	result := []*domain.SiteSection{root}

@@ -20,11 +20,13 @@ import { inject } from 'vue-typescript-inject'
 })
 export default class App extends Vue {
   private navigation!: Array<Section>
+  private breadcrumbs!: Array<Section>
   @inject() private api!: ApiService
 
   constructor () {
     super()
     this.navigation = this.api.getNavigation()
+    this.breadcrumbs = this.api.getBreadcrumbs()
   }
 }
 </script>

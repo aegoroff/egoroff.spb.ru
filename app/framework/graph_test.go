@@ -56,7 +56,7 @@ func Test_breadcrumbs(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.path, func(t *testing.T) {
 			// Act
-			b, curr := breadcrumbs(gr, test.path)
+			b, curr := Breadcrumbs(gr, test.path)
 
 			// Assert
 			ass.Equal(test.nodes, len(b))
