@@ -71,7 +71,7 @@ func (b *Blog) Route(r *gin.Engine) {
 	{
 		blog.GET("/", b.index)
 		blog.GET("/:id", b.post)
-		blog.GET("/:id/:page", b.index)
+		blog.GET("/page/:page", b.index)
 	}
 	r.GET("/opinions/:id", b.opinion)
 }
@@ -110,7 +110,7 @@ func (*Blog) index(c *gin.Context) {
 func (b *Blog) post(c *gin.Context) {
 	ids := c.Param("id")
 	if !strings.HasSuffix(ids, ".html") {
-		b.index(c)
+		framework.Error404(c)
 		return
 	}
 	id, err := strconv.ParseInt(ids[:len(ids)-len(".html")], 10, 64)
