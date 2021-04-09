@@ -1,5 +1,8 @@
 <template>
-  <font-awesome-icon v-bind:icon="icon"/>
+  <i>
+    <font-awesome-icon v-if="!lib" v-bind:icon="icon"/>
+    <font-awesome-icon v-if="lib" v-bind:icon="[lib, icon]"/>
+  </i>
 </template>
 
 <script lang="ts">
@@ -12,6 +15,12 @@ export default class AppIcon extends Vue {
     required: true
   })
   public icon!: string
+
+  @Prop({
+    type: String,
+    required: false
+  })
+  public lib!: string
 }
 </script>
 

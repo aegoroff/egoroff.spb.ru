@@ -71,10 +71,13 @@ if (document.getElementById('blogcontainer') && window.location.hash) {
 const icons = document.querySelectorAll('i.icon[data-label]')
 icons.forEach(x => {
   const label = x.attributes.getNamedItem('data-label')
+  const type = x.attributes.getNamedItem('datatype')
   const icon = label === null ? '' : label.value
+  const lib = type === null ? '' : type.value
   const appIcon = new AppIcon({
     propsData: {
-      icon: icon
+      icon: icon,
+      lib: lib
     }
   })
   appIcon.$mount(x)
