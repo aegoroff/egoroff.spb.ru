@@ -10,7 +10,7 @@
         <b-card-body>
           <b-list-group flush>
             <b-list-group-item v-bind:href="'#year=' + y.year"
-                               v-on:click="queryYear(y.year)"
+                               v-on:click="updateYear(y.year)"
                                class="d-flex justify-content-between align-items-center">
               За весь год
               <b-badge variant="primary" pill>{{ y.posts }}</b-badge>
@@ -19,7 +19,7 @@
             <b-list-group-item
               v-for="m in y.months"
               :key="m.month"
-              v-on:click="queryMonth(y.year, m.month)"
+              v-on:click="updateYearMonth(y.year, m.month)"
               v-bind:href="'#year=' +y.year + '&month=' + m.month"
               class="d-flex justify-content-between align-items-center">
               {{ m.name }}
@@ -52,7 +52,7 @@ export class Year {
 export default class Chrono extends Vue {
   @Prop() private years!: Array<Year>
 
-  queryYear (year: number): void {
+  updateYear (year: number): void {
     const ba = new BlogAnnounces({
       propsData: {
         q: 'year=' + year
@@ -61,7 +61,7 @@ export default class Chrono extends Vue {
     ba.$mount('#blogcontainer')
   }
 
-  queryMonth (year: number, month: number): void {
+  updateYearMonth (year: number, month: number): void {
     const ba = new BlogAnnounces({
       propsData: {
         q: 'year=' + year + '&month=' + month
