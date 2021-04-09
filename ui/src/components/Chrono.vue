@@ -35,6 +35,8 @@
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator'
 import BlogAnnounces from '@/components/BlogAnnounces.vue'
+import BlogTitle from '@/components/BlogTitle.vue'
+import moment from 'moment'
 
 export class Month {
   public month!: number
@@ -59,6 +61,13 @@ export default class Chrono extends Vue {
       }
     })
     ba.$mount('#blogcontainer')
+
+    const bt = new BlogTitle({
+      propsData: {
+        text: 'записи за ' + year + ' год'
+      }
+    })
+    bt.$mount('#blogSmallTitle')
   }
 
   updateYearMonth (year: number, month: number): void {
@@ -68,6 +77,14 @@ export default class Chrono extends Vue {
       }
     })
     ba.$mount('#blogcontainer')
+
+    const mnt = moment(new Date(year, month, 1)).locale('ru')
+    const bt = new BlogTitle({
+      propsData: {
+        text: 'записи за ' + mnt.format('MMMM YYYY')
+      }
+    })
+    bt.$mount('#blogSmallTitle')
   }
 }
 

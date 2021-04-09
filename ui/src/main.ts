@@ -26,6 +26,7 @@ import BlogNavigation from '@/components/BlogNavigation.vue'
 import './App.scss'
 import './Syntax.scss'
 import BlogAnnounces from '@/components/BlogAnnounces.vue'
+import BlogTitle from '@/components/BlogTitle.vue'
 
 Vue.config.productionTip = false
 Vue.use(VueTypeScriptInject)
@@ -64,12 +65,21 @@ if (document.getElementById('blogNavigation')) {
 }
 
 if (document.getElementById('blogcontainer') && window.location.hash) {
+  const h = window.location.hash.substr(1)
   const ba = new BlogAnnounces({
     propsData: {
-      q: window.location.hash.substr(1)
+      q: h
     }
   })
   ba.$mount('#blogcontainer')
+
+  const e = h.split('=')
+  const bt = new BlogTitle({
+    propsData: {
+      text: 'все посты по метке: ' + e[1]
+    }
+  })
+  bt.$mount('#blogSmallTitle')
 }
 
 const icons = document.querySelectorAll('i.icon[data-label]')
