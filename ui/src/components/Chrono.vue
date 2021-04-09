@@ -3,13 +3,15 @@
     <b-card class="m-2" no-body v-for="y in years" :key="y.year">
 
       <b-card-header header-tag="header" class="p-1" role="tab">
-        <b-button block v-b-toggle="'y' + y.year" variant="light">{{y.year}}</b-button>
+        <b-button block v-b-toggle="'y' + y.year" variant="light">{{ y.year }}</b-button>
       </b-card-header>
 
       <b-collapse v-bind:id="'y' + y.year" accordion="blog-archive" role="tabpanel">
         <b-card-body>
           <b-list-group flush>
-            <b-list-group-item v-bind:href="'#year=' + y.year" class="d-flex justify-content-between align-items-center">
+            <b-list-group-item v-bind:href="'#year=' + y.year"
+                               v-on:click="queryYear(y.year)"
+                               class="d-flex justify-content-between align-items-center">
               За весь год
               <b-badge variant="primary" pill>{{ y.posts }}</b-badge>
             </b-list-group-item>
@@ -17,6 +19,7 @@
             <b-list-group-item
               v-for="m in y.months"
               :key="m.month"
+              v-on:click="queryMonth(y.year, m.month)"
               v-bind:href="'#year=' +y.year + '&month=' + m.month"
               class="d-flex justify-content-between align-items-center">
               {{ m.name }}
@@ -31,6 +34,7 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator'
+import BlogAnnounces from '@/components/BlogAnnounces.vue'
 
 export class Month {
   public month!: number
@@ -47,6 +51,24 @@ export class Year {
 @Component
 export default class Chrono extends Vue {
   @Prop() private years!: Array<Year>
+
+  queryYear (year: number): void {
+    const ba = new BlogAnnounces({
+      propsData: {
+        q: 'year=' + year
+      }
+    })
+    ba.$mount('#blogcontainer')
+  }
+
+  queryMonth (year: number, month: number): void {
+    const ba = new BlogAnnounces({
+      propsData: {
+        q: 'year=' + year + '&month=' + month
+      }
+    })
+    ba.$mount('#blogcontainer')
+  }
 }
 
 </script>
