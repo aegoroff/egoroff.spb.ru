@@ -34,19 +34,19 @@ export class Post {
 export default class BlogAnnounces extends Vue {
   @Prop() private posts!: Array<Post>
   @inject() private api!: ApiService
+  @Prop() private q!: string
 
   mounted (): void {
-    const q = BlogAnnounces.getQuery()
+    const q = this.getQuery()
 
     this.api.getPosts(q).then(x => {
       this.posts = x.result
     })
   }
 
-  public static getQuery (): Query {
+  public getQuery (): Query {
     const q = new Query()
-    const h = window.location.hash.substr(1)
-    const parts = h.split('&')
+    const parts = this.q.split('&')
 
     for (const part of parts) {
       const elts = part.split('=')

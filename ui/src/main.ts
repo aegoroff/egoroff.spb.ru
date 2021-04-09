@@ -64,7 +64,11 @@ if (document.getElementById('blogNavigation')) {
 }
 
 if (document.getElementById('blogcontainer') && window.location.hash) {
-  const ba = new BlogAnnounces()
+  const ba = new BlogAnnounces({
+    propsData: {
+      q: window.location.hash.substr(1)
+    }
+  })
   ba.$mount('#blogcontainer')
 }
 
