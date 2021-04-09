@@ -22,13 +22,20 @@
 
         <!-- Right aligned nav items -->
         <b-navbar-nav class="ml-auto">
-          <b-nav-item-dropdown right>
+          <b-nav-item href="/login" active right v-if="navigation">
+            <font-awesome-icon icon="sign-in-alt"/>
+            Войти
+          </b-nav-item>
+          <b-nav-item-dropdown right v-if="!navigation">
             <!-- Using 'button-content' slot -->
             <template #button-content>
               <em>User</em>
             </template>
-            <b-dropdown-item href="#">Profile</b-dropdown-item>
-            <b-dropdown-item href="#">Sign Out</b-dropdown-item>
+            <b-dropdown-item href="#">Профиль</b-dropdown-item>
+            <b-dropdown-item href="#">
+              <font-awesome-icon icon="sign-out-alt"/>
+              Выйти
+            </b-dropdown-item>
           </b-nav-item-dropdown>
         </b-navbar-nav>
       </b-collapse>

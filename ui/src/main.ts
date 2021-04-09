@@ -11,7 +11,9 @@ import {
   faHome,
   faUser,
   faCalendarAlt,
-  faDownload
+  faDownload,
+  faSignInAlt,
+  faSignOutAlt
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import VueProgressBar from 'vue-progressbar'
@@ -33,7 +35,7 @@ Vue.use(VueGtag, {
   config: { id: 'UA-145548-1' }
 })
 
-library.add(faBook, faBriefcase, faSearch, faHome, faUser, faCalendarAlt, faDownload)
+library.add(faBook, faBriefcase, faSearch, faHome, faUser, faCalendarAlt, faDownload, faSignInAlt, faSignOutAlt)
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 
 const app = document.getElementById('app')
