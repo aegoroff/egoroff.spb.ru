@@ -15,7 +15,8 @@ import {
   faSignInAlt,
   faSignOutAlt
 } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { faGoogle, faFacebook, faGithub } from '@fortawesome/free-brands-svg-icons'
+import { FontAwesomeIcon, FontAwesomeLayers, FontAwesomeLayersText } from '@fortawesome/vue-fontawesome'
 import VueProgressBar from 'vue-progressbar'
 import AppIcon from './components/AppIcon.vue'
 import DateFormatter from '@/components/DateFomatter.vue'
@@ -36,7 +37,10 @@ Vue.use(VueGtag, {
 })
 
 library.add(faBook, faBriefcase, faSearch, faHome, faUser, faCalendarAlt, faDownload, faSignInAlt, faSignOutAlt)
+library.add(faGoogle, faFacebook, faGithub)
 Vue.component('font-awesome-icon', FontAwesomeIcon)
+Vue.component('font-awesome-layers', FontAwesomeLayers)
+Vue.component('font-awesome-layers-text', FontAwesomeLayersText)
 
 const app = document.getElementById('app')
 
