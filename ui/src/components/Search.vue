@@ -1,0 +1,36 @@
+<template>
+  <div class="container" id="siteSearch">
+    <div class="row">
+      <div class="col-lg-8">
+        <label class="sr-only" for="q">форма поиска</label>
+        <input id="q" name="q" class="form-control" type="text" value=""/>
+      </div>
+      <div class="col-lg-4">
+        <a id="start_search" class="btn btn-primary"><i class="icon" data-label="search"></i> Искать</a>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-12">
+        <br/>
+        <div class="text-muted" data-bind="if: displayResults">Результатов: примерно <span data-bind="text: totalResults"></span><nobr> (<span data-bind="text: searchTime"></span> cек.)</nobr><p/></div>
+        <dl data-bind="template: { name: 'customsearch', foreach: items }"></dl>
+
+        <ul class="pagination" id="search-pager" data-bind="template: { name: 'pages', foreach: pages }">
+        </ul>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script lang="ts">
+import { Component, Vue } from 'vue-property-decorator'
+
+@Component
+export default class Search extends Vue {
+}
+</script>
+
+<style scoped>
+
+</style>

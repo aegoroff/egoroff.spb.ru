@@ -27,6 +27,7 @@ import './App.scss'
 import './Syntax.scss'
 import BlogAnnounces from '@/components/BlogAnnounces.vue'
 import BlogTitle from '@/components/BlogTitle.vue'
+import Search from '@/components/Search.vue'
 
 Vue.config.productionTip = false
 Vue.use(VueTypeScriptInject)
@@ -62,6 +63,11 @@ if (app) {
 if (document.getElementById('blogNavigation')) {
   const bn = new BlogNavigation()
   bn.$mount('#blogNavigation')
+}
+
+if (document.getElementById('siteSearch')) {
+  const s = new Search()
+  s.$mount('#siteSearch')
 }
 
 if (document.getElementById('blogcontainer') && window.location.hash) {
