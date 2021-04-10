@@ -6,33 +6,33 @@
 {% endblock %}
 
 {% block content %}
-
-<div class="pb-2 mt-4 mb-2 border-bottom">
-    <h1>
-        egoroff.spb.ru
-        <small>
-            блог о программировании
-        </small>
-    </h1>
-</div>
-
-<div class="row">
-    <div class="col-lg-6">
-        <h2><a href="{{ ctx.PathFor('blog') }}">Блог</a></h2>
-        {% if posts %}
-        <dl itemscope itemtype="http://schema.org/BlogPosting" id="log">
-            {% for post in posts %}
-            {% include 'blog/post_box.html' %}
-            {% endfor %}
-        </dl>
-        {% else %}
-        <p>Пока ничего нового.</p>
-        {% endif %}
+<div class="container">
+    <div class="pb-2 mt-4 mb-2 border-bottom">
+        <h1>
+            egoroff.spb.ru
+            <small>
+                блог о программировании
+            </small>
+        </h1>
     </div>
-    <div class="col-lg-6">
-        <h2>Про апачей</h2>
-        {% include 'portfolio/apache_documents_list.html' %}
+
+    <div class="row">
+        <div class="col-lg-6">
+            <h2><a href="{{ ctx.PathFor('blog') }}">Блог</a></h2>
+            {% if posts %}
+            <dl itemscope itemtype="http://schema.org/BlogPosting" id="log">
+                {% for post in posts %}
+                {% include 'blog/post_box.html' %}
+                {% endfor %}
+            </dl>
+            {% else %}
+            <p>Пока ничего нового.</p>
+            {% endif %}
+        </div>
+        <div class="col-lg-6">
+            <h2>Про апачей</h2>
+            {% include 'portfolio/apache_documents_list.html' %}
+        </div>
     </div>
 </div>
-
 {% endblock %}
