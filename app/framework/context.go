@@ -18,15 +18,10 @@ const UserIdCookie = "user-sub"
 type Context struct {
 	Conf           *domain.Config
 	currentVersion string
-	styles         []string
 	graph          *Graph
 }
 
 func NewContext(gctx *gin.Context, messages ...domain.Message) pongo2.Context {
-	styles := []string{
-		"min/style/style.min.css",
-		//"min/style/adminstyle.min.css",
-	}
 	repo := db.NewRepository()
 	config, err := repo.Config()
 	if err != nil {
@@ -38,7 +33,6 @@ func NewContext(gctx *gin.Context, messages ...domain.Message) pongo2.Context {
 	gr := NewGraph(root)
 	ctx := &Context{
 		currentVersion: os.Getenv("CURRENT_VERSION_ID"),
-		styles:         styles,
 		Conf:           config,
 		graph:          gr,
 	}
@@ -59,8 +53,7 @@ func NewContext(gctx *gin.Context, messages ...domain.Message) pongo2.Context {
 	}
 
 	if gctx.Request.RequestURI != "/" {
-		bc, curr := Breadcrumbs(gr, gctx.Request.RequestURI)
-		result["current_section"] = curr
+		bc, _ := Breadcrumbs(gr, gctx.Request.RequestURI)
 		result["title_path"] = revertPath(bc, config.BrandName)
 	}
 
