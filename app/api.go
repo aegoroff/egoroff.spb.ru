@@ -34,8 +34,7 @@ func (a *api) Route(r *gin.Engine) {
 	ap := r.Group("/api/v2")
 	{
 		ap.GET("/", a.index)
-		ap.GET("/navigation/", a.navigation)
-		ap.POST("/breadcrumbs/", a.breadcrumbs)
+		ap.POST("/navigation/", a.navigation)
 
 		b := ap.Group("/blog")
 		{
@@ -55,28 +54,32 @@ func (a *api) index(c *gin.Context) {
 }
 
 func (a *api) navigation(c *gin.Context) {
-	siteMap := framework.ReadSiteMap()
-	c.JSON(http.StatusOK, siteMap.Children)
-}
-
-func (a *api) breadcrumbs(c *gin.Context) {
 	var req BreadcrumbsReq
 	err := c.Bind(&req)
 	if err != nil {
 		log.Println(err)
 	}
 
-	if req.Uri == "/" {
-		c.JSON(http.StatusOK, []*domain.SiteSection{})
-		return
-	}
-
 	siteMap := framework.ReadSiteMap()
 	gr := framework.NewGraph(siteMap)
+	bc, curr := framework.Breadcrumbs(gr, req.Uri)
 
+	nav := domain.Navigation{
+		Sections: siteMap.Children,
+	}
 
-	bc, _ := framework.Breadcrumbs(gr, req.Uri)
-	c.JSON(http.StatusOK, bc)
+	if req.Uri != "/" {
+		nav.Breadcrumbs = bc
+	}
+
+	for _, section := range nav.Sections {
+		if section.Id == curr {
+			section.Active = true
+			break
+		}
+	}
+
+	c.JSON(http.StatusOK, nav)
 }
 
 func (a *api) posts(c *gin.Context) {

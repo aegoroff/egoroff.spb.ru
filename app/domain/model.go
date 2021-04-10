@@ -15,6 +15,11 @@ type Apache struct {
 	Keywords    string
 }
 
+type Navigation struct {
+	Sections    []*SiteSection `json:"sections"`
+	Breadcrumbs []*SiteSection `json:"breadcrumbs"`
+}
+
 type SiteSection struct {
 	Key      int64
 	Id       string         `json:"id"`
@@ -22,6 +27,7 @@ type SiteSection struct {
 	Title    string         `json:"title"`
 	Descr    string         `json:"descr"`
 	Keywords string         `json:"keywords"`
+	Active   bool           `json:"active"`
 	Children []*SiteSection `json:"children"`
 }
 
