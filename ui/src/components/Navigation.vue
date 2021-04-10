@@ -16,7 +16,7 @@
             {{ section.title }}
           </b-nav-item>
           <b-nav-form action="/search/" method="GET">
-            <b-form-input name="q" size="sm" class="mr-md-2" placeholder="Поиск" required></b-form-input>
+            <b-form-input name="q" size="sm" class="mr-md-2" placeholder="Введите текст для поиска" required></b-form-input>
             <b-button size="sm" class="my-2 my-sm-0" type="submit" variant="primary">Поиск</b-button>
           </b-nav-form>
         </b-navbar-nav>
