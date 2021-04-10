@@ -1,8 +1,5 @@
 runtime: go115
 
-inbound_services:
-  - warmup
-
 handlers:
 - url: /p/
   static_dir: static/
