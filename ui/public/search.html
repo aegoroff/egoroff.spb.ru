@@ -1,6 +1,6 @@
 {% extends 'index.html' %}
 
 {% block content %}
-<div class="container" id="siteSearch">
+<div class="container" id="siteSearch" property="{{ctx.Conf.SearchApiKey}}" datafld="{{ctx.Conf.GoogleSiteId}}">
 </div>
 {% endblock %}

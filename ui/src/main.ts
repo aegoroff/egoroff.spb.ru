@@ -65,8 +65,17 @@ if (document.getElementById('blogNavigation')) {
   bn.$mount('#blogNavigation')
 }
 
-if (document.getElementById('siteSearch')) {
-  const s = new Search()
+const siteSearch = document.getElementById('siteSearch')
+
+if (siteSearch) {
+  const key = siteSearch.attributes.getNamedItem('property')
+  const cx = siteSearch.attributes.getNamedItem('datafld')
+  const s = new Search({
+    propsData: {
+      key: key === null ? '' : key.value,
+      cx: cx === null ? '' : cx.value
+    }
+  })
   s.$mount('#siteSearch')
 }
 

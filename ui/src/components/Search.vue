@@ -39,10 +39,14 @@ export default class Search extends Vue {
   @inject() private service!: SearchService
   @Prop() private searchResult!: GoogleSearch
   @Prop() private query!: string
+  @Prop() private key!: string
+  @Prop() private cx!: string
 
   search (): void {
     const q = new SearchQuery()
     q.q = this.query
+    q.key = this.key
+    q.cx = this.cx
     this.service.search(q).then(success => {
       this.searchResult = success
     })
