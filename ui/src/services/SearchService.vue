@@ -1,4 +1,5 @@
 <script lang="ts">
+import 'reflect-metadata'
 import { injectable } from 'vue-typescript-inject'
 import { Vue } from 'vue-property-decorator'
 import axios from 'axios'
