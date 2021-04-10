@@ -1,7 +1,7 @@
 <template>
   <b-container class="container" id="siteSearch" fluid="lg">
 
-    <b-form inline @submit="search">
+    <b-form inline @submit.prevent="search">
       <b-form-row class="w-100">
         <b-col cols="8">
           <b-form-input
@@ -51,11 +51,13 @@ export default class Search extends Vue {
   @Prop() private key!: string
   @Prop() private cx!: string
 
-  search (event?: Event): void {
-    if (event !== undefined) {
-      event.preventDefault()
+  mounted (): void {
+    if (this.query) {
+      this.search()
     }
+  }
 
+  search (): void {
     const q = new SearchQuery()
     q.q = this.query
     q.key = this.key

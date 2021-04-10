@@ -70,10 +70,14 @@ const siteSearch = document.getElementById('siteSearch')
 if (siteSearch) {
   const key = siteSearch.attributes.getNamedItem('property')
   const cx = siteSearch.attributes.getNamedItem('datafld')
+  const urlParams = new URLSearchParams(window.location.search)
+  const q = urlParams.get('q')
+
   const s = new Search({
     propsData: {
       key: key === null ? '' : key.value,
-      cx: cx === null ? '' : cx.value
+      cx: cx === null ? '' : cx.value,
+      query: q
     }
   })
   s.$mount('#siteSearch')

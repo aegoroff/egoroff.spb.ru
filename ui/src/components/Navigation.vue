@@ -14,9 +14,9 @@
             <font-awesome-icon v-bind:icon="section.icon"/>
             {{ section.title }}
           </b-nav-item>
-          <b-nav-form>
-            <b-form-input size="sm" class="mr-sm-2" placeholder="Поиск"></b-form-input>
-            <b-button size="sm" class="my-2 my-sm-0" type="submit">Поиск</b-button>
+          <b-nav-form action="/search/" method="GET">
+            <b-form-input name="q" size="sm" class="mr-md-2" placeholder="Поиск" required></b-form-input>
+            <b-button size="sm" class="my-2 my-sm-0" type="submit" variant="primary">Поиск</b-button>
           </b-nav-form>
         </b-navbar-nav>
 
