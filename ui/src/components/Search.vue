@@ -1,16 +1,25 @@
 <template>
-  <div class="container" id="siteSearch">
-    <div class="row">
-      <div class="col-lg-8">
-        <label class="sr-only" for="q">форма поиска</label>
-        <input id="q" name="q" class="form-control" type="text" v-model="query"/>
-      </div>
-      <div class="col-lg-4">
-        <a id="start_search" class="btn btn-primary" v-on:click="search"><i class="icon" data-label="search"></i> Искать</a>
-      </div>
-    </div>
-    <div class="row" v-if="searchResult">
-      <div class="col-lg-12">
+  <b-container class="container" id="siteSearch" fluid="lg">
+
+    <b-form inline @submit="search">
+      <b-form-row class="w-100">
+        <b-col cols="8">
+          <b-form-input
+            id="search-control"
+            class="mb-2 mr-md-2 mb-md-0 w-100"
+            v-model="query"
+            placeholder="Введите текст для поиска"
+            required
+          ></b-form-input>
+        </b-col>
+        <b-col>
+          <b-button variant="primary" type="submit"><i class="icon" data-label="search"></i> Искать</b-button>
+        </b-col>
+      </b-form-row>
+    </b-form>
+
+    <b-row v-if="searchResult">
+      <b-col>
         <br/>
         <div class="text-muted">Результатов: примерно
           <span>{{ searchResult.searchInformation.formattedTotalResults }}</span>
@@ -19,9 +28,9 @@
         <SearchResulter v-bind:items="searchResult.items"/>
         <ul class="pagination" id="search-pager" data-bind="template: { name: 'pages', foreach: pages }">
         </ul>
-      </div>
-    </div>
-  </div>
+      </b-col>
+    </b-row>
+  </b-container>
 </template>
 
 <script lang="ts">
@@ -42,7 +51,11 @@ export default class Search extends Vue {
   @Prop() private key!: string
   @Prop() private cx!: string
 
-  search (): void {
+  search (event?: Event): void {
+    if (event !== undefined) {
+      event.preventDefault()
+    }
+
     const q = new SearchQuery()
     q.q = this.query
     q.key = this.key
