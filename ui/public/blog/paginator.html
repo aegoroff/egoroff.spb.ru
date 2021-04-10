@@ -7,7 +7,7 @@
     {% endif %}
     {% set older = "старее &rarr;" %}
     {% set newer = "&larr; новее" %}
-    <ul class="pagination justify-content-center">
+    <ul class="pagination justify-content-center" id="blogPager">
         {% if poster.HasPrev() %}
             {% set li_class = "" %}
 

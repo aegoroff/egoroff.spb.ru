@@ -6,10 +6,11 @@
       <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
 
       <b-collapse id="nav-collapse" is-nav>
-        <b-navbar-nav>
+        <b-navbar-nav fill>
           <b-nav-item
             v-for="section in navigation"
             :key="section.id"
+            :active="section.active"
             v-bind:href="'/'+section.id+'/'">
             <font-awesome-icon v-bind:icon="section.icon"/>
             {{ section.title }}
@@ -48,17 +49,11 @@
 import { Component, Prop, Vue } from 'vue-property-decorator'
 
 export class Section {
-  public id: string
-  public title: string
-  public class: string
-  public icon: string
-
-  constructor () {
-    this.id = ''
-    this.title = ''
-    this.class = ''
-    this.icon = ''
-  }
+  public id!: string
+  public title!: string
+  public class!: string
+  public icon!: string
+  public active!: boolean
 }
 
 @Component
@@ -71,9 +66,5 @@ export default class Navigation extends Vue {
 <style scoped lang="scss">
 .navbar-custom {
   background-color: rgb(104, 148, 216);
-
-  .navbar-brand, .navbar-text, .navbar-nav .nav-link {
-    color: white;
-  }
 }
 </style>

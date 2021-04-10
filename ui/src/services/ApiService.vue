@@ -25,13 +25,21 @@ export class Query {
   public page!: string
 }
 
+export class Nav {
+  public sections!: Array<Section>
+  public breadcrumbs!: Array<Section>
+}
+
 @injectable()
 export default class ApiService extends Vue {
-  public getNavigation (): Array<Section> {
-    const navigation = new Array<Section>()
+  public getNavigation (): Nav {
+    const navigation = new Nav()
+    navigation.sections = new Array<Section>()
+    navigation.breadcrumbs = new Array<Section>()
 
-    axios.get<Array<Section>>('/api/v2/navigation/').then(r => {
-      navigation.push(...r.data)
+    axios.post<Nav>('/api/v2/navigation/', { uri: document.location.pathname }).then(r => {
+      navigation.sections.push(...r.data.sections)
+      navigation.breadcrumbs.push(...r.data.breadcrumbs)
     })
 
     return navigation
@@ -64,16 +72,6 @@ export default class ApiService extends Vue {
       str += key + '=' + encodeURIComponent(v)
     }
     return str
-  }
-
-  public getBreadcrumbs (): Array<Section> {
-    const navigation = new Array<Section>()
-
-    axios.post<Array<Section>>('/api/v2/breadcrumbs/', { uri: document.location.pathname }).then(r => {
-      navigation.push(...r.data)
-    })
-
-    return navigation
   }
 }
 </script>

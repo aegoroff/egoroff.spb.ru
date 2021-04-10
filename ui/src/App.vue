@@ -29,8 +29,9 @@ export default class App extends Vue {
 
   constructor () {
     super()
-    this.navigation = this.api.getNavigation()
-    this.breadcrumbs = this.api.getBreadcrumbs()
+    const nav = this.api.getNavigation()
+    this.navigation = nav.sections
+    this.breadcrumbs = nav.breadcrumbs
   }
 }
 </script>
