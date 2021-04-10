@@ -113,13 +113,35 @@ export class GoogleSearch {
   public items!: Array<SearchResult>
 }
 
+export class SearchQuery {
+  public q!: string
+  public key!: string
+  public cx!: string
+  public start!: number
+}
+
 @injectable()
 export default class SearchService extends Vue {
-  public async getBlogArchive (): Promise<GoogleSearch> {
+  public async search (q?: SearchQuery): Promise<GoogleSearch> {
     this.$Progress.start()
-    return await axios.get<GoogleSearch>('https://www.googleapis.com/customsearch/v1').then(r => {
+    return await axios.get<GoogleSearch>('https://www.googleapis.com/customsearch/v1' + this.toQuery(q)).then(r => {
       return r.data
     }).finally(() => this.$Progress.finish())
+  }
+
+  toQuery (q?: SearchQuery): string {
+    if (q === undefined) {
+      return ''
+    }
+    let str = '?'
+    for (const key in q) {
+      if (str !== '?') {
+        str += '&'
+      }
+      const v = Reflect.get(q, key)
+      str += key + '=' + encodeURIComponent(v)
+    }
+    return str
   }
 }
 </script>
