@@ -23,3 +23,6 @@ handlers:
 
 - url: /.*
   script: auto
+
+env_variables:
+  GIN_MODE: release
