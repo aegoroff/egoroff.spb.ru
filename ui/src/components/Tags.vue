@@ -3,10 +3,10 @@
     <ul class="list-inline">
       <li class="list-inline-item" v-for="tag in tags" :key="tag.title">
         <a
-          v-bind:href="'/blog/#tag=' + tag.title"
+          v-bind:href="`/blog/#tag=${tag.title}`"
           v-bind:class="tag.level"
           v-on:click="update(tag.title)"
-          v-bind:id="'t_' + tag.title">{{ tag.title }}</a>
+          v-bind:id="`t_${tag.title}`">{{ tag.title }}</a>
       </li>
     </ul>
   </div>
@@ -29,14 +29,14 @@ export default class Tags extends Vue {
   update (tag: string): void {
     const ba = new BlogAnnounces({
       propsData: {
-        q: 'tag=' + tag
+        q: `tag=${tag}`
       }
     })
     ba.$mount('#blogcontainer')
 
     const bt = new BlogTitle({
       propsData: {
-        text: 'все посты по метке: ' + tag
+        text: `все посты по метке: ${tag}`
       }
     })
     bt.$mount('#blogSmallTitle')

@@ -16,6 +16,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator'
 import DateFormatter from '@/components/DateFomatter.vue'
 import ApiService, { Query } from '@/services/ApiService.vue'
 import { inject } from 'vue-typescript-inject'
+import BlogPagination from '@/components/BlogPagination.vue'
 
 export class Post {
   public Key!: string
@@ -41,6 +42,14 @@ export default class BlogAnnounces extends Vue {
 
     this.api.getPosts(q).then(x => {
       this.posts = x.result
+
+      const pager = new BlogPagination({
+        propsData: {
+          pages: x.pages,
+          page: x.page
+        }
+      })
+      pager.$mount('#blogPager')
     })
   }
 
