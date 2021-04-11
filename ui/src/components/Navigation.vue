@@ -23,17 +23,17 @@
 
         <!-- Right aligned nav items -->
         <b-navbar-nav class="ml-auto">
-          <b-nav-item href="/login" active right v-if="navigation">
+          <b-nav-item href="/login" active right v-if="!user || !user.authenticated">
             <font-awesome-icon icon="sign-in-alt"/>
             Войти
           </b-nav-item>
-          <b-nav-item-dropdown right v-if="!navigation">
+          <b-nav-item-dropdown right v-if="user && user.authenticated">
             <!-- Using 'button-content' slot -->
             <template #button-content>
-              <em>User</em>
+              <em>{{user.loginOrName}}</em>
             </template>
             <b-dropdown-item href="#">Профиль</b-dropdown-item>
-            <b-dropdown-item href="#">
+            <b-dropdown-item href="/logout">
               <font-awesome-icon icon="sign-out-alt"/>
               Выйти
             </b-dropdown-item>
@@ -47,6 +47,7 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator'
+import { User } from '@/services/ApiService.vue'
 
 export class Section {
   public id!: string
@@ -59,6 +60,7 @@ export class Section {
 @Component
 export default class Navigation extends Vue {
   @Prop() private navigation!: Array<Section>
+  @Prop() private user!: User
 }
 </script>
 

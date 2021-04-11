@@ -15,6 +15,11 @@ type Apache struct {
 	Keywords    string
 }
 
+type AuthenticatedUser struct {
+	LoginOrName   string `json:"loginOrName"`
+	Authenticated bool   `json:"authenticated"`
+}
+
 type Navigation struct {
 	Sections    []*SiteSection `json:"sections"`
 	Breadcrumbs []*SiteSection `json:"breadcrumbs"`

@@ -41,6 +41,10 @@ func (a *api) Route(r *gin.Engine) {
 			b.GET("/posts/", a.posts)
 			b.GET("/archive/", a.archive)
 		}
+		auth := ap.Group("/auth")
+		{
+			auth.GET("/user", a.user)
+		}
 	}
 }
 func (a *api) index(c *gin.Context) {
@@ -51,6 +55,22 @@ func (a *api) index(c *gin.Context) {
 	ctx["title"] = "API"
 
 	c.HTML(http.StatusOK, "api/index.html", ctx)
+}
+
+func (a *api) user(c *gin.Context) {
+	ctx := framework.NewContext(c)
+
+	du, ok := ctx["current_user"].(*domain.User)
+	if ok {
+		au := domain.AuthenticatedUser{
+			LoginOrName:   du.String(),
+			Authenticated: ok,
+		}
+		c.JSON(http.StatusOK, au)
+		return
+	}
+
+	c.JSON(http.StatusOK, domain.AuthenticatedUser{})
 }
 
 func (a *api) navigation(c *gin.Context) {

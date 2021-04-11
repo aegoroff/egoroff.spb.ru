@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <vue-progress-bar></vue-progress-bar>
-    <Navigation v-bind:navigation="navigation"/>
+    <Navigation v-bind:navigation="navigation" v-bind:user="user"/>
     <Breadcrumbs v-bind:breadcrumbs="breadcrumbs" v-bind:title="title"/>
   </div>
 </template>
@@ -10,7 +10,7 @@
 import 'reflect-metadata'
 import { Component, Prop, Vue } from 'vue-property-decorator'
 import Navigation, { Section } from './components/Navigation.vue'
-import ApiService from './services/ApiService.vue'
+import ApiService, { User } from './services/ApiService.vue'
 import { inject } from 'vue-typescript-inject'
 import Breadcrumbs from '@/components/Breadcrumbs.vue'
 
@@ -24,6 +24,7 @@ import Breadcrumbs from '@/components/Breadcrumbs.vue'
 export default class App extends Vue {
   private navigation!: Array<Section>
   private breadcrumbs!: Array<Section>
+  @Prop() private user!: User
   @Prop() public title!: string
   @inject() private api!: ApiService
 
@@ -32,6 +33,9 @@ export default class App extends Vue {
     const nav = this.api.getNavigation()
     this.navigation = nav.sections
     this.breadcrumbs = nav.breadcrumbs
+    this.api.getUser().then(r => {
+      this.user = r
+    })
   }
 }
 </script>
