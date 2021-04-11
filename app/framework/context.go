@@ -6,7 +6,6 @@ import (
 	"egoroff.spb.ru/app/lib"
 	"encoding/json"
 	"github.com/flosch/pongo2"
-	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"log"
 	"os"
@@ -41,16 +40,6 @@ func NewContext(gctx *gin.Context, messages ...domain.Message) pongo2.Context {
 
 	result["sections"] = root.Children
 	result["flashed_messages"] = messages
-
-	sub := sessions.Default(gctx).Get(UserIdCookie)
-	if sub != nil {
-		u, err := repo.UserByFederatedId(sub.(string))
-		if err != nil {
-			log.Println(err)
-		} else {
-			result["current_user"] = u
-		}
-	}
 
 	if gctx.Request.RequestURI != "/" {
 		bc, _ := Breadcrumbs(gr, gctx.Request.RequestURI)

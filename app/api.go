@@ -5,6 +5,7 @@ import (
 	"egoroff.spb.ru/app/db"
 	"egoroff.spb.ru/app/domain"
 	"egoroff.spb.ru/app/framework"
+	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
@@ -58,16 +59,20 @@ func (a *api) index(c *gin.Context) {
 }
 
 func (a *api) user(c *gin.Context) {
-	ctx := framework.NewContext(c)
-
-	du, ok := ctx["current_user"].(*domain.User)
-	if ok {
-		au := domain.AuthenticatedUser{
-			LoginOrName:   du.String(),
-			Authenticated: ok,
+	sub := sessions.Default(c).Get(framework.UserIdCookie)
+	if sub != nil {
+		repo := db.NewRepository()
+		u, err := repo.UserByFederatedId(sub.(string))
+		if err != nil {
+			log.Println(err)
+		} else {
+			au := domain.AuthenticatedUser{
+				LoginOrName:   u.String(),
+				Authenticated: true,
+			}
+			c.JSON(http.StatusOK, au)
+			return
 		}
-		c.JSON(http.StatusOK, au)
-		return
 	}
 
 	c.JSON(http.StatusOK, domain.AuthenticatedUser{})
