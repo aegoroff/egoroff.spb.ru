@@ -57,7 +57,6 @@ export default class Chrono extends Vue {
 
   created (): void {
     bus.$on('pageChanged', (data: number) => {
-      console.log(`page: ${data}`)
       const parts = window.location.hash.substr(1).split('&')
 
       let y = 0

@@ -29,7 +29,6 @@ export default class Tags extends Vue {
 
   created (): void {
     bus.$on('pageChanged', (data : number) => {
-      console.log(`page: ${data}`)
       const parts = window.location.hash.substr(1).split('&')
 
       for (const part of parts) {
