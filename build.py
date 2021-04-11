@@ -34,8 +34,6 @@ IS_WINDOWS = platform.system() == 'Windows'
 ###############################################################################
 DIR_MAIN = '.'
 
-DIR_STATIC = os.path.join(DIR_MAIN, 'static')
-DIR_SYNTAX = os.path.join(DIR_STATIC, 'src', 'script', 'syntax-highlighter')
 DIR_APACHE = os.path.join(DIR_MAIN, 'apache')
 DIR_TEMPLATES = os.path.join(DIR_MAIN, 'templates')
 DIR_TEMPLATES_APACHE = os.path.join(DIR_TEMPLATES, 'apache')
@@ -127,9 +125,6 @@ def run():
         run_clean_all()
 
     compile_xslt()
-    syntax_src = os.path.join(DIR_SYNTAX, 'syntaxhighlighter.min.js')
-    syntax_dst = os.path.join(DIR_STATIC, 'dist', 'js', 'syntaxhighlighter.min.js')
-    shutil.copy(syntax_src, syntax_dst)
 
 
 if __name__ == '__main__':
