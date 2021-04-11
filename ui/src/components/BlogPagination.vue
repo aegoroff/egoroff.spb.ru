@@ -17,6 +17,7 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator'
+import { bus } from '@/main'
 
 @Component
 export default class BlogPagination extends Vue {
@@ -40,17 +41,8 @@ export default class BlogPagination extends Vue {
     return `/blog/${q}&page=${pageNum}`
   }
 
-  update (): void {
-    const parts = window.location.hash.substr(1).split('&')
-    let q = ''
-    for (const part of parts) {
-      const elts = part.split('=')
-
-      if (elts[0] === 'page') {
-        q += '&'
-        q += elts[0] + '=' + elts[1]
-      }
-    }
+  update (page: number): void {
+    bus.$emit('pageChanged', page)
   }
 }
 </script>

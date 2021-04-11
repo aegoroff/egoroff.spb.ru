@@ -42,6 +42,8 @@ library.add(faBook, faBriefcase, faSearch, faHome, faUser, faCalendarAlt, faDown
 library.add(faGoogle, faFacebook, faGithub)
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 
+export const bus = new Vue()
+
 const app = document.getElementById('app')
 
 if (app) {

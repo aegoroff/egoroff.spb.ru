@@ -5,7 +5,7 @@
         <a
           v-bind:href="`/blog/#tag=${tag.title}`"
           v-bind:class="tag.level"
-          v-on:click="update(tag.title)"
+          v-on:click="update(tag.title, 1)"
           v-bind:id="`t_${tag.title}`">{{ tag.title }}</a>
       </li>
     </ul>
@@ -16,6 +16,7 @@
 import { Component, Prop, Vue } from 'vue-property-decorator'
 import BlogAnnounces from '@/components/BlogAnnounces.vue'
 import BlogTitle from '@/components/BlogTitle.vue'
+import { bus } from '@/main'
 
 export class Tag {
   public title!: string
@@ -26,10 +27,25 @@ export class Tag {
 export default class Tags extends Vue {
   @Prop() private tags!: Array<Tag>
 
-  update (tag: string): void {
+  created (): void {
+    bus.$on('pageChanged', (data : number) => {
+      console.log(`page: ${data}`)
+      const parts = window.location.hash.substr(1).split('&')
+
+      for (const part of parts) {
+        const elts = part.split('=')
+        if (elts[0] === 'tag') {
+          this.update(elts[1], data)
+          break
+        }
+      }
+    })
+  }
+
+  update (tag: string, page: number): void {
     const ba = new BlogAnnounces({
       propsData: {
-        q: `tag=${tag}`
+        q: `tag=${tag}&page=${page}`
       }
     })
     ba.$mount('#blogcontainer')

@@ -16,9 +16,9 @@ func NewPoster(page int) *Poster {
 	}
 }
 
-func NewCustomPoster(adaptor *DatastoreAdaptor, page int) *Poster {
+func NewCustomPoster(adaptor *DatastoreAdaptor, pageSize int) *Poster {
 	return &Poster{
-		pager: paginator.New(adaptor, page),
+		pager: paginator.New(adaptor, pageSize),
 	}
 }
 

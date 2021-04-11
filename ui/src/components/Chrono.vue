@@ -10,7 +10,7 @@
         <b-card-body>
           <b-list-group flush>
             <b-list-group-item v-bind:href="'#year=' + y.year"
-                               v-on:click="updateYear(y.year)"
+                               v-on:click="updateYear(y.year, 1)"
                                class="d-flex justify-content-between align-items-center">
               За весь год
               <b-badge variant="primary" pill>{{ y.posts }}</b-badge>
@@ -19,7 +19,7 @@
             <b-list-group-item
               v-for="m in y.months"
               :key="m.month"
-              v-on:click="updateYearMonth(y.year, m.month)"
+              v-on:click="updateYearMonth(y.year, m.month, 1)"
               v-bind:href="'#year=' +y.year + '&month=' + m.month"
               class="d-flex justify-content-between align-items-center">
               {{ m.name }}
@@ -37,6 +37,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator'
 import BlogAnnounces from '@/components/BlogAnnounces.vue'
 import BlogTitle from '@/components/BlogTitle.vue'
 import moment from 'moment'
+import { bus } from '@/main'
 
 export class Month {
   public month!: number
@@ -54,26 +55,55 @@ export class Year {
 export default class Chrono extends Vue {
   @Prop() private years!: Array<Year>
 
-  updateYear (year: number): void {
+  created (): void {
+    bus.$on('pageChanged', (data: number) => {
+      console.log(`page: ${data}`)
+      const parts = window.location.hash.substr(1).split('&')
+
+      let y = 0
+      let m = 0
+      for (const part of parts) {
+        const elts = part.split('=')
+        if (elts[0] === 'year') {
+          y = parseInt(elts[1], 10)
+        }
+        if (elts[0] === 'month') {
+          m = parseInt(elts[1], 10)
+        }
+      }
+
+      if (isNaN(y) || isNaN(m)) {
+        return
+      }
+
+      if (m === 0 && y > 0) {
+        this.updateYear(y, data)
+      } else if (m > 0 && y > 0) {
+        this.updateYearMonth(y, m, data)
+      }
+    })
+  }
+
+  updateYear (year: number, page: number): void {
     const ba = new BlogAnnounces({
       propsData: {
-        q: 'year=' + year
+        q: `year=${year}&page=${page}`
       }
     })
     ba.$mount('#blogcontainer')
 
     const bt = new BlogTitle({
       propsData: {
-        text: 'записи за ' + year + ' год'
+        text: `записи за ${year} год`
       }
     })
     bt.$mount('#blogSmallTitle')
   }
 
-  updateYearMonth (year: number, month: number): void {
+  updateYearMonth (year: number, month: number, page: number): void {
     const ba = new BlogAnnounces({
       propsData: {
-        q: 'year=' + year + '&month=' + month
+        q: `year=${year}&month=${month}&page=${page}`
       }
     })
     ba.$mount('#blogcontainer')
@@ -81,7 +111,7 @@ export default class Chrono extends Vue {
     const mnt = moment(new Date(year, month, 1)).locale('ru')
     const bt = new BlogTitle({
       propsData: {
-        text: 'записи за ' + mnt.format('MMMM YYYY')
+        text: `записи за ${mnt.format('MMMM YYYY')}`
       }
     })
     bt.$mount('#blogSmallTitle')
