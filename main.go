@@ -8,9 +8,10 @@ import (
 	"egoroff.spb.ru/app/auth/google"
 	"egoroff.spb.ru/app/auth/oauth"
 	"egoroff.spb.ru/app/blog"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"github.com/stnc/pongo2gin"
-	"github.com/gin-contrib/cors"
 	"log"
 	"os"
 )
@@ -18,6 +19,7 @@ import (
 func main() {
 	r := gin.Default()
 	r.Use(cors.Default())
+	r.Use(gzip.Gzip(gzip.DefaultCompression))
 	auth2.CreateOrUpdateProviders("static/auth_providers.json")
 	oauth.NewStore([]byte("secret"))
 	google.Setup()
