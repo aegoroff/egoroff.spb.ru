@@ -34,7 +34,7 @@ func (a *api) Route(r *gin.Engine) {
 	ap := r.Group("/api/v2")
 	{
 		ap.GET("/", a.index)
-		ap.POST("/navigation/", a.navigation)
+		ap.GET("/navigation/", a.navigation)
 
 		b := ap.Group("/blog")
 		{
@@ -54,21 +54,24 @@ func (a *api) index(c *gin.Context) {
 }
 
 func (a *api) navigation(c *gin.Context) {
-	var req BreadcrumbsReq
+	// IMPORTANT: call Bind is necessary otherwise
+	// c.Request.Form will be nil
+	var req interface{}
 	err := c.Bind(&req)
 	if err != nil {
 		log.Println(err)
 	}
+	uri := c.Request.Form.Get("uri")
 
 	siteMap := framework.ReadSiteMap()
 	gr := framework.NewGraph(siteMap)
-	bc, curr := framework.Breadcrumbs(gr, req.Uri)
+	bc, curr := framework.Breadcrumbs(gr, uri)
 
 	nav := domain.Navigation{
 		Sections: siteMap.Children,
 	}
 
-	if req.Uri != "/" {
+	if uri != "/" {
 		nav.Breadcrumbs = bc
 	}
 
@@ -150,10 +153,6 @@ func (*api) archive(c *gin.Context) {
 		Years: y,
 	}
 	c.JSON(http.StatusOK, a)
-}
-
-type BreadcrumbsReq struct {
-	Uri string `json:"uri"`
 }
 
 type ApiResult struct {

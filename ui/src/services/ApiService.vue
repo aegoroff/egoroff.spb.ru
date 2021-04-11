@@ -37,7 +37,8 @@ export default class ApiService extends Vue {
     navigation.sections = new Array<Section>()
     navigation.breadcrumbs = new Array<Section>()
 
-    axios.post<Nav>('/api/v2/navigation/', { uri: document.location.pathname }).then(r => {
+    const q = encodeURIComponent(document.location.pathname)
+    axios.get<Nav>('/api/v2/navigation/?uri=' + q).then(r => {
       navigation.sections.push(...r.data.sections)
       navigation.breadcrumbs.push(...r.data.breadcrumbs)
     })
