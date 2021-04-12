@@ -84,6 +84,7 @@ export default class Chrono extends Vue {
   }
 
   updateYear (year: number, page: number): void {
+    bus.$emit('dateSelectionChanged')
     const ba = new BlogAnnounces({
       propsData: {
         q: `year=${year}&page=${page}`
@@ -100,6 +101,7 @@ export default class Chrono extends Vue {
   }
 
   updateYearMonth (year: number, month: number, page: number): void {
+    bus.$emit('dateSelectionChanged')
     const ba = new BlogAnnounces({
       propsData: {
         q: `year=${year}&month=${month}&page=${page}`
