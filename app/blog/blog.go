@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var Remapping = map[int64]int64{
@@ -134,8 +135,8 @@ func (*Blog) atom(c *gin.Context) {
 				Type:  "text",
 			},
 			Id:        fmt.Sprintf("http://www.egoroff.spb.ru/blog/%v.html", post.Key.ID),
-			Updated:   post.Created.String(),
-			Published: post.Created.String(),
+			Updated:   post.Created.Format(time.RFC3339),
+			Published: post.Created.Format(time.RFC3339),
 			Author: domain.FeedAuthor{
 				Name: "Alexander Egorov",
 			},
@@ -155,7 +156,7 @@ func (*Blog) atom(c *gin.Context) {
 			Type:  "text",
 		},
 		Id:      "http://www.egoroff.spb.ru/blog/recent.atom",
-		Updated: posts[0].Created.String(),
+		Updated: posts[0].Created.Format(time.RFC3339),
 		Link:    links,
 		Entries: entries,
 	}
