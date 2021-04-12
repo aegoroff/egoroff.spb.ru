@@ -2,6 +2,7 @@ package blog
 
 import (
 	"egoroff.spb.ru/app/db"
+	"egoroff.spb.ru/app/domain"
 	"egoroff.spb.ru/app/framework"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -70,6 +71,7 @@ func (b *Blog) Route(r *gin.Engine) {
 	blog := r.Group("/blog")
 	{
 		blog.GET("/", b.index)
+		blog.GET("/recent.atom", b.atom)
 		blog.GET("/:id", b.post)
 		blog.GET("/page/:page", b.index)
 	}
@@ -105,6 +107,60 @@ func (*Blog) index(c *gin.Context) {
 	ctx["poster"] = poster
 
 	c.HTML(http.StatusOK, "blog/index.html", ctx)
+}
+
+func (*Blog) atom(c *gin.Context) {
+	poster := db.NewPoster(20)
+	poster.SetPage(1)
+
+	links := []domain.FeedLink{
+		{
+			Href: "http://www.egoroff.spb.ru/",
+		},
+		{
+			Href: "http://www.egoroff.spb.ru/blog/recent.atom",
+			Rel:  "self",
+		},
+	}
+
+	posts := poster.Posts()
+	var entries []domain.FeedEntry
+
+	for _, post := range posts {
+		e := domain.FeedEntry{
+			XmlBase: "http://www.egoroff.spb.ru/blog/recent.atom",
+			Title: domain.FeedTitle{
+				Title: post.Title,
+				Type:  "text",
+			},
+			Id:        fmt.Sprintf("http://www.egoroff.spb.ru/blog/%v.html", post.Key.ID),
+			Updated:   post.Created.String(),
+			Published: post.Created.String(),
+			Author: domain.FeedAuthor{
+				Name: "Alexander Egorov",
+			},
+		}
+		content := domain.FeedContent{
+			Content: post.ShortText,
+			Type:    "html",
+		}
+		e.Content = content
+		entries = append(entries, e)
+	}
+
+	feed := domain.Feed{
+		XmlNS: "http://www.w3.org/2005/Atom",
+		Title: domain.FeedTitle{
+			Title: "egoroff.spb.ru feed",
+			Type:  "text",
+		},
+		Id:      "http://www.egoroff.spb.ru/blog/recent.atom",
+		Updated: posts[0].Created.String(),
+		Link:    links,
+		Entries: entries,
+	}
+
+	c.XML(http.StatusOK, feed)
 }
 
 func (b *Blog) post(c *gin.Context) {

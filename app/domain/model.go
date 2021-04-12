@@ -53,3 +53,47 @@ type Url struct {
 	ChangeFreq string   `xml:"changefreq"`
 	Priority   float64  `xml:"priority"`
 }
+
+type Feed struct {
+	XMLName xml.Name    `xml:"feed"`
+	XmlNS   string      `xml:"xmlns,attr"`
+	Title   FeedTitle   `xml:"title"`
+	Id      string      `xml:"id"`
+	Updated string      `xml:"updated"`
+	Link    []FeedLink  `xml:"link"`
+	Entries []FeedEntry `xml:"entry"`
+}
+
+type FeedEntry struct {
+	XMLName   xml.Name    `xml:"entry"`
+	XmlBase   string      `xml:"xml:base,attr"`
+	Title     FeedTitle   `xml:"title"`
+	Id        string      `xml:"id"`
+	Updated   string      `xml:"updated"`
+	Published string      `xml:"published"`
+	Content   FeedContent `xml:"content"`
+	Author    FeedAuthor  `xml:"author"`
+}
+
+type FeedLink struct {
+	XMLName xml.Name `xml:"link"`
+	Href    string   `xml:"href,attr"`
+	Rel     string   `xml:"rel,attr,omitempty"`
+}
+
+type FeedTitle struct {
+	Title   string   `xml:",chardata"`
+	XMLName xml.Name `xml:"title"`
+	Type    string   `xml:"type,attr"`
+}
+
+type FeedContent struct {
+	Content string   `xml:",chardata"`
+	XMLName xml.Name `xml:"content"`
+	Type    string   `xml:"type,attr"`
+}
+
+type FeedAuthor struct {
+	XMLName xml.Name `xml:"author"`
+	Name    string   `xml:"name"`
+}
