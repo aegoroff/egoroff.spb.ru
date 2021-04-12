@@ -3,6 +3,7 @@ import 'reflect-metadata'
 import { injectable } from 'vue-typescript-inject'
 import { Vue } from 'vue-property-decorator'
 import axios from 'axios'
+import { toQuery } from '@/util'
 
 export class Url {
   public type!: string
@@ -124,24 +125,9 @@ export class SearchQuery {
 export default class SearchService extends Vue {
   public async search (q?: SearchQuery): Promise<GoogleSearch> {
     this.$Progress.start()
-    return await axios.get<GoogleSearch>('https://www.googleapis.com/customsearch/v1' + this.toQuery(q)).then(r => {
+    return await axios.get<GoogleSearch>(`https://www.googleapis.com/customsearch/v1${toQuery(q)}`).then(r => {
       return r.data
     }).finally(() => this.$Progress.finish())
-  }
-
-  toQuery (q?: SearchQuery): string {
-    if (q === undefined) {
-      return ''
-    }
-    let str = '?'
-    for (const key in q) {
-      if (str !== '?') {
-        str += '&'
-      }
-      const v = Reflect.get(q, key)
-      str += key + '=' + encodeURIComponent(v)
-    }
-    return str
   }
 }
 </script>

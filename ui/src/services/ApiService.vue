@@ -6,6 +6,7 @@ import { Section } from '../components/Navigation.vue'
 import { injectable } from 'vue-typescript-inject'
 import { Archive } from '@/components/BlogNavigation.vue'
 import { Post } from '@/components/BlogAnnounces.vue'
+import { toQuery } from '@/util'
 
 export class ApiResult {
   public status!: string
@@ -66,24 +67,9 @@ export default class ApiService extends Vue {
 
   public async getPosts (q?: Query): Promise<ApiResult> {
     this.$Progress.start()
-    return await axios.get<ApiResult>(`/api/v2/blog/posts/${this.toQuery(q)}`).then(r => {
+    return await axios.get<ApiResult>(`/api/v2/blog/posts/${toQuery(q)}`).then(r => {
       return r.data
     }).finally(() => this.$Progress.finish())
-  }
-
-  toQuery (q?: Query): string {
-    if (q === undefined) {
-      return ''
-    }
-    let str = '?'
-    for (const key in q) {
-      if (str !== '?') {
-        str += '&'
-      }
-      const v = Reflect.get(q, key)
-      str += key + '=' + encodeURIComponent(v)
-    }
-    return str
   }
 }
 </script>

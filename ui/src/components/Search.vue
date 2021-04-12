@@ -44,6 +44,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator'
 import SearchService, { GoogleSearch, SearchQuery } from '@/services/SearchService.vue'
 import { inject } from 'vue-typescript-inject'
 import SearchResulter from '@/components/SearchResulter.vue'
+import { removeHash } from '@/util'
 
 const ItemsPerPage = 10
 
@@ -67,12 +68,8 @@ export default class Search extends Vue {
   }
 
   newSearch (): void {
-    this.removeHash()
+    removeHash()
     this.search()
-  }
-
-  removeHash (): void {
-    history.pushState('', document.title, window.location.pathname + window.location.search)
   }
 
   search (): void {
