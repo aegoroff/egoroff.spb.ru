@@ -46,6 +46,7 @@ func (a *api) Route(r *gin.Engine) {
 		{
 			auth.GET("/user", a.user)
 			auth.GET("/userinfo", a.userInfo)
+			auth.PUT("/userinfo", a.userInfoUpdate)
 		}
 	}
 }
@@ -87,6 +88,25 @@ func (a *api) userInfo(c *gin.Context) {
 	})
 
 	c.JSON(http.StatusOK, result)
+}
+
+func (a *api) userInfoUpdate(c *gin.Context) {
+	a.ifAuthenticated(c, func(user *domain.User) {
+		var req domain.AuthenticatedUserInfo
+		err := c.Bind(&req)
+		if err != nil {
+			log.Println(err)
+		} else {
+			user.Name = req.Name
+			user.Email = req.Email
+			user.AvatarUrl = req.AvatarUrl
+			repo := db.NewRepository()
+			err = repo.UpdateUser(user, user.Key)
+			if err != nil {
+				log.Println(err)
+			}
+		}
+	})
 }
 
 func (a *api) ifAuthenticated(c *gin.Context, success func(user *domain.User)) {

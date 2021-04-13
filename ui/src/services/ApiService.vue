@@ -72,6 +72,10 @@ export default class ApiService extends Vue {
     })
   }
 
+  public updateFullUserInfo (u: FullUserInfo): void {
+    axios.put<FullUserInfo>('/api/v2/auth/userinfo/', u)
+  }
+
   public async getPosts (q?: Query): Promise<ApiResult> {
     this.$Progress.start()
     return await axios.get<ApiResult>(`/api/v2/blog/posts/${toQuery(q)}`).then(r => {

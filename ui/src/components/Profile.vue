@@ -7,7 +7,7 @@
       </h1>
     </div>
 
-    <b-form @submit.prevent="">
+    <b-form @submit.prevent="update">
       <b-row>
         <b-col>
           <b-form-group id="login-group" label="Логин:" label-for="login">
@@ -27,7 +27,7 @@
               id="userEmail"
               v-model="user.email"
               type="email"
-              placeholder="Enter email"
+              placeholder="Введите адрес электропочты"
               required
             ></b-form-input>
           </b-form-group>
@@ -85,9 +85,17 @@ export default class Profile extends Vue {
   }
 
   mounted (): void {
+    this.readProfile()
+  }
+
+  private readProfile () {
     this.api.getFullUserInfo().then(x => {
       this.user = x
     })
+  }
+
+  update (): void {
+    this.api.updateFullUserInfo(this.user)
   }
 }
 </script>
