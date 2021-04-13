@@ -28,6 +28,7 @@ import './Syntax.scss'
 import BlogAnnounces from '@/components/BlogAnnounces.vue'
 import BlogTitle from '@/components/BlogTitle.vue'
 import Search from '@/components/Search.vue'
+import Profile from '@/components/Profile.vue'
 
 Vue.config.productionTip = false
 Vue.use(VueTypeScriptInject)
@@ -81,6 +82,13 @@ if (siteSearch) {
     }
   })
   s.$mount('#siteSearch')
+}
+
+const userProfile = document.getElementById('userProfile')
+
+if (userProfile) {
+  const s = new Profile()
+  s.$mount('#userProfile')
 }
 
 if (document.getElementById('blogcontainer') && window.location.hash) {

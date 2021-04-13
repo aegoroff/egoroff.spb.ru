@@ -1,6 +1,8 @@
 package domain
 
-import "encoding/xml"
+import (
+	"encoding/xml"
+)
 
 type Message struct {
 	Type string
@@ -18,6 +20,17 @@ type Apache struct {
 type AuthenticatedUser struct {
 	LoginOrName   string `json:"loginOrName"`
 	Authenticated bool   `json:"authenticated"`
+}
+
+type AuthenticatedUserInfo struct {
+	Id        int64  `json:"id"`
+	Created   string `json:"created"`
+	Admin     bool   `json:"admin"`
+	AvatarUrl string `json:"avatarUrl"`
+	Email     string `json:"email"`
+	Name      string `json:"name"`
+	Username  string `json:"username"`
+	Verified  bool   `json:"verified"`
 }
 
 type Navigation struct {

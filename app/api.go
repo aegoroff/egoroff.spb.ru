@@ -45,6 +45,7 @@ func (a *api) Route(r *gin.Engine) {
 		auth := ap.Group("/auth")
 		{
 			auth.GET("/user", a.user)
+			auth.GET("/userinfo", a.userInfo)
 		}
 	}
 }
@@ -59,6 +60,36 @@ func (a *api) index(c *gin.Context) {
 }
 
 func (a *api) user(c *gin.Context) {
+	result := domain.AuthenticatedUser{}
+	a.ifAuthenticated(c, func(user *domain.User) {
+		result = domain.AuthenticatedUser{
+			LoginOrName:   user.String(),
+			Authenticated: true,
+		}
+	})
+
+	c.JSON(http.StatusOK, result)
+}
+
+func (a *api) userInfo(c *gin.Context) {
+	result := domain.AuthenticatedUserInfo{}
+	a.ifAuthenticated(c, func(user *domain.User) {
+		result = domain.AuthenticatedUserInfo{
+			Id:        user.Key.ID,
+			Created:   user.Created.Format(time.RFC3339),
+			Admin:     user.Admin,
+			AvatarUrl: user.AvatarUrl,
+			Email:     user.Email,
+			Name:      user.Name,
+			Username:  user.Username,
+			Verified:  user.Verified,
+		}
+	})
+
+	c.JSON(http.StatusOK, result)
+}
+
+func (a *api) ifAuthenticated(c *gin.Context, success func(user *domain.User)) {
 	sub := sessions.Default(c).Get(framework.UserIdCookie)
 	if sub != nil {
 		repo := db.NewRepository()
@@ -66,16 +97,9 @@ func (a *api) user(c *gin.Context) {
 		if err != nil {
 			log.Println(err)
 		} else {
-			au := domain.AuthenticatedUser{
-				LoginOrName:   u.String(),
-				Authenticated: true,
-			}
-			c.JSON(http.StatusOK, au)
-			return
+			success(u)
 		}
 	}
-
-	c.JSON(http.StatusOK, domain.AuthenticatedUser{})
 }
 
 func (a *api) navigation(c *gin.Context) {

@@ -7,6 +7,7 @@ import { injectable } from 'vue-typescript-inject'
 import { Archive } from '@/components/BlogNavigation.vue'
 import { Post } from '@/components/BlogAnnounces.vue'
 import { toQuery } from '@/util'
+import { FullUserInfo } from '@/components/Profile.vue'
 
 export class ApiResult {
   public status!: string
@@ -61,6 +62,12 @@ export default class ApiService extends Vue {
 
   public async getUser (): Promise<User> {
     return await axios.get<User>('/api/v2/auth/user/').then(r => {
+      return r.data
+    })
+  }
+
+  public async getFullUserInfo (): Promise<FullUserInfo> {
+    return await axios.get<FullUserInfo>('/api/v2/auth/userinfo/').then(r => {
       return r.data
     })
   }
