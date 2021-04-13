@@ -30,6 +30,7 @@
           <b-nav-item-dropdown right v-if="user && user.authenticated">
             <!-- Using 'button-content' slot -->
             <template #button-content>
+              <font-awesome-icon icon="user"></font-awesome-icon>&nbsp;
               <em>{{user.loginOrName}}</em>
             </template>
             <b-dropdown-item href="/profile">Профиль</b-dropdown-item>
