@@ -2,7 +2,9 @@
   <b-container class="container" id="userProfile" fluid="lg">
     <div class="pb-2 mt-4 mb-2 border-bottom">
       <h1>
-        <small class="pull-right" title="Connected Accounts"></small>
+        <small class="float-right" title="Connected Accounts">
+          <AppIcon lib="fab" v-bind:icon="user.provider"></AppIcon>
+        </small>
         {{ user.name }}
       </h1>
     </div>
@@ -63,6 +65,7 @@ import 'reflect-metadata'
 import { Component, Prop, Vue } from 'vue-property-decorator'
 import ApiService from '@/services/ApiService.vue'
 import { inject } from 'vue-typescript-inject'
+import AppIcon from '@/components/AppIcon.vue'
 
 export class FullUserInfo {
   public id!: number
@@ -73,9 +76,11 @@ export class FullUserInfo {
   public name!: string
   public username!: string
   public verified!: boolean
+  public provider!: string
 }
 
 @Component({
+  components: { AppIcon },
   providers: [ApiService]
 })
 export default class Profile extends Vue {

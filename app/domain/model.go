@@ -31,6 +31,7 @@ type AuthenticatedUserInfo struct {
 	Name      string `json:"name"`
 	Username  string `json:"username"`
 	Verified  bool   `json:"verified"`
+	Provider  string `json:"provider"`
 }
 
 type Navigation struct {

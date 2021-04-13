@@ -66,18 +66,18 @@ func (a *Auth) signin(c *gin.Context) {
 }
 
 func (a *Auth) callbackGoogle(c *gin.Context) {
-	a.callback(c, google.Auth())
+	a.callback(c, google.Auth(), "google")
 }
 
 func (a *Auth) callbackGithub(c *gin.Context) {
-	a.callback(c, github.Auth())
+	a.callback(c, github.Auth(), "github")
 }
 
 func (a *Auth) callbackFacebook(c *gin.Context) {
-	a.callback(c, facebook.Auth())
+	a.callback(c, facebook.Auth(), "facebook")
 }
 
-func (a *Auth) callback(c *gin.Context, validator gin.HandlerFunc) {
+func (a *Auth) callback(c *gin.Context, validator gin.HandlerFunc, provider string) {
 	validator(c)
 	if c.IsAborted() {
 		framework.Error401(c)
@@ -101,7 +101,14 @@ func (a *Auth) callback(c *gin.Context, validator gin.HandlerFunc) {
 				Created:  time.Now(),
 				Modified: time.Now(),
 			}
+			u.Provider = provider
 			err = repo.NewUser(&u)
+			if err != nil {
+				log.Println(err)
+			}
+		} else {
+			existing.Provider = provider
+			err = repo.UpdateUser(existing, existing.Key)
 			if err != nil {
 				log.Println(err)
 			}

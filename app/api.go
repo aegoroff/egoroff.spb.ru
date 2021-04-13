@@ -84,6 +84,7 @@ func (a *api) userInfo(c *gin.Context) {
 			Name:      user.Name,
 			Username:  user.Username,
 			Verified:  user.Verified,
+			Provider:  user.Provider,
 		}
 	})
 

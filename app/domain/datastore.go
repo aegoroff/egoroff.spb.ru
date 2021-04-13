@@ -76,6 +76,7 @@ type User struct {
 	TwitterId   string   `datastore:"twitter_id"`
 	Username    string   `datastore:"username"`
 	Verified    bool     `datastore:"verified"`
+	Provider    string   `datastore:"provider"`
 }
 
 func (u *User) String() string {
