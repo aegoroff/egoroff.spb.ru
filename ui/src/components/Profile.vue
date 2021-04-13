@@ -34,13 +34,16 @@
         </b-col>
 
         <b-col>
-          <b-form-group id="avatar-group" label="Аватар:" label-for="avatar">
+          <b-form-group id="avatar-group" label="Аватар:" label-for="avatar" v-if="user.avatarUrl">
             <b-img thumbnail id="avatar" fluid v-bind:src="user.avatarUrl" width="180">
             </b-img>
             <p class="text-muted">
               Изменить на
               <a href="//gravatar.com" target="_blank">Gravatar</a>
             </p>
+          </b-form-group>
+          <b-form-group id="avatar-group-add" label="Аватар:" label-for="newAvatarUrl" v-if="!user.avatarUrl">
+            <b-form-input id="newAvatarUrl" v-model="newAvatarUrl"></b-form-input>
           </b-form-group>
         </b-col>
       </b-row>
@@ -77,6 +80,7 @@ export class FullUserInfo {
 })
 export default class Profile extends Vue {
   @Prop() private user!: FullUserInfo
+  @Prop() private newAvatarUrl!: string
   @inject() private api!: ApiService
 
   constructor () {
@@ -95,6 +99,9 @@ export default class Profile extends Vue {
   }
 
   update (): void {
+    if (this.newAvatarUrl) {
+      this.user.avatarUrl = this.newAvatarUrl
+    }
     this.api.updateFullUserInfo(this.user)
   }
 }

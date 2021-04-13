@@ -59,6 +59,11 @@ func (r *Repository) UserByFederatedId(sub string) (*domain.User, error) {
 }
 
 func (r *Repository) NewUser(user *domain.User) error {
+	k := datastore.IncompleteKey("User", nil)
+	return r.UpdateUser(user, k)
+}
+
+func (r *Repository) UpdateUser(user *domain.User, k *datastore.Key) error {
 	c, err := r.conn.Connect()
 	if err != nil {
 		return err
@@ -68,7 +73,6 @@ func (r *Repository) NewUser(user *domain.User) error {
 	ctx, cancel := r.conn.newContext()
 	defer cancel()
 
-	k := datastore.IncompleteKey("User", nil)
 	_, err = c.Put(ctx, k, user)
 	if err != nil {
 		return nil
