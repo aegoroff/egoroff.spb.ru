@@ -5,6 +5,12 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="author" content="Александр Егоров">
+    {% if meta_description %}
+    <meta name="description" content="{{ meta_description }}">
+    {% endif %}
+    {% if keywords %}
+    <meta name="keywords" content="{{ keywords }}">
+    {% endif %}
     {% block meta %}
     {% endblock %}
 
