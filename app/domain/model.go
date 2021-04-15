@@ -20,6 +20,7 @@ type Apache struct {
 type AuthenticatedUser struct {
 	LoginOrName   string `json:"loginOrName"`
 	Authenticated bool   `json:"authenticated"`
+	Provider      string `json:"provider"`
 }
 
 type AuthenticatedUserInfo struct {

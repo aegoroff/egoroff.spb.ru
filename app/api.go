@@ -66,6 +66,7 @@ func (a *api) user(c *gin.Context) {
 		result = domain.AuthenticatedUser{
 			LoginOrName:   user.String(),
 			Authenticated: true,
+			Provider:      user.Provider,
 		}
 	})
 
