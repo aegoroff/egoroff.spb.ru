@@ -34,6 +34,7 @@ export class Nav {
 
 export class User {
   public loginOrName!: string
+  public provider!: string
   public authenticated!: boolean
 }
 
