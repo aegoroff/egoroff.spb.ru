@@ -23,6 +23,10 @@ func Test_convert(t *testing.T) {
 		{"<link id=\"2\" name=\"10\">a</link>", "<a itemprop=\"url\" href=\"/blog/10.html\">a</a>"},
 		{"<link id=\"1\" name=\"10\">a</link>", "<a itemprop=\"url\" href=\"/blog/10.html\">a</a>"},
 		{"<link name=\"10\" id=\"1\">a</link>", "<a itemprop=\"url\" href=\"/blog/10.html\">a</a>"},
+		{"<div1><head>h</head><p>p</p></div1>", "<h2>h</h2><p>p</p>"},
+		{"<div2><head>h</head><p>p</p></div2>", "<h3>h</h3><p>p</p>"},
+		{"<div3><head>h</head><p>p</p></div3>", "<h4>h</h4><p>p</p>"},
+		{"<div1><head>h</head><div2><head>h</head></div2></div1>", "<h2>h</h2><h3>h</h3>"},
 	}
 
 	for _, test := range tests {

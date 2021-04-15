@@ -12,6 +12,16 @@ var tagsMap = map[string]string{
 	"quote":   "blockquote",
 	"link":    "a",
 	"center":  "div",
+	"div1":    "2",
+	"div2":    "3",
+	"div3":    "4",
+	"head":    "h",
+}
+
+var parentsMap = map[string]string{
+	"2": "2",
+	"3": "3",
+	"4": "4",
 }
 
 type decorator func([]xml.Attr) []xml.Attr
@@ -82,6 +92,8 @@ func convert(x string) string {
 		}
 	}
 
+	parent := ""
+
 	for {
 		t, err := decoder.Token()
 		if err != nil && err != io.EOF {
@@ -95,6 +107,13 @@ func convert(x string) string {
 		case xml.StartElement:
 			var start xml.StartElement
 			if res, ok := tagsMap[se.Name.Local]; ok {
+				if _, ok := parentsMap[res]; ok {
+					parent = res
+					continue
+				}
+				if res == "h" {
+					res += parent
+				}
 				start = xml.StartElement{
 					Name: xml.Name{
 						Local: res,
@@ -119,6 +138,14 @@ func convert(x string) string {
 			encode(t)
 		case xml.EndElement:
 			if res, ok := tagsMap[se.Name.Local]; ok {
+				if _, ok := parentsMap[res]; ok {
+					parent = res
+					continue
+				}
+				if res == "h" {
+					res += parent
+					parent = ""
+				}
 				converted := xml.EndElement{
 					Name: xml.Name{
 						Local: res,
