@@ -10,9 +10,6 @@ handlers:
 - url: /js/
   static_dir: static/dist/js/
 
-- url: /.well-known/pki-validation/
-  static_dir: static/validation/
-
 - url: /apache/images
   static_dir: apache/images
 
