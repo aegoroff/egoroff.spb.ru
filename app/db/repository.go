@@ -190,6 +190,7 @@ func (r *Repository) FileByUid(uid string) *domain.File {
 	})
 	if err != nil || len(files) == 0 {
 		log.Println(err)
+		return nil
 	}
 
 	return files[0]
