@@ -6,10 +6,11 @@ import (
 	"egoroff.spb.ru/app/db"
 	"egoroff.spb.ru/app/framework"
 	"egoroff.spb.ru/app/lib"
+	"fmt"
 	"github.com/gin-gonic/gin"
-	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 )
 
 type download struct {
@@ -29,24 +30,30 @@ func (s *download) Route(r *gin.Engine) {
 			return
 		}
 
+		blob := rep.Blob(file.BlobKey)
+		if blob == nil {
+			framework.Error404(c)
+			return
+		}
+
 		ctx := context.Background()
 		client, err := storage.NewClient(ctx)
 		if err != nil {
+			log.Println(err)
+			framework.Error404(c)
 			return
 		}
 		defer lib.Close(client)
-		rc, err := client.Bucket("egoroff.appspot.com").Object(file.BlobKey).NewReader(ctx)
+
+		blobPath := strings.TrimPrefix(blob.GcsFileName, "/egoroff.appspot.com/")
+		rc, err := client.Bucket("egoroff.appspot.com").Object(blobPath).NewReader(ctx)
 		if err != nil {
 			log.Println(err)
 			framework.Error404(c)
 			return
 		}
-		data, err := ioutil.ReadAll(rc)
-		if err != nil {
-			log.Println(err)
-			framework.Error404(c)
-			return
-		}
-		c.Data(http.StatusOK, file.ContentType, data)
+		headers := make(map[string]string)
+		headers["Content-Disposition"] = fmt.Sprintf("attachment; filename=%s", file.Filename)
+		c.DataFromReader(http.StatusOK, file.Size, file.ContentType, rc, headers)
 	})
 }

@@ -107,6 +107,13 @@ type File struct {
 	Owner             *datastore.Key `datastore:"owner"`
 }
 
+type Blob struct {
+	Key         *datastore.Key `datastore:"__key__"`
+	GcsFileName string         `datastore:"gcs_filename"`
+	NewBlobKey  string         `datastore:"new_blob_key"`
+	OldBlobKey  string         `datastore:"old_blob_key"`
+}
+
 type Folder struct {
 	Model
 	IsPublic bool             `datastore:"is_public"`

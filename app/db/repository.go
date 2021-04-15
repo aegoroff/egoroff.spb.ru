@@ -245,6 +245,27 @@ func (r *Repository) FileByUid(uid string) *domain.File {
 	return files[0]
 }
 
+func (r *Repository) Blob(uid string) *domain.Blob {
+	c, err := r.conn.Connect()
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	defer lib.Close(c)
+
+	ctx, cancel := r.conn.newContext()
+	defer cancel()
+
+	k := datastore.NameKey("_blobmigrator_BlobKeyMapping", uid, nil)
+	var blob domain.Blob
+	err = c.Get(ctx, k, &blob)
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	return &blob
+}
+
 func (r *Repository) Post(id int64) *domain.Post {
 	c, err := r.conn.Connect()
 	if err != nil {
