@@ -6,16 +6,16 @@ import (
 	"net/http"
 )
 
-type Search struct {
+type search struct {
 	Key string
 	Cx  string
 }
 
 func NewSearch() Router {
-	return &Search{}
+	return &search{}
 }
 
-func (s *Search) Route(r *gin.Engine) {
+func (s *search) Route(r *gin.Engine) {
 	r.GET("/search/", func(c *gin.Context) {
 		ctx := framework.NewContext(c)
 		ctx["action_uri"] = "https://www.googleapis.com/customsearch/v1"

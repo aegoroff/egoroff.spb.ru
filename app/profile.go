@@ -6,14 +6,14 @@ import (
 	"net/http"
 )
 
-type Profile struct {
+type profile struct {
 }
 
 func NewProfile() Router {
-	return &Profile{}
+	return &profile{}
 }
 
-func (s *Profile) Route(r *gin.Engine) {
+func (s *profile) Route(r *gin.Engine) {
 	r.GET("/profile/", func(c *gin.Context) {
 		ctx := framework.NewContext(c)
 		ctx["title"] = "Редактирование профиля"

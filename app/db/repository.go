@@ -224,6 +224,27 @@ func (r *Repository) File(k *datastore.Key) *domain.File {
 	return &file
 }
 
+func (r *Repository) FileByUid(uid string) *domain.File {
+	c, err := r.conn.Connect()
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	defer lib.Close(c)
+
+	ctx, cancel := r.conn.newContext()
+	defer cancel()
+
+	var files []*domain.File
+	q := datastore.NewQuery("File").Filter("uid=", uid)
+	_, err = c.GetAll(ctx, q, &files)
+	if err != nil || len(files) == 0 {
+		log.Println(err)
+		return nil
+	}
+	return files[0]
+}
+
 func (r *Repository) Post(id int64) *domain.Post {
 	c, err := r.conn.Connect()
 	if err != nil {
