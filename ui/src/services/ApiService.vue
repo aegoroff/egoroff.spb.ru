@@ -48,7 +48,9 @@ export default class ApiService extends Vue {
     const q = encodeURIComponent(document.location.pathname)
     axios.get<Nav>(`/api/v2/navigation/?uri=${q}`).then(r => {
       navigation.sections.push(...r.data.sections)
-      navigation.breadcrumbs.push(...r.data.breadcrumbs)
+      if (r.data.breadcrumbs) {
+        navigation.breadcrumbs.push(...r.data.breadcrumbs)
+      }
     })
 
     return navigation
