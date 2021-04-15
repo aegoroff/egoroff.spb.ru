@@ -70,6 +70,7 @@ func NewBlog() *Blog {
 
 func (b *Blog) Route(r *gin.Engine) {
 	r.GET("/news/rss", b.atom)
+	r.GET("/recent.atom", b.atom)
 	blog := r.Group("/blog")
 	{
 		blog.GET("/", b.index)
