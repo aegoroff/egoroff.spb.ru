@@ -72,7 +72,7 @@
       находящийся между клиентом и <em>целевым
       сервером</em>.  Чтобы получить содержимое оригинального сервера,
       клиент отправляет запрос прокси серверу указывая оригинальный сервер
-      как конечную цель а прокси затем запрашивает содержимре с  оригинального сервера
+      как конечную цель а прокси затем запрашивает содержимое с  оригинального сервера
       и возвращает его клиенту.  Клиент должен быть специальным образом настроен
       на использование прямого прокси, чтобы получать доступ к другим
       узлам.</p>
@@ -82,39 +82,38 @@
       брандмауэром.  Также прямой прокси может быть использован как кэширующий сервер (обеспечивается
       модулем <module>mod_cache</module>) для уменьшения нагрузки на сеть.</p>
 
-      <p>The forward proxy is activated using the <directive
-      module="mod_proxy">ProxyRequests</directive> directive.  Because
-      forward proxys allow clients to access arbitrary sites through
-      your server and to hide their true origin, it is essential that
-      you <a href="#access">secure your server</a> so that only
-      authorized clients can access the proxy before activating a
-      forward proxy.</p>
+      <p>Прямой прокси активируется с помощью директивы <directive
+      module="mod_proxy">ProxyRequests</directive>.  И по причине того,
+      что прямые прокси позволяют своим клиентам получать доступ к любым сайтам через
+      ваш сервер, при этом скрывая их настоящее происхождение, крайне важно чтобы
+      вы <a href="#access">защитили свой сервер</a> так чтобы только
+      авторизованные клиенты могли пользоваться этим прокси, прежде чем
+      опция прямого прокси будет активирована.</p>
 
-      <p>A <dfn>reverse proxy</dfn>, by contrast, appears to the
-      client just like an ordinary web server.  No special
-      configuration on the client is necessary.  The client makes
-      ordinary requests for content in the name-space of the reverse
-      proxy.  The reverse proxy then decides where to send those
-      requests, and returns the content as if it was itself the
-      origin.</p>
+      <p>В противоположность этому <dfn>обратный прокси</dfn>, видится клиенту
+      как обычный веб сервер.  Никакая специальная настройка на
+      клиентской стороне тут не нужна.  Клиент делает обычные запросы
+      в том же самом пространстве имен что и сам обратный прокси.
+      Обратный прокси далее решает куда отправлять эти запросы,
+      и возвращает их содержимое как будто он сам является его источником.</p>
 
-      <p>A typical usage of a reverse proxy is to provide Internet
-      users access to a server that is behind a firewall.  Reverse
-      proxies can also be used to balance load among several back-end
-      servers, or to provide caching for a slower back-end server.
-      In addition, reverse proxies can be used simply to bring
-      several servers into the same URL space.</p>
+      <p>Типичный вариант использования обратного прокси это предосталение пользователям
+      интернета доступа к вашему серверу, находящемуся за firewall.  Обратные
+      прокси также, могут использоваться для балансировки нагрузки на несколько
+      серверов,  или использоваться для кэширования данных от медленных серверов.
+      Дополнительно, обратные прокси могут быть использованы просто чтобы несколько
+      серверов видились как единое URL пространство.</p>
 
-      <p>A reverse proxy is activated using the <directive
-      module="mod_proxy">ProxyPass</directive> directive or the
-      <code>[P]</code> flag to the <directive
-      module="mod_rewrite">RewriteRule</directive> directive.  It is
-      <strong>not</strong> necessary to turn <directive
-      module="mod_proxy">ProxyRequests</directive> on in order to
-      configure a reverse proxy.</p>
+      <p>Обратный прокси активируется директивой <directive
+      module="mod_proxy">ProxyPass</directive> или флагом
+      <code>[P]</code> директивы <directive
+      module="mod_rewrite">RewriteRule</directive>.  Это
+      <strong>не</strong> строго необходимо включать <directive
+      module="mod_proxy">ProxyRequests</directive> чтобы настроить
+      обратный прокси.</p>
     </section> <!-- /forwardreverse -->
 
-    <section id="examples"><title>Basic Examples</title>
+    <section id="examples"><title>Базовые примеры</title>
 
     <p>The examples below are only a very basic idea to help you
     get started.  Please read the documentation on the individual
