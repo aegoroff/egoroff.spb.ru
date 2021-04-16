@@ -36,7 +36,8 @@ Vue.use(BootstrapVue)
 Vue.use(IconsPlugin)
 Vue.use(VueProgressBar)
 Vue.use(VueGtag, {
-  config: { id: 'UA-145548-1' }
+  config: { id: 'UA-145548-1' },
+  appName: 'egoroff.spb.ru'
 })
 
 library.add(faBook, faBriefcase, faSearch, faHome, faUser, faCalendarAlt, faDownload, faSignInAlt, faSignOutAlt)
