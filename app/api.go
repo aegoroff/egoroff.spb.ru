@@ -7,6 +7,7 @@ import (
 	"egoroff.spb.ru/app/framework"
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/patrickmn/go-cache"
 	"log"
 	"net/http"
 	"sort"
@@ -25,10 +26,12 @@ var months = []string{"Январь", "Февраль",
 	"Сентябрь", "Октябрь", "Ноябрь", "Декабрь"}
 
 type api struct {
+	cache *cache.Cache
 }
 
 func NewApi() Router {
-	return &api{}
+	c := cache.New(12*time.Hour, 24*time.Hour)
+	return &api{cache: c}
 }
 
 func (a *api) Route(r *gin.Engine) {
@@ -213,17 +216,24 @@ func (a *api) posts(c *gin.Context) {
 	})
 }
 
-func (*api) archive(c *gin.Context) {
+func (a *api) archive(c *gin.Context) {
+	k := "archive"
+	arch, ok := a.cache.Get(k)
+	if ok {
+		c.JSON(http.StatusOK, arch)
+		return
+	}
 	rep := db.NewRepository()
 	containers := rep.Tags()
 	tags, times, total := groupContainers(containers)
 	t := createTags(tags, total)
 	y := createArchive(times)
-	a := Archive{
+	arch = Archive{
 		Tags:  t,
 		Years: y,
 	}
-	c.JSON(http.StatusOK, a)
+	a.cache.Set(k, arch, cache.DefaultExpiration)
+	c.JSON(http.StatusOK, arch)
 }
 
 type ApiResult struct {
