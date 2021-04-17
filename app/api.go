@@ -2,11 +2,11 @@ package app
 
 import (
 	"cloud.google.com/go/datastore"
+	"egoroff.spb.ru/app/auth"
 	"egoroff.spb.ru/app/db"
 	"egoroff.spb.ru/app/domain"
 	"egoroff.spb.ru/app/framework"
 	"egoroff.spb.ru/app/txt"
-	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/patrickmn/go-cache"
 	"log"
@@ -46,11 +46,11 @@ func (a *api) Route(r *gin.Engine) {
 			b.GET("/posts/", a.posts)
 			b.GET("/archive/", a.archive)
 		}
-		auth := ap.Group("/auth")
+		authGrp := ap.Group("/auth")
 		{
-			auth.GET("/user", a.user)
-			auth.GET("/userinfo", a.userInfo)
-			auth.PUT("/userinfo", a.userInfoUpdate)
+			authGrp.GET("/user", a.user)
+			authGrp.GET("/userinfo", a.userInfo)
+			authGrp.PUT("/userinfo", a.userInfoUpdate)
 		}
 	}
 }
@@ -64,9 +64,9 @@ func (a *api) index(c *gin.Context) {
 	c.HTML(http.StatusOK, "api/index.html", ctx)
 }
 
-func (a *api) user(c *gin.Context) {
+func (*api) user(c *gin.Context) {
 	result := domain.AuthenticatedUser{}
-	a.ifAuthenticated(c, func(user *domain.User) {
+	auth.IfAuthenticated(c, func(user *domain.User) {
 		result = domain.AuthenticatedUser{
 			LoginOrName:   user.String(),
 			Authenticated: true,
@@ -77,9 +77,9 @@ func (a *api) user(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
-func (a *api) userInfo(c *gin.Context) {
+func (*api) userInfo(c *gin.Context) {
 	result := domain.AuthenticatedUserInfo{}
-	a.ifAuthenticated(c, func(user *domain.User) {
+	auth.IfAuthenticated(c, func(user *domain.User) {
 		result = domain.AuthenticatedUserInfo{
 			Id:        user.Key.ID,
 			Created:   user.Created.Format(time.RFC3339),
@@ -96,8 +96,8 @@ func (a *api) userInfo(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
-func (a *api) userInfoUpdate(c *gin.Context) {
-	a.ifAuthenticated(c, func(user *domain.User) {
+func (*api) userInfoUpdate(c *gin.Context) {
+	auth.IfAuthenticated(c, func(user *domain.User) {
 		var req domain.AuthenticatedUserInfo
 		err := c.Bind(&req)
 		if err != nil {
@@ -113,19 +113,6 @@ func (a *api) userInfoUpdate(c *gin.Context) {
 			}
 		}
 	})
-}
-
-func (a *api) ifAuthenticated(c *gin.Context, success func(user *domain.User)) {
-	sub := sessions.Default(c).Get(framework.UserIdCookie)
-	if sub != nil {
-		repo := db.NewRepository()
-		u, err := repo.UserByFederatedId(sub.(string))
-		if err != nil {
-			log.Println(err)
-		} else {
-			success(u)
-		}
-	}
 }
 
 func (a *api) navigation(c *gin.Context) {

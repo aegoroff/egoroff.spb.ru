@@ -40,7 +40,7 @@ func (a *Auth) Route(r *gin.Engine) {
 	callbackFb.GET("/", a.callbackFacebook)
 }
 
-func (a *Auth) signout(c *gin.Context) {
+func (*Auth) signout(c *gin.Context) {
 	updateSession(c, func(s sessions.Session) {
 		s.Delete(framework.UserIdCookie)
 	})
@@ -48,7 +48,7 @@ func (a *Auth) signout(c *gin.Context) {
 	c.Redirect(http.StatusFound, c.Request.Referer())
 }
 
-func (a *Auth) signin(c *gin.Context) {
+func (*Auth) signin(c *gin.Context) {
 	ctx := framework.NewContext(c)
 	state := randToken()
 
@@ -119,5 +119,18 @@ func (a *Auth) callback(c *gin.Context, validator gin.HandlerFunc, provider stri
 		c.Redirect(http.StatusFound, redirectUri.(string))
 	} else {
 		c.Redirect(http.StatusFound, "/")
+	}
+}
+
+func IfAuthenticated(c *gin.Context, success func(user *domain.User)) {
+	sub := sessions.Default(c).Get(framework.UserIdCookie)
+	if sub != nil {
+		repo := db.NewRepository()
+		u, err := repo.UserByFederatedId(sub.(string))
+		if err != nil {
+			log.Println(err)
+		} else {
+			success(u)
+		}
 	}
 }
