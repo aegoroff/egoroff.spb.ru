@@ -28,6 +28,7 @@ func Test_convert(t *testing.T) {
 		{"<div3><head>h</head><p>p</p></div3>", "<h4>h</h4><p>p</p>"},
 		{"<div1><head>h</head><div2><head>h</head></div2></div1>", "<h2>h</h2><h3>h</h3>"},
 		{"<p>s - s</p>", "<p>s&nbsp;&mdash; s</p>"},
+		{"<p><code>x</code>s - s</p>", "<p><code>x</code>s&nbsp;&mdash; s</p>"},
 	}
 
 	for _, test := range tests {
@@ -50,6 +51,7 @@ func Test_parseHtml(t *testing.T) {
 		parsed string
 	}{
 		{"<p>s - s</p>", "<p>s&nbsp;&mdash; s</p>"},
+		{"<p>s -&nbsp;s</p>", "<p>s&nbsp;&mdash;\u00a0s</p>"},
 		{"<pre>s - s</pre>", "<pre>s - s</pre>"},
 		{"<pre><p>s - s</p></pre>", "<pre><p>s - s</p></pre>"},
 		{"<pre>&lt;html&gt;___&lt;/html&gt;</pre>", "<pre>&lt;html&gt;___&lt;/html&gt;</pre>"},

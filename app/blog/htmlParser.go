@@ -20,7 +20,7 @@ func ParseHtml(s string) string {
 
 		switch tok.Type {
 		case html.TextToken:
-			if _, ok := skips[skip]; ok {
+			if skipElement(skip) {
 				sb.WriteString(html.EscapeString(tok.Data))
 			} else {
 				sb.WriteString(typo(tok.Data))
@@ -32,7 +32,7 @@ func ParseHtml(s string) string {
 		case html.StartTagToken:
 			sb.WriteRune('<')
 
-			if _, ok := skips[tok.Data]; ok {
+			if skipElement(tok.Data) {
 				if skip == "" {
 					skip = tok.Data
 				}
