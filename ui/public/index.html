@@ -24,13 +24,15 @@
     {% block head %}
     {% endblock %}
     <!-- Google Analytics -->
+    {% if gin_mode == 'release' %}
     <script>
       window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-      ga('create', '{{ctx.Conf.AnalyticsId}}', 'egoroff.spb.ru');
+      ga('create', '{{config.AnalyticsId}}', 'egoroff.spb.ru');
       ga('require', 'linkid', 'linkid.js');
       ga('send', 'pageview');
     </script>
     <script async src='https://www.google-analytics.com/analytics.js'></script>
+    {% endif %}
     <!-- End Google Analytics -->
 </head>
 <body>
