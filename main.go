@@ -8,6 +8,7 @@ import (
 	"egoroff.spb.ru/app/auth/google"
 	"egoroff.spb.ru/app/auth/oauth"
 	"egoroff.spb.ru/app/blog"
+	"github.com/flosch/pongo2"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
@@ -28,6 +29,10 @@ func main() {
 	r.Use(oauth.Session("goquestsession"))
 
 	r.HTMLRender = pongo2gin.TemplatePath("static/dist")
+	err := pongo2.RegisterFilter("typograph", typograph)
+	if err != nil {
+		log.Println(err)
+	}
 
 	portfolio := app.NewPortfolio("apache/config.json")
 	static := app.NewStaticRouter()
@@ -49,7 +54,7 @@ func main() {
 		port = "8080"
 	}
 	log.Printf("Defaulting to port %s", port)
-	err := r.Run(":" + port)
+	err = r.Run(":" + port)
 	if err != nil {
 		log.Println(err)
 	}
@@ -59,4 +64,8 @@ func route(r *gin.Engine, routers []app.Router) {
 	for _, rout := range routers {
 		rout.Route(r)
 	}
+}
+
+func typograph(in *pongo2.Value, _ *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+	return pongo2.AsValue(blog.ParseHtml(in.String())), nil
 }

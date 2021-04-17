@@ -225,7 +225,7 @@ func (b *Blog) showPost(c *gin.Context, id int64) {
 	if post.Text != "" && strings.HasPrefix(post.Text, "<?xml version=\"1.0\"?>") {
 		ctx["content"] = convert(post.Text)
 	} else {
-		ctx["content"] = post.Text
+		ctx["content"] = ParseHtml(post.Text)
 	}
 
 	ctx["main_post"] = post

@@ -2,8 +2,10 @@ package blog
 
 import (
 	"encoding/xml"
+	"fmt"
 	"io"
 	"log"
+	"regexp"
 	"strings"
 )
 
@@ -24,12 +26,35 @@ var parentsMap = map[string]string{
 	"4": "4",
 }
 
+var sym = map[string]string{
+	"1/2": "frac12",
+	"1/4": "frac14",
+	"3/4": "frac34",
+}
+
+func entity(s string) string {
+	symbol := s
+	if r, ok := sym[s]; ok {
+		symbol = r
+	}
+	return fmt.Sprintf("&%s;", symbol)
+}
+
 type decorator func([]xml.Attr) []xml.Attr
 
 var decorations = map[string]decorator{
 	"table":   tableDecorator,
 	"a":       linkDecorator,
 	"acronym": acronymDecorator,
+}
+
+var skips = map[string]struct{}{
+	"pre":     {},
+	"a":       {},
+	"script":  {},
+	"code":    {},
+	"example": {},
+	"link":    {},
 }
 
 func tableDecorator(attr []xml.Attr) []xml.Attr {
@@ -93,6 +118,7 @@ func convert(x string) string {
 	}
 
 	parent := ""
+	current := ""
 
 	for {
 		t, err := decoder.Token()
@@ -106,6 +132,7 @@ func convert(x string) string {
 		switch se := t.(type) {
 		case xml.StartElement:
 			var start xml.StartElement
+			current = se.Name.Local
 			if res, ok := tagsMap[se.Name.Local]; ok {
 				if _, ok := parentsMap[res]; ok {
 					parent = res
@@ -135,7 +162,16 @@ func convert(x string) string {
 			}
 			encode(start)
 		case xml.CharData:
-			encode(t)
+			if _, ok := skips[current]; ok {
+				encode(t)
+			} else {
+				repl := typo(string(se))
+				err := encoder.Flush()
+				if err != nil {
+					log.Println(err)
+				}
+				sb.WriteString(repl)
+			}
 		case xml.EndElement:
 			if res, ok := tagsMap[se.Name.Local]; ok {
 				if _, ok := parentsMap[res]; ok {
@@ -165,4 +201,20 @@ func convert(x string) string {
 		log.Println(err)
 	}
 	return sb.String()
+}
+
+var replaces = map[*regexp.Regexp]string{
+	regexp.MustCompile("\\+-"):            entity("plusmn"),
+	regexp.MustCompile("(\\s+)(--?|—|-)"): entity("nbsp") + entity("mdash"),
+	regexp.MustCompile("(^)(--?|—|-)"):    entity("mdash"),
+	regexp.MustCompile("\\.{2,}"):         entity("hellip"),
+}
+
+func typo(s string) string {
+	result := s
+	for reg, repl := range replaces {
+		result = reg.ReplaceAllString(result, repl)
+	}
+
+	return result
 }
