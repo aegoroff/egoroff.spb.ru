@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import VueTypeScriptInject from 'vue-typescript-inject'
+import VueSocialSharing from 'vue-social-sharing'
 import { BootstrapVue, IconsPlugin } from 'bootstrap-vue/src'
 import App from './App.vue'
 import { library } from '@fortawesome/fontawesome-svg-core'
@@ -14,7 +15,7 @@ import {
   faSignInAlt,
   faSignOutAlt
 } from '@fortawesome/free-solid-svg-icons'
-import { faGoogle, faFacebook, faGithub } from '@fortawesome/free-brands-svg-icons'
+import { faGoogle, faFacebook, faGithub, faVk, faTwitter } from '@fortawesome/free-brands-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import VueProgressBar from 'vue-progressbar'
 import AppIcon from './components/AppIcon.vue'
@@ -28,15 +29,17 @@ import BlogAnnounces from '@/components/BlogAnnounces.vue'
 import BlogTitle from '@/components/BlogTitle.vue'
 import Search from '@/components/Search.vue'
 import Profile from '@/components/Profile.vue'
+import Social from '@/components/Social.vue'
 
 Vue.config.productionTip = false
 Vue.use(VueTypeScriptInject)
 Vue.use(BootstrapVue)
 Vue.use(IconsPlugin)
 Vue.use(VueProgressBar)
+Vue.use(VueSocialSharing)
 
 library.add(faBook, faBriefcase, faSearch, faHome, faUser, faCalendarAlt, faDownload, faSignInAlt, faSignOutAlt)
-library.add(faGoogle, faFacebook, faGithub)
+library.add(faGoogle, faFacebook, faGithub, faVk, faTwitter)
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 
 export const bus = new Vue()
@@ -60,6 +63,18 @@ if (app) {
 if (document.getElementById('blogNavigation')) {
   const bn = new BlogNavigation()
   bn.$mount('#blogNavigation')
+}
+
+const social = document.getElementById('social')
+if (social) {
+  const title = social.attributes.getNamedItem('property')
+  const s = new Social({
+    propsData: {
+      title: title === null ? '' : title.value,
+      url: window.location.href
+    }
+  })
+  s.$mount('#social')
 }
 
 const siteSearch = document.getElementById('siteSearch')
