@@ -2,6 +2,7 @@ package app
 
 import (
 	"cloud.google.com/go/datastore"
+	"egoroff.spb.ru/app/blog"
 	"egoroff.spb.ru/app/db"
 	"egoroff.spb.ru/app/domain"
 	"egoroff.spb.ru/app/framework"
@@ -204,6 +205,7 @@ func (a *api) posts(c *gin.Context) {
 	posts := poster.Posts()
 	for _, post := range posts {
 		post.Id = post.Key.ID
+		post.ShortText = blog.ParseHtml(post.ShortText)
 	}
 
 	c.JSON(http.StatusOK, ApiResult{
