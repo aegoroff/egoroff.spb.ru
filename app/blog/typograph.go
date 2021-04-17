@@ -20,10 +20,12 @@ func skipElement(elt string) bool {
 }
 
 var replaces = map[*regexp.Regexp]string{
+	regexp.MustCompile("(\\w)-(\\s+)"):                "$1 -$2",
 	regexp.MustCompile("\\+-"):                        entity("plusmn"),
 	regexp.MustCompile("(\\s+)(--?|—|-)(\\s|\u00a0)"): entity("nbsp") + entity("mdash") + "$3",
 	regexp.MustCompile("(^)(--?|—|-)(\\s|\u00a0)"):    entity("mdash") + "$3",
 	regexp.MustCompile("\\.{2,}"):                     entity("hellip"),
+	regexp.MustCompile("(\\d)-(\\d)"):                 "$1" + entity("minus") + "$2",
 }
 
 func typo(s string) string {
