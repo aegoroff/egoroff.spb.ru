@@ -10,6 +10,7 @@ var skips = map[string]struct{}{
 	"a":      {},
 	"script": {},
 	"code":   {},
+	"style":  {},
 }
 
 func skipElement(elt string) bool {
