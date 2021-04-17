@@ -1,4 +1,4 @@
-package blog
+package txt
 
 import (
 	"fmt"
@@ -6,12 +6,10 @@ import (
 )
 
 var skips = map[string]struct{}{
-	"pre":     {},
-	"a":       {},
-	"script":  {},
-	"code":    {},
-	"example": {},
-	"link":    {},
+	"pre":    {},
+	"a":      {},
+	"script": {},
+	"code":   {},
 }
 
 func skipElement(elt string) bool {

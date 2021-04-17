@@ -93,7 +93,6 @@ func convert(x string) string {
 	}
 
 	parent := ""
-	var stack []string
 
 	for {
 		t, err := decoder.Token()
@@ -107,7 +106,6 @@ func convert(x string) string {
 		switch se := t.(type) {
 		case xml.StartElement:
 			var start xml.StartElement
-			stack = append(stack, se.Name.Local)
 			if res, ok := tagsMap[se.Name.Local]; ok {
 				if _, ok := parentsMap[res]; ok {
 					parent = res
@@ -137,16 +135,7 @@ func convert(x string) string {
 			}
 			encode(start)
 		case xml.CharData:
-			if len(stack) > 0 && skipElement(stack[len(stack)-1]) {
-				encode(t)
-			} else {
-				repl := typo(string(se))
-				err := encoder.Flush()
-				if err != nil {
-					log.Println(err)
-				}
-				sb.WriteString(repl)
-			}
+			encode(t)
 		case xml.EndElement:
 			if res, ok := tagsMap[se.Name.Local]; ok {
 				if _, ok := parentsMap[res]; ok {
@@ -166,9 +155,6 @@ func convert(x string) string {
 				encode(converted)
 			} else {
 				encode(t)
-			}
-			if len(stack) > 0 {
-				stack = stack[:len(stack)-1]
 			}
 		case xml.Directive:
 			encode(t)

@@ -2,10 +2,10 @@ package app
 
 import (
 	"cloud.google.com/go/datastore"
-	"egoroff.spb.ru/app/blog"
 	"egoroff.spb.ru/app/db"
 	"egoroff.spb.ru/app/domain"
 	"egoroff.spb.ru/app/framework"
+	"egoroff.spb.ru/app/txt"
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/patrickmn/go-cache"
@@ -205,7 +205,7 @@ func (a *api) posts(c *gin.Context) {
 	posts := poster.Posts()
 	for _, post := range posts {
 		post.Id = post.Key.ID
-		post.ShortText = blog.ParseHtml(post.ShortText)
+		post.ShortText = txt.ParseHtml(post.ShortText)
 	}
 
 	c.JSON(http.StatusOK, ApiResult{

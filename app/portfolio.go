@@ -94,7 +94,7 @@ func (po *Portfolio) document(c *gin.Context) {
 	}
 
 	ctx := framework.NewContext(c)
-	ctx["content"] = blog.ParseHtml(string(b))
+	ctx["content"] = string(b)
 	ctx["title"] = d.Title
 	ctx["keywords"] = d.Keywords
 

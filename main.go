@@ -8,6 +8,7 @@ import (
 	"egoroff.spb.ru/app/auth/google"
 	"egoroff.spb.ru/app/auth/oauth"
 	"egoroff.spb.ru/app/blog"
+	"egoroff.spb.ru/app/txt"
 	"github.com/flosch/pongo2"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/gzip"
@@ -67,5 +68,5 @@ func route(r *gin.Engine, routers []app.Router) {
 }
 
 func typograph(in *pongo2.Value, _ *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
-	return pongo2.AsValue(blog.ParseHtml(in.String())), nil
+	return pongo2.AsValue(txt.ParseHtml(in.String())), nil
 }
