@@ -15,9 +15,8 @@ import (
 const UserIdCookie = "user-sub"
 
 type Context struct {
-	Conf           *domain.Config
-	currentVersion string
-	graph          *Graph
+	Conf  *domain.Config
+	graph *Graph
 }
 
 func NewContext(gctx *gin.Context, messages ...domain.Message) pongo2.Context {
@@ -31,15 +30,18 @@ func NewContext(gctx *gin.Context, messages ...domain.Message) pongo2.Context {
 
 	gr := NewGraph(root)
 	ctx := &Context{
-		currentVersion: os.Getenv("CURRENT_VERSION_ID"),
-		Conf:           config,
-		graph:          gr,
+		Conf:  config,
+		graph: gr,
 	}
 
-	result := pongo2.Context{"ctx": ctx}
+	result := pongo2.Context{}
 
 	result["sections"] = root.Children
 	result["flashed_messages"] = messages
+	result["gin_mode"] = os.Getenv("GIN_MODE")
+	result["config"] = config
+	result["current_version"] = os.Getenv("CURRENT_VERSION_ID")
+	result["ctx"] = ctx
 
 	if gctx.Request.RequestURI != "/" {
 		bc, _ := Breadcrumbs(gr, gctx.Request.RequestURI)
