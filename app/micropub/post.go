@@ -1,7 +1,8 @@
 package micropub
 
 import (
-	"encoding/json"
+	"errors"
+	"github.com/gin-gonic/gin"
 	"io"
 	"io/ioutil"
 	"log"
@@ -11,6 +12,8 @@ import (
 	"strings"
 )
 
+var malformedDeleteError = errors.New("could not decode json request: malformed delete")
+
 type postDB interface {
 	Create(data map[string][]interface{}) (string, error)
 	Update(url string, replace, add, delete map[string][]interface{}, deleteAlls []string) error
@@ -18,17 +21,22 @@ type postDB interface {
 	Undelete(url string) error
 }
 
-func postHandler(db postDB /*fw media.FileWriter*/) http.Handler {
+func postHandler(db postDB /*fw media.FileWriter*/) gin.HandlerFunc {
 	h := micropubPostHandler{
 		db: db,
 		//fw: fw,
 	}
-	return http.HandlerFunc(h.handleJSON)
-	//return mux.ContentType{
-	//	"application/json":                  http.HandlerFunc(h.handleJSON),
-	//	"application/x-www-form-urlencoded": http.HandlerFunc(h.handleForm),
-	//	"multipart/form-data":               http.HandlerFunc(h.handleMultiPart),
-	//}
+	return func(c *gin.Context) {
+		contentType := c.GetHeader("Content-Type")
+		switch contentType {
+		case "application/json":
+			h.handleJSON(c)
+		case "application/x-www-form-urlencoded":
+			h.handleForm(c)
+		case "multipart/form-data":
+			h.handleMultiPart(c)
+		}
+	}
 }
 
 type micropubPostHandler struct {
@@ -36,11 +44,12 @@ type micropubPostHandler struct {
 	//fw media.FileWriter
 }
 
-func (h *micropubPostHandler) handleJSON(w http.ResponseWriter, r *http.Request) {
+func (h *micropubPostHandler) handleJSON(c *gin.Context) {
 	v := jsonMicroformat{Properties: map[string][]interface{}{}}
 
-	if err := json.NewDecoder(r.Body).Decode(&v); err != nil {
-		http.Error(w, "could not decode json request: "+err.Error(), http.StatusBadRequest)
+	err := c.Bind(&v)
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
@@ -73,7 +82,7 @@ func (h *micropubPostHandler) handleJSON(w http.ResponseWriter, r *http.Request)
 				if dd, ok := d.(string); ok {
 					deleteAlls = append(deleteAlls, dd)
 				} else {
-					http.Error(w, "could not decode json request: malformed delete", http.StatusBadRequest)
+					c.AbortWithError(http.StatusBadRequest, malformedDeleteError)
 					return
 				}
 			}
@@ -86,7 +95,7 @@ func (h *micropubPostHandler) handleJSON(w http.ResponseWriter, r *http.Request)
 				if vs, ok := value.([]interface{}); ok {
 					del[key] = vs
 				} else {
-					http.Error(w, "could not decode json request: malformed delete", http.StatusBadRequest)
+					c.AbortWithError(http.StatusBadRequest, malformedDeleteError)
 					return
 				}
 			}
@@ -97,35 +106,37 @@ func (h *micropubPostHandler) handleJSON(w http.ResponseWriter, r *http.Request)
 		//}
 
 		if err := h.db.Update(v.URL, replace, add, del, deleteAlls); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}
 
-		w.WriteHeader(http.StatusNoContent)
+		c.Status(http.StatusNoContent)
 		return
 	}
 
 	if v.Action == "delete" {
-		h.delete(w, r, v.URL)
+		h.delete(c, v.URL)
 		return
 	}
 
 	if v.Action == "undelete" {
-		h.undelete(w, r, v.URL)
+		h.undelete(c, v.URL)
 		return
 	}
 
-	h.create(w, r, data)
+	h.create(c, data)
 }
 
-func (h *micropubPostHandler) handleForm(w http.ResponseWriter, r *http.Request) {
-	data := map[string][]interface{}{}
-
-	if err := r.ParseForm(); err != nil {
-		http.Error(w, "could not parse form: "+err.Error(), http.StatusBadRequest)
+func (h *micropubPostHandler) handleForm(c *gin.Context) {
+	var req interface{}
+	err := c.Bind(&req)
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
-	for key, values := range r.Form {
+
+	data := map[string][]interface{}{}
+	for key, values := range c.Request.Form {
 		if reservedKey(key) {
 			continue
 		}
@@ -144,32 +155,32 @@ func (h *micropubPostHandler) handleForm(w http.ResponseWriter, r *http.Request)
 		}
 	}
 
-	if r.FormValue("action") == "delete" {
-		h.delete(w, r, r.FormValue("url"))
+	if c.Request.FormValue("action") == "delete" {
+		h.delete(c, c.Request.FormValue("url"))
 		return
 	}
 
-	if r.FormValue("action") == "undelete" {
-		h.undelete(w, r, r.FormValue("url"))
+	if c.Request.FormValue("action") == "undelete" {
+		h.undelete(c, c.Request.FormValue("url"))
 		return
 	}
 
-	h.create(w, r, data)
+	h.create(c, data)
 }
 
-func (h *micropubPostHandler) handleMultiPart(w http.ResponseWriter, r *http.Request) {
+func (h *micropubPostHandler) handleMultiPart(c *gin.Context) {
 	//if !auth.HasScope(w, r, "create") {
 	//	return
 	//}
 
-	_, params, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
+	_, params, err := mime.ParseMediaType(c.GetHeader("Content-Type"))
 	if err != nil {
 		log.Println("ERR micropub-parse-multi-part;", err)
 		return
 	}
 
 	data := map[string][]interface{}{}
-	parts := multipart.NewReader(r.Body, params["boundary"])
+	parts := multipart.NewReader(c.Request.Body, params["boundary"])
 
 	for {
 		p, err := parts.NextPart()
@@ -178,7 +189,7 @@ func (h *micropubPostHandler) handleMultiPart(w http.ResponseWriter, r *http.Req
 		}
 		if err != nil {
 			log.Println("ERR micropub-read-multi-part;", err)
-			http.Error(w, "", http.StatusInternalServerError)
+			c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}
 
@@ -233,10 +244,10 @@ func (h *micropubPostHandler) handleMultiPart(w http.ResponseWriter, r *http.Req
 		}
 	}
 
-	h.create(w, r, data)
+	h.create(c, data)
 }
 
-func (h *micropubPostHandler) create(w http.ResponseWriter, r *http.Request, data map[string][]interface{}) {
+func (h *micropubPostHandler) create(c *gin.Context, data map[string][]interface{}) {
 	//if !auth.HasScope(w, r, "create") {
 	//	return
 	//}
@@ -247,38 +258,38 @@ func (h *micropubPostHandler) create(w http.ResponseWriter, r *http.Request, dat
 
 	location, err := h.db.Create(data)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
-	w.Header().Add("Location", location)
-	w.WriteHeader(http.StatusCreated)
+	c.Header("Location", location)
+	c.Status(http.StatusCreated)
 }
 
-func (h *micropubPostHandler) delete(w http.ResponseWriter, r *http.Request, url string) {
+func (h *micropubPostHandler) delete(c *gin.Context, url string) {
 	//if !auth.HasScope(w, r, "delete") {
 	//	return
 	//}
 
 	if err := h.db.Delete(url); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	c.Status(http.StatusNoContent)
 }
 
-func (h *micropubPostHandler) undelete(w http.ResponseWriter, r *http.Request, url string) {
+func (h *micropubPostHandler) undelete(c *gin.Context, url string) {
 	//if !auth.HasScope(w, r, "delete") {
 	//	return
 	//}
 
 	if err := h.db.Undelete(url); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	c.Status(http.StatusNoContent)
 }
 
 func reservedKey(key string) bool {
