@@ -25,14 +25,7 @@ func getHandler(
 	mediaEndpointHandler := mediaEndpointHandler(mediaURL)
 
 	return func(c *gin.Context) {
-		var req interface{}
-		err := c.Bind(&req)
-		if err != nil {
-			c.AbortWithError(http.StatusBadRequest, err)
-			return
-		}
-
-		switch c.Request.FormValue("q") {
+		switch c.Query("q") {
 		case "config":
 			configHandler(c)
 		case "media-endpoint":
@@ -47,14 +40,7 @@ func getHandler(
 
 func sourceHandler(db getDB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var req interface{}
-		err := c.Bind(&req)
-		if err != nil {
-			c.AbortWithError(http.StatusBadRequest, err)
-			return
-		}
-
-		url := c.Request.FormValue("url")
+		url := c.Query("url")
 		properties := c.Request.Form["properties[]"]
 		if len(properties) == 0 {
 			property := c.Request.FormValue("properties")

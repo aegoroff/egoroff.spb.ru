@@ -116,14 +116,7 @@ func (*api) userInfoUpdate(c *gin.Context) {
 }
 
 func (a *api) navigation(c *gin.Context) {
-	// IMPORTANT: call Bind is necessary otherwise
-	// c.Request.Form will be nil
-	var req interface{}
-	err := c.Bind(&req)
-	if err != nil {
-		log.Println(err)
-	}
-	uri := c.Request.Form.Get("uri")
+	uri := c.Query("uri")
 
 	siteMap := framework.ReadSiteMap()
 	gr := framework.NewGraph(siteMap)
