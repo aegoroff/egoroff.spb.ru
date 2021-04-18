@@ -101,10 +101,6 @@ func (h *micropubPostHandler) handleJSON(c *gin.Context) {
 			}
 		}
 
-		//if !auth.HasScope(w, r, "update") {
-		//	return
-		//}
-
 		if err := h.db.Update(v.URL, replace, add, del, deleteAlls); err != nil {
 			c.AbortWithError(http.StatusInternalServerError, err)
 			return
@@ -169,10 +165,6 @@ func (h *micropubPostHandler) handleForm(c *gin.Context) {
 }
 
 func (h *micropubPostHandler) handleMultiPart(c *gin.Context) {
-	//if !auth.HasScope(w, r, "create") {
-	//	return
-	//}
-
 	_, params, err := mime.ParseMediaType(c.GetHeader("Content-Type"))
 	if err != nil {
 		log.Println("ERR micropub-parse-multi-part;", err)
@@ -248,10 +240,6 @@ func (h *micropubPostHandler) handleMultiPart(c *gin.Context) {
 }
 
 func (h *micropubPostHandler) create(c *gin.Context, data map[string][]interface{}) {
-	//if !auth.HasScope(w, r, "create") {
-	//	return
-	//}
-	//
 	//if clientID := auth.ClientID(r); clientID != "" {
 	//	data["hx-client-id"] = []interface{}{clientID}
 	//}
@@ -267,10 +255,6 @@ func (h *micropubPostHandler) create(c *gin.Context, data map[string][]interface
 }
 
 func (h *micropubPostHandler) delete(c *gin.Context, url string) {
-	//if !auth.HasScope(w, r, "delete") {
-	//	return
-	//}
-
 	if err := h.db.Delete(url); err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -280,10 +264,6 @@ func (h *micropubPostHandler) delete(c *gin.Context, url string) {
 }
 
 func (h *micropubPostHandler) undelete(c *gin.Context, url string) {
-	//if !auth.HasScope(w, r, "delete") {
-	//	return
-	//}
-
 	if err := h.db.Undelete(url); err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return

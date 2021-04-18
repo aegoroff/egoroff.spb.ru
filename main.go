@@ -8,6 +8,7 @@ import (
 	"egoroff.spb.ru/app/auth/google"
 	"egoroff.spb.ru/app/auth/oauth"
 	"egoroff.spb.ru/app/blog"
+	"egoroff.spb.ru/app/micropub"
 	"egoroff.spb.ru/app/txt"
 	"github.com/flosch/pongo2"
 	"github.com/gin-contrib/cors"
@@ -41,12 +42,13 @@ func main() {
 	profile := app.NewProfile()
 	down := app.NewDownload()
 	bl := blog.NewBlog()
+	mpub := micropub.NewEndpoint()
 	api := app.NewApi()
 	auth := auth2.NewAuth()
 	sitemap := app.NewSiteMap(portfolio.Documents())
 	welcome := app.NewWelcome(portfolio.Documents())
 
-	routers := []app.Router{static, portfolio, welcome, search, bl, api, auth, sitemap, profile, down}
+	routers := []app.Router{static, portfolio, welcome, search, bl, api, auth, sitemap, profile, down, mpub}
 
 	route(r, routers)
 
