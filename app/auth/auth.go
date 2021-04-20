@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-const redirectUrlCookie = "redirect_url_after_signin"
+const RedirectUrlCookie = "redirect_url_after_signin"
 const authStateCookie = "state"
 
 type Auth struct {
@@ -41,7 +41,7 @@ func (a *Auth) Route(r *gin.Engine) {
 }
 
 func (*Auth) signout(c *gin.Context) {
-	updateSession(c, func(s sessions.Session) {
+	UpdateSession(c, func(s sessions.Session) {
 		s.Delete(framework.UserIdCookie)
 	})
 
@@ -52,9 +52,12 @@ func (*Auth) signin(c *gin.Context) {
 	ctx := framework.NewContext(c)
 	state := randToken()
 
-	updateSession(c, func(s sessions.Session) {
+	UpdateSession(c, func(s sessions.Session) {
 		s.Set(authStateCookie, state)
-		s.Set(redirectUrlCookie, c.Request.Referer())
+		redirect := s.Get(RedirectUrlCookie)
+		if redirect == nil {
+			s.Set(RedirectUrlCookie, c.Request.Referer())
+		}
 	})
 
 	ctx["title"] = "Авторизация"
@@ -87,7 +90,7 @@ func (a *Auth) callback(c *gin.Context, validator gin.HandlerFunc, provider stri
 	if ok {
 		u := user.(domain.User)
 
-		updateSession(c, func(s sessions.Session) {
+		UpdateSession(c, func(s sessions.Session) {
 			s.Set(framework.UserIdCookie, u.FederatedId)
 		})
 
@@ -114,8 +117,10 @@ func (a *Auth) callback(c *gin.Context, validator gin.HandlerFunc, provider stri
 			}
 		}
 	}
-	redirectUri := sessions.Default(c).Get(redirectUrlCookie)
+	s := sessions.Default(c)
+	redirectUri := s.Get(RedirectUrlCookie)
 	if redirectUri != nil {
+		s.Delete(RedirectUrlCookie)
 		c.Redirect(http.StatusFound, redirectUri.(string))
 	} else {
 		c.Redirect(http.StatusFound, "/")

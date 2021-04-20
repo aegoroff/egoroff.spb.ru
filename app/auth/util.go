@@ -17,7 +17,7 @@ func randToken() string {
 	return base64.StdEncoding.EncodeToString(b)
 }
 
-func updateSession(c *gin.Context, action func(s sessions.Session)) {
+func UpdateSession(c *gin.Context, action func(s sessions.Session)) {
 	session := sessions.Default(c)
 	action(session)
 	err := session.Save()

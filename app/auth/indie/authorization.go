@@ -3,7 +3,9 @@ package indie
 import (
 	"egoroff.spb.ru/app/auth"
 	"egoroff.spb.ru/app/domain"
+	"egoroff.spb.ru/app/framework"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/patrickmn/go-cache"
 	"io/ioutil"
@@ -35,12 +37,22 @@ func (a *Auth) Route(r *gin.Engine) {
 
 func (a *Auth) get(c *gin.Context) {
 	admin := false
+	authorized := false
 	auth.IfAuthenticated(c, func(user *domain.User) {
+		authorized = true
 		admin = user.Admin
 	})
 
-	if !admin {
+	if !authorized {
+		auth.UpdateSession(c, func(s sessions.Session) {
+			s.Set(auth.RedirectUrlCookie, c.Request.Referer())
+		})
 		c.Redirect(http.StatusFound, "/login")
+		return
+	}
+
+	if !admin {
+		framework.Error401(c)
 		return
 	}
 
