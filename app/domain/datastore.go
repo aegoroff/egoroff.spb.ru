@@ -18,12 +18,12 @@ type Model struct {
 
 type Post struct {
 	Model
-	Id        int64    `json:"id"`
+	Id        int64    `json:"id" datastore:"-"`
 	IsPublic  bool     `datastore:"is_public"`
 	Tags      []string `datastore:"tags"`
 	Title     string   `datastore:"title"`
 	ShortText string   `datastore:"short_text"`
-	Text      string   `datastore:"text"`
+	Text      string   `datastore:"text,noindex"`
 }
 
 type SmallPost struct {

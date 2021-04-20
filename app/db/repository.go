@@ -223,6 +223,21 @@ func (r *Repository) Post(id int64) *domain.Post {
 	return &post
 }
 
+func (r *Repository) NewPost(post *domain.Post) (int64, error) {
+	k := datastore.IncompleteKey("Post", nil)
+	err := r.query(func(c *datastore.Client, ctx context.Context) error {
+		newK, err := c.Put(ctx, k, post)
+		k = newK
+		return err
+	})
+	if err != nil {
+		log.Println(err)
+		return 0, err
+	}
+
+	return k.ID, nil
+}
+
 func (r *Repository) query(action func(c *datastore.Client, ctx context.Context) error) error {
 	c, err := r.conn.Connect()
 	if err != nil {
