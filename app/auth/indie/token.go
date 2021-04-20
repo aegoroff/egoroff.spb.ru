@@ -29,7 +29,6 @@ func NewTokenEndpoint(a *Auth) *TokenEndpoint {
 
 func (t *TokenEndpoint) Route(r *gin.Engine) {
 	r.POST("/token", t.token)
-	r.GET("/token", t.token)
 }
 
 func (t *TokenEndpoint) token(c *gin.Context) {
