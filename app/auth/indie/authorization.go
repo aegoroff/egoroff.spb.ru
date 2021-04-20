@@ -1,6 +1,8 @@
 package indie
 
 import (
+	"egoroff.spb.ru/app/auth"
+	"egoroff.spb.ru/app/domain"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/patrickmn/go-cache"
@@ -32,6 +34,16 @@ func (a *Auth) Route(r *gin.Engine) {
 }
 
 func (a *Auth) get(c *gin.Context) {
+	admin := false
+	auth.IfAuthenticated(c, func(user *domain.User) {
+		admin = user.Admin
+	})
+
+	if !admin {
+		c.Redirect(http.StatusFound, "/login")
+		return
+	}
+
 	clientId := c.Query("client_id")
 	redirectUri := c.Query("redirect_uri")
 	state := c.Query("state")
