@@ -19,3 +19,5 @@ temp/
 intodev.bat
 /static/auth_providers.json
 /static/validation/1A73EFF10EDA0237DC07FCBF43A5AF39.txt
+egoroffspbrupri.pem
+egoroffspbrupub.pem

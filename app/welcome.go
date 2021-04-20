@@ -1,9 +1,11 @@
 package app
 
 import (
+	"egoroff.spb.ru/app/auth/indie"
 	"egoroff.spb.ru/app/db"
 	"egoroff.spb.ru/app/domain"
 	"egoroff.spb.ru/app/framework"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/vcraescu/go-paginator/v2"
 	"log"
@@ -19,7 +21,11 @@ func NewWelcome(apacheDocs []*domain.Apache) Router {
 }
 
 func (w *welcome) Route(r *gin.Engine) {
+	endpoint := indie.Endpoint
 	r.GET("/", func(c *gin.Context) {
+		w.addLinkHeader(c, "https://www.egoroff.spb.ru/micropub", "micropub")
+		w.addLinkHeader(c, endpoint.AuthURL, "authorization_endpoint")
+		w.addLinkHeader(c, endpoint.TokenURL, "token_endpoint")
 		pager := paginator.New(db.NewPostsAdaptor(), 5)
 		var posts []*domain.Post
 		err := pager.Results(&posts)
@@ -37,4 +43,8 @@ func (w *welcome) Route(r *gin.Engine) {
 
 		c.HTML(http.StatusOK, "welcome.html", ctx)
 	})
+}
+
+func (w *welcome) addLinkHeader(c *gin.Context, link string, rel string) {
+	c.Header("Link", fmt.Sprintf("<%s>; rel=\"%s\"", link, rel))
 }

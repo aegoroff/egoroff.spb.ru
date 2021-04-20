@@ -6,6 +6,7 @@ import (
 	"egoroff.spb.ru/app/auth/facebook"
 	"egoroff.spb.ru/app/auth/github"
 	"egoroff.spb.ru/app/auth/google"
+	"egoroff.spb.ru/app/auth/indie"
 	"egoroff.spb.ru/app/auth/oauth"
 	"egoroff.spb.ru/app/blog"
 	"egoroff.spb.ru/app/micropub"
@@ -41,6 +42,8 @@ func main() {
 	search := app.NewSearch()
 	profile := app.NewProfile()
 	down := app.NewDownload()
+	indieAuth := indie.NewAuth()
+	indieToken := indie.NewTokenEndpoint(indieAuth)
 	bl := blog.NewBlog()
 	mpub := micropub.NewEndpoint()
 	api := app.NewApi()
@@ -48,7 +51,12 @@ func main() {
 	sitemap := app.NewSiteMap(portfolio.Documents())
 	welcome := app.NewWelcome(portfolio.Documents())
 
-	routers := []app.Router{static, portfolio, welcome, search, bl, api, auth, sitemap, profile, down, mpub}
+	routers := []app.Router{
+		static,
+		portfolio,
+		welcome,
+		search,
+		bl, api, auth, sitemap, profile, down, mpub, indieAuth, indieToken}
 
 	route(r, routers)
 

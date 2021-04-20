@@ -49,6 +49,7 @@ func (h *micropubPostHandler) handleJSON(c *gin.Context) {
 
 	err := c.Bind(&v)
 	if err != nil {
+		log.Println(err)
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
