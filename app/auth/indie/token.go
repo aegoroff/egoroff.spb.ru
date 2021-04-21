@@ -54,6 +54,7 @@ func (t *TokenEndpoint) tokenVerify(c *gin.Context) {
 	token := strings.TrimPrefix(auth, "Bearer ")
 	tokenD, err := decodeJwt(token)
 	if err != nil {
+		log.Println(err)
 		c.AbortWithStatusJSON(http.StatusUnauthorized, unauthorized)
 		return
 	}
@@ -62,15 +63,15 @@ func (t *TokenEndpoint) tokenVerify(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, unauthorized)
 		return
 	}
-	claims, ok := tokenD.Claims.(IndieClaims)
+	claims, ok := tokenD.Claims.(jwt.MapClaims)
 	if !ok {
 		log.Printf("Invalid claims: %v", tokenD.Claims)
 		c.AbortWithStatusJSON(http.StatusUnauthorized, unauthorized)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"me":        claims.Issuer,
-		"client_id": claims.ClientID,
+		"me":        claims["iss"],
+		"client_id": claims["client_id"],
 		"scope":     SCOPES,
 	})
 }
@@ -88,7 +89,7 @@ func (t *TokenEndpoint) tokenGenerate(c *gin.Context) {
 		return
 	}
 
-	if !t.auth.validateCode(req.Code) {
+	if !t.auth.validateTokenReq(req) {
 		c.AbortWithError(http.StatusUnauthorized, fmt.Errorf("invalid code for: %s", req.ClientId))
 		return
 	}

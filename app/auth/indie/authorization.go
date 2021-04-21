@@ -17,9 +17,9 @@ import (
 )
 
 type IndieClaims struct {
+	jwt.StandardClaims
 	ClientID    string `json:"client_id"`
 	RedirectURL string `json:"redirect_url"`
-	jwt.StandardClaims
 }
 
 type Auth struct {
@@ -68,7 +68,7 @@ func (a *Auth) get(c *gin.Context) {
 				Audience:  "",
 				ExpiresAt: int64(10 * time.Minute),
 				IssuedAt:  time.Now().Unix(),
-				Issuer:    "egoroff.spb.ru",
+				Issuer:    ME,
 			},
 		})
 
@@ -97,11 +97,37 @@ func (a *Auth) get(c *gin.Context) {
 	}
 }
 
-func (a *Auth) validateCode(code string) bool {
-	_, ok := a.cache.Get(code)
+func (a *Auth) validateTokenReq(req tokenReq) bool {
+	_, ok := a.cache.Get(req.Code)
 	if !ok {
 		return ok
 	}
-	defer a.cache.Delete(code)
-	return verifyJwt(code)
+	defer a.cache.Delete(req.Code)
+
+	t, err := decodeJwt(req.Code)
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+	err = t.Claims.Valid()
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+
+	claims, ok := t.Claims.(jwt.MapClaims)
+	if !ok {
+		log.Printf("Not jwt.MapClaims: %v", t.Claims)
+		return ok
+	}
+
+	ok = claims["client_id"] == req.ClientId && claims["redirect_url"] == req.RedirectUri
+	if !ok {
+		log.Printf("claims.ClientID: %v\n", claims["client_id"])
+		log.Println("req.ClientId: " + req.ClientId)
+		log.Printf("claims.RedirectURL: %v\n", claims["redirect_url"])
+		log.Println("req.RedirectUri: " + req.RedirectUri)
+	}
+
+	return ok
 }
