@@ -6,6 +6,7 @@ import (
 	"egoroff.spb.ru/app/framework"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/gomarkdown/markdown"
 	"log"
 	"net/http"
 	"strconv"
@@ -222,7 +223,10 @@ func (b *Blog) showPost(c *gin.Context, id int64) {
 	ctx := framework.NewContext(c)
 	ctx["title"] = post.Title
 
-	if post.Text != "" && strings.HasPrefix(post.Text, "<?xml version=\"1.0\"?>") {
+	if post.Markdown {
+		md := []byte(post.Text)
+		ctx["content"] = string(markdown.ToHTML(md, nil, nil))
+	} else if post.Text != "" && strings.HasPrefix(post.Text, "<?xml version=\"1.0\"?>") {
 		ctx["content"] = convert(post.Text)
 	} else {
 		ctx["content"] = post.Text

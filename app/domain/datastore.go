@@ -24,6 +24,7 @@ type Post struct {
 	Title     string   `datastore:"title"`
 	ShortText string   `datastore:"short_text"`
 	Text      string   `datastore:"text,noindex"`
+	Markdown  bool     `datastore:"markdown"`
 }
 
 type SmallPost struct {
