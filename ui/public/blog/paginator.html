@@ -21,7 +21,7 @@
             {% set href = "#" %}
         {% endif %}
         <li class="{{ li_class }} page-item">
-            <a href="{{ctx.PathFor('blog')}}{{ href }}" class="page-link">{{ newer | safe }}</a>
+            <a href="{{ctx.PathFor('blog')}}{% if poster.PrevPage() > 1 %}page/{% endif %}{{ href }}" class="page-link">{{ newer | safe }}</a>
         </li>
         {% for page in poster.Pages() %}
             {% if page %}
