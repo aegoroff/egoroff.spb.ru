@@ -332,18 +332,3 @@ table {
     margin-right: 1em;
   }
 }
-
-/*
- * 02.05.2013
- * Fix Conflict with Google Custom User Search and Bootstrap Styles
- */
-#gs_tti0 > input {
-  margin-top:-1px !important;
-}
-
-.gsc-input-box {
-  input[type="text"], input[type="text"]:focus, input[type="text"]:active {
-    -webkit-box-shadow: none;
-    box-shadow: none;
-  }
-}
