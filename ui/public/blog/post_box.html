@@ -2,4 +2,4 @@
 <dt><small><span itemprop="datePublished" class="date" data-label="LL">{{ post.Created.Format("2006-01-02 15:04:05") }}</span></small>&nbsp;
     <a itemprop="url" href="{{ctx.PathFor('blog')}}{{ post.Key.ID }}.html"><span itemprop="name">{{ post.Title }}</span></a>
 </dt>
-<dd itemprop="description">{{ post.ShortText | safe | typograph }}</dd>
+<dd itemprop="description">{{ post.Html() | safe | typograph }}</dd>

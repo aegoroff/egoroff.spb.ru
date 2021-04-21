@@ -2,6 +2,8 @@ package domain
 
 import (
 	"cloud.google.com/go/datastore"
+	"egoroff.spb.ru/app/txt"
+	"github.com/gomarkdown/markdown"
 	"time"
 )
 
@@ -33,6 +35,16 @@ type SmallPost struct {
 	Id        int64          `json:"id"`
 	Title     string         `datastore:"title"`
 	ShortText string         `datastore:"short_text"`
+	Markdown  bool           `datastore:"markdown"`
+}
+
+func (s *SmallPost) Html() string {
+	if s.Markdown {
+		md := []byte(s.ShortText)
+		return string(markdown.ToHTML(md, nil, nil))
+	} else {
+		return txt.ParseHtml(s.ShortText)
+	}
 }
 
 type TagContainter struct {

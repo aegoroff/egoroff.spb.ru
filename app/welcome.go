@@ -27,7 +27,7 @@ func (w *welcome) Route(r *gin.Engine) {
 		w.addLinkHeader(c, endpoint.AuthURL, "authorization_endpoint")
 		w.addLinkHeader(c, endpoint.TokenURL, "token_endpoint")
 		pager := paginator.New(db.NewPostsAdaptor(), 5)
-		var posts []*domain.Post
+		var posts []*domain.SmallPost
 		err := pager.Results(&posts)
 		if err != nil {
 			log.Println(err)

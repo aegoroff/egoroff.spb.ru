@@ -145,7 +145,7 @@ func (*Blog) atom(c *gin.Context) {
 			},
 		}
 		content := domain.FeedContent{
-			Content: post.ShortText,
+			Content: post.Html(),
 			Type:    "html",
 		}
 		e.Content = content

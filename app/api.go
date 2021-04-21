@@ -6,7 +6,6 @@ import (
 	"egoroff.spb.ru/app/db"
 	"egoroff.spb.ru/app/domain"
 	"egoroff.spb.ru/app/framework"
-	"egoroff.spb.ru/app/txt"
 	"github.com/gin-gonic/gin"
 	"github.com/patrickmn/go-cache"
 	"log"
@@ -185,7 +184,7 @@ func (a *api) posts(c *gin.Context) {
 	posts := poster.Posts()
 	for _, post := range posts {
 		post.Id = post.Key.ID
-		post.ShortText = txt.ParseHtml(post.ShortText)
+		post.ShortText = post.Html()
 	}
 
 	c.JSON(http.StatusOK, ApiResult{
