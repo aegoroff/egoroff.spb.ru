@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import VueTypeScriptInject from 'vue-typescript-inject'
+import VueHighlightJS from 'vue-highlight.js'
 import VueSocialSharing from 'vue-social-sharing'
 import { BootstrapVue, IconsPlugin } from 'bootstrap-vue/src'
 import App from './App.vue'
@@ -24,12 +25,21 @@ import FromNow from '@/components/FromNow.vue'
 import BlogNavigation from '@/components/BlogNavigation.vue'
 
 import './App.scss'
-import './Syntax.scss'
 import BlogAnnounces from '@/components/BlogAnnounces.vue'
 import BlogTitle from '@/components/BlogTitle.vue'
 import Search from '@/components/Search.vue'
 import Profile from '@/components/Profile.vue'
 import Social from '@/components/Social.vue'
+
+// Highlight.js languages (All languages)
+import 'vue-highlight.js/lib/allLanguages'
+
+/*
+* Import Highlight.js theme
+* Find more: https://highlightjs.org/static/demo/
+*/
+import 'highlight.js/styles/github-gist.css'
+import Highlighter from '@/components/Highlighter.vue'
 
 Vue.config.productionTip = false
 Vue.use(VueTypeScriptInject)
@@ -37,6 +47,7 @@ Vue.use(BootstrapVue)
 Vue.use(IconsPlugin)
 Vue.use(VueProgressBar)
 Vue.use(VueSocialSharing)
+Vue.use(VueHighlightJS)
 
 library.add(faBook, faBriefcase, faSearch, faHome, faUser, faCalendarAlt, faDownload, faSignInAlt, faSignOutAlt)
 library.add(faGoogle, faFacebook, faGithub, faVk, faTwitter)
@@ -153,4 +164,35 @@ dates.forEach(x => {
       }
     }).$mount(x)
   }
+})
+
+const langMap = new Map<string, string>()
+langMap.set('asm', 'x86asm')
+langMap.set('hq', 'cs')
+langMap.set('parser', 'parser3')
+langMap.set('php', 'parser3')
+
+function replacementLang (lang: string): string {
+  const l = langMap.get(lang)
+  return l !== undefined ? l : lang
+}
+
+function mountHighlighting (prefix: string, x: Element): void {
+  if (!x.className.startsWith(prefix)) {
+    return
+  }
+  const lang = x.className.replace(prefix, '')
+    .replace(';', '')
+  new Highlighter({
+    propsData: {
+      content: x.textContent,
+      lang: replacementLang(lang)
+    }
+  }).$mount(x)
+}
+
+const snippets = document.querySelectorAll('pre, code')
+snippets.forEach(x => {
+  mountHighlighting('brush: ', x)
+  mountHighlighting('language-', x)
 })

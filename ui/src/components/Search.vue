@@ -1,6 +1,5 @@
 <template>
   <b-container class="container" id="siteSearch" fluid="lg">
-
     <b-form inline @submit.prevent="newSearch">
       <b-form-row class="w-100">
         <b-col cols="8">
