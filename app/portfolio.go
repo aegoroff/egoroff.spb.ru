@@ -87,8 +87,14 @@ func (po *Portfolio) document(c *gin.Context) {
 		return
 	}
 
+	docid, ok := po.documentsMap[doc]
+	if !ok {
+		framework.Error404(c)
+		return
+	}
+
 	filer := lib.NewFiler(os.Stdout)
-	b, err := filer.Read(path.Join("templates", "apache", doc+".html"))
+	b, err := filer.Read(path.Join("templates", "apache", docid.ID+".html"))
 	if err != nil {
 		log.Println(err)
 	}
