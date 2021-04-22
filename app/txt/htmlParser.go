@@ -46,6 +46,11 @@ func ParseHtml(s string) string {
 				sb.WriteString(attribute.Val)
 				sb.WriteRune('"')
 			}
+			// HACK
+			if tok.Data == "table" && len(tok.Attr) == 0 {
+				sb.WriteString(" class=\"table table-condensed\"")
+			}
+
 			sb.WriteRune('>')
 		case html.EndTagToken:
 			sb.WriteString("</")
