@@ -85,7 +85,11 @@ func (a *Auth) get(c *gin.Context) {
 	} else {
 		// TODO: validate redirect here
 		client := http.DefaultClient
-		resp, _ := client.Get(clientId)
+		uri, err := url.Parse(clientId)
+		if err != nil {
+			c.AbortWithError(http.StatusBadRequest, err)
+		}
+		resp, _ := client.Get(uri.String())
 		if resp != nil {
 			bb, err := ioutil.ReadAll(resp.Body)
 			bs := string(bb)
