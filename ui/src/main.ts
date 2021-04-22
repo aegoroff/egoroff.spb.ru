@@ -38,7 +38,7 @@ import 'vue-highlight.js/lib/allLanguages'
 * Import Highlight.js theme
 * Find more: https://highlightjs.org/static/demo/
 */
-import 'highlight.js/styles/github-gist.css'
+import 'highlight.js/styles/googlecode.css'
 import Highlighter from '@/components/Highlighter.vue'
 
 Vue.config.productionTip = false
