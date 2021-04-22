@@ -407,7 +407,7 @@ RewriteRule   ^/~(<strong>([a-z])</strong>[a-z0-9]+)(.*)  /home/<strong>$2</stro
           некоторое количество ПО, поэтому я создал глубокую иерархию каталогов,
           где я сохранил эти дистрибутивы:</p>
 
-<example><pre>
+<example class="language-console"><pre>
 drwxrwxr-x   2 netsw  users    512 Aug  3 18:39 Audio/
 drwxrwxr-x   2 netsw  users    512 Jul  9 14:37 Benchmark/
 drwxrwxr-x  12 netsw  users    512 Jul  9 00:34 Crypto/
@@ -445,7 +445,7 @@ drwxrwxr-x  10 netsw  users    512 Jul  9 14:08 X11/
           на всех уровнях каталогов. Я поместил их в
           <code>/e/netsw/.www/</code> в следующем виде:</p>
 
-<example><pre>
+<example class="language-console"><pre>
 -rw-r--r--   1 netsw  users    1318 Aug  1 18:10 .wwwacl
 drwxr-xr-x  18 netsw  users     512 Aug  5 15:51 DATA/
 -rw-rw-rw-   1 netsw  users  372982 Aug  5 16:35 LOGFILE
@@ -787,7 +787,7 @@ RewriteRule   ^(.+)          http://<strong>webserverB</strong>.dom/$1
           конфигурационного файла сервера (должно быть одной из последних директив
           ):</p>
 
-<example><pre>
+<example class="language-perl"><pre>
 RewriteRule ^xredirect:(.+) /path/to/nph-xredirect.cgi/$1 \
             [T=application/x-httpd-cgi,L]
 </pre></example>
@@ -797,7 +797,7 @@ RewriteRule ^xredirect:(.+) /path/to/nph-xredirect.cgi/$1 \
           <code>nph-xredirect.cgi</code>. И эта программа выглядит примерно так
           :</p>
 
-<example><pre>
+<example class="language-perl"><pre>
 #!/path/to/perl
 ##
 ##  nph-xredirect.cgi -- NPH/CGI script for extended redirects
@@ -882,7 +882,7 @@ RewriteRule   ^/CxAN/(.*)              %{REMOTE_HOST}::$1                 [C]
 RewriteRule   ^.+\.<strong>([a-zA-Z]+)</strong>::(.*)$  ${multiplex:<strong>$1</strong>|ftp.default.dom}$2  [R,L]
 </pre></example>
 
-<example><pre>
+<example class="language-perl"><pre>
 ##
 ##  map.cxan -- массив мультиплексирования для CxAN
 ##
@@ -1190,7 +1190,7 @@ RewriteRule   ^http://www\.remotesite\.com/(.*)$ /mirror/of/remotesite/$1
           Для firewall'a с фильтрацией пакетов мы могли бы для примера
           сконфигурировать набор директив для firewall подобно этому:</p>
 
-<example><pre>
+<example class="language-console"><pre>
 <strong>ALLOW</strong> Host www.quux-corp.dom Port &gt;1024 --&gt; Host www2.quux-corp.dom Port <strong>80</strong><br/>
 <strong>DENY</strong>  Host *                 Port *     --&gt; Host www2.quux-corp.dom Port <strong>80</strong>
 </pre></example>
@@ -1240,7 +1240,7 @@ RewriteRule ^/home/([^/]+)/.www/?(.*) http://<strong>www2</strong>.quux-corp.dom
               <code>www[0-9].foo.com</code> как обычно в своем
               DNS сервере с использованием записей типа A(address) т.е.</p>
 
-<example><pre>
+<example class="language-dns"><pre>
 www0   IN  A       1.2.3.1
 www1   IN  A       1.2.3.2
 www2   IN  A       1.2.3.3
@@ -1251,7 +1251,7 @@ www5   IN  A       1.2.3.6
 
               <p>Затем, дополнительно добавьте следующую запись:</p>
 
-<example><pre>
+<example class="language-dns"><pre>
 www    IN  CNAME   www0.foo.com.
        IN  CNAME   www1.foo.com.
        IN  CNAME   www2.foo.com.
@@ -1298,7 +1298,7 @@ www    IN  CNAME   www0.foo.com.
               <code>www0.foo.com</code> реальному
               <code>www.foo.com</code> при помощи простой</p>
 
-<example><pre>
+<example class="language-dns"><pre>
 www    IN  CNAME   www0.foo.com.
 </pre></example>
 
@@ -1319,7 +1319,7 @@ RewriteRule   ^/(.+)$ ${lb:$1}           [P,L]
 
               <p>Затем мы пишем <code>lb.pl</code>:</p>
 
-<example><pre>
+<example class="language-perl"><pre>
 #!/path/to/perl
 ##
 ##  lb.pl -- скрипт балансировки нагрузки
@@ -1523,7 +1523,7 @@ RewriteRule ^/[uge]/<strong>([^/]+)</strong>/\.www/(.+)\.scgi(.*) ...
           запускали программу <code>swwidx</code> из
           <code>/u/user/foo/</code> через ссылку</p>
 
-<example><pre>
+<example class="language-console"><pre>
 /internal/cgi/user/swwidx?i=/u/user/foo/
 </pre></example>
 
@@ -1555,7 +1555,7 @@ HREF="*"
 
           <p>который внутренне автоматически трансформируется в</p>
 
-<example><pre>
+<example class="language-console"><pre>
 /internal/cgi/user/wwwidx?i=/u/user/foo/
 </pre></example>
 
@@ -1674,13 +1674,13 @@ RewriteRule   ^(/[uge]/[^/]+/?.*):refresh  /internal/cgi/apache/nph-refresh?f=$1
 
           <p>Теперь когда мы ссылаемся на URL</p>
 
-<example><pre>
+<example class="language-console"><pre>
 /u/foo/bar/page.html:refresh
 </pre></example>
 
           <p>происходит внутренний вызов URL</p>
 
-<example><pre>
+<example class="language-console"><pre>
 /internal/cgi/apache/nph-refresh?f=/u/foo/bar/page.html
 </pre></example>
 
@@ -1688,7 +1688,7 @@ RewriteRule   ^(/[uge]/[^/]+/?.*):refresh  /internal/cgi/apache/nph-refresh?f=$1
           обычно говорится что "это остается для упражения читателю"
           ;-) Я также здесь приведу и этот код.</p>
 
-<example><pre>
+<example class="language-perl"><pre>
 #!/sw/bin/perl
 ##
 ##  nph-refresh -- NPH/CGI script for auto refreshing pages
@@ -2183,7 +2183,7 @@ RewriteMap    quux-map       <strong>prg:</strong>/path/to/map.quux.pl
 RewriteRule   ^/~quux/(.*)$  /~quux/<strong>${quux-map:$1}</strong>
 </pre></example>
 
-<example><pre>
+<example class="language-perl"><pre>
 #!/path/to/perl
 
 #   отключение буфферизованного I/O который привел бы

@@ -570,7 +570,7 @@
 					</xsl:attribute>
 				</xsl:when>
 				<xsl:otherwise>
-					<xsl:attribute name="class"><xsl:text>code</xsl:text></xsl:attribute>
+					<xsl:attribute name="class"><xsl:text>language-apache</xsl:text></xsl:attribute>
 				</xsl:otherwise>
 			</xsl:choose>
 			<xsl:apply-templates/>
