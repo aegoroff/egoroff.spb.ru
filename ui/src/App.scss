@@ -8,13 +8,18 @@ $breadcrumb-divider: "→";
 @import '~bootstrap';
 @import '~bootstrap-vue';
 
-$footer-height: ($spacer * 2);
+$footer-height: ($spacer);
 
 body {
 
-  > .container, div#app div#breadcrumbs {
-    padding-top: $spacer * 2;
-    padding-bottom: $spacer * 2;
+  > .container {
+    padding-top: $spacer;
+    padding-bottom: $spacer;
+  }
+
+  > div#app div#breadcrumbs {
+    padding-top: $spacer * 1.5;
+    padding-bottom: $spacer;
   }
 
   margin-bottom: $footer-height;
