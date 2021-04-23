@@ -52,7 +52,7 @@ func (a *Auth) get(c *gin.Context) {
 	}
 
 	if !admin {
-		framework.Error401(c)
+		framework.Error403(c)
 		return
 	}
 

@@ -13,7 +13,14 @@ func Error404(c *gin.Context) {
 func Error401(c *gin.Context) {
 	errorer(c, "401", http.StatusUnauthorized, domain.Message{
 		Type: "danger",
-		Text: "You are not authorized to view this content",
+		Text: "Требуется авторизация, а она или сломалась или ее у вас нет",
+	})
+}
+
+func Error403(c *gin.Context) {
+	errorer(c, "403", http.StatusForbidden, domain.Message{
+		Type: "danger",
+		Text: "Вам нельзя это использовать потому что недостаточно прав",
 	})
 }
 
