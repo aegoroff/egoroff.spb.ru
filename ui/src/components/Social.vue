@@ -24,7 +24,3 @@ export default class Social extends Vue {
   }
 }
 </script>
-
-<style scoped>
-
-</style>

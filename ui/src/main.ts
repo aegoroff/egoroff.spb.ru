@@ -40,6 +40,7 @@ import 'vue-highlight.js/lib/allLanguages'
 */
 import 'highlight.js/styles/googlecode.css'
 import Highlighter from '@/components/Highlighter.vue'
+import Alert from '@/components/Alert.vue'
 
 Vue.config.productionTip = false
 Vue.use(VueTypeScriptInject)
@@ -195,4 +196,16 @@ const snippets = document.querySelectorAll('pre, code')
 snippets.forEach(x => {
   mountHighlighting('brush: ', x)
   mountHighlighting('language-', x)
+})
+
+const alerts = document.querySelectorAll('.alert')
+alerts.forEach(x => {
+  const type = x.attributes.getNamedItem('data-label')
+  const alert = type === null ? 'success' : type.value
+  new Alert({
+    propsData: {
+      content: x.textContent,
+      type: alert
+    }
+  }).$mount(x)
 })

@@ -1,6 +1,5 @@
 {% for message in flashed_messages %}
-<div class="alert alert-dismissable alert-{{message.Type}}">
-    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+<div class="alert" data-label="{{message.Type}}">
     {{message.Text}}
 </div>
 {% endfor %}

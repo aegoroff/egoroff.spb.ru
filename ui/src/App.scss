@@ -18,28 +18,15 @@ body {
   }
 
   > div#app div#breadcrumbs {
-    padding-top: $spacer * 1.5;
-    padding-bottom: $spacer;
+    padding-top: $spacer;
+    padding-bottom: 0;
   }
 
-  margin-bottom: $footer-height;
+  margin-bottom: $footer-height * 2.5;
 }
 
-.alert-announcement {
-  display: none;
-
-  &.container {
-    border-radius: 0;
-    margin-bottom: 0;
-    padding-left: $alert-padding-x;
-    padding-right: $alert-padding-x;
-    padding-top: $alert-padding-y;
-    padding-bottom: $alert-padding-y;
-  }
-
-  > .close {
-    right: 0;
-  }
+.card {
+  margin-bottom: $spacer;
 }
 
 .shortDate {
