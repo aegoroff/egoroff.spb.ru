@@ -54,10 +54,7 @@ func (*Auth) signin(c *gin.Context) {
 
 	UpdateSession(c, func(s sessions.Session) {
 		s.Set(authStateCookie, state)
-		redirect := s.Get(RedirectUrlCookie)
-		if redirect == nil {
-			s.Set(RedirectUrlCookie, c.Request.Referer())
-		}
+		s.Set(RedirectUrlCookie, c.Request.Referer())
 	})
 
 	ctx["title"] = "Авторизация"
@@ -120,7 +117,6 @@ func (a *Auth) callback(c *gin.Context, validator gin.HandlerFunc, provider stri
 	s := sessions.Default(c)
 	redirectUri := s.Get(RedirectUrlCookie)
 	if redirectUri != nil {
-		s.Delete(RedirectUrlCookie)
 		c.Redirect(http.StatusFound, redirectUri.(string))
 	} else {
 		c.Redirect(http.StatusFound, "/")
