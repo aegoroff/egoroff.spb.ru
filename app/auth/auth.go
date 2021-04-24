@@ -124,6 +124,11 @@ func (a *Auth) callback(c *gin.Context, validator gin.HandlerFunc, provider stri
 
 func OnlyAdmin() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// allow in debug to develop locally
+		if gin.Mode() == gin.DebugMode {
+			return
+		}
+
 		admin := false
 		IfAuthorized(c, func(user *domain.User) {
 			admin = user.Admin

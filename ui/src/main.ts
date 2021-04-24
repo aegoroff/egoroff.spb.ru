@@ -4,6 +4,7 @@ import VueHighlightJS from 'vue-highlight.js'
 import VueSocialSharing from 'vue-social-sharing'
 import { BootstrapVue, IconsPlugin } from 'bootstrap-vue/src'
 import App from './App.vue'
+import AdminApp from './AdminApp.vue'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import {
   faBook,
@@ -42,6 +43,7 @@ import 'vue-highlight.js/lib/allLanguages'
 import 'highlight.js/styles/googlecode.css'
 import Highlighter from '@/components/Highlighter.vue'
 import Alert from '@/components/Alert.vue'
+import router from '@/router'
 
 Vue.config.productionTip = false
 Vue.use(VueTypeScriptInject)
@@ -210,3 +212,12 @@ alerts.forEach(x => {
     }
   }).$mount(x)
 })
+
+const adminApp = document.getElementById('admin')
+
+if (adminApp) {
+  new Vue({
+    router,
+    render: h => h(AdminApp)
+  }).$mount('#admin')
+}
