@@ -1,5 +1,5 @@
 <template>
-  <div class="container page-body-wrapper">
+  <div class="container">
     <b-row>
       <b-col cols="2">
         <main-menu/>

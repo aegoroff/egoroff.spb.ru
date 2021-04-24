@@ -19,7 +19,7 @@ const routes: Array<RouteConfig> = [
     component: () => import(/* webpackChunkName: "users" */ '../views/admin/Users.vue')
   },
   {
-    path: '/posts',
+    path: '/posts/:page?',
     name: 'Блог',
     // route level code-splitting
     // this generates a separate chunk (posts.[hash].js) for this route

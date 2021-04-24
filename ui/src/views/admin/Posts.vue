@@ -1,12 +1,69 @@
 <template>
   <div>
-    <h1>Блог</h1>
+    <b-pagination-nav
+      id="posts-pager"
+      aria-controls="posts-table"
+      v-if="pages > 1"
+      v-bind:number-of-pages="pages"
+      v-model="page"
+      hide-goto-end-buttons
+      @page-click="onChange"
+      align="center"
+      :link-gen="pageLinkGenerator"
+      use-router
+    ></b-pagination-nav>
+    <b-table responsive striped hover :items="posts" :fields="fields" id="posts-table">
+      <template #cell(Created)="data">
+        <date-formatter :date="data.value" format-str="LL"></date-formatter>
+      </template>
+    </b-table>
   </div>
 </template>
 
-<script>
-export default {
-  name: 'Posts'
+<script lang="ts">
+import { Component, Prop, Vue } from 'vue-property-decorator'
+import ApiService, { Query } from '@/services/ApiService.vue'
+import { inject } from 'vue-typescript-inject'
+import { Post } from '@/components/BlogAnnounces.vue'
+import DateFormatter from '@/components/DateFomatter.vue'
+import { BvEvent } from 'bootstrap-vue'
+
+@Component({
+  components: {
+    DateFormatter
+  },
+  providers: [ApiService]
+})
+export default class Posts extends Vue {
+  @inject() private api!: ApiService
+  @Prop() private posts!: Array<Post>
+  @Prop() private fields!: Array<string>
+  @Prop() private page!: number
+  @Prop() private pages!: number
+
+  constructor () {
+    super()
+    this.update(1)
+  }
+
+  update (page: number): void {
+    const q = new Query()
+    q.page = page.toString()
+    this.api.getPosts(q).then(x => {
+      this.fields = ['id', 'Created', 'Title', 'Markdown']
+      this.posts = x.result
+      this.pages = x.pages
+      this.page = x.page
+    })
+  }
+
+  onChange (evt: BvEvent, page: number): void {
+    this.update(page)
+  }
+
+  pageLinkGenerator (pageNum: number): string {
+    return `/posts/${pageNum}`
+  }
 }
 </script>
 
