@@ -29,7 +29,7 @@ import BlogNavigation from '@/components/BlogNavigation.vue'
 import './App.scss'
 import BlogAnnounces from '@/components/BlogAnnounces.vue'
 import BlogTitle from '@/components/BlogTitle.vue'
-import Search from '@/components/Search.vue'
+import Search from '@/views/Search.vue'
 import Profile from '@/views/Profile.vue'
 import Social from '@/components/Social.vue'
 
