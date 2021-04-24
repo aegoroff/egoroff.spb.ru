@@ -7,7 +7,7 @@ import { injectable } from 'vue-typescript-inject'
 import { Archive } from '@/components/BlogNavigation.vue'
 import { Post } from '@/components/BlogAnnounces.vue'
 import { toQuery } from '@/util'
-import { FullUserInfo } from '@/components/Profile.vue'
+import { FullUserInfo } from '@/views/Profile.vue'
 
 export class ApiResult {
   public status!: string

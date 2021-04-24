@@ -30,7 +30,7 @@ import './App.scss'
 import BlogAnnounces from '@/components/BlogAnnounces.vue'
 import BlogTitle from '@/components/BlogTitle.vue'
 import Search from '@/components/Search.vue'
-import Profile from '@/components/Profile.vue'
+import Profile from '@/views/Profile.vue'
 import Social from '@/components/Social.vue'
 
 // Highlight.js languages (All languages)
@@ -43,7 +43,8 @@ import 'vue-highlight.js/lib/allLanguages'
 import 'highlight.js/styles/googlecode.css'
 import Highlighter from '@/components/Highlighter.vue'
 import Alert from '@/components/Alert.vue'
-import router from '@/router'
+import VueRouter from 'vue-router'
+import routes from '@/router'
 
 Vue.config.productionTip = false
 Vue.use(VueTypeScriptInject)
@@ -216,6 +217,10 @@ alerts.forEach(x => {
 const adminApp = document.getElementById('admin')
 
 if (adminApp) {
+  const router = new VueRouter({
+    routes
+  })
+
   new Vue({
     router,
     render: h => h(AdminApp)

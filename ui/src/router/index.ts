@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import VueRouter, { RouteConfig } from 'vue-router'
-import Dashboard from '../views/Dashboard.vue'
+import Dashboard from '../views/admin/Dashboard.vue'
 
 Vue.use(VueRouter)
 
@@ -16,7 +16,7 @@ const routes: Array<RouteConfig> = [
     // route level code-splitting
     // this generates a separate chunk (users.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "users" */ '../views/Users.vue')
+    component: () => import(/* webpackChunkName: "users" */ '../views/admin/Users.vue')
   },
   {
     path: '/posts',
@@ -24,12 +24,8 @@ const routes: Array<RouteConfig> = [
     // route level code-splitting
     // this generates a separate chunk (posts.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "posts" */ '../views/Posts.vue')
+    component: () => import(/* webpackChunkName: "posts" */ '../views/admin/Posts.vue')
   }
 ]
 
-const router = new VueRouter({
-  routes
-})
-
-export default router
+export default routes

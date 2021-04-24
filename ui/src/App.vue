@@ -9,8 +9,8 @@
 <script lang="ts">
 import 'reflect-metadata'
 import { Component, Prop, Vue } from 'vue-property-decorator'
-import Navigation, { Section } from './components/Navigation.vue'
-import ApiService, { User } from './services/ApiService.vue'
+import Navigation, { Section } from '@/components/Navigation.vue'
+import ApiService, { User } from '@/services/ApiService.vue'
 import { inject } from 'vue-typescript-inject'
 import Breadcrumbs from '@/components/Breadcrumbs.vue'
 
