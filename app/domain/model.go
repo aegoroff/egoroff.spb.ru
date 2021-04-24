@@ -21,6 +21,7 @@ type AuthorizedUser struct {
 	LoginOrName   string `json:"loginOrName"`
 	Authenticated bool   `json:"authenticated"`
 	Provider      string `json:"provider"`
+	Admin         bool   `json:"admin"`
 }
 
 type AuthorizedUserInfo struct {

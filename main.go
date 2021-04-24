@@ -48,6 +48,7 @@ func main() {
 	mpub := micropub.NewEndpoint()
 	api := app.NewApi()
 	auth := auth2.NewAuth()
+	admin := app.NewAdmin()
 	sitemap := app.NewSiteMap(portfolio.Documents())
 	welcome := app.NewWelcome(portfolio.Documents())
 
@@ -56,7 +57,7 @@ func main() {
 		portfolio,
 		welcome,
 		search,
-		bl, api, auth, sitemap, profile, down, mpub, indieAuth, indieToken}
+		bl, api, auth, sitemap, profile, down, mpub, indieAuth, indieToken, admin}
 
 	route(r, routers)
 

@@ -70,6 +70,7 @@ func (*api) user(c *gin.Context) {
 			LoginOrName:   user.String(),
 			Authenticated: true,
 			Provider:      user.Provider,
+			Admin:         user.Admin,
 		}
 	})
 

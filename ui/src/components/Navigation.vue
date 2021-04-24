@@ -35,7 +35,14 @@
               <font-awesome-icon v-bind:icon="['fab', user.provider]"></font-awesome-icon>&nbsp;
               <em>{{ user.loginOrName }}</em>
             </template>
-            <b-dropdown-item href="/profile">Профиль</b-dropdown-item>
+            <b-dropdown-item href="/profile">
+              <font-awesome-icon icon="user"/>
+              Профиль
+            </b-dropdown-item>
+            <b-dropdown-item href="/admin" v-if="user && user.admin">
+              <font-awesome-icon icon="tools"/>
+              Админка
+            </b-dropdown-item>
             <b-dropdown-item href="/logout">
               <font-awesome-icon icon="sign-out-alt"/>
               Выйти

@@ -7,7 +7,6 @@ import (
 	"egoroff.spb.ru/app/db"
 	"egoroff.spb.ru/app/domain"
 	"egoroff.spb.ru/app/framework"
-
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"log"
@@ -120,6 +119,20 @@ func (a *Auth) callback(c *gin.Context, validator gin.HandlerFunc, provider stri
 		c.Redirect(http.StatusFound, redirectUri.(string))
 	} else {
 		c.Redirect(http.StatusFound, "/")
+	}
+}
+
+func OnlyAdmin() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		admin := false
+		IfAuthorized(c, func(user *domain.User) {
+			admin = user.Admin
+		})
+		if !admin {
+			framework.Error403(c)
+			c.Abort()
+			return
+		}
 	}
 }
 
