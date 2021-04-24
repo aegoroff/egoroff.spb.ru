@@ -23,7 +23,3 @@ export default class AppIcon extends Vue {
   public lib!: string
 }
 </script>
-
-<style scoped>
-
-</style>

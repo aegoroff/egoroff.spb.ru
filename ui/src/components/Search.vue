@@ -93,7 +93,3 @@ export default class Search extends Vue {
   }
 }
 </script>
-
-<style scoped>
-
-</style>
