@@ -30,7 +30,7 @@ type api struct {
 }
 
 func NewApi() Router {
-	c := cache.New(12*time.Hour, 24*time.Hour)
+	c := cache.New(10*time.Minute, 10*time.Minute)
 	return &api{cache: c}
 }
 
