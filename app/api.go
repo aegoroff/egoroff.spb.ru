@@ -64,9 +64,9 @@ func (a *api) index(c *gin.Context) {
 }
 
 func (*api) user(c *gin.Context) {
-	result := domain.AuthenticatedUser{}
-	auth.IfAuthenticated(c, func(user *domain.User) {
-		result = domain.AuthenticatedUser{
+	result := domain.AuthorizedUser{}
+	auth.IfAuthorized(c, func(user *domain.User) {
+		result = domain.AuthorizedUser{
 			LoginOrName:   user.String(),
 			Authenticated: true,
 			Provider:      user.Provider,
@@ -77,9 +77,9 @@ func (*api) user(c *gin.Context) {
 }
 
 func (*api) userInfo(c *gin.Context) {
-	result := domain.AuthenticatedUserInfo{}
-	auth.IfAuthenticated(c, func(user *domain.User) {
-		result = domain.AuthenticatedUserInfo{
+	result := domain.AuthorizedUserInfo{}
+	auth.IfAuthorized(c, func(user *domain.User) {
+		result = domain.AuthorizedUserInfo{
 			Id:        user.Key.ID,
 			Created:   user.Created.Format(time.RFC3339),
 			Admin:     user.Admin,
@@ -96,8 +96,8 @@ func (*api) userInfo(c *gin.Context) {
 }
 
 func (*api) userInfoUpdate(c *gin.Context) {
-	auth.IfAuthenticated(c, func(user *domain.User) {
-		var req domain.AuthenticatedUserInfo
+	auth.IfAuthorized(c, func(user *domain.User) {
+		var req domain.AuthorizedUserInfo
 		err := c.Bind(&req)
 		if err != nil {
 			log.Println(err)

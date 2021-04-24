@@ -36,7 +36,7 @@ func (a *Auth) Route(r *gin.Engine) {
 
 func (a *Auth) get(c *gin.Context) {
 	admin := false
-	auth.IfAuthenticated(c, func(user *domain.User) {
+	auth.IfAuthorized(c, func(user *domain.User) {
 		admin = user.Admin
 	})
 

@@ -17,13 +17,13 @@ type Apache struct {
 	Keywords    string
 }
 
-type AuthenticatedUser struct {
+type AuthorizedUser struct {
 	LoginOrName   string `json:"loginOrName"`
 	Authenticated bool   `json:"authenticated"`
 	Provider      string `json:"provider"`
 }
 
-type AuthenticatedUserInfo struct {
+type AuthorizedUserInfo struct {
 	Id        int64  `json:"id"`
 	Created   string `json:"created"`
 	Admin     bool   `json:"admin"`

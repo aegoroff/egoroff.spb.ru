@@ -123,7 +123,7 @@ func (a *Auth) callback(c *gin.Context, validator gin.HandlerFunc, provider stri
 	}
 }
 
-func IfAuthenticated(c *gin.Context, success func(user *domain.User)) {
+func IfAuthorized(c *gin.Context, success func(user *domain.User)) {
 	sub := sessions.Default(c).Get(framework.UserIdCookie)
 	if sub != nil {
 		repo := db.NewRepository()
