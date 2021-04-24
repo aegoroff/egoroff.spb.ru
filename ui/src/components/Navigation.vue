@@ -11,12 +11,14 @@
             v-for="section in navigation"
             :key="section.id"
             :active="section.active"
+            v-b-popover:v-b-popover.hover.bottom="section.descr"
             v-bind:href="'/'+section.id+'/'">
             <font-awesome-icon v-bind:icon="section.icon"/>
             {{ section.title }}
           </b-nav-item>
           <b-nav-form action="/search/" method="GET">
-            <b-form-input name="q" size="sm" class="mr-md-2" placeholder="Введите текст для поиска" required></b-form-input>
+            <b-form-input name="q" size="sm" class="mr-md-2" placeholder="Введите текст для поиска"
+                          required></b-form-input>
             <b-button size="sm" class="my-2 my-sm-0" type="submit" variant="primary">Поиск</b-button>
           </b-nav-form>
         </b-navbar-nav>
@@ -30,8 +32,8 @@
           <b-nav-item-dropdown right v-if="user && user.authenticated">
             <!-- Using 'button-content' slot -->
             <template #button-content>
-              <font-awesome-icon v-bind:icon="['fab', user.provider]" ></font-awesome-icon>&nbsp;
-              <em>{{user.loginOrName}}</em>
+              <font-awesome-icon v-bind:icon="['fab', user.provider]"></font-awesome-icon>&nbsp;
+              <em>{{ user.loginOrName }}</em>
             </template>
             <b-dropdown-item href="/profile">Профиль</b-dropdown-item>
             <b-dropdown-item href="/logout">
@@ -56,6 +58,7 @@ export class Section {
   public class!: string
   public icon!: string
   public active!: boolean
+  public descr!: string
 }
 
 @Component
