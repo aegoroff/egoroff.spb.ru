@@ -3,6 +3,7 @@ package indie
 import (
 	"github.com/gin-gonic/gin"
 	"golang.org/x/oauth2"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -23,6 +24,7 @@ func IndieAuth() gin.HandlerFunc {
 			tok, _ := c.GetPostForm("access_token")
 			if tok == "" {
 				c.AbortWithStatusJSON(http.StatusUnauthorized, unauthorized)
+				log.Println("No required Authorization header")
 				return
 			}
 

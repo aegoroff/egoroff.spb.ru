@@ -48,6 +48,7 @@ func (t *TokenEndpoint) tokenVerify(c *gin.Context) {
 		"error": "unauthorized",
 	}
 	if auth == "" {
+		log.Println("No required Authorization header")
 		c.AbortWithStatusJSON(http.StatusUnauthorized, unauthorized)
 		return
 	}
@@ -60,6 +61,7 @@ func (t *TokenEndpoint) tokenVerify(c *gin.Context) {
 	}
 	err = tokenD.Claims.Valid()
 	if err != nil {
+		log.Println(err)
 		c.AbortWithStatusJSON(http.StatusUnauthorized, unauthorized)
 		return
 	}
@@ -78,6 +80,7 @@ func (t *TokenEndpoint) tokenVerify(c *gin.Context) {
 
 func (t *TokenEndpoint) tokenGenerate(c *gin.Context) {
 	if c.ContentType() != "application/x-www-form-urlencoded" {
+		log.Printf("Invalid content type: %s\n", c.ContentType())
 		c.Abort()
 		return
 	}
@@ -90,7 +93,11 @@ func (t *TokenEndpoint) tokenGenerate(c *gin.Context) {
 	}
 
 	if !t.auth.validateTokenReq(req) {
-		c.AbortWithError(http.StatusUnauthorized, fmt.Errorf("invalid code for: %s", req.ClientId))
+		log.Println("Token validation failed")
+		err := c.AbortWithError(http.StatusUnauthorized, fmt.Errorf("invalid code for: %s", req.ClientId))
+		if err != nil {
+			log.Println(err)
+		}
 		return
 	}
 
@@ -105,7 +112,10 @@ func (t *TokenEndpoint) tokenGenerate(c *gin.Context) {
 
 	if err != nil {
 		log.Println(err)
-		c.AbortWithError(http.StatusUnauthorized, err)
+		err = c.AbortWithError(http.StatusUnauthorized, err)
+		if err != nil {
+			log.Println(err)
+		}
 		return
 	}
 	tok := Token{
@@ -119,8 +129,14 @@ func (t *TokenEndpoint) tokenGenerate(c *gin.Context) {
 }
 
 func newJwt(claims jwt.Claims) (string, error) {
-	keyData, _ := ioutil.ReadFile("egoroffspbrupri.pem")
-	key, _ := jwt.ParseRSAPrivateKeyFromPEM(keyData)
+	keyData, err := ioutil.ReadFile("egoroffspbrupri.pem")
+	if err != nil {
+		return "", err
+	}
+	key, err := jwt.ParseRSAPrivateKeyFromPEM(keyData)
+	if err != nil {
+		return "", err
+	}
 
 	method := jwt.GetSigningMethod("RS256")
 	token := jwt.NewWithClaims(method, claims)

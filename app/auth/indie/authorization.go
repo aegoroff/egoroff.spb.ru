@@ -41,6 +41,7 @@ func (a *Auth) get(c *gin.Context) {
 	})
 
 	if !admin {
+		log.Println("Not admin")
 		framework.Error403(c)
 		return
 	}
@@ -50,7 +51,7 @@ func (a *Auth) get(c *gin.Context) {
 	state := c.Query("state")
 
 	if strings.HasPrefix(redirectUri, clientId) {
-		code, _ := newJwt(IndieClaims{
+		code, err := newJwt(IndieClaims{
 			ClientID:    clientId,
 			RedirectURL: redirectUri,
 			StandardClaims: jwt.StandardClaims{
@@ -60,6 +61,10 @@ func (a *Auth) get(c *gin.Context) {
 				Issuer:    ME,
 			},
 		})
+
+		if err != nil {
+			log.Println(err)
+		}
 
 		q := &url.URL{
 			RawQuery: url.Values{
@@ -93,6 +98,7 @@ func (a *Auth) get(c *gin.Context) {
 func (a *Auth) validateTokenReq(req tokenReq) bool {
 	_, ok := a.cache.Get(req.Code)
 	if !ok {
+		log.Printf("No token: %s found in cache\n", req.Code)
 		return ok
 	}
 	defer a.cache.Delete(req.Code)
