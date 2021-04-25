@@ -10,9 +10,9 @@ type Poster struct {
 	pager paginator.Paginator
 }
 
-func NewPoster(page int) *Poster {
+func NewPoster(pageSize int) *Poster {
 	return &Poster{
-		pager: paginator.New(NewPostsAdaptor(), page),
+		pager: paginator.New(NewPostsAdaptor(), pageSize),
 	}
 }
 

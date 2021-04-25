@@ -25,8 +25,7 @@ func (w *welcome) Route(r *gin.Engine) {
 		w.addLinkHeader(c, endpoint.AuthURL, "authorization_endpoint")
 		w.addLinkHeader(c, endpoint.TokenURL, "token_endpoint")
 
-		adaptor := db.NewPostsAdaptor()
-		poster := db.NewCustomPoster(adaptor, 5)
+		poster := db.NewPoster(5)
 
 		ctx := framework.NewContext(c)
 		appContext := ctx["ctx"].(*framework.Context)
