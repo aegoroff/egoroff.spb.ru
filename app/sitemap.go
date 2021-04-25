@@ -9,7 +9,7 @@ import (
 	"strconv"
 )
 
-const site = "http://www.egoroff.spb.ru/"
+const site = "https://www.egoroff.spb.ru/"
 
 type siteMap struct {
 	apacheDocs []*domain.Apache
