@@ -1,5 +1,9 @@
 indexes:
-
+- kind: Post
+  properties:
+    - name: tags
+    - name: created
+      direction: desc
 - kind: Post
   properties:
     - name: is_public
