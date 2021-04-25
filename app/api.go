@@ -47,7 +47,7 @@ func (a *api) Route(r *gin.Engine) {
 		}
 		adm := ap.Group("/admin").Use(auth.OnlyAdmin())
 		{
-			adm.GET("/posts", a.adminPosts)
+			adm.GET("/posts", a.rawPosts)
 		}
 		authGrp := ap.Group("/auth")
 		{
@@ -145,20 +145,7 @@ func (a *api) navigation(c *gin.Context) {
 }
 
 func (a *api) posts(c *gin.Context) {
-	page, err := strconv.ParseInt(c.Query("page"), 10, 32)
-	if err != nil {
-		page = 1
-	}
-	limit, err := strconv.ParseInt(c.Query("limit"), 10, 32)
-	if err != nil {
-		limit = 20
-	}
-	offset, err := strconv.ParseInt(c.Query("offset"), 10, 32)
-
-	q := datastore.NewQuery("Post").Filter("is_public=", true).Order("-created")
-	if offset > 0 {
-		q = q.Offset(int(offset))
-	}
+	page, limit, q := a.parsePostsQuery(c)
 
 	y, _ := strconv.ParseInt(c.Query("year"), 10, 32)
 	m, _ := strconv.ParseInt(c.Query("month"), 10, 32)
@@ -202,21 +189,8 @@ func (a *api) posts(c *gin.Context) {
 	})
 }
 
-func (a *api) adminPosts(c *gin.Context) {
-	page, err := strconv.ParseInt(c.Query("page"), 10, 32)
-	if err != nil {
-		page = 1
-	}
-	limit, err := strconv.ParseInt(c.Query("limit"), 10, 32)
-	if err != nil {
-		limit = 20
-	}
-	offset, err := strconv.ParseInt(c.Query("offset"), 10, 32)
-
-	q := datastore.NewQuery("Post").Order("-created")
-	if offset > 0 {
-		q = q.Offset(int(offset))
-	}
+func (a *api) rawPosts(c *gin.Context) {
+	page, limit, q := a.parsePostsQuery(c)
 
 	adaptor := db.NewDatastoreAdaptor(q)
 	poster := db.NewCustomPoster(adaptor, int(limit))
@@ -235,6 +209,24 @@ func (a *api) adminPosts(c *gin.Context) {
 		Now:    time.Now(),
 		Result: posts,
 	})
+}
+
+func (*api) parsePostsQuery(c *gin.Context) (int64, int64, *datastore.Query) {
+	page, err := strconv.ParseInt(c.Query("page"), 10, 32)
+	if err != nil {
+		page = 1
+	}
+	limit, err := strconv.ParseInt(c.Query("limit"), 10, 32)
+	if err != nil {
+		limit = 20
+	}
+	offset, err := strconv.ParseInt(c.Query("offset"), 10, 32)
+
+	q := datastore.NewQuery("Post").Order("-created")
+	if offset > 0 {
+		q = q.Offset(int(offset))
+	}
+	return page, limit, q
 }
 
 func (a *api) archive(c *gin.Context) {
