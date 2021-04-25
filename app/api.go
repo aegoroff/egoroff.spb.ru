@@ -228,6 +228,7 @@ func (a *api) editPost(c *gin.Context) {
 		p.IsPublic = req.IsPublic
 		p.Markdown = req.Markdown
 		p.Modified = time.Now()
+		p.ShortText = req.ShortText
 		_, err = repo.UpdatePost(p, p.Key)
 		if err != nil {
 			log.Println(err)

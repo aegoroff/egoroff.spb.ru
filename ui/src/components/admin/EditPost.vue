@@ -17,6 +17,14 @@
           no-add-on-enter
         ></b-form-tags>
       </b-form-group>
+      <b-form-group label="Краткое описание" label-for="post-short-text">
+        <b-form-textarea
+          id="post-short-text"
+          v-model="post.ShortText"
+          rows="3"
+          max-rows="6"
+        ></b-form-textarea>
+      </b-form-group>
 
       <b-form-checkbox id="post-public" v-model="post.IsPublic">
         Опубликовано
