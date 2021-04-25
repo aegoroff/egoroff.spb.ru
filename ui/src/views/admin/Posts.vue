@@ -6,17 +6,16 @@
       v-if="pages > 1"
       v-bind:number-of-pages="pages"
       v-model="page"
-      hide-goto-end-buttons
       @page-click="onChange"
       align="center"
       :link-gen="pageLinkGenerator"
       use-router
     ></b-pagination-nav>
-    <b-table responsive striped hover :items="posts" :fields="fields" id="posts-table">
+    <b-table-lite responsive striped hover :items="posts" :fields="fields" id="posts-table">
       <template #cell(Created)="data">
-        <date-formatter :date="data.value" format-str="LL"></date-formatter>
+        <date-formatter :date="data.value" format-str="L"></date-formatter>
       </template>
-    </b-table>
+    </b-table-lite>
   </div>
 </template>
 
