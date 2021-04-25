@@ -225,6 +225,10 @@ func (r *Repository) Post(id int64) *domain.Post {
 
 func (r *Repository) NewPost(post *domain.Post) (int64, error) {
 	k := datastore.IncompleteKey("Post", nil)
+	return r.UpdatePost(post, k)
+}
+
+func (r *Repository) UpdatePost(post *domain.Post, k *datastore.Key) (int64, error) {
 	err := r.query(func(c *datastore.Client, ctx context.Context) error {
 		newK, err := c.Put(ctx, k, post)
 		k = newK

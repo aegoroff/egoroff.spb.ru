@@ -7,6 +7,7 @@ import { injectable } from 'vue-typescript-inject'
 import { Archive } from '@/components/BlogNavigation.vue'
 import { toQuery } from '@/util'
 import { FullUserInfo } from '@/views/Profile.vue'
+import { Post } from '@/components/admin/EditPost.vue'
 
 export class ApiResult<T> {
   public status!: string
@@ -77,6 +78,10 @@ export default class ApiService extends Vue {
 
   public updateFullUserInfo (u: FullUserInfo): void {
     axios.put<FullUserInfo>('/api/v2/auth/userinfo/', u)
+  }
+
+  public editPost (p: Post): void {
+    axios.put<Post>('/api/v2/admin/post', p)
   }
 
   public async getPosts<T> (q?: Query): Promise<ApiResult<T>> {

@@ -48,12 +48,13 @@ func (a *api) Route(r *gin.Engine) {
 		adm := ap.Group("/admin").Use(auth.OnlyAdmin())
 		{
 			adm.GET("/posts", a.rawPosts)
+			adm.PUT("/post", a.editPost)
 		}
 		authGrp := ap.Group("/auth")
 		{
 			authGrp.GET("/user", a.user)
 			authGrp.GET("/userinfo", a.userInfo)
-			authGrp.PUT("/userinfo", a.userInfoUpdate)
+			authGrp.Use(auth.OnlyAuth()).PUT("/userinfo", a.userInfoUpdate)
 		}
 	}
 }
@@ -209,6 +210,36 @@ func (a *api) rawPosts(c *gin.Context) {
 		Now:    time.Now(),
 		Result: posts,
 	})
+}
+
+func (a *api) editPost(c *gin.Context) {
+	var req domain.Post
+	err := c.Bind(&req)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"result": err.Error(),
+		})
+	} else {
+		repo := db.NewRepository()
+		p := repo.Post(req.Id)
+		p.Title = req.Title
+		p.Tags = req.Tags
+		p.IsPublic = req.IsPublic
+		p.Markdown = req.Markdown
+		p.Modified = time.Now()
+		_, err = repo.UpdatePost(p, p.Key)
+		if err != nil {
+			log.Println(err)
+			c.JSON(http.StatusBadRequest, gin.H{
+				"result": err.Error(),
+			})
+		} else {
+			c.JSON(http.StatusOK, gin.H{
+				"result": "success",
+			})
+		}
+	}
 }
 
 func (*api) parsePostsQuery(c *gin.Context) (int64, int64, *datastore.Query) {

@@ -11,9 +11,13 @@
       :link-gen="pageLinkGenerator"
       use-router
     ></b-pagination-nav>
+    <EditPost id="edit-post" :post="selectedPost"></EditPost>
     <b-table-lite responsive small striped hover :items="posts" :fields="fields" id="posts-table">
       <template #cell(Created)="data">
         <date-formatter :date="data.value" format-str="L"></date-formatter>
+      </template>
+      <template #cell(Title)="data">
+        <a v-b-modal.edit-post href="#" @click="onEdit(data.item)">{{ data.value }}</a>
       </template>
     </b-table-lite>
   </div>
@@ -25,21 +29,12 @@ import ApiService, { Query } from '@/services/ApiService.vue'
 import { inject } from 'vue-typescript-inject'
 import DateFormatter from '@/components/DateFomatter.vue'
 import { BvEvent } from 'bootstrap-vue'
-
-class Post {
-  public Created!: string
-  public id!: number
-  public Title!: string
-  public IsPublic!: boolean
-  public Markdown!: boolean
-  public Tags!: Array<string>
-  public Text!: string
-  public ShortText!: string
-}
+import EditPost, { Post } from '@/components/admin/EditPost.vue'
 
 @Component({
   components: {
-    DateFormatter
+    DateFormatter,
+    EditPost
   },
   providers: [ApiService]
 })
@@ -49,6 +44,7 @@ export default class Posts extends Vue {
   @Prop() private fields!: Array<string>
   @Prop() private page!: number
   @Prop() private pages!: number
+  @Prop() private selectedPost!: Post
 
   constructor () {
     super()
@@ -69,6 +65,10 @@ export default class Posts extends Vue {
 
   onChange (evt: BvEvent, page: number): void {
     this.update(page)
+  }
+
+  onEdit (p: Post): void {
+    this.selectedPost = p
   }
 
   pageLinkGenerator (pageNum: number): string {
