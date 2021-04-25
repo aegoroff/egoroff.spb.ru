@@ -11,7 +11,7 @@
       :link-gen="pageLinkGenerator"
       use-router
     ></b-pagination-nav>
-    <b-table-lite responsive striped hover :items="posts" :fields="fields" id="posts-table">
+    <b-table-lite responsive small striped hover :items="posts" :fields="fields" id="posts-table">
       <template #cell(Created)="data">
         <date-formatter :date="data.value" format-str="L"></date-formatter>
       </template>
@@ -77,6 +77,9 @@ export default class Posts extends Vue {
 }
 </script>
 
-<style scoped>
-
+<style scoped lang="scss">
+.shortDate {
+  font-weight: normal;
+  color: black;
+}
 </style>
