@@ -7,8 +7,6 @@ import (
 	"egoroff.spb.ru/app/framework"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/vcraescu/go-paginator/v2"
-	"log"
 	"net/http"
 )
 
@@ -26,17 +24,14 @@ func (w *welcome) Route(r *gin.Engine) {
 		w.addLinkHeader(c, "https://www.egoroff.spb.ru/micropub", "micropub")
 		w.addLinkHeader(c, endpoint.AuthURL, "authorization_endpoint")
 		w.addLinkHeader(c, endpoint.TokenURL, "token_endpoint")
-		pager := paginator.New(db.NewPostsAdaptor(), 5)
-		var posts []*domain.SmallPost
-		err := pager.Results(&posts)
-		if err != nil {
-			log.Println(err)
-		}
+
+		adaptor := db.NewPostsAdaptor()
+		poster := db.NewCustomPoster(adaptor, 5)
 
 		ctx := framework.NewContext(c)
 		appContext := ctx["ctx"].(*framework.Context)
 		ctx["apache_docs"] = w.apacheDocs
-		ctx["posts"] = posts
+		ctx["posts"] = poster.SmallPosts()
 		ctx["html_class"] = "welcome"
 		ctx["keywords"] = appContext.Section("/").Keywords
 		ctx["title"] = appContext.Conf.BrandName

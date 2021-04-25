@@ -65,8 +65,17 @@ func (p *Poster) Pages() []int {
 	return makeRange(1, p.PageNums())
 }
 
-func (p *Poster) Posts() []*domain.SmallPost {
+func (p *Poster) SmallPosts() []*domain.SmallPost {
 	var posts []*domain.SmallPost
+	err := p.pager.Results(&posts)
+	if err != nil {
+		log.Println(err)
+	}
+	return posts
+}
+
+func (p *Poster) Posts() []*domain.Post {
+	var posts []*domain.Post
 	err := p.pager.Results(&posts)
 	if err != nil {
 		log.Println(err)

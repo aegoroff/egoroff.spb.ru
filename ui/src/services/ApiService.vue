@@ -5,17 +5,16 @@ import { Vue } from 'vue-property-decorator'
 import { Section } from '../components/Navigation.vue'
 import { injectable } from 'vue-typescript-inject'
 import { Archive } from '@/components/BlogNavigation.vue'
-import { Post } from '@/components/BlogAnnounces.vue'
 import { toQuery } from '@/util'
 import { FullUserInfo } from '@/views/Profile.vue'
 
-export class ApiResult {
+export class ApiResult<T> {
   public status!: string
   public count!: number
   public page!: number
   public pages!: number
   public row!: string
-  public result!: Array<Post>
+  public result!: Array<T>
 }
 
 export class Query {
@@ -80,9 +79,16 @@ export default class ApiService extends Vue {
     axios.put<FullUserInfo>('/api/v2/auth/userinfo/', u)
   }
 
-  public async getPosts (q?: Query): Promise<ApiResult> {
+  public async getPosts<T> (q?: Query): Promise<ApiResult<T>> {
     this.$Progress.start()
-    return await axios.get<ApiResult>(`/api/v2/blog/posts/${toQuery(q)}`).then(r => {
+    return await axios.get<ApiResult<T>>(`/api/v2/blog/posts/${toQuery(q)}`).then(r => {
+      return r.data
+    }).finally(() => this.$Progress.finish())
+  }
+
+  public async getAdminPosts<T> (q?: Query): Promise<ApiResult<T>> {
+    this.$Progress.start()
+    return await axios.get<ApiResult<T>>(`/api/v2/admin/posts/${toQuery(q)}`).then(r => {
       return r.data
     }).finally(() => this.$Progress.finish())
   }

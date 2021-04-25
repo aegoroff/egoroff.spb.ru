@@ -45,6 +45,10 @@ func (a *api) Route(r *gin.Engine) {
 			b.GET("/posts/", a.posts)
 			b.GET("/archive/", a.archive)
 		}
+		adm := ap.Group("/admin").Use(auth.OnlyAdmin())
+		{
+			adm.GET("/posts", a.adminPosts)
+		}
 		authGrp := ap.Group("/auth")
 		{
 			authGrp.GET("/user", a.user)
@@ -182,10 +186,45 @@ func (a *api) posts(c *gin.Context) {
 	poster := db.NewCustomPoster(adaptor, int(limit))
 	poster.SetPage(int(page))
 
-	posts := poster.Posts()
+	posts := poster.SmallPosts()
 	for _, post := range posts {
 		post.Id = post.Key.ID
 		post.ShortText = post.Html()
+	}
+
+	c.JSON(http.StatusOK, ApiResult{
+		Status: "success",
+		Count:  len(posts),
+		Page:   int(page),
+		Pages:  poster.PageNums(),
+		Now:    time.Now(),
+		Result: posts,
+	})
+}
+
+func (a *api) adminPosts(c *gin.Context) {
+	page, err := strconv.ParseInt(c.Query("page"), 10, 32)
+	if err != nil {
+		page = 1
+	}
+	limit, err := strconv.ParseInt(c.Query("limit"), 10, 32)
+	if err != nil {
+		limit = 20
+	}
+	offset, err := strconv.ParseInt(c.Query("offset"), 10, 32)
+
+	q := datastore.NewQuery("Post").Order("-created")
+	if offset > 0 {
+		q = q.Offset(int(offset))
+	}
+
+	adaptor := db.NewDatastoreAdaptor(q)
+	poster := db.NewCustomPoster(adaptor, int(limit))
+	poster.SetPage(int(page))
+
+	posts := poster.Posts()
+	for _, post := range posts {
+		post.Id = post.Key.ID
 	}
 
 	c.JSON(http.StatusOK, ApiResult{

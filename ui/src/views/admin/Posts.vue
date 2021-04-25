@@ -23,9 +23,19 @@
 import { Component, Prop, Vue } from 'vue-property-decorator'
 import ApiService, { Query } from '@/services/ApiService.vue'
 import { inject } from 'vue-typescript-inject'
-import { Post } from '@/components/BlogAnnounces.vue'
 import DateFormatter from '@/components/DateFomatter.vue'
 import { BvEvent } from 'bootstrap-vue'
+
+class Post {
+  public Created!: string
+  public id!: number
+  public Title!: string
+  public IsPublic!: boolean
+  public Markdown!: boolean
+  public Tags!: Array<string>
+  public Text!: string
+  public ShortText!: string
+}
 
 @Component({
   components: {
@@ -49,8 +59,8 @@ export default class Posts extends Vue {
     const q = new Query()
     q.page = page.toString()
     q.limit = '10'
-    this.api.getPosts(q).then(x => {
-      this.fields = ['id', 'Created', 'Title', 'Markdown']
+    this.api.getAdminPosts<Post>(q).then(x => {
+      this.fields = ['id', 'Created', 'Title', 'IsPublic']
       this.posts = x.result
       this.pages = x.pages
       this.page = x.page

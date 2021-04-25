@@ -127,7 +127,7 @@ func (*Blog) atom(c *gin.Context) {
 		},
 	}
 
-	posts := poster.Posts()
+	posts := poster.SmallPosts()
 	var entries []domain.FeedEntry
 
 	for _, post := range posts {

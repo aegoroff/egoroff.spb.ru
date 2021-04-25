@@ -40,7 +40,7 @@ export default class BlogAnnounces extends Vue {
   mounted (): void {
     const q = this.getQuery()
 
-    this.api.getPosts(q).then(x => {
+    this.api.getPosts<Post>(q).then(x => {
       this.posts = x.result
 
       const pager = new BlogPagination({
