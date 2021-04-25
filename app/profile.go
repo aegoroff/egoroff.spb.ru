@@ -1,6 +1,7 @@
 package app
 
 import (
+	"egoroff.spb.ru/app/auth"
 	"egoroff.spb.ru/app/framework"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -14,7 +15,7 @@ func NewProfile() Router {
 }
 
 func (s *profile) Route(r *gin.Engine) {
-	r.GET("/profile/", func(c *gin.Context) {
+	r.Use(auth.OnlyAuth()).GET("/profile/", func(c *gin.Context) {
 		ctx := framework.NewContext(c)
 		ctx["title"] = "Редактирование профиля"
 

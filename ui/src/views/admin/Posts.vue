@@ -49,6 +49,7 @@ export default class Posts extends Vue {
   update (page: number): void {
     const q = new Query()
     q.page = page.toString()
+    q.limit = '10'
     this.api.getPosts(q).then(x => {
       this.fields = ['id', 'Created', 'Title', 'Markdown']
       this.posts = x.result

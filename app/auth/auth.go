@@ -122,6 +122,25 @@ func (a *Auth) callback(c *gin.Context, validator gin.HandlerFunc, provider stri
 	}
 }
 
+func OnlyAuth() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// allow in debug to develop locally
+		if gin.Mode() == gin.DebugMode {
+			return
+		}
+
+		authoruzed := false
+		IfAuthorized(c, func(user *domain.User) {
+			authoruzed = true
+		})
+		if !authoruzed {
+			framework.Error401(c)
+			c.Abort()
+			return
+		}
+	}
+}
+
 func OnlyAdmin() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// allow in debug to develop locally
