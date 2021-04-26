@@ -51,13 +51,25 @@ func main() {
 	admin := app.NewAdmin()
 	sitemap := app.NewSiteMap(portfolio.Documents())
 	welcome := app.NewWelcome(portfolio.Documents())
+	compat := app.NewCompatibility()
 
 	routers := []app.Router{
 		static,
 		portfolio,
 		welcome,
 		search,
-		bl, api, auth, sitemap, profile, down, mpub, indieAuth, indieToken, admin}
+		bl,
+		api,
+		auth,
+		sitemap,
+		profile,
+		down,
+		mpub,
+		indieAuth,
+		indieToken,
+		admin,
+		compat,
+	}
 
 	route(r, routers)
 
