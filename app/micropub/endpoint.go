@@ -25,6 +25,7 @@ func (s *endpoint) Route(r *gin.Engine) {
 	{
 		mpub.GET("/", geth)
 		mpub.POST("/", posth)
+		mpub.GET("/media", mediah)
 		mpub.POST("/media", mediah)
 	}
 }
