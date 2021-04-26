@@ -11,35 +11,18 @@ import (
 	"sync"
 )
 
-func mediaHandler(fw fileWriter) gin.HandlerFunc {
-	mh := newMHandler(fw)
-	return func(c *gin.Context) {
-		switch c.Request.Method {
-		case http.MethodGet:
-			mh.get(c)
-		case http.MethodPost:
-			mh.post(c)
-		case http.MethodOptions:
-			c.Header("Accept", "GET,POST")
-		default:
-			c.Header("Accept", "GET,POST")
-			c.AbortWithStatusJSON(http.StatusMethodNotAllowed, gin.H{})
-		}
-	}
-}
-
-type mHandler struct {
+type mediaHandler struct {
 	fw fileWriter
 
 	mu      sync.RWMutex
 	lastURL string
 }
 
-func newMHandler(fw fileWriter) *mHandler {
-	return &mHandler{fw: fw}
+func newMediaHandler(fw fileWriter) *mediaHandler {
+	return &mediaHandler{fw: fw}
 }
 
-func (h *mHandler) get(c *gin.Context) {
+func (h *mediaHandler) get(c *gin.Context) {
 	if c.Request.FormValue("q") != "last" {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{})
 		return
@@ -52,7 +35,7 @@ func (h *mHandler) get(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"url": lastURL})
 }
 
-func (h *mHandler) post(c *gin.Context) {
+func (h *mediaHandler) post(c *gin.Context) {
 	//if !h.hasScope(w, r, "media", "create") {
 	//	return
 	//}

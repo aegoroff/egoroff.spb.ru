@@ -65,40 +65,28 @@ func sourceHandler(db getDB) gin.HandlerFunc {
 
 func configHandler(mediaURL string, syndicateTo []SyndicateTo) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.JSON(http.StatusOK, struct {
-			Q             []string      `json:"q"`
-			MediaEndpoint string        `json:"media-endpoint"`
-			SyndicateTo   []SyndicateTo `json:"syndicate-to"`
-		}{
-			Q: []string{
+		c.JSON(http.StatusOK, gin.H{
+			"q": []string{
 				"config",
 				"media-endpoint",
 				"source",
 				"syndicate-to",
 			},
-			MediaEndpoint: mediaURL,
-			SyndicateTo:   syndicateTo,
+			"media-endpoint": mediaURL,
+			"syndicate-to":   syndicateTo,
 		})
 	}
 }
 
 func mediaEndpointHandler(mediaURL string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.JSON(http.StatusOK, struct {
-			MediaEndpoint string `json:"media-endpoint"`
-		}{
-			MediaEndpoint: mediaURL,
-		})
+		c.JSON(http.StatusOK, gin.H{"media-endpoint": mediaURL})
 	}
 }
 
 func syndicationHandler(syndicateTo []SyndicateTo) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.JSON(http.StatusOK, struct {
-			SyndicateTo []SyndicateTo `json:"syndicate-to"`
-		}{
-			SyndicateTo: syndicateTo,
-		})
+		c.JSON(http.StatusOK, gin.H{"syndicate-to": syndicateTo})
 	}
 }
 
