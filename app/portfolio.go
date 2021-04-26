@@ -1,7 +1,6 @@
 package app
 
 import (
-	"egoroff.spb.ru/app/blog"
 	"egoroff.spb.ru/app/db"
 	"egoroff.spb.ru/app/domain"
 	"egoroff.spb.ru/app/framework"
@@ -21,6 +20,7 @@ import (
 type Portfolio struct {
 	documents    []*domain.Apache
 	documentsMap map[string]*domain.Apache
+	portfolio    map[int64]int64
 }
 
 func NewPortfolio(path string) *Portfolio {
@@ -29,9 +29,41 @@ func NewPortfolio(path string) *Portfolio {
 	for _, doc := range docs {
 		docsMap[doc.ID] = doc
 	}
+
+	portfolio := map[int64]int64{
+		1:  19002,
+		3:  24001,
+		5:  23001,
+		6:  21002,
+		7:  22001,
+		8:  21001,
+		9:  13004,
+		10: 6007,
+		11: 18001,
+		12: 12004,
+		13: 12003,
+		14: 1006,
+		15: 6005,
+		16: 16002,
+		17: 12002,
+		18: 6006,
+		19: 17001,
+		21: 11004,
+		22: 9004,
+		23: 13003,
+		24: 16001,
+		25: 9003,
+		26: 14005,
+		27: 5004,
+		28: 11003,
+		29: 15001,
+		30: 8002,
+	}
+
 	return &Portfolio{
 		documents:    docs,
 		documentsMap: docsMap,
+		portfolio:    portfolio,
 	}
 }
 
@@ -43,10 +75,7 @@ func (po *Portfolio) Route(r *gin.Engine) {
 	p := r.Group("/portfolio")
 	{
 		p.GET("/", po.index)
-		r.GET("/apache", po.index)
-
-		p.GET(":document", po.document)
-		p.GET("/:document/:document", po.document)
+		p.GET("/:document", po.document)
 	}
 }
 
@@ -73,11 +102,13 @@ func (po *Portfolio) document(c *gin.Context) {
 
 	id, err := strconv.ParseInt(doc, 10, 64)
 	if err == nil {
-		if remapped, ok := blog.Remapping[id]; ok {
-			uri := fmt.Sprintf("/blog/%d.html", remapped)
-			c.Redirect(http.StatusMovedPermanently, uri)
-			return
+		newId, ok := po.portfolio[id]
+		if ok {
+			c.Redirect(http.StatusMovedPermanently, fmt.Sprintf("/blog/%d.html", newId))
+		} else {
+			framework.Error404(c)
 		}
+		return
 	}
 
 	d, ok := po.documentsMap[doc]
