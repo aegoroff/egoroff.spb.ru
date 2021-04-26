@@ -8,6 +8,7 @@
 import { Component, Prop, Vue } from 'vue-property-decorator'
 import ApiService from '@/services/ApiService.vue'
 import { inject } from 'vue-typescript-inject'
+import { bus } from '@/main'
 
 @Component({
   providers: [ApiService]
@@ -18,6 +19,7 @@ export default class DeletePost extends Vue {
 
   onOk (): void {
     this.api.deletePost(this.postId)
+    bus.$emit('postDeleted')
   }
 }
 </script>

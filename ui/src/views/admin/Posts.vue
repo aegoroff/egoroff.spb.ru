@@ -38,6 +38,7 @@ import { BvEvent } from 'bootstrap-vue'
 import EditPost, { Post } from '@/components/admin/EditPost.vue'
 import DeletePost from '@/components/admin/DeletePost.vue'
 import AppIcon from '@/components/AppIcon.vue'
+import { bus } from '@/main'
 
 @Component({
   components: {
@@ -60,6 +61,9 @@ export default class Posts extends Vue {
   constructor () {
     super()
     this.update(1)
+    bus.$on('postDeleted', () => {
+      this.update(this.page)
+    })
   }
 
   update (page: number): void {
