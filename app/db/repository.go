@@ -242,6 +242,19 @@ func (r *Repository) UpdatePost(post *domain.Post, k *datastore.Key) (int64, err
 	return k.ID, nil
 }
 
+func (r *Repository) DeletePost(id int64) error {
+	err := r.query(func(c *datastore.Client, ctx context.Context) error {
+		k := datastore.IDKey("Post", id, nil)
+		return c.Delete(ctx, k)
+	})
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
+}
+
 func (r *Repository) query(action func(c *datastore.Client, ctx context.Context) error) error {
 	c, err := r.conn.Connect()
 	if err != nil {

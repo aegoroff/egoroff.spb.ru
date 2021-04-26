@@ -16,7 +16,8 @@ import {
   faDownload,
   faSignInAlt,
   faSignOutAlt,
-  faTools
+  faTools,
+  faTrashAlt
 } from '@fortawesome/free-solid-svg-icons'
 import { faGoogle, faFacebook, faGithub, faVk, faTwitter } from '@fortawesome/free-brands-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
@@ -54,7 +55,7 @@ Vue.use(VueProgressBar)
 Vue.use(VueSocialSharing)
 Vue.use(VueHighlightJS)
 
-library.add(faBook, faBriefcase, faSearch, faHome, faUser, faCalendarAlt, faDownload, faSignInAlt, faSignOutAlt, faTools)
+library.add(faBook, faBriefcase, faSearch, faHome, faUser, faCalendarAlt, faDownload, faSignInAlt, faSignOutAlt, faTools, faTrashAlt)
 library.add(faGoogle, faFacebook, faGithub, faVk, faTwitter)
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 

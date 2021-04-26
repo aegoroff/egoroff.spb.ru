@@ -84,6 +84,10 @@ export default class ApiService extends Vue {
     axios.put<Post>('/api/v2/admin/post', p)
   }
 
+  public deletePost (id: number): void {
+    axios.delete(`/api/v2/admin/post/${id}`)
+  }
+
   public async getPosts<T> (q?: Query): Promise<ApiResult<T>> {
     this.$Progress.start()
     return await axios.get<ApiResult<T>>(`/api/v2/blog/posts/${toQuery(q)}`).then(r => {

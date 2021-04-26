@@ -49,6 +49,7 @@ func (a *api) Route(r *gin.Engine) {
 		{
 			adm.GET("/posts", a.rawPosts)
 			adm.PUT("/post", a.editPost)
+			adm.DELETE("/post/:id", a.deletePost)
 		}
 		authGrp := ap.Group("/auth")
 		{
@@ -233,6 +234,29 @@ func (a *api) editPost(c *gin.Context) {
 		if err != nil {
 			log.Println(err)
 			c.JSON(http.StatusBadRequest, gin.H{
+				"result": err.Error(),
+			})
+		} else {
+			c.JSON(http.StatusOK, gin.H{
+				"result": "success",
+			})
+		}
+	}
+}
+
+func (a *api) deletePost(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"result": err.Error(),
+		})
+	} else {
+		repo := db.NewRepository()
+		err := repo.DeletePost(id)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
 				"result": err.Error(),
 			})
 		} else {

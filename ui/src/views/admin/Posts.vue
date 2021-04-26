@@ -12,12 +12,18 @@
       use-router
     ></b-pagination-nav>
     <EditPost id="edit-post" :post="selectedPost"></EditPost>
+    <DeletePost id="delete-post" :postId="selectedPostId"></DeletePost>
     <b-table-lite responsive small striped hover :items="posts" :fields="fields" id="posts-table">
       <template #cell(Created)="data">
         <date-formatter :date="data.value" format-str="L"></date-formatter>
       </template>
       <template #cell(Title)="data">
-        <a v-b-modal.edit-post href="#" @click="onEdit(data.item)">{{ data.value }}</a>
+        <a v-b-modal.edit-post href="#" @click="onSelect(data.item)">{{ data.value }}</a>
+      </template>
+      <template #cell(-)="data">
+        <a v-b-modal.delete-post href="#" @click="onSelect(data.item)">
+          <AppIcon icon="trash-alt"></AppIcon>
+        </a>
       </template>
     </b-table-lite>
   </div>
@@ -30,11 +36,15 @@ import { inject } from 'vue-typescript-inject'
 import DateFormatter from '@/components/DateFomatter.vue'
 import { BvEvent } from 'bootstrap-vue'
 import EditPost, { Post } from '@/components/admin/EditPost.vue'
+import DeletePost from '@/components/admin/DeletePost.vue'
+import AppIcon from '@/components/AppIcon.vue'
 
 @Component({
   components: {
     DateFormatter,
-    EditPost
+    EditPost,
+    DeletePost,
+    AppIcon
   },
   providers: [ApiService]
 })
@@ -45,6 +55,7 @@ export default class Posts extends Vue {
   @Prop() private page!: number
   @Prop() private pages!: number
   @Prop() private selectedPost!: Post
+  @Prop() private selectedPostId!: number
 
   constructor () {
     super()
@@ -56,7 +67,7 @@ export default class Posts extends Vue {
     q.page = page.toString()
     q.limit = '10'
     this.api.getAdminPosts<Post>(q).then(x => {
-      this.fields = ['id', 'Created', 'Title', 'IsPublic']
+      this.fields = ['-', 'id', 'Created', 'Title', 'IsPublic']
       this.posts = x.result
       this.pages = x.pages
       this.page = x.page
@@ -67,8 +78,9 @@ export default class Posts extends Vue {
     this.update(page)
   }
 
-  onEdit (p: Post): void {
+  onSelect (p: Post): void {
     this.selectedPost = p
+    this.selectedPostId = p.id
   }
 
   pageLinkGenerator (pageNum: number): string {
