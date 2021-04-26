@@ -20,12 +20,10 @@
     <link rel="micropub" href="https://www.egoroff.spb.ru/micropub/">
     <link href='https://fonts.googleapis.com/css?family=Noto+Serif:400,700,400italic,700italic|Open+Sans:700,400&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
     <title>{{title}}{% if title_path %}{{" | "}}{{title_path}}{% endif %}</title>
-    <link href="<%= BASE_URL %>blog/recent.atom"
+    <link href="{{ctx.PathFor('blog')}}recent.atom"
           rel="alternate"
           title="Recent Posts"
           type="application/atom+xml">
-    {% block head %}
-    {% endblock %}
     <!-- Google Analytics -->
     {% if gin_mode == 'release' %}
     <script>
@@ -55,7 +53,5 @@
         <p class="muted">&copy; 2002-2021 - Александр Егоров</p>
     </div>
 </footer>
-{% block scripts %}
-{% endblock %}
 </body>
 </html>
