@@ -14,17 +14,10 @@ import (
 
 var malformedDeleteError = errors.New("could not decode json request: malformed delete")
 
-type postDB interface {
-	Create(data map[string][]interface{}) (string, error)
-	Update(url string, replace, add, delete map[string][]interface{}, deleteAlls []string) error
-	Delete(url string) error
-	Undelete(url string) error
-}
-
-func postHandler(db postDB /*fw media.FileWriter*/) gin.HandlerFunc {
+func postHandler(db postDB, fw fileWriter) gin.HandlerFunc {
 	h := micropubPostHandler{
 		db: db,
-		//fw: fw,
+		fw: fw,
 	}
 	return func(c *gin.Context) {
 		contentType := c.GetHeader("Content-Type")
@@ -41,7 +34,7 @@ func postHandler(db postDB /*fw media.FileWriter*/) gin.HandlerFunc {
 
 type micropubPostHandler struct {
 	db postDB
-	//fw media.FileWriter
+	fw fileWriter
 }
 
 func (h *micropubPostHandler) handleJSON(c *gin.Context) {
@@ -186,7 +179,7 @@ func (h *micropubPostHandler) handleMultiPart(c *gin.Context) {
 			return
 		}
 
-		mt, _, er := mime.ParseMediaType(p.Header.Get("Content-Disposition"))
+		mt, ps, er := mime.ParseMediaType(p.Header.Get("Content-Disposition"))
 		if er != nil || mt != "form-data" {
 			continue
 		}
@@ -195,23 +188,23 @@ func (h *micropubPostHandler) handleMultiPart(c *gin.Context) {
 
 		switch key {
 		case "photo", "video", "audio":
-			//location, err := h.fw.WriteFile(ps["filename"], p.Header.Get("Content-Type"), p)
-			//if err != nil {
-			//	log.Println("ERR micropub-photo;", err)
-			//	continue
-			//}
+			location, err := h.fw.WriteFile(ps["filename"], p.Header.Get("Content-Type"), p)
+			if err != nil {
+				log.Println("ERR micropub-photo;", err)
+				continue
+			}
 
-			//data[key] = []interface{}{location}
+			data[key] = []interface{}{location}
 
 		case "photo[]", "video[]", "audio[]":
-			//location, err := h.fw.WriteFile(ps["filename"], p.Header.Get("Content-Type"), p)
-			//if err != nil {
-			//	log.Println("ERR micropub-photo;", err)
-			//	continue
-			//}
-			//
-			//key := key[:len(key)-2]
-			//data[key] = append(data[key], location)
+			location, err := h.fw.WriteFile(ps["filename"], p.Header.Get("Content-Type"), p)
+			if err != nil {
+				log.Println("ERR micropub-photo;", err)
+				continue
+			}
+
+			key := key[:len(key)-2]
+			data[key] = append(data[key], location)
 
 		default:
 			if reservedKey(key) {

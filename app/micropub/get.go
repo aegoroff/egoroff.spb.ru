@@ -5,10 +5,6 @@ import (
 	"net/http"
 )
 
-type getDB interface {
-	Entry(url string) (data map[string][]interface{}, err error)
-}
-
 type SyndicateTo struct {
 	UID  string `json:"uid"`
 	Name string `json:"name"`

@@ -17,14 +17,14 @@ func NewEndpoint() app.Router {
 func (s *endpoint) Route(r *gin.Engine) {
 	repo := db.NewRepository()
 	dbAdapter := newStore(repo)
+	fileW := db.NewFileWriter()
 	geth := getHandler(dbAdapter, indie.ME+"micropub/media", []SyndicateTo{})
-	posth := postHandler(dbAdapter)
+	posth := postHandler(dbAdapter, fileW)
+	mediah := mediaHandler(fileW)
 	mpub := r.Group("/micropub").Use(indie.IndieAuth())
 	{
 		mpub.GET("/", geth)
 		mpub.POST("/", posth)
-		mpub.POST("/media", func(c *gin.Context) {
-			// TODO: implement media endpoint
-		})
+		mpub.POST("/media", mediah)
 	}
 }
