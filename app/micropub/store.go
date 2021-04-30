@@ -61,7 +61,12 @@ func (m *store) Update(url string, replace, add, delete map[string][]interface{}
 }
 
 func (m *store) Delete(url string) error {
-	return nil
+	id, err := extractPostID(url)
+	if err != nil {
+		return err
+	}
+
+	return m.repo.DeletePost(id)
 }
 
 func (m *store) Undelete(url string) error {
