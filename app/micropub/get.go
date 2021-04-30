@@ -47,7 +47,9 @@ func sourceHandler(db getDB) gin.HandlerFunc {
 
 		obj, err := db.Entry(url)
 		if err != nil {
-			c.AbortWithError(http.StatusNotFound, err)
+			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{
+				"error": err.Error(),
+			})
 			return
 		}
 
