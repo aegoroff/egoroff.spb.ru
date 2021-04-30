@@ -119,12 +119,8 @@ func (*Blog) atom(c *gin.Context) {
 }
 
 func (b *Blog) post(c *gin.Context) {
-	ids := c.Param("id")
-	if !strings.HasSuffix(ids, ".html") {
-		framework.Error404(c)
-		return
-	}
-	id, err := strconv.ParseInt(ids[:len(ids)-len(".html")], 10, 64)
+	id, err := db.ExtractPostID(c.Param("id"))
+
 	if err != nil {
 		log.Println(err)
 		framework.Error404(c)

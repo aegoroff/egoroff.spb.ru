@@ -1,4 +1,4 @@
-package micropub
+package db
 
 import (
 	"net/url"
@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-func extractPostID(u string) (int64, error) {
+func ExtractPostID(u string) (int64, error) {
 	uri, err := url.Parse(u)
 	if err != nil {
 		return 0, err
