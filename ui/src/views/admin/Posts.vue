@@ -52,11 +52,11 @@ import { bus } from '@/main'
 export default class Posts extends Vue {
   @inject() private api!: ApiService
   @Prop() private posts!: Array<Post>
-  @Prop() private fields!: Array<string>
   @Prop() private page!: number
   @Prop() private pages!: number
   @Prop() private selectedPost!: Post
   @Prop() private selectedPostId!: number
+  private fields = ['-', 'id', 'Created', 'Title', 'IsPublic']
 
   constructor () {
     super()
@@ -71,7 +71,6 @@ export default class Posts extends Vue {
     q.page = page.toString()
     q.limit = '10'
     this.api.getAdminPosts<Post>(q).then(x => {
-      this.fields = ['-', 'id', 'Created', 'Title', 'IsPublic']
       this.posts = x.result
       this.pages = x.pages
       this.page = x.page
