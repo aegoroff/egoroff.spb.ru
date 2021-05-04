@@ -1,13 +1,12 @@
 package app
 
 import (
+	"egoroff.spb.ru/app/db"
 	"egoroff.spb.ru/app/framework"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
-	"strconv"
-	"strings"
 )
 
 type compatibility struct {
@@ -68,12 +67,7 @@ func (cm *compatibility) Route(r *gin.Engine) {
 	})
 
 	r.GET("/opinions/:id", func(c *gin.Context) {
-		ids := c.Param("id")
-		if !strings.HasSuffix(ids, ".html") {
-			framework.Error404(c)
-			return
-		}
-		id, err := strconv.ParseInt(ids[:len(ids)-len(".html")], 10, 64)
+		id, err := db.ExtractPostID(c.Param("id"))
 		if err != nil {
 			log.Println(err)
 			framework.Error404(c)
