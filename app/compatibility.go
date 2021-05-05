@@ -52,6 +52,10 @@ func (cm *compatibility) Route(r *gin.Engine) {
 		c.Redirect(http.StatusMovedPermanently, "/portfolio/")
 	})
 
+	r.GET("/portfolio/download/", func(c *gin.Context) {
+		c.Redirect(http.StatusMovedPermanently, "/portfolio/")
+	})
+
 	r.GET("/portfolio/apache/:doc", func(c *gin.Context) {
 		doc := c.Param("doc")
 		c.Redirect(http.StatusMovedPermanently, "/portfolio/"+doc)
