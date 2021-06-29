@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	cloud.google.com/go/datastore v1.5.0
-	cloud.google.com/go/storage v1.15.0
+	cloud.google.com/go/storage v1.16.0
 	github.com/boj/redistore v0.0.0-20180917114910-cd5dcc76aeff // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/flosch/pongo2 v0.0.0-20200913210552-0d938eb266f3
@@ -30,9 +30,8 @@ require (
 	github.com/vcraescu/go-paginator/v2 v2.0.0
 	golang.org/x/crypto v0.0.0-20210415154028-4f45737414dc // indirect
 	golang.org/x/exp v0.0.0-20210417010653-0739314eea07 // indirect
-	golang.org/x/net v0.0.0-20210415231046-e915ea6b2b7d
-	golang.org/x/oauth2 v0.0.0-20210413134643-5e61552d6c78
-	golang.org/x/sys v0.0.0-20210419170143-37df388d1f33 // indirect
+	golang.org/x/net v0.0.0-20210503060351-7fd8e65b6420
+	golang.org/x/oauth2 v0.0.0-20210615190721-d04028783cf1
 	gonum.org/v1/gonum v0.9.2
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
