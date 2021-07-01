@@ -32,6 +32,6 @@ require (
 	golang.org/x/exp v0.0.0-20210417010653-0739314eea07 // indirect
 	golang.org/x/net v0.0.0-20210503060351-7fd8e65b6420
 	golang.org/x/oauth2 v0.0.0-20210615190721-d04028783cf1
-	gonum.org/v1/gonum v0.9.2
+	gonum.org/v1/gonum v0.9.3
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
