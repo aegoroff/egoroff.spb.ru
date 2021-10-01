@@ -3,8 +3,8 @@ module egoroff.spb.ru
 go 1.15
 
 require (
-	cloud.google.com/go/datastore v1.5.0
-	cloud.google.com/go/storage v1.16.0
+	cloud.google.com/go/datastore v1.6.0
+	cloud.google.com/go/storage v1.17.0
 	github.com/boj/redistore v0.0.0-20180917114910-cd5dcc76aeff // indirect
 	github.com/flosch/pongo2 v0.0.0-20200913210552-0d938eb266f3
 	github.com/gin-contrib/cors v1.3.1
@@ -31,7 +31,7 @@ require (
 	golang.org/x/crypto v0.0.0-20210415154028-4f45737414dc // indirect
 	golang.org/x/exp v0.0.0-20210417010653-0739314eea07 // indirect
 	golang.org/x/net v0.0.0-20210503060351-7fd8e65b6420
-	golang.org/x/oauth2 v0.0.0-20210615190721-d04028783cf1
+	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f
 	gonum.org/v1/gonum v0.9.3
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
