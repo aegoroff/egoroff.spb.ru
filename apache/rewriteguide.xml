@@ -490,7 +490,7 @@ Options       ExecCGI FollowSymLinks Includes MultiViews
 
 RewriteEngine on
 
-#  устанавливем префикс /net.sw/
+#  устанавливаем префикс /net.sw/
 RewriteBase   /net.sw/
 
 #  сначала мы перенаправляем все запросы к корневому каталогу на
