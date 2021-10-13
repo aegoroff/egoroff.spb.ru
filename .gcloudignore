@@ -34,6 +34,7 @@ apache/*.xsl
 apache/*.dtd
 apache/*.xml
 .idea/
+.github/
 .DS_Store
 gulpfile.coffee
 bower_components/
