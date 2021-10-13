@@ -27,20 +27,20 @@ bower.json
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 *_test.go
-*.pyc
+*.py˚c
 *.pyo
 *.py
 apache/*.xsl
 apache/*.dtd
 apache/*.xml
 .idea/
+.github/
 .DS_Store
 gulpfile.coffee
 bower_components/
 static/dst/
 static/ext/
 static/src/
-node_modules/
 temp/
 ui/
 intodev.bat
