@@ -13,9 +13,6 @@
 .git
 .gitignore
 .bowerrc
-package-lock.json
-package.json
-bower.json
 
 # Binaries for programs and plugins
 *.exe~
