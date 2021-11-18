@@ -14,7 +14,7 @@ type Graph struct {
 	nextID int64
 }
 
-// New creates new graph
+// NewGraph creates new graph
 func NewGraph(root *domain.SiteSection) *Graph {
 	gr := &Graph{
 		g:      simple.NewDirectedGraph(),
