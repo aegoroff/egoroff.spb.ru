@@ -12,7 +12,7 @@ func Test_parseHtml(t *testing.T) {
 	}{
 		{"<p>s- s</p>", "<p>s&nbsp;&mdash; s</p>"},
 		{"<p>s - s</p>", "<p>s&nbsp;&mdash; s</p>"},
-		{"<p>s -&nbsp;s</p>", "<p>s&nbsp;&mdash;\u00a0s</p>"},
+		{"<p>s -\u00a0s</p>", "<p>s&nbsp;&mdash;\u00a0s</p>"},
 		{"<pre>s - s</pre>", "<pre>s - s</pre>"},
 		{"<pre><p>s - s</p></pre>", "<pre><p>s - s</p></pre>"},
 		{"<pre>&lt;html&gt;___&lt;/html&gt;</pre>", "<pre>&lt;html&gt;___&lt;/html&gt;</pre>"},
