@@ -1,6 +1,7 @@
 package indie
 
 import (
+	"egoroff.spb.ru/app/lib"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
@@ -80,7 +81,7 @@ func (t *TokenEndpoint) tokenVerify(c *gin.Context) {
 
 func (t *TokenEndpoint) tokenGenerate(c *gin.Context) {
 	if c.ContentType() != "application/x-www-form-urlencoded" {
-		log.Printf("Invalid content type: %s\n", c.ContentType())
+		log.Printf("Invalid content type: %s\n", lib.RemoveLineBreaks(c.ContentType()))
 		c.Abort()
 		return
 	}

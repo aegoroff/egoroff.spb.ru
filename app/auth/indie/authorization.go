@@ -4,6 +4,7 @@ import (
 	"egoroff.spb.ru/app/auth"
 	"egoroff.spb.ru/app/domain"
 	"egoroff.spb.ru/app/framework"
+	"egoroff.spb.ru/app/lib"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"github.com/patrickmn/go-cache"
@@ -98,7 +99,7 @@ func (a *Auth) get(c *gin.Context) {
 func (a *Auth) validateTokenReq(req tokenReq) bool {
 	_, ok := a.cache.Get(req.Code)
 	if !ok {
-		log.Printf("No token: %s found in cache\n", req.Code)
+		log.Printf("No token: %s found in cache\n", lib.RemoveLineBreaks(req.Code))
 		return ok
 	}
 	defer a.cache.Delete(req.Code)
@@ -123,9 +124,9 @@ func (a *Auth) validateTokenReq(req tokenReq) bool {
 	ok = claims["client_id"] == req.ClientId && claims["redirect_url"] == req.RedirectUri
 	if !ok {
 		log.Printf("claims.ClientID: %v\n", claims["client_id"])
-		log.Println("req.ClientId: " + req.ClientId)
+		log.Println("req.ClientId: " + lib.RemoveLineBreaks(req.ClientId))
 		log.Printf("claims.RedirectURL: %v\n", claims["redirect_url"])
-		log.Println("req.RedirectUri: " + req.RedirectUri)
+		log.Println("req.RedirectUri: " + lib.RemoveLineBreaks(req.RedirectUri))
 	}
 
 	return ok
