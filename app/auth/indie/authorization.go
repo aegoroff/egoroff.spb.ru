@@ -82,7 +82,10 @@ func (a *Auth) get(c *gin.Context) {
 		client := http.DefaultClient
 		uri, err := url.Parse(clientId)
 		if err != nil {
-			c.AbortWithError(http.StatusBadRequest, err)
+			err = c.AbortWithError(http.StatusBadRequest, err)
+			if err != nil {
+				log.Println(err)
+			}
 		}
 		resp, _ := client.Get(uri.String())
 		if resp != nil {
