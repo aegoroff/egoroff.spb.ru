@@ -4,9 +4,10 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'Users'
+<script lang="ts">
+import { Vue } from 'vue-property-decorator'
+
+export default class Users extends Vue {
 }
 </script>
 
