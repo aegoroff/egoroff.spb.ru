@@ -70,10 +70,10 @@ func (*Blog) atom(c *gin.Context) {
 
 	links := []domain.FeedLink{
 		{
-			Href: "http://www.egoroff.spb.ru/",
+			Href: "https://www.egoroff.spb.ru/",
 		},
 		{
-			Href: "http://www.egoroff.spb.ru/blog/recent.atom",
+			Href: "https://www.egoroff.spb.ru/blog/recent.atom",
 			Rel:  "self",
 		},
 	}
@@ -83,12 +83,12 @@ func (*Blog) atom(c *gin.Context) {
 
 	for _, post := range posts {
 		e := domain.FeedEntry{
-			XmlBase: "http://www.egoroff.spb.ru/blog/recent.atom",
+			XmlBase: "https://www.egoroff.spb.ru/blog/recent.atom",
 			Title: domain.FeedTitle{
 				Title: post.Title,
 				Type:  "text",
 			},
-			Id:        fmt.Sprintf("http://www.egoroff.spb.ru/blog/%v.html", post.Key.ID),
+			Id:        fmt.Sprintf("https://www.egoroff.spb.ru/blog/%v.html", post.Key.ID),
 			Updated:   post.Created.Format(time.RFC3339),
 			Published: post.Created.Format(time.RFC3339),
 			Author: domain.FeedAuthor{
@@ -109,7 +109,7 @@ func (*Blog) atom(c *gin.Context) {
 			Title: "egoroff.spb.ru feed",
 			Type:  "text",
 		},
-		Id:      "http://www.egoroff.spb.ru/blog/recent.atom",
+		Id:      "https://www.egoroff.spb.ru/blog/recent.atom",
 		Updated: posts[0].Created.Format(time.RFC3339),
 		Link:    links,
 		Entries: entries,
