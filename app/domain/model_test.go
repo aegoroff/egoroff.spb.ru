@@ -11,13 +11,13 @@ func Test_Urlset(t *testing.T) {
 	ass := assert.New(t)
 
 	url1 := Url{
-		Location:   "http://www.egoroff.spb.ru/",
+		Location:   "https://www.egoroff.spb.ru/",
 		ChangeFreq: "weekly",
 		Priority:   1.0,
 	}
 
 	url2 := Url{
-		Location:   "http://www.egoroff.spb.ru/portfolio/",
+		Location:   "https://www.egoroff.spb.ru/portfolio/",
 		ChangeFreq: "weekly",
 		Priority:   0.7,
 	}
@@ -34,12 +34,12 @@ func Test_Urlset(t *testing.T) {
 	ass.NoError(err)
 	ass.Equal(`  <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
       <url>
-          <loc>http://www.egoroff.spb.ru/</loc>
+          <loc>https://www.egoroff.spb.ru/</loc>
           <changefreq>weekly</changefreq>
           <priority>1</priority>
       </url>
       <url>
-          <loc>http://www.egoroff.spb.ru/portfolio/</loc>
+          <loc>https://www.egoroff.spb.ru/portfolio/</loc>
           <changefreq>weekly</changefreq>
           <priority>0.7</priority>
       </url>
