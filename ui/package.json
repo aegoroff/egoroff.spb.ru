@@ -16,7 +16,7 @@
     "axios": "^0.26.0",
     "bootstrap": "^4.6.0",
     "bootstrap-vue": "^2.21.2",
-    "core-js": "^3.21.0",
+    "core-js": "^3.21.1",
     "highlight.js": "^10.7.3",
     "moment": "^2.29.1",
     "reflect-metadata": "^0.1.13",
