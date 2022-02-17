@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	cloud.google.com/go/datastore v1.6.0
-	cloud.google.com/go/storage v1.20.0
+	cloud.google.com/go/storage v1.21.0
 	github.com/boj/redistore v0.0.0-20180917114910-cd5dcc76aeff // indirect
 	github.com/flosch/pongo2 v0.0.0-20200913210552-0d938eb266f3
 	github.com/gin-contrib/cors v1.3.1
@@ -20,22 +20,16 @@ require (
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/gorilla/sessions v1.2.1 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
-	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/stnc/pongo2gin v0.0.0-20210806134514-6891bb428b1c
 	github.com/stretchr/testify v1.7.0
 	github.com/ugorji/go v1.2.6 // indirect
 	github.com/vcraescu/go-paginator/v2 v2.0.0
-	golang.org/dl v0.0.0-20190829154251-82a15e2f2ead // indirect
 	golang.org/x/crypto v0.0.0-20220210151621-f4118a5b28e2 // indirect
 	golang.org/x/exp v0.0.0-20220212023102-3e31098684e2 // indirect
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
-	golang.org/x/sys v0.0.0-20220209214540-3681064d5158 // indirect
 	gonum.org/v1/gonum v0.9.3
-	google.golang.org/api v0.68.0 // indirect
-	google.golang.org/genproto v0.0.0-20220211171837-173942840c17 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
