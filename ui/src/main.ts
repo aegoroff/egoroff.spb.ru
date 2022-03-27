@@ -56,7 +56,7 @@ Vue.use(VueSocialSharing)
 Vue.use(VueHighlightJS)
 
 library.add(faBook, faBriefcase, faSearch, faHome, faUser, faCalendarAlt, faDownload, faSignInAlt, faSignOutAlt, faTools, faTrashAlt)
-library.add(faGoogle, faFacebook, faGithub, faVk, faTwitter)
+library.add(faGoogle, faGithub, faVk, faTwitter)
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 
 export const bus = new Vue()
