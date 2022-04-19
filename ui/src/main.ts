@@ -19,7 +19,7 @@ import {
   faTools,
   faTrashAlt
 } from '@fortawesome/free-solid-svg-icons'
-import { faGoogle, faFacebook, faGithub, faVk, faTwitter } from '@fortawesome/free-brands-svg-icons'
+import { faGoogle, faGithub, faVk, faTwitter } from '@fortawesome/free-brands-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import VueProgressBar from 'vue-progressbar'
 import AppIcon from './components/AppIcon.vue'
