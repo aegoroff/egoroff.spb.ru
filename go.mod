@@ -3,7 +3,7 @@ module egoroff.spb.ru
 go 1.16
 
 require (
-	cloud.google.com/go/datastore v1.6.0
+	cloud.google.com/go/datastore v1.8.0
 	cloud.google.com/go/storage v1.22.1
 	github.com/boj/redistore v0.0.0-20180917114910-cd5dcc76aeff // indirect
 	github.com/flosch/pongo2 v0.0.0-20200913210552-0d938eb266f3
@@ -24,7 +24,7 @@ require (
 	github.com/vcraescu/go-paginator/v2 v2.0.0
 	golang.org/x/crypto v0.0.0-20220210151621-f4118a5b28e2 // indirect
 	golang.org/x/exp v0.0.0-20220212023102-3e31098684e2 // indirect
-	golang.org/x/net v0.0.0-20220325170049-de3da57026de
-	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5
+	golang.org/x/net v0.0.0-20220607020251-c690dde0001d
+	golang.org/x/oauth2 v0.0.0-20220608161450-d0670ef3b1eb
 	gonum.org/v1/gonum v0.11.0
 )
