@@ -20,17 +20,19 @@ func IndieAuth() gin.HandlerFunc {
 		unauthorized := gin.H{
 			"error": "unauthorized",
 		}
+		token := ""
 		if auth == "" || strings.TrimSpace(auth) == "Bearer" {
-			tok, _ := c.GetPostForm("access_token")
-			if tok == "" {
-				c.AbortWithStatusJSON(http.StatusUnauthorized, unauthorized)
-				log.Println("No required Authorization header")
-				return
-			}
-
-			auth = "Bearer " + tok
+			token, _ = c.GetPostForm("access_token")
+		} else {
+			token = strings.TrimPrefix(auth, "Bearer ")
 		}
-		token := strings.TrimPrefix(auth, "Bearer ")
+
+		if token == "" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, unauthorized)
+			log.Println("No required Authorization header")
+			return
+		}
+
 		if !verifyJwt(token) {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, unauthorized)
 		}
