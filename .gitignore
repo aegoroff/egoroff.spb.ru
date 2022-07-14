@@ -21,3 +21,5 @@ intodev.bat
 /static/validation/1A73EFF10EDA0237DC07FCBF43A5AF39.txt
 egoroffspbrupri.pem
 egoroffspbrupub.pem
+/egoroff/target/
+/egoroff/Cargo.lock
