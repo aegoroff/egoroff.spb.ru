@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # coding: utf-8
 
 import argparse
@@ -75,7 +75,7 @@ def remove_file_dir(file_dir):
 
 def read_json(path):
     with open(path) as f:
-        return json.load(f, encoding="UTF-8")
+        return json.load(f)
 
 
 def create_apache_docs():
