@@ -59,7 +59,6 @@ pub async fn run() {
 
     axum_server::bind_rustls(socket, config)
         .serve(app.into_make_service())
-        //.with_graceful_shutdown(shutdown_signal())
         .await
         .unwrap();
 }
