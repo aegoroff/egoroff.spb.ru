@@ -3,7 +3,7 @@ use axum::{
     response::Redirect,
     http::{StatusCode, Uri},
     BoxError, Router,
-    handler::Handler,
+    handler::Handler, routing::get,
 };
 use axum_server::tls_rustls::RustlsConfig;
 use std::env;
@@ -100,8 +100,7 @@ async fn redirect_http_to_https(ports: Ports) {
 
 pub fn create_routes() -> Router {
     Router::new()
-        //.route("/", get(handlers::serve_index))
-        //.route("/:path", get(handlers::serve))
+        .route("/", get(handlers::serve_index))
         .layer(
             ServiceBuilder::new()
                 .layer(TraceLayer::new_for_http().on_failure(
@@ -112,4 +111,24 @@ pub fn create_routes() -> Router {
                 .layer(CorsLayer::new().allow_origin(Any).allow_methods(Any))
                 .into_inner(),
         )
+}
+
+mod handlers {
+    use tera::{Tera, Context};
+    use axum::response::{IntoResponse, Html};
+
+    pub async fn serve_index() -> impl IntoResponse {
+        let tera = match Tera::new("/home/egr/code/egoroff.spb.ru/static/dist/**/*.html") {
+            Ok(t) => t,
+            Err(e) => {
+                return Html(format!("Parsing error(s): {}", e));
+            }
+        };
+        let mut context = Context::new();
+        let index = tera.render( "welcome.html", &context);
+        match index {
+            Ok(content) => Html(content),
+            Err(err) => Html(err.to_string()),
+        }
+    }
 }
