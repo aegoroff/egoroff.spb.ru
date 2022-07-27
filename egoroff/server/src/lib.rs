@@ -16,6 +16,8 @@ use tower_http::trace::TraceLayer;
 use tracing::Span;
 use tracing_subscriber::prelude::__tracing_subscriber_SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
+use tokio::signal;
+use axum_server::Handle;
 
 #[derive(Clone, Copy)]
 struct Ports {
@@ -57,7 +59,13 @@ pub async fn run() {
 
     let app = create_routes();
 
+    let handle = Handle::new();
+
+    // Spawn a task to gracefully shutdown server.
+    tokio::spawn(shutdown_signal(handle.clone()));
+
     axum_server::bind_rustls(socket, config)
+        .handle(handle)
         .serve(app.into_make_service())
         .await
         .unwrap();
@@ -111,6 +119,33 @@ pub fn create_routes() -> Router {
                 .layer(CorsLayer::new().allow_origin(Any).allow_methods(Any))
                 .into_inner(),
         )
+}
+
+async fn shutdown_signal(handle: Handle) {
+    let ctrl_c = async {
+        signal::ctrl_c()
+            .await
+            .expect("failed to install Ctrl+C handler");
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        signal::unix::signal(signal::unix::SignalKind::terminate())
+            .expect("failed to install signal handler")
+            .recv()
+            .await;
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        _ = ctrl_c => {},
+        _ = terminate => {},
+    }
+
+    println!("signal received, starting graceful shutdown");
+    handle.graceful_shutdown(Some(Duration::from_secs(2)));
 }
 
 mod handlers {
