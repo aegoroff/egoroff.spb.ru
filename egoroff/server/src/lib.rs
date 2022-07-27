@@ -109,6 +109,8 @@ async fn redirect_http_to_https(ports: Ports) {
 pub fn create_routes() -> Router {
     Router::new()
         .route("/", get(handlers::serve_index))
+        .route("/js/:path", get(handlers::serve_js))
+        .route("/css/:path", get(handlers::serve_css))
         .layer(
             ServiceBuilder::new()
                 .layer(TraceLayer::new_for_http().on_failure(
@@ -149,13 +151,23 @@ async fn shutdown_signal(handle: Handle) {
 }
 
 mod handlers {
+    use rust_embed::RustEmbed;
     use tera::{Tera, Context};
-    use axum::response::{IntoResponse, Html};
+    use axum::{response::{IntoResponse, Html}, http::{HeaderValue, StatusCode}, body::{Full, Empty}, extract};
+
+    #[derive(RustEmbed)]
+    #[folder = "../../static/dist/css"]
+    struct Css;
+    
+    #[derive(RustEmbed)]
+    #[folder = "../../static/dist/js"]
+    struct Js;
 
     pub async fn serve_index() -> impl IntoResponse {
         let tera = match Tera::new("/home/egr/code/egoroff.spb.ru/static/dist/**/*.html") {
             Ok(t) => t,
             Err(e) => {
+                tracing::error!("Server error: {e}");
                 return Html(format!("Parsing error(s): {:#?}", e));
             }
         };
@@ -169,7 +181,36 @@ mod handlers {
         let index = tera.render( "welcome.html", &context);
         match index {
             Ok(content) => Html(content),
-            Err(err) => Html(format!("{:#?}", err)),
+            Err(err) => {
+                tracing::error!("Server error: {err}");
+                Html(format!("{:#?}", err)) 
+            },
+        }
+    }
+
+    pub async fn serve_js(extract::Path(path): extract::Path<String>) -> impl IntoResponse {
+        let path = path.as_str();
+        let asset = Js::get(path);
+        get_embed(path, asset)
+    }
+    
+    pub async fn serve_css(extract::Path(path): extract::Path<String>) -> impl IntoResponse {
+        let path = path.as_str();
+        let asset = Css::get(path);
+        get_embed(path, asset)
+    }
+    
+    fn get_embed(path: &str, asset: Option<rust_embed::EmbeddedFile>) -> impl IntoResponse {
+        if let Some(file) = asset {
+            let mut res = Full::from(file.data).into_response();
+            let mime = mime_guess::from_path(path).first_or_octet_stream();
+            res.headers_mut().insert(
+                "content-type",
+                HeaderValue::from_str(mime.as_ref()).unwrap(),
+            );
+            (StatusCode::OK, res)
+        } else {
+            (StatusCode::NOT_FOUND, Empty::new().into_response())
         }
     }
 }
