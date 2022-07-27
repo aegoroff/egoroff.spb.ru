@@ -111,6 +111,7 @@ pub fn create_routes() -> Router {
         .route("/", get(handlers::serve_index))
         .route("/js/:path", get(handlers::serve_js))
         .route("/css/:path", get(handlers::serve_css))
+        .route("/img/:path", get(handlers::serve_img))
         .layer(
             ServiceBuilder::new()
                 .layer(TraceLayer::new_for_http().on_failure(
@@ -162,6 +163,10 @@ mod handlers {
     #[derive(RustEmbed)]
     #[folder = "../../static/dist/js"]
     struct Js;
+    
+    #[derive(RustEmbed)]
+    #[folder = "../../static/img"]
+    struct Img;
 
     pub async fn serve_index() -> impl IntoResponse {
         let tera = match Tera::new("/home/egr/code/egoroff.spb.ru/static/dist/**/*.html") {
@@ -197,6 +202,12 @@ mod handlers {
     pub async fn serve_css(extract::Path(path): extract::Path<String>) -> impl IntoResponse {
         let path = path.as_str();
         let asset = Css::get(path);
+        get_embed(path, asset)
+    }
+    
+    pub async fn serve_img(extract::Path(path): extract::Path<String>) -> impl IntoResponse {
+        let path = path.as_str();
+        let asset = Img::get(path);
         get_embed(path, asset)
     }
     
