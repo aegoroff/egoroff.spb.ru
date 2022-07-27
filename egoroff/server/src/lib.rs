@@ -121,14 +121,20 @@ mod handlers {
         let tera = match Tera::new("/home/egr/code/egoroff.spb.ru/static/dist/**/*.html") {
             Ok(t) => t,
             Err(e) => {
-                return Html(format!("Parsing error(s): {}", e));
+                return Html(format!("Parsing error(s): {:#?}", e));
             }
         };
         let mut context = Context::new();
+        context.insert("html_class", "welcome");
+        context.insert("title", "egoroff.spb.ru");
+        let messages : Vec<String> = Vec::new();
+        context.insert("flashed_messages", &messages);
+        context.insert("gin_mode", "debug");
+        context.insert("ctx", "");
         let index = tera.render( "welcome.html", &context);
         match index {
             Ok(content) => Html(content),
-            Err(err) => Html(err.to_string()),
+            Err(err) => Html(format!("{:#?}", err)),
         }
     }
 }
