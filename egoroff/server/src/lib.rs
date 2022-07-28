@@ -183,7 +183,13 @@ mod handlers {
     struct Img;
 
     pub async fn serve_index() -> impl IntoResponse {
-        let tera = match Tera::new("/home/egr/code/egoroff.spb.ru/static/dist/**/*.html") {
+        let current = std::env::current_dir().unwrap();
+        let current = current.as_path().parent().unwrap();
+        let templates_path = current.join("static/dist/**/*.html");
+        let templates_path = templates_path.to_str().unwrap();
+        tracing::debug!("Templates path: {templates_path}");
+
+        let tera = match Tera::new(templates_path) {
             Ok(t) => t,
             Err(e) => {
                 tracing::error!("Server error: {e}");
