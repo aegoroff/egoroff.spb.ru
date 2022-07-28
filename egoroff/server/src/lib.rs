@@ -1,14 +1,17 @@
 use axum::{
     extract::Host,
-    response::Redirect,
+    handler::Handler,
     http::{StatusCode, Uri},
+    response::Redirect,
+    routing::get,
     BoxError, Router,
-    handler::Handler, routing::get,
 };
 use axum_server::tls_rustls::RustlsConfig;
+use axum_server::Handle;
 use std::env;
-use std::{net::SocketAddr, path::PathBuf};
 use std::time::Duration;
+use std::{net::SocketAddr, path::PathBuf};
+use tokio::signal;
 use tower::ServiceBuilder;
 use tower_http::classify::ServerErrorsFailureClass;
 use tower_http::cors::{Any, CorsLayer};
@@ -16,8 +19,6 @@ use tower_http::trace::TraceLayer;
 use tracing::Span;
 use tracing_subscriber::prelude::__tracing_subscriber_SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
-use tokio::signal;
-use axum_server::Handle;
 
 #[derive(Clone, Copy)]
 struct Ports {
@@ -41,37 +42,16 @@ pub async fn run() {
         https: https_port.parse().unwrap(),
     };
 
-    tokio::spawn(redirect_http_to_https(ports));
-
-    let socket: SocketAddr = format!("0.0.0.0:{https_port}").parse().unwrap();
-    tracing::debug!("listening on {socket}");
-
-    // configure certificate and private key used by https
-    let cert_dir = env::var("EGOROFF_CERT_DIR").unwrap_or_else(|_| String::from("."));
-    let config = RustlsConfig::from_pem_file(
-        PathBuf::from(&cert_dir)
-            .join("egoroff_spb_ru.crt"),
-        PathBuf::from(&cert_dir)
-            .join("egoroff_spb_ru.key.pem"),
-    )
-    .await
-    .expect("Certificate cannot be loaded");
-
-    let app = create_routes();
-
     let handle = Handle::new();
 
-    // Spawn a task to gracefully shutdown server.
-    tokio::spawn(shutdown_signal(handle.clone()));
+    let https = tokio::spawn(https_server(ports, handle.clone()));
+    let http = tokio::spawn(http_server(ports, handle));
 
-    axum_server::bind_rustls(socket, config)
-        .handle(handle)
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
+    // Ignore errors.
+    let _ = tokio::join!(http, https);
 }
 
-async fn redirect_http_to_https(ports: Ports) {
+async fn http_server(ports: Ports, handle: Handle) {
     fn make_https(host: String, uri: Uri, ports: Ports) -> Result<Uri, BoxError> {
         let mut parts = uri.into_parts();
 
@@ -97,11 +77,40 @@ async fn redirect_http_to_https(ports: Ports) {
         }
     };
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], ports.http));
+    let addr = SocketAddr::from(([0, 0, 0, 0], ports.http));
     tracing::debug!("http redirect listening on {}", addr);
 
-    axum::Server::bind(&addr)
+    // Spawn a task to gracefully shutdown server.
+    tokio::spawn(shutdown_signal(handle.clone()));
+
+    axum_server::bind(addr)
+        .handle(handle)
         .serve(redirect.into_make_service())
+        .await
+        .unwrap();
+}
+
+async fn https_server(ports: Ports, handle: Handle) {
+    let addr: SocketAddr = format!("0.0.0.0:{}", ports.https).parse().unwrap();
+    tracing::debug!("listening on {addr}");
+
+    // configure certificate and private key used by https
+    let cert_dir = env::var("EGOROFF_CERT_DIR").unwrap_or_else(|_| String::from("."));
+    let config = RustlsConfig::from_pem_file(
+        PathBuf::from(&cert_dir).join("egoroff_spb_ru.crt"),
+        PathBuf::from(&cert_dir).join("egoroff_spb_ru.key.pem"),
+    )
+    .await
+    .expect("Certificate cannot be loaded");
+
+    let app = create_routes();
+
+    // Spawn a task to gracefully shutdown server.
+    tokio::spawn(shutdown_signal(handle.clone()));
+
+    axum_server::bind_rustls(addr, config)
+        .handle(handle)
+        .serve(app.into_make_service())
         .await
         .unwrap();
 }
@@ -152,18 +161,23 @@ async fn shutdown_signal(handle: Handle) {
 }
 
 mod handlers {
+    use axum::{
+        body::{Empty, Full},
+        extract,
+        http::{HeaderValue, StatusCode},
+        response::{Html, IntoResponse},
+    };
     use rust_embed::RustEmbed;
-    use tera::{Tera, Context};
-    use axum::{response::{IntoResponse, Html}, http::{HeaderValue, StatusCode}, body::{Full, Empty}, extract};
+    use tera::{Context, Tera};
 
     #[derive(RustEmbed)]
     #[folder = "../../static/dist/css"]
     struct Css;
-    
+
     #[derive(RustEmbed)]
     #[folder = "../../static/dist/js"]
     struct Js;
-    
+
     #[derive(RustEmbed)]
     #[folder = "../../static/img"]
     struct Img;
@@ -179,17 +193,17 @@ mod handlers {
         let mut context = Context::new();
         context.insert("html_class", "welcome");
         context.insert("title", "egoroff.spb.ru");
-        let messages : Vec<String> = Vec::new();
+        let messages: Vec<String> = Vec::new();
         context.insert("flashed_messages", &messages);
         context.insert("gin_mode", "debug");
         context.insert("ctx", "");
-        let index = tera.render( "welcome.html", &context);
+        let index = tera.render("welcome.html", &context);
         match index {
             Ok(content) => Html(content),
             Err(err) => {
                 tracing::error!("Server error: {err}");
-                Html(format!("{:#?}", err)) 
-            },
+                Html(format!("{:#?}", err))
+            }
         }
     }
 
@@ -198,19 +212,19 @@ mod handlers {
         let asset = Js::get(path);
         get_embed(path, asset)
     }
-    
+
     pub async fn serve_css(extract::Path(path): extract::Path<String>) -> impl IntoResponse {
         let path = path.as_str();
         let asset = Css::get(path);
         get_embed(path, asset)
     }
-    
+
     pub async fn serve_img(extract::Path(path): extract::Path<String>) -> impl IntoResponse {
         let path = path.as_str();
         let asset = Img::get(path);
         get_embed(path, asset)
     }
-    
+
     fn get_embed(path: &str, asset: Option<rust_embed::EmbeddedFile>) -> impl IntoResponse {
         if let Some(file) = asset {
             let mut res = Full::from(file.data).into_response();
