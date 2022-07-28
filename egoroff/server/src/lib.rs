@@ -187,7 +187,6 @@ mod handlers {
         let current = current.as_path().parent().unwrap();
         let templates_path = current.join("static/dist/**/*.html");
         let templates_path = templates_path.to_str().unwrap();
-        tracing::debug!("Templates path: {templates_path}");
 
         let tera = match Tera::new(templates_path) {
             Ok(t) => t,
