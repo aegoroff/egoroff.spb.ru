@@ -18,6 +18,7 @@ require (
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/gorilla/sessions v1.2.1 // indirect
+	github.com/mattn/go-sqlite3 v1.14.14 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/stnc/pongo2gin v0.0.0-20210806134514-6891bb428b1c
 	github.com/stretchr/testify v1.8.0
