@@ -29,7 +29,7 @@ struct Ports {
 pub async fn run() {
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::new(
-            std::env::var("RUST_LOG").unwrap_or_else(|_| "server=debug,axum=debug,hyper=debug".into()),
+            std::env::var("RUST_LOG").unwrap_or_else(|_| "server=debug,axum=debug,hyper=debug,tower=debug".into()),
         ))
         .with(tracing_subscriber::fmt::layer())
         .init();
