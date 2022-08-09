@@ -9,6 +9,6 @@ workspace = ".."
 [dependencies]
 kernel = { path = "../kernel" }
 server = { path = "../server" }
-clap = { version = "3.2.14", features = ["std", "color", "suggestions", "cargo", "derive"] }
+clap = { version = "3.2.16", features = ["std", "color", "suggestions", "cargo", "derive"] }
 serde = { version = "1.0", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
