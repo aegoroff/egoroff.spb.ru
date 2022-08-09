@@ -3,6 +3,7 @@ package db
 import (
 	"cloud.google.com/go/datastore"
 	"context"
+	"database/sql"
 	"egoroff.spb.ru/app/domain"
 	"egoroff.spb.ru/app/lib"
 	"log"
@@ -161,7 +162,9 @@ func (r *Repository) ExportPosts() {
 		if err != nil {
 			return err
 		}
-		// TODO: Implement export
+		db, err := sql.Open("sqlite3", "egoroff.db")
+		_, err = db.Exec("insert into products (model, company, price) values ('iPhone X', $1, $2)",
+			"Apple", 72000)
 		return nil
 	})
 	if err != nil {
