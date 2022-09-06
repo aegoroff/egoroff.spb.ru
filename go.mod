@@ -26,5 +26,5 @@ require (
 	golang.org/x/exp v0.0.0-20220212023102-3e31098684e2 // indirect
 	golang.org/x/net v0.0.0-20220624214902-1bab6f366d9e
 	golang.org/x/oauth2 v0.0.0-20220822191816-0ebed06d0094
-	gonum.org/v1/gonum v0.11.0
+	gonum.org/v1/gonum v0.12.0
 )
