@@ -6,6 +6,7 @@ use axum::{
     routing::get,
     BoxError, Router,
 };
+use axum::extract::DefaultBodyLimit;
 use axum_server::tls_rustls::RustlsConfig;
 use axum_server::Handle;
 use std::env;
@@ -15,6 +16,7 @@ use tokio::signal;
 use tower::ServiceBuilder;
 use tower_http::classify::ServerErrorsFailureClass;
 use tower_http::cors::{Any, CorsLayer};
+use tower_http::limit::RequestBodyLimitLayer;
 use tower_http::trace::TraceLayer;
 use tracing::Span;
 use tracing_subscriber::prelude::__tracing_subscriber_SubscriberExt;
@@ -131,6 +133,8 @@ pub fn create_routes() -> Router {
                 .layer(CorsLayer::new().allow_origin(Any).allow_methods(Any))
                 .into_inner(),
         )
+        .layer(DefaultBodyLimit::disable())
+        .layer(RequestBodyLimitLayer::new(20 * 1024 * 1024))
 }
 
 async fn shutdown_signal(handle: Handle) {
