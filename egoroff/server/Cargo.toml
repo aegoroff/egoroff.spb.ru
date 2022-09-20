@@ -10,13 +10,13 @@ workspace = ".."
 serde = { version = "1.0", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
 mime_guess = "2"
-axum = { version = "0.5.13", features = ["multipart"] }
+axum = { version = "0.5.16", features = ["multipart"] }
 axum-server = { version = "0.4.2", features = ["tls-rustls"] }
-tokio-util = { version = "0.7.3", features = ["full"] }
+tokio-util = { version = "0.7.4", features = ["full"] }
 futures = "0.3"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tracing = "0.1"
 tower = { version = "0.4", features = ["util", "timeout"] }
 tower-http = { version = "0.3", features = ["add-extension", "trace", "cors"] }
-tera = "1.16.0"
+tera = "1.17.1"
 rust-embed = "6"
