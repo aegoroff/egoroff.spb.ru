@@ -15,7 +15,7 @@ async fn main() {
         .disable_version_flag(true)
         .get_matches();
 
-    if let Some(_) = cli.subcommand_matches(cli::VERSION_SUBCOMMAND) {
+    if cli.subcommand_matches(cli::VERSION_SUBCOMMAND).is_some() {
         cli::version::run();
     } else if let Some(server_matches) = cli.subcommand_matches(cli::SERVER_SUBCOMMAND) {
         cli::server::run(server_matches).await;
