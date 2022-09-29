@@ -1,15 +1,15 @@
-use clap::{App, SubCommand};
+use clap::{Command, command, crate_name};
 
 mod cli;
 
 #[tokio::main]
 async fn main() {
-    let cli = App::new(clap::crate_name!())
+    let cli = command!(crate_name!())
         .version(clap::crate_version!())
         .about(clap::crate_description!())
-        .subcommand(SubCommand::with_name(cli::VERSION_SUBCOMMAND).about(cli::VERSION_DESCRIPTION))
+        .subcommand(Command::new(cli::VERSION_SUBCOMMAND).about(cli::VERSION_DESCRIPTION))
         .subcommand(
-            SubCommand::with_name(cli::SERVER_SUBCOMMAND).about(cli::SERVER_DESCRIPTION),
+            Command::new(cli::SERVER_SUBCOMMAND).about(cli::SERVER_DESCRIPTION),
         )
         .arg_required_else_help(true)
         .disable_version_flag(true)
