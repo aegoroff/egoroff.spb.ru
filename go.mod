@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	cloud.google.com/go/datastore v1.9.0
-	cloud.google.com/go/storage v1.27.0
+	cloud.google.com/go/storage v1.28.0
 	github.com/boj/redistore v0.0.0-20180917114910-cd5dcc76aeff // indirect
 	github.com/flosch/pongo2 v0.0.0-20200913210552-0d938eb266f3
 	github.com/gin-contrib/cors v1.4.0
@@ -24,7 +24,7 @@ require (
 	github.com/vcraescu/go-paginator/v2 v2.0.0
 	golang.org/x/crypto v0.0.0-20220210151621-f4118a5b28e2 // indirect
 	golang.org/x/exp v0.0.0-20220212023102-3e31098684e2 // indirect
-	golang.org/x/net v0.0.0-20221012135044-0b7e1fb9d458
-	golang.org/x/oauth2 v0.0.0-20221006150949-b44042a4b9c1
+	golang.org/x/net v0.0.0-20221014081412-f15817d10f9b
+	golang.org/x/oauth2 v0.0.0-20221014153046-6fdb5e3db783
 	gonum.org/v1/gonum v0.12.0
 )
