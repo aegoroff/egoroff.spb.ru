@@ -20,7 +20,7 @@
     "highlight.js": "^10.7.3",
     "moment": "^2.29.4",
     "reflect-metadata": "^0.1.13",
-    "vue": "^2.7.14",
+    "vue": "^3.2.44",
     "vue-class-component": "^7.2.6",
     "vue-highlight.js": "^4.0.1-beta",
     "vue-progressbar": "^0.7.5",
