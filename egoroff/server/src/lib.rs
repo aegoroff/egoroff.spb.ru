@@ -1,6 +1,6 @@
 use axum::{
     extract::Host,
-    handler::Handler,
+    handler::HandlerWithoutStateExt,
     http::{StatusCode, Uri},
     response::Redirect,
     routing::get,
