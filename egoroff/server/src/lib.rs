@@ -55,18 +55,18 @@ pub async fn run() {
 
 async fn http_server(ports: Ports, handle: Handle) {
     fn make_https(host: String, uri: Uri, ports: Ports) -> Result<Uri, BoxError> {
-        let mut parts = uri.into_parts();
+        let mut uri_parts = uri.into_parts();
 
-        parts.scheme = Some(axum::http::uri::Scheme::HTTPS);
+        uri_parts.scheme = Some(axum::http::uri::Scheme::HTTPS);
 
-        if parts.path_and_query.is_none() {
-            parts.path_and_query = Some("/".parse().unwrap());
+        if uri_parts.path_and_query.is_none() {
+            uri_parts.path_and_query = Some("/".parse().unwrap());
         }
 
         let https_host = host.replace(&ports.http.to_string(), &ports.https.to_string());
-        parts.authority = Some(https_host.parse()?);
+        uri_parts.authority = Some(https_host.parse()?);
 
-        Ok(Uri::from_parts(parts)?)
+        Ok(Uri::from_parts(uri_parts)?)
     }
 
     let redirect = move |Host(host): Host, uri: Uri| async move {
@@ -165,6 +165,8 @@ async fn shutdown_signal(handle: Handle) {
 }
 
 mod handlers {
+    use std::{env, path::PathBuf};
+
     use axum::{
         body::{Empty, Full},
         extract,
@@ -187,9 +189,14 @@ mod handlers {
     struct Img;
 
     pub async fn serve_index() -> impl IntoResponse {
-        let current = std::env::current_dir().unwrap();
-        let current = current.as_path().parent().unwrap();
-        let templates_path = current.join("static/dist/**/*.html");
+        let base_path = match env::var("EGOROFF_HOME_DIR") {
+            Ok(d) => PathBuf::from(d),
+            Err(_) => {
+                std::env::current_dir().unwrap()
+            },
+        };
+
+        let templates_path = base_path.join("static/dist/**/*.html");
         let templates_path = templates_path.to_str().unwrap();
 
         let tera = match Tera::new(templates_path) {
