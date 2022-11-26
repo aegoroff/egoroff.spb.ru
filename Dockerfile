@@ -27,10 +27,12 @@ RUN cargo test --workspace --all-features --release
 RUN cargo build --workspace --release
 
 FROM gcr.io/distroless/cc-debian11:latest
+#FROM debian:11-slim
 ENV EGOROFF_HTTP_PORT=4200
 ENV EGOROFF_HTTPS_PORT=4201
 ENV EGOROFF_CERT_DIR=/data/certs
 ENV EGOROFF_HOME_DIR=/
+COPY --from=rust-build /static /static
 COPY --from=rust-build /egoroff/target/release/egoroff /usr/local/bin/egoroff
 USER root
 ENTRYPOINT [ "/usr/local/bin/egoroff" ]
