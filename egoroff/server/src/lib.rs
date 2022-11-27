@@ -1,3 +1,4 @@
+use axum::extract::DefaultBodyLimit;
 use axum::{
     extract::Host,
     handler::HandlerWithoutStateExt,
@@ -6,7 +7,6 @@ use axum::{
     routing::get,
     BoxError, Router,
 };
-use axum::extract::DefaultBodyLimit;
 use axum_server::tls_rustls::RustlsConfig;
 use axum_server::Handle;
 use std::env;
@@ -31,7 +31,8 @@ struct Ports {
 pub async fn run() {
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::new(
-            std::env::var("RUST_LOG").unwrap_or_else(|_| "server=debug,axum=debug,hyper=debug,tower=debug".into()),
+            std::env::var("RUST_LOG")
+                .unwrap_or_else(|_| "server=debug,axum=debug,hyper=debug,tower=debug".into()),
         ))
         .with(tracing_subscriber::fmt::layer())
         .init();
@@ -189,11 +190,10 @@ mod handlers {
     struct Img;
 
     pub async fn serve_index() -> impl IntoResponse {
-        let base_path = match env::var("EGOROFF_HOME_DIR") {
-            Ok(d) => PathBuf::from(d),
-            Err(_) => {
-                std::env::current_dir().unwrap()
-            },
+        let base_path = if let Ok(d) = env::var("EGOROFF_HOME_DIR") {
+            PathBuf::from(d)
+        } else {
+            std::env::current_dir().unwrap()
         };
 
         let templates_path = base_path.join("static/dist/**/*.html");
