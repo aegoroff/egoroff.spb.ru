@@ -4,7 +4,7 @@ use petgraph::prelude::*;
 
 const SEP: &str = "/";
 
-#[derive(Debug, Eq, PartialOrd, Ord, Default, Clone)]
+#[derive(Debug, Eq, PartialOrd, Ord, Default, Clone, Deserialize)]
 pub struct SiteSection {
     pub id: String,
     pub icon: String,

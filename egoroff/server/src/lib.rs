@@ -1,3 +1,4 @@
+use axum::Extension;
 use axum::extract::DefaultBodyLimit;
 use axum::{
     extract::Host,
@@ -9,6 +10,7 @@ use axum::{
 };
 use axum_server::tls_rustls::RustlsConfig;
 use axum_server::Handle;
+use kernel::graph::{SiteSection, SiteGraph};
 use std::env;
 use std::time::Duration;
 use std::{net::SocketAddr, path::PathBuf};
@@ -21,6 +23,7 @@ use tower_http::trace::TraceLayer;
 use tracing::Span;
 use tracing_subscriber::prelude::__tracing_subscriber_SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
+use std::{fs::File, io::BufReader};
 
 #[derive(Clone, Copy)]
 struct Ports {
@@ -106,7 +109,20 @@ async fn https_server(ports: Ports, handle: Handle) {
     .await
     .expect("Certificate cannot be loaded");
 
-    let app = create_routes();
+    let base_path = if let Ok(d) = env::var("EGOROFF_HOME_DIR") {
+        PathBuf::from(d)
+    } else {
+        std::env::current_dir().unwrap()
+    };
+
+    let site_map_path = base_path.join("static/map.json");
+    let file = File::open(site_map_path).unwrap();
+    let reader = BufReader::new(file);
+
+    let root: SiteSection = serde_json::from_reader(reader).unwrap();
+    let g = SiteGraph::new(&root);
+
+    let app = create_routes(base_path, g);
 
     // Spawn a task to gracefully shutdown server.
     tokio::spawn(shutdown_signal(handle.clone()));
@@ -118,7 +134,7 @@ async fn https_server(ports: Ports, handle: Handle) {
         .unwrap();
 }
 
-pub fn create_routes() -> Router {
+pub fn create_routes(base_path: PathBuf, site_graph: SiteGraph<'static>) -> Router {
     Router::new()
         .route("/", get(handlers::serve_index))
         .route("/js/:path", get(handlers::serve_js))
@@ -136,6 +152,8 @@ pub fn create_routes() -> Router {
         )
         .layer(DefaultBodyLimit::disable())
         .layer(RequestBodyLimitLayer::new(20 * 1024 * 1024))
+        .layer(Extension(base_path))
+        .layer(Extension(site_graph))
 }
 
 async fn shutdown_signal(handle: Handle) {
@@ -166,16 +184,17 @@ async fn shutdown_signal(handle: Handle) {
 }
 
 mod handlers {
-    use std::{env, path::PathBuf};
+    use std::{collections::HashMap, path::PathBuf};
 
     use axum::{
         body::{Empty, Full},
         extract,
         http::{HeaderValue, StatusCode},
-        response::{Html, IntoResponse},
+        response::{Html, IntoResponse}, Extension,
     };
+    use kernel::graph::SiteGraph;
     use rust_embed::RustEmbed;
-    use tera::{Context, Tera};
+    use tera::{Context, Tera, Value};
 
     #[derive(RustEmbed)]
     #[folder = "../../static/dist/css"]
@@ -189,23 +208,27 @@ mod handlers {
     #[folder = "../../static/img"]
     struct Img;
 
-    pub async fn serve_index() -> impl IntoResponse {
-        let base_path = if let Ok(d) = env::var("EGOROFF_HOME_DIR") {
-            PathBuf::from(d)
-        } else {
-            std::env::current_dir().unwrap()
-        };
-
+    pub async fn serve_index(Extension(base_path): Extension<PathBuf>, Extension(site_graph): Extension<SiteGraph<'static>>) -> impl IntoResponse {
         let templates_path = base_path.join("static/dist/**/*.html");
         let templates_path = templates_path.to_str().unwrap();
 
-        let tera = match Tera::new(templates_path) {
+        let mut tera = match Tera::new(templates_path) {
             Ok(t) => t,
             Err(e) => {
                 tracing::error!("Server error: {e}");
                 return Html(format!("Parsing error(s): {:#?}", e));
             }
         };
+        tera.register_function("path_for", move |args: &HashMap<String, Value>| -> tera::Result<Value> {
+            match args.get("id") {
+                Some(val) => match tera::from_value::<String>(val.clone()) {
+                    Ok(v) =>  Ok(tera::to_value(site_graph.full_path(&v)).unwrap()),
+                    Err(_) => Err("oops".into()),
+                },
+                None => Err("oops".into()),
+            }
+        });
+
         let mut context = Context::new();
         context.insert("html_class", "welcome");
         context.insert("title", "egoroff.spb.ru");
