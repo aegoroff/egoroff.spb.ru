@@ -2,6 +2,8 @@ use std::hash::Hash;
 
 use petgraph::prelude::*;
 
+const SEP: &str = "/";
+
 #[derive(Debug, Eq, PartialOrd, Ord, Default, Clone)]
 pub struct SiteSection {
     pub id: String,
@@ -64,22 +66,25 @@ impl<'input> SiteGraph<'input> {
             ..Default::default()
         };
 
-        let ways = petgraph::algo::all_simple_paths::<Vec<_>, _>(
-            &self.g, 
-            self.root, 
-            &n,
-            0,
-            None)
+        let ways = petgraph::algo::all_simple_paths::<Vec<_>, _>(&self.g, self.root, &n, 0, None)
             .collect::<Vec<_>>();
         if ways.is_empty() {
-            String::new()    
+            if id == SEP {
+                String::from(SEP)
+            } else {
+                String::new()
+            }
         } else {
             let way = &ways[0];
-            way.iter().map(|s| &s.id).fold(String::from(""), |acc, x| {
-                format!("{acc}/{x}")
-            })
+            let path = way.iter().map(|s| &s.id).fold(String::from(""), |acc, x| {
+                if x == SEP {
+                    String::new()
+                } else {
+                    format!("{acc}{SEP}{x}")
+                }
+            });
+            format!("{path}{SEP}")
         }
-        
     }
 }
 
