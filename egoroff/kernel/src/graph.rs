@@ -10,9 +10,12 @@ pub struct SiteSection {
     pub icon: String,
     pub title: String,
     pub descr: String,
-    pub keywords: String,
-    pub active: bool,
-    pub children: Vec<SiteSection>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub keywords: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub active: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub children: Option<Vec<SiteSection>>,
 }
 
 #[derive(Debug, Clone)]
@@ -46,14 +49,23 @@ impl SiteGraph {
     }
 
     fn new_edges(&mut self, root_id: i32) {
-        let Some(root) = self.map.get(&root_id) else { return };
+        let root = match self.map.get(&root_id) {
+            Some(x) => x,
+            None => return,
+        };
+
         let root_clone = root.clone();
 
-        if root_clone.children.is_empty() {
+        let children = match root_clone.children {
+            Some(x) => x,
+            None => return,
+        };
+
+        if children.is_empty() {
             return;
         }
 
-        for child in root_clone.children.into_iter() {
+        for child in children.into_iter() {
             let child_id = self.new_node(child);
             self.new_edges(child_id);
             self.g.add_edge(root_id, child_id, 0);
@@ -61,9 +73,12 @@ impl SiteGraph {
     }
 
     pub fn full_path(&self, id: &str) -> String {
-        let Some(node_id) = self.search.get(id) else { return String::new() };
+        let node_id = match self.search.get(id) {
+            Some(x) => *x,
+            None => return String::new(),
+        };
 
-        let ways = petgraph::algo::all_simple_paths::<Vec<_>, _>(&self.g, 1, *node_id, 0, None)
+        let ways = petgraph::algo::all_simple_paths::<Vec<_>, _>(&self.g, 1, node_id, 0, None)
             .collect::<Vec<_>>();
         if ways.is_empty() {
             if id == SEP {
@@ -114,40 +129,32 @@ mod tests {
     }
 
     fn create_test_data() -> SiteSection {
-        let mut root = SiteSection {
-            id: String::from("/"),
-            children: Vec::new(),
-            ..Default::default()
-        };
-
-        let mut a = SiteSection {
-            id: String::from("a"),
-            children: Vec::new(),
-            ..Default::default()
-        };
-
-        let mut b = SiteSection {
-            id: String::from("b"),
-            children: Vec::new(),
-            ..Default::default()
-        };
-
         let aa = SiteSection {
             id: String::from("aa"),
-            children: Vec::new(),
             ..Default::default()
         };
 
         let bb = SiteSection {
             id: String::from("bb"),
-            children: Vec::new(),
             ..Default::default()
         };
 
-        a.children.push(aa);
-        b.children.push(bb);
-        root.children.push(a);
-        root.children.push(b);
-        root
+        let a = SiteSection {
+            id: String::from("a"),
+            children: Some(vec![aa]),
+            ..Default::default()
+        };
+
+        let b = SiteSection {
+            id: String::from("b"),
+            children: Some(vec![bb]),
+            ..Default::default()
+        };
+
+        SiteSection {
+            id: String::from("/"),
+            children: Some(vec![a, b]),
+            ..Default::default()
+        }
     }
 }
