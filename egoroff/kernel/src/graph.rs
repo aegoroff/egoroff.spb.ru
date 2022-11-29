@@ -56,7 +56,7 @@ impl<'input> SiteGraph<'input> {
         for child in root.children.iter() {
             self.new_node(child);
             self.new_edges(child);
-            self.g.add_edge(root, &child, 0);
+            self.g.add_edge(root, child, 0);
         }
     }
 
