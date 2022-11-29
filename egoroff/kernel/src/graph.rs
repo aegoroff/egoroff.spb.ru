@@ -26,13 +26,13 @@ impl Hash for SiteSection {
 }
 
 #[derive(Debug, Clone)]
-pub struct Graph<'input> {
+pub struct SiteGraph<'input> {
     g: DiGraphMap<&'input SiteSection, i32>,
 }
 
-impl<'input> Graph<'input> {
-    pub fn new(root: &'input mut SiteSection) -> Self {
-        let mut g = Graph {
+impl<'input> SiteGraph<'input> {
+    pub fn new(root: &'input SiteSection) -> Self {
+        let mut g = SiteGraph {
             g: DiGraphMap::new(),
         };
         g.new_node(root);
@@ -60,5 +60,68 @@ impl<'input> Graph<'input> {
         let n = SiteSection { id: String::from(id), ..Default::default() };
         //petgraph::algo::dijkstra(self.g, start, goal, edge_cost);
         String::new()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rstest::*;
+
+    #[rstest]
+    #[case("aa", "/a/aa/")]
+    #[case("a", "/a/")]
+    #[case("b", "/b/")]
+    #[case("bb", "/b/bb/")]
+    #[case("ab", "")]
+    #[case("/", "/")]
+    fn full_path(#[case] id: &str, #[case] expected: &str) {
+        // arrange
+        let tg = create_test_data();
+        let g = SiteGraph::new(&tg);
+
+        // act
+        let actual = g.full_path(id);
+
+        // assert
+        assert_eq!(actual, expected);
+    }
+
+    fn create_test_data() -> SiteSection {
+        let mut root = SiteSection {
+            id: String::from("/"),
+            children: Vec::new(),
+            ..Default::default()
+        };
+        
+        let mut a = SiteSection {
+            id: String::from("a"),
+            children: Vec::new(),
+            ..Default::default()
+        };
+        
+        let mut b = SiteSection {
+            id: String::from("b"),
+            children: Vec::new(),
+            ..Default::default()
+        };
+        
+        let aa = SiteSection {
+            id: String::from("aa"),
+            children: Vec::new(),
+            ..Default::default()
+        };
+        
+        let bb = SiteSection {
+            id: String::from("bb"),
+            children: Vec::new(),
+            ..Default::default()
+        };
+
+        a.children.push(aa);
+        b.children.push(bb);
+        root.children.push(a);
+        root.children.push(b);
+        root
     }
 }
