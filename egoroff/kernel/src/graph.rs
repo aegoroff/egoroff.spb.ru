@@ -2,7 +2,7 @@ use std::hash::Hash;
 
 use petgraph::prelude::*;
 
-#[derive(Debug, Eq, PartialOrd, Ord, Default)]
+#[derive(Debug, Eq, PartialOrd, Ord, Default, Clone)]
 pub struct SiteSection {
     pub id: String,
     pub icon: String,
@@ -28,12 +28,14 @@ impl Hash for SiteSection {
 #[derive(Debug, Clone)]
 pub struct SiteGraph<'input> {
     g: DiGraphMap<&'input SiteSection, i32>,
+    root: &'input SiteSection,
 }
 
 impl<'input> SiteGraph<'input> {
     pub fn new(root: &'input SiteSection) -> Self {
         let mut g = SiteGraph {
             g: DiGraphMap::new(),
+            root,
         };
         g.new_node(root);
         g.new_edges(root);
@@ -57,9 +59,27 @@ impl<'input> SiteGraph<'input> {
     }
 
     pub fn full_path(&self, id: &str) -> String {
-        let n = SiteSection { id: String::from(id), ..Default::default() };
-        //petgraph::algo::dijkstra(self.g, start, goal, edge_cost);
-        String::new()
+        let n = SiteSection {
+            id: String::from(id),
+            ..Default::default()
+        };
+
+        let ways = petgraph::algo::all_simple_paths::<Vec<_>, _>(
+            &self.g, 
+            self.root, 
+            &n,
+            0,
+            None)
+            .collect::<Vec<_>>();
+        if ways.is_empty() {
+            String::new()    
+        } else {
+            let way = &ways[0];
+            way.iter().map(|s| &s.id).fold(String::from(""), |acc, x| {
+                format!("{acc}/{x}")
+            })
+        }
+        
     }
 }
 
@@ -93,25 +113,25 @@ mod tests {
             children: Vec::new(),
             ..Default::default()
         };
-        
+
         let mut a = SiteSection {
             id: String::from("a"),
             children: Vec::new(),
             ..Default::default()
         };
-        
+
         let mut b = SiteSection {
             id: String::from("b"),
             children: Vec::new(),
             ..Default::default()
         };
-        
+
         let aa = SiteSection {
             id: String::from("aa"),
             children: Vec::new(),
             ..Default::default()
         };
-        
+
         let bb = SiteSection {
             id: String::from("bb"),
             children: Vec::new(),
