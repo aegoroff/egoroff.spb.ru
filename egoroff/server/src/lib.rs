@@ -120,7 +120,7 @@ async fn https_server(ports: Ports, handle: Handle) {
     let reader = BufReader::new(file);
 
     let root: SiteSection = serde_json::from_reader(reader).unwrap();
-    let g = SiteGraph::new(&root);
+    let g = SiteGraph::new(root);
 
     let app = create_routes(base_path, g);
 
@@ -134,7 +134,7 @@ async fn https_server(ports: Ports, handle: Handle) {
         .unwrap();
 }
 
-pub fn create_routes(base_path: PathBuf, site_graph: SiteGraph<'static>) -> Router {
+pub fn create_routes(base_path: PathBuf, site_graph: SiteGraph) -> Router {
     Router::new()
         .route("/", get(handlers::serve_index))
         .route("/js/:path", get(handlers::serve_js))
@@ -208,7 +208,7 @@ mod handlers {
     #[folder = "../../static/img"]
     struct Img;
 
-    pub async fn serve_index(Extension(base_path): Extension<PathBuf>, Extension(site_graph): Extension<SiteGraph<'static>>) -> impl IntoResponse {
+    pub async fn serve_index(Extension(base_path): Extension<PathBuf>, Extension(site_graph): Extension<SiteGraph>) -> impl IntoResponse {
         let templates_path = base_path.join("static/dist/**/*.html");
         let templates_path = templates_path.to_str().unwrap();
 
