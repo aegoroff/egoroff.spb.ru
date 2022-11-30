@@ -211,7 +211,7 @@ mod handlers {
     struct Img;
 
     pub async fn serve_index(Extension(base_path): Extension<PathBuf>, Extension(site_graph): Extension<SiteGraph>) -> impl IntoResponse {
-        let templates_path = base_path.join("static/dist/**/*.html");
+        let templates_path = base_path.join("static/dist/**/*_r.html");
         let templates_path = templates_path.to_str().unwrap();
 
         let mut tera = match Tera::new(templates_path) {
@@ -238,7 +238,7 @@ mod handlers {
         context.insert("flashed_messages", &messages);
         context.insert("gin_mode", "debug");
         context.insert("ctx", "");
-        let index = tera.render("welcome.html", &context);
+        let index = tera.render("welcome_r.html", &context);
         match index {
             Ok(content) => Html(content),
             Err(err) => {

@@ -1,0 +1,5 @@
+{% for message in flashed_messages %}
+<div class="alert" data-label="{{message.Type}}">
+    {{message.Text}}
+</div>
+{% endfor %}

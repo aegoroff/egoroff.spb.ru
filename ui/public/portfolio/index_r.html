@@ -1,0 +1,25 @@
+{% extends 'index_r.html' %}
+
+{% block content %}
+<div class="container">
+    {% include 'bit/notifications_r.html' %}
+    <div class="pb-2 mt-4 mb-2 border-bottom">
+        <h1>
+            {{ title }}
+            <small>
+                тут я делюсь
+            </small>
+        </h1>
+    </div>
+    <div class="row">
+        <div class="col-lg-6">
+            <h1>Про апачей</h1>
+            {% include 'apache_documents_list_r.html' %}
+        </div>
+        <div class="col-lg-6">
+            <h1>Загрузки</h1>
+            {% include 'downloads_r.html' %}
+        </div>
+    </div>
+</div>
+{% endblock %}
