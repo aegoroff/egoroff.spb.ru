@@ -102,6 +102,7 @@ async fn https_server(ports: Ports, handle: Handle) {
 
     // configure certificate and private key used by https
     let cert_dir = env::var("EGOROFF_CERT_DIR").unwrap_or_else(|_| String::from("."));
+    tracing::debug!("Certs path {cert_dir}");
     let config = RustlsConfig::from_pem_file(
         PathBuf::from(&cert_dir).join("egoroff_spb_ru.crt"),
         PathBuf::from(&cert_dir).join("egoroff_spb_ru.key.pem"),
@@ -114,6 +115,7 @@ async fn https_server(ports: Ports, handle: Handle) {
     } else {
         std::env::current_dir().unwrap()
     };
+    tracing::debug!("Base path {}", base_path.to_str().unwrap());
 
     let site_map_path = base_path.join("static/map.json");
     let file = File::open(site_map_path).unwrap();
