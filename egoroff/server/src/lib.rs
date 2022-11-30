@@ -1,5 +1,5 @@
-use axum::Extension;
 use axum::extract::DefaultBodyLimit;
+use axum::Extension;
 use axum::{
     extract::Host,
     handler::HandlerWithoutStateExt,
@@ -10,9 +10,10 @@ use axum::{
 };
 use axum_server::tls_rustls::RustlsConfig;
 use axum_server::Handle;
-use kernel::graph::{SiteSection, SiteGraph};
+use kernel::graph::{SiteGraph, SiteSection};
 use std::env;
 use std::time::Duration;
+use std::{fs::File, io::BufReader};
 use std::{net::SocketAddr, path::PathBuf};
 use tokio::signal;
 use tower::ServiceBuilder;
@@ -23,13 +24,14 @@ use tower_http::trace::TraceLayer;
 use tracing::Span;
 use tracing_subscriber::prelude::__tracing_subscriber_SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
-use std::{fs::File, io::BufReader};
 
 #[derive(Clone, Copy)]
 struct Ports {
     http: u16,
     https: u16,
 }
+
+mod domain;
 
 pub async fn run() {
     tracing_subscriber::registry()
@@ -142,6 +144,7 @@ pub fn create_routes(base_path: PathBuf, site_graph: SiteGraph) -> Router {
         .route("/js/:path", get(handlers::serve_js))
         .route("/css/:path", get(handlers::serve_css))
         .route("/img/:path", get(handlers::serve_img))
+        .route("/api/v2/navigation/", get(handlers::navigation))
         .layer(
             ServiceBuilder::new()
                 .layer(TraceLayer::new_for_http().on_failure(
@@ -192,11 +195,14 @@ mod handlers {
         body::{Empty, Full},
         extract,
         http::{HeaderValue, StatusCode},
-        response::{Html, IntoResponse}, Extension,
+        response::{Html, IntoResponse},
+        Extension, Json,
     };
     use kernel::graph::SiteGraph;
     use rust_embed::RustEmbed;
     use tera::{Context, Tera, Value};
+
+    use crate::domain::{Navigation, Uri};
 
     #[derive(RustEmbed)]
     #[folder = "../../static/dist/css"]
@@ -210,7 +216,10 @@ mod handlers {
     #[folder = "../../static/img"]
     struct Img;
 
-    pub async fn serve_index(Extension(base_path): Extension<PathBuf>, Extension(site_graph): Extension<SiteGraph>) -> impl IntoResponse {
+    pub async fn serve_index(
+        Extension(base_path): Extension<PathBuf>,
+        Extension(site_graph): Extension<SiteGraph>,
+    ) -> impl IntoResponse {
         let templates_path = base_path.join("static/dist/**/*.html");
         let templates_path = templates_path.to_str().unwrap();
 
@@ -221,15 +230,18 @@ mod handlers {
                 return Html(format!("Parsing error(s): {:#?}", e));
             }
         };
-        tera.register_function("path_for", move |args: &HashMap<String, Value>| -> tera::Result<Value> {
-            match args.get("id") {
-                Some(val) => match tera::from_value::<String>(val.clone()) {
-                    Ok(v) =>  Ok(tera::to_value(site_graph.full_path(&v)).unwrap()),
-                    Err(_) => Err("oops".into()),
-                },
-                None => Err("oops".into()),
-            }
-        });
+        tera.register_function(
+            "path_for",
+            move |args: &HashMap<String, Value>| -> tera::Result<Value> {
+                match args.get("id") {
+                    Some(val) => match tera::from_value::<String>(val.clone()) {
+                        Ok(v) => Ok(tera::to_value(site_graph.full_path(&v)).unwrap()),
+                        Err(_) => Err("oops".into()),
+                    },
+                    None => Err("oops".into()),
+                }
+            },
+        );
 
         let mut context = Context::new();
         context.insert("html_class", "welcome");
@@ -264,6 +276,24 @@ mod handlers {
         let path = path.as_str();
         let asset = Img::get(path);
         get_embed(path, asset)
+    }
+
+    // this handler gets called if the query deserializes into `Info` successfully
+    // otherwise a 400 Bad Request error response is returned
+    pub async fn navigation(
+        extract::Query(query): extract::Query<Uri>,
+        Extension(site_graph): Extension<SiteGraph>,
+    ) -> impl IntoResponse {
+        let _q = &query.uri;
+
+        match site_graph.get_section("/") {
+            Some(r) => Json(Navigation {
+                sections: r.children,
+            }),
+            None => Json(Navigation {
+                ..Default::default()
+            }),
+        }
     }
 
     fn get_embed(path: &str, asset: Option<rust_embed::EmbeddedFile>) -> impl IntoResponse {

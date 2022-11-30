@@ -4,7 +4,7 @@ use petgraph::prelude::*;
 
 const SEP: &str = "/";
 
-#[derive(Debug, Default, Clone, Deserialize)]
+#[derive(Debug, Default, Clone, Deserialize, Serialize)]
 pub struct SiteSection {
     pub id: String,
     pub icon: String,
@@ -72,6 +72,18 @@ impl SiteGraph {
         }
     }
 
+    pub fn get_section(&self, id: &str) -> Option<SiteSection> {
+        let node_id = match self.search.get(id) {
+            Some(x) => *x,
+            None => return None,
+        };
+
+        match self.map.get(&node_id) {
+            Some(x) => Some(x.clone()),
+            None => None,
+        }
+    }
+
     pub fn full_path(&self, id: &str) -> String {
         let node_id = match self.search.get(id) {
             Some(x) => *x,
@@ -126,6 +138,36 @@ mod tests {
 
         // assert
         assert_eq!(actual, expected);
+    }
+    
+    #[rstest]
+    #[case("/")]
+    #[case("a")]
+    fn get_section_correct(#[case] id: &str) {
+        // arrange
+        let tg = create_test_data();
+        let g = SiteGraph::new(tg);
+
+        // act
+        let actual = g.get_section(id);
+
+        // assert
+        assert!(actual.is_some());
+    }
+    
+    #[rstest]
+    #[case("")]
+    #[case("ab")]
+    fn get_section_incorrect(#[case] id: &str) {
+        // arrange
+        let tg = create_test_data();
+        let g = SiteGraph::new(tg);
+
+        // act
+        let actual = g.get_section(id);
+
+        // assert
+        assert!(actual.is_none());
     }
 
     fn create_test_data() -> SiteSection {
