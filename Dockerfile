@@ -4,9 +4,12 @@
 FROM node:lts AS node-build
 WORKDIR /app
 COPY ui/package.json .
+COPY ui/public/ ./public/
+RUN find ./public/**/*_r.html | sed -r -e 's/((.+)_r.html)/\1 \2.html/g' | xargs -I % bash -c 'mv -v -f %'
+RUN find ./public/*_r.html | sed -r -e 's/((.+)_r.html)/\1 \2.html/g' | xargs -I % bash -c 'mv -v -f %'
+RUN ls -lah ./public
 RUN npm i -f
 COPY ui/src/ ./src/
-COPY ui/public/ ./public/
 COPY static/img/ /static/img/
 COPY static/map.json /static/
 COPY static/robots.txt /static/

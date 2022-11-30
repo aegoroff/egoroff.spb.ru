@@ -1,8 +1,8 @@
-{% extends 'index_r.html' %}
+{% extends 'index.html' %}
 
 {% block content %}
 <div class="container">
-    {% include 'bit/notifications_r.html' %}
+    {% include 'bit/notifications.html' %}
     <div class="row">
         <div class="col-lg-9">
             <div class="pb-2 mt-4 mb-2 border-bottom">
@@ -17,11 +17,11 @@
             {% else %}
                 <dl itemscope itemtype="http://schema.org/BlogPosting" id="blogcontainer">
                     {% for post in posts %}
-                        {% include 'post_box_r.html' %}
+                        {% include 'post_box.html' %}
                     {% endfor %}
                 </dl>
             {% endif %}
-            {% include 'paginator_r.html' %}
+            {% include 'paginator.html' %}
         </div>
         <div class="col-lg-3" id="blogNavigation">
         </div>
