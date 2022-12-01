@@ -12,10 +12,11 @@ pub struct Navigation {
     pub sections: Option<Vec<SiteSection>>,
 }
 
-#[derive(Serialize, Default)]
+#[derive(Serialize, Deserialize, Default, Clone)]
 pub struct Config {
     pub search_api_key: String,
     pub google_site_id: String,
+    pub analytics_id: String,
 }
 
 #[derive(Serialize, Default)]

@@ -25,6 +25,8 @@ use tracing::Span;
 use tracing_subscriber::prelude::__tracing_subscriber_SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 
+use crate::domain::Config;
+
 #[derive(Clone, Copy)]
 struct Ports {
     http: u16,
@@ -119,6 +121,11 @@ async fn https_server(ports: Ports, handle: Handle) {
     };
     tracing::debug!("Base path {}", base_path.to_str().unwrap());
 
+    let config_path = base_path.join("static/config.json");
+    let file = File::open(config_path).unwrap();
+    let reader = BufReader::new(file);
+    let site_config: Config = serde_json::from_reader(reader).unwrap();
+
     let site_map_path = base_path.join("static/map.json");
     let file = File::open(site_map_path).unwrap();
     let reader = BufReader::new(file);
@@ -126,7 +133,7 @@ async fn https_server(ports: Ports, handle: Handle) {
     let root: SiteSection = serde_json::from_reader(reader).unwrap();
     let g = SiteGraph::new(root);
 
-    let app = create_routes(base_path, g);
+    let app = create_routes(base_path, g, site_config);
 
     // Spawn a task to gracefully shutdown server.
     tokio::spawn(shutdown_signal(handle.clone()));
@@ -138,7 +145,7 @@ async fn https_server(ports: Ports, handle: Handle) {
         .unwrap();
 }
 
-pub fn create_routes(base_path: PathBuf, site_graph: SiteGraph) -> Router {
+pub fn create_routes(base_path: PathBuf, site_graph: SiteGraph, site_config: Config) -> Router {
     Router::new()
         .route("/", get(handlers::serve_index))
         .route("/portfolio/", get(handlers::serve_portfolio))
@@ -168,6 +175,7 @@ pub fn create_routes(base_path: PathBuf, site_graph: SiteGraph) -> Router {
         .layer(RequestBodyLimitLayer::new(20 * 1024 * 1024))
         .layer(Extension(base_path))
         .layer(Extension(site_graph))
+        .layer(Extension(site_config))
 }
 
 async fn shutdown_signal(handle: Handle) {
@@ -213,6 +221,12 @@ mod handlers {
 
     use crate::domain::{Config, Navigation, Poster, Uri};
 
+    #[cfg(debug_assertions)]
+    const MODE: &str = "debug";
+    
+    #[cfg(not(debug_assertions))]
+    const MODE: &str = "release";
+
     #[derive(RustEmbed)]
     #[folder = "../../static/dist/css"]
     struct Css;
@@ -248,6 +262,7 @@ mod handlers {
     pub async fn serve_index(
         Extension(base_path): Extension<PathBuf>,
         Extension(site_graph): Extension<SiteGraph>,
+        Extension(site_config): Extension<Config>,
     ) -> impl IntoResponse {
         let section = site_graph.get_section("/").unwrap();
         let mut context = Context::new();
@@ -255,9 +270,10 @@ mod handlers {
         context.insert("title", "egoroff.spb.ru");
         let messages: Vec<String> = Vec::new();
         context.insert("flashed_messages", &messages);
-        context.insert("gin_mode", "debug");
+        context.insert("gin_mode", MODE);
         context.insert("keywords", &section.keywords);
         context.insert("meta_description", &section.descr);
+        context.insert("config", &site_config);
         context.insert("ctx", "");
 
         serve_page(&context, "welcome.html", base_path, site_graph)
@@ -266,6 +282,7 @@ mod handlers {
     pub async fn serve_portfolio(
         Extension(base_path): Extension<PathBuf>,
         Extension(site_graph): Extension<SiteGraph>,
+        Extension(site_config): Extension<Config>,
     ) -> impl IntoResponse {
         let section = site_graph.get_section("portfolio").unwrap();
 
@@ -274,9 +291,10 @@ mod handlers {
         context.insert("title", &section.title);
         let messages: Vec<String> = Vec::new();
         context.insert("flashed_messages", &messages);
-        context.insert("gin_mode", "debug");
+        context.insert("gin_mode", MODE);
         context.insert("keywords", &section.keywords);
         context.insert("meta_description", &section.descr);
+        context.insert("config", &site_config);
         context.insert("ctx", "");
 
         serve_page(&context, "portfolio/index.html", base_path, site_graph)
@@ -285,6 +303,7 @@ mod handlers {
     pub async fn serve_portfolio_document(
         Extension(base_path): Extension<PathBuf>,
         Extension(site_graph): Extension<SiteGraph>,
+        Extension(site_config): Extension<Config>,
         extract::Path(path): extract::Path<String>,
     ) -> impl IntoResponse {
         let section = site_graph.get_section("portfolio").unwrap();
@@ -295,9 +314,10 @@ mod handlers {
         context.insert("title", &section.title);
         let messages: Vec<String> = Vec::new();
         context.insert("flashed_messages", &messages);
-        context.insert("gin_mode", "debug");
+        context.insert("gin_mode", MODE);
         context.insert("html_class", "portfolio");
         context.insert("ctx", "");
+        context.insert("config", &site_config);
         if let Some(file) = asset {
             let content = String::from_utf8_lossy(&file.data);
             context.insert("content", &content);
@@ -310,6 +330,7 @@ mod handlers {
     pub async fn serve_blog(
         Extension(base_path): Extension<PathBuf>,
         Extension(site_graph): Extension<SiteGraph>,
+        Extension(site_config): Extension<Config>,
     ) -> impl IntoResponse {
         let section = site_graph.get_section("blog").unwrap();
 
@@ -318,10 +339,11 @@ mod handlers {
         context.insert("title", &section.title);
         let messages: Vec<String> = Vec::new();
         context.insert("flashed_messages", &messages);
-        context.insert("gin_mode", "debug");
+        context.insert("gin_mode", MODE);
         context.insert("keywords", &section.keywords);
         context.insert("meta_description", &section.descr);
         context.insert("ctx", "");
+        context.insert("config", &site_config);
         let poster = Poster {
             small_posts: vec![],
         };
@@ -333,6 +355,7 @@ mod handlers {
     pub async fn serve_search(
         Extension(base_path): Extension<PathBuf>,
         Extension(site_graph): Extension<SiteGraph>,
+        Extension(site_config): Extension<Config>,
     ) -> impl IntoResponse {
         let section = site_graph.get_section("search").unwrap();
 
@@ -341,15 +364,11 @@ mod handlers {
         context.insert("title", &section.title);
         let messages: Vec<String> = Vec::new();
         context.insert("flashed_messages", &messages);
-        context.insert("gin_mode", "debug");
+        context.insert("gin_mode", MODE);
         context.insert("keywords", &section.keywords);
         context.insert("meta_description", &section.descr);
         context.insert("ctx", "");
-        let config = Config {
-            search_api_key: String::new(),
-            google_site_id: String::new(),
-        };
-        context.insert("config", &config);
+        context.insert("config", &site_config);
 
         serve_page(&context, "search.html", base_path, site_graph)
     }
