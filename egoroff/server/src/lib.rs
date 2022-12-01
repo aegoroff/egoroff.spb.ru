@@ -142,12 +142,17 @@ pub fn create_routes(base_path: PathBuf, site_graph: SiteGraph) -> Router {
     Router::new()
         .route("/", get(handlers::serve_index))
         .route("/portfolio/", get(handlers::serve_portfolio))
+        .route("/portfolio/:path", get(handlers::serve_portfolio_document))
+        .route("/portfolio/apache/:path", get(handlers::serve_portfolio_document))
+        .route("/portfolio/portfolio/:path", get(handlers::serve_portfolio_document))
         .route("/blog/", get(handlers::serve_blog))
         .route("/search/", get(handlers::serve_search))
         .route("/:path", get(handlers::serve_root))
         .route("/js/:path", get(handlers::serve_js))
         .route("/css/:path", get(handlers::serve_css))
         .route("/img/:path", get(handlers::serve_img))
+        .route("/apache/:path", get(handlers::serve_apache))
+        .route("/apache/images/:path", get(handlers::serve_apache_images))
         .route("/api/v2/navigation/", get(handlers::navigation))
         .layer(
             ServiceBuilder::new()
@@ -206,7 +211,7 @@ mod handlers {
     use rust_embed::RustEmbed;
     use tera::{Context, Tera, Value};
 
-    use crate::domain::{Navigation, Uri, Poster, Config};
+    use crate::domain::{Config, Navigation, Poster, Uri};
 
     #[derive(RustEmbed)]
     #[folder = "../../static/dist/css"]
@@ -219,7 +224,7 @@ mod handlers {
     #[derive(RustEmbed)]
     #[folder = "../../static/img"]
     struct Img;
-    
+
     #[derive(RustEmbed)]
     #[folder = "../../static"]
     #[include = "*.txt"]
@@ -228,6 +233,17 @@ mod handlers {
     #[exclude = "dist/*"]
     #[exclude = "img/*"]
     struct Static;
+
+    #[derive(RustEmbed)]
+    #[folder = "../../apache"]
+    #[exclude = "*.xml"]
+    #[exclude = "*.xsl"]
+    #[exclude = "*.dtd"]
+    struct Apache;
+
+    #[derive(RustEmbed)]
+    #[folder = "../../templates/apache"]
+    struct ApacheTemplates;
 
     pub async fn serve_index(
         Extension(base_path): Extension<PathBuf>,
@@ -246,7 +262,7 @@ mod handlers {
 
         serve_page(&context, "welcome.html", base_path, site_graph)
     }
-    
+
     pub async fn serve_portfolio(
         Extension(base_path): Extension<PathBuf>,
         Extension(site_graph): Extension<SiteGraph>,
@@ -265,7 +281,32 @@ mod handlers {
 
         serve_page(&context, "portfolio/index.html", base_path, site_graph)
     }
-    
+
+    pub async fn serve_portfolio_document(
+        Extension(base_path): Extension<PathBuf>,
+        Extension(site_graph): Extension<SiteGraph>,
+        extract::Path(path): extract::Path<String>,
+    ) -> impl IntoResponse {
+        let section = site_graph.get_section("portfolio").unwrap();
+
+        let asset = ApacheTemplates::get(&path);
+
+        let mut context = Context::new();
+        context.insert("title", &section.title);
+        let messages: Vec<String> = Vec::new();
+        context.insert("flashed_messages", &messages);
+        context.insert("gin_mode", "debug");
+        context.insert("html_class", "portfolio");
+        context.insert("ctx", "");
+        if let Some(file) = asset {
+            let content = String::from_utf8_lossy(&file.data);
+            context.insert("content", &content);
+        } else {
+            context.insert("content", "");
+        }
+        serve_page(&context, "portfolio/apache.html", base_path, site_graph)
+    }
+
     pub async fn serve_blog(
         Extension(base_path): Extension<PathBuf>,
         Extension(site_graph): Extension<SiteGraph>,
@@ -281,12 +322,14 @@ mod handlers {
         context.insert("keywords", &section.keywords);
         context.insert("meta_description", &section.descr);
         context.insert("ctx", "");
-        let poster = Poster{ small_posts: vec![] };
+        let poster = Poster {
+            small_posts: vec![],
+        };
         context.insert("poster", &poster);
 
         serve_page(&context, "blog/index.html", base_path, site_graph)
     }
-    
+
     pub async fn serve_search(
         Extension(base_path): Extension<PathBuf>,
         Extension(site_graph): Extension<SiteGraph>,
@@ -302,12 +345,15 @@ mod handlers {
         context.insert("keywords", &section.keywords);
         context.insert("meta_description", &section.descr);
         context.insert("ctx", "");
-        let config = Config{ search_api_key: String::new(), google_site_id: String::new() };
+        let config = Config {
+            search_api_key: String::new(),
+            google_site_id: String::new(),
+        };
         context.insert("config", &config);
 
         serve_page(&context, "search.html", base_path, site_graph)
     }
-    
+
     fn serve_page(
         context: &Context,
         template_name: &str,
@@ -352,7 +398,7 @@ mod handlers {
         let asset = Js::get(path);
         get_embed(path, asset)
     }
-    
+
     pub async fn serve_root(extract::Path(path): extract::Path<String>) -> impl IntoResponse {
         let path = path.as_str();
         let asset = Static::get(path);
@@ -368,6 +414,23 @@ mod handlers {
     pub async fn serve_img(extract::Path(path): extract::Path<String>) -> impl IntoResponse {
         let path = path.as_str();
         let asset = Img::get(path);
+        get_embed(path, asset)
+    }
+
+    pub async fn serve_apache(extract::Path(path): extract::Path<String>) -> impl IntoResponse {
+        let path = path.as_str();
+        let asset = Apache::get(path);
+        get_embed(path, asset)
+    }
+
+    pub async fn serve_apache_images(
+        extract::Path(path): extract::Path<String>,
+    ) -> impl IntoResponse {
+        let path = path.as_str();
+        let relative_path = PathBuf::from("images");
+        let relative_path = relative_path.join(path);
+        let relative_path = relative_path.as_os_str().to_str().unwrap_or_default();
+        let asset = Apache::get(relative_path);
         get_embed(path, asset)
     }
 
