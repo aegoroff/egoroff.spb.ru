@@ -22,6 +22,7 @@ RUN npm run build
 FROM rust:latest as rust-build
 WORKDIR /egoroff
 COPY --from=node-build /static /static
+RUN ls -lah /static
 COPY egoroff/kernel/ ./kernel/
 COPY egoroff/server/ ./server/
 COPY egoroff/egoroff/ ./egoroff/

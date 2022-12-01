@@ -141,6 +141,7 @@ async fn https_server(ports: Ports, handle: Handle) {
 pub fn create_routes(base_path: PathBuf, site_graph: SiteGraph) -> Router {
     Router::new()
         .route("/", get(handlers::serve_index))
+        .route("/:path", get(handlers::serve_root))
         .route("/js/:path", get(handlers::serve_js))
         .route("/css/:path", get(handlers::serve_css))
         .route("/img/:path", get(handlers::serve_img))
@@ -215,6 +216,15 @@ mod handlers {
     #[derive(RustEmbed)]
     #[folder = "../../static/img"]
     struct Img;
+    
+    #[derive(RustEmbed)]
+    #[folder = "../../static"]
+    #[include = "*.txt"]
+    #[include = "*.html"]
+    #[exclude = "*.json"]
+    #[exclude = "dist/*"]
+    #[exclude = "img/*"]
+    struct Static;
 
     pub async fn serve_index(
         Extension(base_path): Extension<PathBuf>,
@@ -263,6 +273,12 @@ mod handlers {
     pub async fn serve_js(extract::Path(path): extract::Path<String>) -> impl IntoResponse {
         let path = path.as_str();
         let asset = Js::get(path);
+        get_embed(path, asset)
+    }
+    
+    pub async fn serve_root(extract::Path(path): extract::Path<String>) -> impl IntoResponse {
+        let path = path.as_str();
+        let asset = Static::get(path);
         get_embed(path, asset)
     }
 

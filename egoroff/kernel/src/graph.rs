@@ -78,10 +78,7 @@ impl SiteGraph {
             None => return None,
         };
 
-        match self.map.get(&node_id) {
-            Some(x) => Some(x.clone()),
-            None => None,
-        }
+        self.map.get(&node_id).cloned()
     }
 
     pub fn full_path(&self, id: &str) -> String {
