@@ -141,6 +141,9 @@ async fn https_server(ports: Ports, handle: Handle) {
 pub fn create_routes(base_path: PathBuf, site_graph: SiteGraph) -> Router {
     Router::new()
         .route("/", get(handlers::serve_index))
+        .route("/portfolio/", get(handlers::serve_portfolio))
+        .route("/blog/", get(handlers::serve_blog))
+        .route("/search/", get(handlers::serve_search))
         .route("/:path", get(handlers::serve_root))
         .route("/js/:path", get(handlers::serve_js))
         .route("/css/:path", get(handlers::serve_css))
@@ -203,7 +206,7 @@ mod handlers {
     use rust_embed::RustEmbed;
     use tera::{Context, Tera, Value};
 
-    use crate::domain::{Navigation, Uri};
+    use crate::domain::{Navigation, Uri, Poster, Config};
 
     #[derive(RustEmbed)]
     #[folder = "../../static/dist/css"]
@@ -230,6 +233,87 @@ mod handlers {
         Extension(base_path): Extension<PathBuf>,
         Extension(site_graph): Extension<SiteGraph>,
     ) -> impl IntoResponse {
+        let section = site_graph.get_section("/").unwrap();
+        let mut context = Context::new();
+        context.insert("html_class", "welcome");
+        context.insert("title", "egoroff.spb.ru");
+        let messages: Vec<String> = Vec::new();
+        context.insert("flashed_messages", &messages);
+        context.insert("gin_mode", "debug");
+        context.insert("keywords", &section.keywords);
+        context.insert("meta_description", &section.descr);
+        context.insert("ctx", "");
+
+        serve_page(&context, "welcome.html", base_path, site_graph)
+    }
+    
+    pub async fn serve_portfolio(
+        Extension(base_path): Extension<PathBuf>,
+        Extension(site_graph): Extension<SiteGraph>,
+    ) -> impl IntoResponse {
+        let section = site_graph.get_section("portfolio").unwrap();
+
+        let mut context = Context::new();
+        context.insert("html_class", "portfolio");
+        context.insert("title", &section.title);
+        let messages: Vec<String> = Vec::new();
+        context.insert("flashed_messages", &messages);
+        context.insert("gin_mode", "debug");
+        context.insert("keywords", &section.keywords);
+        context.insert("meta_description", &section.descr);
+        context.insert("ctx", "");
+
+        serve_page(&context, "portfolio/index.html", base_path, site_graph)
+    }
+    
+    pub async fn serve_blog(
+        Extension(base_path): Extension<PathBuf>,
+        Extension(site_graph): Extension<SiteGraph>,
+    ) -> impl IntoResponse {
+        let section = site_graph.get_section("blog").unwrap();
+
+        let mut context = Context::new();
+        context.insert("html_class", "blog");
+        context.insert("title", &section.title);
+        let messages: Vec<String> = Vec::new();
+        context.insert("flashed_messages", &messages);
+        context.insert("gin_mode", "debug");
+        context.insert("keywords", &section.keywords);
+        context.insert("meta_description", &section.descr);
+        context.insert("ctx", "");
+        let poster = Poster{ small_posts: vec![] };
+        context.insert("poster", &poster);
+
+        serve_page(&context, "blog/index.html", base_path, site_graph)
+    }
+    
+    pub async fn serve_search(
+        Extension(base_path): Extension<PathBuf>,
+        Extension(site_graph): Extension<SiteGraph>,
+    ) -> impl IntoResponse {
+        let section = site_graph.get_section("search").unwrap();
+
+        let mut context = Context::new();
+        context.insert("html_class", "search");
+        context.insert("title", &section.title);
+        let messages: Vec<String> = Vec::new();
+        context.insert("flashed_messages", &messages);
+        context.insert("gin_mode", "debug");
+        context.insert("keywords", &section.keywords);
+        context.insert("meta_description", &section.descr);
+        context.insert("ctx", "");
+        let config = Config{ search_api_key: String::new(), google_site_id: String::new() };
+        context.insert("config", &config);
+
+        serve_page(&context, "search.html", base_path, site_graph)
+    }
+    
+    fn serve_page(
+        context: &Context,
+        template_name: &str,
+        base_path: PathBuf,
+        site_graph: SiteGraph,
+    ) -> impl IntoResponse {
         let templates_path = base_path.join("static/dist/**/*.html");
         let templates_path = templates_path.to_str().unwrap();
 
@@ -253,14 +337,7 @@ mod handlers {
             },
         );
 
-        let mut context = Context::new();
-        context.insert("html_class", "welcome");
-        context.insert("title", "egoroff.spb.ru");
-        let messages: Vec<String> = Vec::new();
-        context.insert("flashed_messages", &messages);
-        context.insert("gin_mode", "debug");
-        context.insert("ctx", "");
-        let index = tera.render("welcome.html", &context);
+        let index = tera.render(template_name, &context);
         match index {
             Ok(content) => Html(content),
             Err(err) => {

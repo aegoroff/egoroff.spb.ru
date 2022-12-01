@@ -1,3 +1,4 @@
+{% if downloads %}
 {% for folder in downloads %}
     <h3> {{ folder.Title }}</h3>
     <ul class="list-unstyled">
@@ -9,3 +10,4 @@
     {% endfor %}
     </ul>
 {% endfor %}
+{% endif %}
