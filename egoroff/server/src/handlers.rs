@@ -1,4 +1,4 @@
-use std::{collections::HashMap, path::PathBuf, fs::File, io::BufReader};
+use std::{collections::HashMap, fs::File, io::BufReader, path::PathBuf};
 
 use axum::{
     body::{Bytes, Empty, Full},
@@ -103,15 +103,27 @@ pub async fn serve_portfolio_document(
     Extension(site_config): Extension<Config>,
     extract::Path(path): extract::Path<String>,
 ) -> Either<Html<String>, (StatusCode, Empty<Bytes>)> {
-    let section = site_graph.get_section("portfolio").unwrap();
-
     let asset = ApacheTemplates::get(&path);
+    let apache_documents = apache_documents(&base_path);
+    let map: HashMap<&str, &crate::domain::Apache> = apache_documents
+        .iter()
+        .map(|item| (item.id.as_str(), item))
+        .collect();
+
+    let doc = path.trim_end_matches(".html");
+
+    let doc = match map.get(doc) {
+        Some(item) => item,
+        None => return Either::E2((StatusCode::NOT_FOUND, Empty::new())),
+    };
 
     let mut context = Context::new();
-    context.insert("title", &section.title);
+    context.insert("title", &doc.title);
     let messages: Vec<String> = Vec::new();
     context.insert("flashed_messages", &messages);
     context.insert("gin_mode", MODE);
+    context.insert("keywords", &doc.keywords);
+    context.insert("meta_description", &doc.description);
     context.insert("html_class", "");
     context.insert("ctx", "");
     context.insert("config", &site_config);
