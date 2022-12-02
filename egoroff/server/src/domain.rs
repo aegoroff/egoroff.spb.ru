@@ -19,6 +19,15 @@ pub struct Config {
     pub analytics_id: String,
 }
 
+#[derive(Serialize, Deserialize, Default, Clone)]
+pub struct Apache {
+    pub id: String,
+    pub stylesheet: String,
+    pub title: String,
+    pub description: String,
+    pub keywords: String,
+}
+
 #[derive(Serialize, Default)]
 pub struct Poster {
     pub small_posts: Vec<SmallPost>,

@@ -41,6 +41,7 @@ ENV EGOROFF_HTTP_PORT=4200
 ENV EGOROFF_HTTPS_PORT=4201
 ENV EGOROFF_CERT_DIR=/data/certs
 ENV EGOROFF_HOME_DIR=/
+COPY --from=rust-build /apache/config.json /apache/
 COPY --from=rust-build /static /static
 COPY --from=rust-build /egoroff/target/release/egoroff /usr/local/bin/egoroff
 USER root

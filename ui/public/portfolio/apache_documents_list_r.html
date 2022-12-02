@@ -2,8 +2,8 @@
 {% if apache_docs %}
 <dl>
     {% for item in apache_docs %}
-        <dt><a href="{{path_for(id='portfolio') | safe}}{{ item.ID }}.html">{{ item.Title }}</a></dt>
-        <dd>{{ item.Description | safe | typograph }}</dd>
+        <dt><a href="{{path_for(id='portfolio') | safe}}{{ item.id }}.html">{{ item.title }}</a></dt>
+        <dd>{{ item.description | safe }}</dd>
     {% endfor %}
 </dl>
 {% endif %}

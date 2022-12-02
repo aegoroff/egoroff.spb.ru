@@ -1,4 +1,4 @@
-use std::{collections::HashMap, path::PathBuf};
+use std::{collections::HashMap, path::PathBuf, fs::File, io::BufReader};
 
 use axum::{
     body::{Bytes, Empty, Full},
@@ -68,6 +68,8 @@ pub async fn serve_index(
     context.insert("meta_description", &section.descr);
     context.insert("config", &site_config);
     context.insert("ctx", "");
+    let apache_documents = apache_documents(&base_path);
+    context.insert("apache_docs", &apache_documents);
 
     serve_page(&context, "welcome.html", base_path, site_graph)
 }
@@ -89,6 +91,8 @@ pub async fn serve_portfolio(
     context.insert("meta_description", &section.descr);
     context.insert("config", &site_config);
     context.insert("ctx", "");
+    let apache_documents = apache_documents(&base_path);
+    context.insert("apache_docs", &apache_documents);
 
     serve_page(&context, "portfolio/index.html", base_path, site_graph)
 }
@@ -108,7 +112,7 @@ pub async fn serve_portfolio_document(
     let messages: Vec<String> = Vec::new();
     context.insert("flashed_messages", &messages);
     context.insert("gin_mode", MODE);
-    context.insert("html_class", "portfolio");
+    context.insert("html_class", "");
     context.insert("ctx", "");
     context.insert("config", &site_config);
     if let Some(file) = asset {
@@ -283,4 +287,11 @@ fn get_embed(path: &str, asset: Option<rust_embed::EmbeddedFile>) -> impl IntoRe
     } else {
         (StatusCode::NOT_FOUND, Empty::new().into_response())
     }
+}
+
+fn apache_documents(base_path: &PathBuf) -> Vec<crate::domain::Apache> {
+    let config_path = base_path.join("apache/config.json");
+    let file = File::open(config_path).unwrap();
+    let reader = BufReader::new(file);
+    serde_json::from_reader(reader).unwrap()
 }
