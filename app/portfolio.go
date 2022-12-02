@@ -152,33 +152,20 @@ func lastParam(c *gin.Context, name string) string {
 }
 
 func readApacheDocs(path string) []*domain.Apache {
-	f, err := os.Open(path)
+	fi := lib.NewFiler(os.Stdout)
+	b, err := fi.Read(path)
 	if err != nil {
 		log.Println(err)
 	}
-	dec := json.NewDecoder(f)
-	for {
-		var v map[string][]string
-		if err := dec.Decode(&v); err != nil {
-			log.Println(err)
-			return nil
-		}
-		var result = make([]*domain.Apache, 0, len(v))
-		for k, val := range v {
-			a := domain.Apache{
-				ID:          k,
-				Stylesheet:  val[0],
-				Title:       val[1],
-				Description: val[2],
-				Keywords:    val[3],
-			}
-			result = append(result, &a)
-		}
-		sort.Slice(result, func(i, j int) bool {
-			return result[i].ID < result[j].ID
-		})
-		return result
-	}
+
+	var result []*domain.Apache
+	err = json.Unmarshal(b, &result)
+
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].ID < result[j].ID
+	})
+
+	return result
 }
 
 func downloads() []*domain.Folder {

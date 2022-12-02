@@ -10,11 +10,11 @@ type Message struct {
 }
 
 type Apache struct {
-	ID          string
-	Stylesheet  string
-	Title       string
-	Description string
-	Keywords    string
+	ID          string `json:"id"`
+	Stylesheet  string `json:"stylesheet"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Keywords    string `json:"keywords"`
 }
 
 type AuthorizedUser struct {
