@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fs::File, io::BufReader, path::PathBuf};
+use std::{collections::HashMap, fs::File, io::BufReader, path::{PathBuf, Path}};
 
 use axum::{
     body::{Bytes, Empty, Full},
@@ -277,7 +277,7 @@ fn serve_page(
         },
     );
 
-    let index = tera.render(template_name, &context);
+    let index = tera.render(template_name, context);
     match index {
         Ok(content) => Html(content),
         Err(err) => {
@@ -301,7 +301,7 @@ fn get_embed(path: &str, asset: Option<rust_embed::EmbeddedFile>) -> impl IntoRe
     }
 }
 
-fn apache_documents(base_path: &PathBuf) -> Vec<crate::domain::Apache> {
+fn apache_documents(base_path: &Path) -> Vec<crate::domain::Apache> {
     let config_path = base_path.join("apache/config.json");
     let file = File::open(config_path).unwrap();
     let reader = BufReader::new(file);

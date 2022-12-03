@@ -1,13 +1,7 @@
 use axum::extract::DefaultBodyLimit;
 use axum::Extension;
-use axum::{
-    extract::Host,
-    handler::HandlerWithoutStateExt,
-    http::{StatusCode, Uri},
-    response::Redirect,
-    routing::get,
-    BoxError, Router,
-};
+use axum::{routing::get, Router};
+use axum_prometheus::PrometheusMetricLayer;
 use axum_server::tls_rustls::RustlsConfig;
 use axum_server::Handle;
 use kernel::graph::{SiteGraph, SiteSection};
@@ -48,73 +42,6 @@ pub async fn run() {
     let http_port = env::var("EGOROFF_HTTP_PORT").unwrap_or_else(|_| String::from("4200"));
     let https_port = env::var("EGOROFF_HTTPS_PORT").unwrap_or_else(|_| String::from("4201"));
 
-    let ports = Ports {
-        http: http_port.parse().unwrap(),
-        https: https_port.parse().unwrap(),
-    };
-
-    let handle = Handle::new();
-
-    let https = tokio::spawn(https_server(ports, handle.clone()));
-    let http = tokio::spawn(http_server(ports, handle));
-
-    // Ignore errors.
-    let _ = tokio::join!(http, https);
-}
-
-async fn http_server(ports: Ports, handle: Handle) {
-    fn make_https(host: String, uri: Uri, ports: Ports) -> Result<Uri, BoxError> {
-        let mut uri_parts = uri.into_parts();
-
-        uri_parts.scheme = Some(axum::http::uri::Scheme::HTTPS);
-
-        if uri_parts.path_and_query.is_none() {
-            uri_parts.path_and_query = Some("/".parse().unwrap());
-        }
-
-        let https_host = host.replace(&ports.http.to_string(), &ports.https.to_string());
-        uri_parts.authority = Some(https_host.parse()?);
-
-        Ok(Uri::from_parts(uri_parts)?)
-    }
-
-    let redirect = move |Host(host): Host, uri: Uri| async move {
-        match make_https(host, uri, ports) {
-            Ok(uri) => Ok(Redirect::permanent(&uri.to_string())),
-            Err(error) => {
-                tracing::warn!(%error, "failed to convert URI to HTTPS");
-                Err(StatusCode::BAD_REQUEST)
-            }
-        }
-    };
-
-    let addr = SocketAddr::from(([0, 0, 0, 0], ports.http));
-    tracing::debug!("http redirect listening on {}", addr);
-
-    // Spawn a task to gracefully shutdown server.
-    tokio::spawn(shutdown_signal(handle.clone()));
-
-    axum_server::bind(addr)
-        .handle(handle)
-        .serve(redirect.into_make_service())
-        .await
-        .unwrap();
-}
-
-async fn https_server(ports: Ports, handle: Handle) {
-    let addr: SocketAddr = format!("0.0.0.0:{}", ports.https).parse().unwrap();
-    tracing::debug!("listening on {addr}");
-
-    // configure certificate and private key used by https
-    let cert_dir = env::var("EGOROFF_CERT_DIR").unwrap_or_else(|_| String::from("."));
-    tracing::debug!("Certs path {cert_dir}");
-    let config = RustlsConfig::from_pem_file(
-        PathBuf::from(&cert_dir).join("egoroff_spb_ru.crt"),
-        PathBuf::from(&cert_dir).join("egoroff_spb_ru.key.pem"),
-    )
-    .await
-    .expect("Certificate cannot be loaded");
-
     let base_path = if let Ok(d) = env::var("EGOROFF_HOME_DIR") {
         PathBuf::from(d)
     } else {
@@ -136,6 +63,48 @@ async fn https_server(ports: Ports, handle: Handle) {
 
     let app = create_routes(base_path, site_graph, site_config);
 
+    let ports = Ports {
+        http: http_port.parse().unwrap(),
+        https: https_port.parse().unwrap(),
+    };
+
+    let handle = Handle::new();
+
+    let https = tokio::spawn(https_server(ports, handle.clone(), app.clone()));
+    let http = tokio::spawn(http_server(ports, handle, app));
+
+    // Ignore errors.
+    let _ = tokio::join!(http, https);
+}
+
+async fn http_server(ports: Ports, handle: Handle, app: Router) {
+    let addr = SocketAddr::from(([0, 0, 0, 0], ports.http));
+    tracing::debug!("HTTP listening on {}", addr);
+
+    // Spawn a task to gracefully shutdown server.
+    tokio::spawn(shutdown_signal(handle.clone()));
+
+    axum_server::bind(addr)
+        .handle(handle)
+        .serve(app.into_make_service())
+        .await
+        .unwrap();
+}
+
+async fn https_server(ports: Ports, handle: Handle, app: Router) {
+    let addr: SocketAddr = format!("0.0.0.0:{}", ports.https).parse().unwrap();
+    tracing::debug!("HTTPS listening on {addr}");
+
+    // configure certificate and private key used by https
+    let cert_dir = env::var("EGOROFF_CERT_DIR").unwrap_or_else(|_| String::from("."));
+    tracing::debug!("Certs path {cert_dir}");
+    let config = RustlsConfig::from_pem_file(
+        PathBuf::from(&cert_dir).join("egoroff_spb_ru.crt"),
+        PathBuf::from(&cert_dir).join("egoroff_spb_ru.key.pem"),
+    )
+    .await
+    .expect("Certificate cannot be loaded");
+
     // Spawn a task to gracefully shutdown server.
     tokio::spawn(shutdown_signal(handle.clone()));
 
@@ -147,12 +116,20 @@ async fn https_server(ports: Ports, handle: Handle) {
 }
 
 pub fn create_routes(base_path: PathBuf, site_graph: SiteGraph, site_config: Config) -> Router {
+    let (prometheus_layer, metric_handle) = PrometheusMetricLayer::pair();
+
     Router::new()
         .route("/", get(handlers::serve_index))
         .route("/portfolio/", get(handlers::serve_portfolio))
         .route("/portfolio/:path", get(handlers::serve_portfolio_document))
-        .route("/portfolio/apache/:path", get(handlers::serve_portfolio_document))
-        .route("/portfolio/portfolio/:path", get(handlers::serve_portfolio_document))
+        .route(
+            "/portfolio/apache/:path",
+            get(handlers::serve_portfolio_document),
+        )
+        .route(
+            "/portfolio/portfolio/:path",
+            get(handlers::serve_portfolio_document),
+        )
         .route("/blog/", get(handlers::serve_blog))
         .route("/search/", get(handlers::serve_search))
         .route("/:path", get(handlers::serve_root))
@@ -162,6 +139,7 @@ pub fn create_routes(base_path: PathBuf, site_graph: SiteGraph, site_config: Con
         .route("/apache/:path", get(handlers::serve_apache))
         .route("/apache/images/:path", get(handlers::serve_apache_images))
         .route("/api/v2/navigation/", get(handlers::navigation))
+        .route("/metrics", get(|| async move { metric_handle.render() }))
         .layer(
             ServiceBuilder::new()
                 .layer(TraceLayer::new_for_http().on_failure(
@@ -177,6 +155,7 @@ pub fn create_routes(base_path: PathBuf, site_graph: SiteGraph, site_config: Con
         .layer(Extension(base_path))
         .layer(Extension(site_graph))
         .layer(Extension(site_config))
+        .layer(prometheus_layer)
 }
 
 async fn shutdown_signal(handle: Handle) {
@@ -205,4 +184,3 @@ async fn shutdown_signal(handle: Handle) {
     println!("signal received, starting graceful shutdown");
     handle.graceful_shutdown(Some(Duration::from_secs(2)));
 }
-

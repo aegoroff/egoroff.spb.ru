@@ -15,6 +15,7 @@ mime_guess = "2"
 axum = { version = "0.6.1", features = ["multipart"] }
 axum-server = { version = "0.4.4", features = ["tls-rustls"] }
 axum-extra = "0.4.2"
+axum-prometheus = "0.2.0"
 tokio-util = { version = "0.7.4", features = ["full"] }
 futures = "0.3"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
