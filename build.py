@@ -83,9 +83,9 @@ def create_apache_docs():
     result = []
     for item in conf:
         r = {
-            "file": item,
-            "xml": os.path.join(DIR_APACHE, item + ".xml"),
-            "stylesheet": os.path.join(DIR_APACHE, conf[item][0] + ".xsl"),
+            "file": item["id"],
+            "xml": os.path.join(DIR_APACHE, item["id"] + ".xml"),
+            "stylesheet": os.path.join(DIR_APACHE, item["stylesheet"] + ".xsl"),
         }
         result.append(r)
     return result
