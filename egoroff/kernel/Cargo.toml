@@ -10,6 +10,8 @@ workspace = ".."
 petgraph = "0.6"
 serde = { version = "1.0", features = ["derive"] }
 chrono = {version="0.4.23", default-features = false, features = ["serde", "clock", "std"]}
+lol_html = "0.3.1"
+regex = "1"
 
 [dev-dependencies]
 rstest = "0.16.0"

@@ -5,13 +5,14 @@ use axum_prometheus::PrometheusMetricLayer;
 use axum_server::tls_rustls::RustlsConfig;
 use axum_server::Handle;
 use kernel::graph::{SiteGraph, SiteSection};
+use kernel::typograph;
 use serde_json::Value;
 use std::collections::HashMap;
 use std::env;
 use std::time::Duration;
 use std::{fs::File, io::BufReader};
 use std::{net::SocketAddr, path::PathBuf};
-use tera::Tera;
+use tera::{Tera, try_get_value};
 use tokio::signal;
 use tower::ServiceBuilder;
 use tower_http::classify::ServerErrorsFailureClass;
@@ -88,6 +89,8 @@ pub async fn run() {
             }
         },
     );
+
+    tera.register_filter("typograph", typograph);
 
     let app = create_routes(base_path, site_graph_clone, site_config, tera);
 
@@ -217,4 +220,9 @@ async fn shutdown_signal(handle: Handle) {
 
     println!("signal received, starting graceful shutdown");
     handle.graceful_shutdown(Some(Duration::from_secs(2)));
+}
+
+fn typograph(value: &Value, _: &HashMap<String, Value>) -> tera::Result<Value> {
+    let s = try_get_value!("typograph", "value", String, value);
+    Ok(Value::String(typograph::typograph(s)))
 }
