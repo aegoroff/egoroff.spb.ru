@@ -29,6 +29,7 @@ pub fn typograph(str: String) -> String {
                 text!("div", handler),
                 text!("span", handler),
                 text!("a", handler),
+                text!("dd", handler),
             ],
             document_content_handlers: vec![],
             ..Settings::default()
@@ -52,6 +53,7 @@ mod tests {
     #[case("<div>a - b</div>", "<div>a&nbsp;&mdash; b</div>")]
     #[case("<span>a - b</span>", "<span>a&nbsp;&mdash; b</span>")]
     #[case("<a>a - b</a>", "<a>a&nbsp;&mdash; b</a>")]
+    #[case("<dd>a - b</dd>", "<dd>a&nbsp;&mdash; b</dd>")]
     #[case("<pre>a - b</pre>", "<pre>a - b</pre>")]
     fn typograph_tests(#[case] str: &str, #[case] expected: &str) {
         // arrange
