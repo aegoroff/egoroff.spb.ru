@@ -103,9 +103,8 @@ def compile_xslt():
         xslt_root = etree.parse(stylesheet, parser)
         transform = etree.XSLT(xslt_root)
         content = transform(xml_input)
-        fout = open(os.path.join(DIR_TEMPLATES_APACHE, d["file"] + ".html"), 'wb')
-        fout.write(content)
-        fout.close()
+        with open(os.path.join(DIR_TEMPLATES_APACHE, d["file"] + ".html"), 'wb') as fout:
+            fout.write(content)
 
 
 ###############################################################################
