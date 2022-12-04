@@ -10,6 +10,9 @@ pub struct Uri {
 pub struct Navigation {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sections: Option<Vec<SiteSection>>,
+    
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub breadcrumbs: Option<Vec<SiteSection>>,
 }
 
 #[derive(Serialize, Deserialize, Default, Clone)]

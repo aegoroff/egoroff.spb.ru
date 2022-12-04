@@ -111,6 +111,29 @@ impl SiteGraph {
             format!("{path}{SEP}")
         }
     }
+
+    pub fn breadcrumbs(&self, uri: &str) -> (Vec<SiteSection>, String) {
+        let root = self.get_section("/").unwrap();
+        let mut result = vec![root];
+        let mut current = String::from(uri);
+        let _: Vec<()> = uri
+            .split('/')
+            .enumerate()
+            .filter(|(_, part)| !part.is_empty())
+            .map(|(i, part)| {
+                let section = self.get_section(part);
+                if let Some(s) = section {
+                    if self.full_path(&s.id) != uri {
+                        result.push(s);
+                    }
+                }
+                if i == 1 {
+                    current = String::from(part);
+                }
+            })
+            .collect();
+        (result, current)
+    }
 }
 
 #[cfg(test)]
@@ -165,6 +188,29 @@ mod tests {
 
         // assert
         assert!(actual.is_none());
+    }
+
+    #[rstest]
+    #[case("/a/aa/", "a", 2)]
+    #[case("/a/", "a", 1)]
+    #[case("/b/", "b", 1)]
+    #[case("/b/bb/", "b", 2)]
+    #[case("", "", 1)]
+    #[case("/", "/", 1)]
+    fn breadcrumbs_test(
+        #[case] path: &str,
+        #[case] expected_current: &str,
+        #[case] expected_nodes_count: usize,
+    ) {
+        // arrange
+        let graph = SiteGraph::new(create_test_data());
+
+        // act
+        let (nodes, current) = graph.breadcrumbs(path);
+
+        // assert
+        assert_eq!(current, expected_current);
+        assert_eq!(nodes.len(), expected_nodes_count);
     }
 
     fn create_test_data() -> SiteSection {

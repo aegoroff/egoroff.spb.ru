@@ -1,4 +1,9 @@
-use std::{collections::HashMap, fs::File, io::BufReader, path::{PathBuf, Path}};
+use std::{
+    collections::HashMap,
+    fs::File,
+    io::BufReader,
+    path::{Path, PathBuf},
+};
 
 use axum::{
     body::{Bytes, Empty, Full},
@@ -8,7 +13,7 @@ use axum::{
     Extension, Json,
 };
 use axum_extra::either::Either;
-use kernel::graph::SiteGraph;
+use kernel::graph::{SiteGraph, SiteSection};
 use rust_embed::RustEmbed;
 use tera::{Context, Tera, Value};
 
@@ -236,11 +241,16 @@ pub async fn navigation(
     extract::Query(query): extract::Query<Uri>,
     Extension(site_graph): Extension<SiteGraph>,
 ) -> impl IntoResponse {
-    let _q = &query.uri;
+    let q = query.uri;
+
+    let (breadcrumbs, current) = site_graph.breadcrumbs(&q);
+
+    let breadcrumbs = if q != "/" { Some(breadcrumbs) } else { None };
 
     match site_graph.get_section("/") {
         Some(r) => Json(Navigation {
-            sections: r.children,
+            sections: activate_section(r.children, &current),
+            breadcrumbs,
         }),
         None => Json(Navigation {
             ..Default::default()
@@ -306,4 +316,20 @@ fn apache_documents(base_path: &Path) -> Vec<crate::domain::Apache> {
     let file = File::open(config_path).unwrap();
     let reader = BufReader::new(file);
     serde_json::from_reader(reader).unwrap()
+}
+
+fn activate_section(sections: Option<Vec<SiteSection>>, current: &str) -> Option<Vec<SiteSection>> {
+    if let Some(sections) = sections {
+        Some(
+            sections
+                .into_iter()
+                .map(|mut s| {
+                    s.active = Some(s.id == current);
+                    s
+                })
+                .collect(),
+        )
+    } else {
+        sections
+    }
 }
