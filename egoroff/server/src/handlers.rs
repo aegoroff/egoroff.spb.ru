@@ -15,7 +15,7 @@ use axum::{
 use axum_extra::either::Either;
 use kernel::graph::{SiteGraph, SiteSection};
 use rust_embed::RustEmbed;
-use tera::{Context, Tera, Value};
+use tera::{Context, Tera};
 
 use crate::domain::{Config, Navigation, Poster, Uri};
 
@@ -61,6 +61,7 @@ pub async fn serve_index(
     Extension(base_path): Extension<PathBuf>,
     Extension(site_graph): Extension<SiteGraph>,
     Extension(site_config): Extension<Config>,
+    Extension(tera): Extension<Tera>,
 ) -> impl IntoResponse {
     let section = site_graph.get_section("/").unwrap();
     let mut context = Context::new();
@@ -76,13 +77,14 @@ pub async fn serve_index(
     let apache_documents = apache_documents(&base_path);
     context.insert("apache_docs", &apache_documents);
 
-    serve_page(&context, "welcome.html", base_path, site_graph)
+    serve_page(&context, "welcome.html", tera)
 }
 
 pub async fn serve_portfolio(
     Extension(base_path): Extension<PathBuf>,
     Extension(site_graph): Extension<SiteGraph>,
     Extension(site_config): Extension<Config>,
+    Extension(tera): Extension<Tera>,
 ) -> impl IntoResponse {
     let section = site_graph.get_section("portfolio").unwrap();
 
@@ -99,14 +101,14 @@ pub async fn serve_portfolio(
     let apache_documents = apache_documents(&base_path);
     context.insert("apache_docs", &apache_documents);
 
-    serve_page(&context, "portfolio/index.html", base_path, site_graph)
+    serve_page(&context, "portfolio/index.html", tera)
 }
 
 pub async fn serve_portfolio_document(
     Extension(base_path): Extension<PathBuf>,
-    Extension(site_graph): Extension<SiteGraph>,
     Extension(site_config): Extension<Config>,
     extract::Path(path): extract::Path<String>,
+    Extension(tera): Extension<Tera>,
 ) -> Either<Html<String>, (StatusCode, Empty<Bytes>)> {
     let asset = ApacheTemplates::get(&path);
     let apache_documents = apache_documents(&base_path);
@@ -135,21 +137,16 @@ pub async fn serve_portfolio_document(
     if let Some(file) = asset {
         let content = String::from_utf8_lossy(&file.data);
         context.insert("content", &content);
-        Either::E1(serve_page(
-            &context,
-            "portfolio/apache.html",
-            base_path,
-            site_graph,
-        ))
+        Either::E1(serve_page(&context, "portfolio/apache.html", tera))
     } else {
         Either::E2((StatusCode::NOT_FOUND, Empty::new()))
     }
 }
 
 pub async fn serve_blog(
-    Extension(base_path): Extension<PathBuf>,
     Extension(site_graph): Extension<SiteGraph>,
     Extension(site_config): Extension<Config>,
+    Extension(tera): Extension<Tera>,
 ) -> impl IntoResponse {
     let section = site_graph.get_section("blog").unwrap();
 
@@ -168,13 +165,13 @@ pub async fn serve_blog(
     };
     context.insert("poster", &poster);
 
-    serve_page(&context, "blog/index.html", base_path, site_graph)
+    serve_page(&context, "blog/index.html", tera)
 }
 
 pub async fn serve_search(
-    Extension(base_path): Extension<PathBuf>,
     Extension(site_graph): Extension<SiteGraph>,
     Extension(site_config): Extension<Config>,
+    Extension(tera): Extension<Tera>,
 ) -> impl IntoResponse {
     let section = site_graph.get_section("search").unwrap();
 
@@ -189,7 +186,7 @@ pub async fn serve_search(
     context.insert("ctx", "");
     context.insert("config", &site_config);
 
-    serve_page(&context, "search.html", base_path, site_graph)
+    serve_page(&context, "search.html", tera)
 }
 
 pub async fn serve_js(extract::Path(path): extract::Path<String>) -> impl IntoResponse {
@@ -258,35 +255,7 @@ pub async fn navigation(
     }
 }
 
-fn serve_page(
-    context: &Context,
-    template_name: &str,
-    base_path: PathBuf,
-    site_graph: SiteGraph,
-) -> Html<String> {
-    let templates_path = base_path.join("static/dist/**/*.html");
-    let templates_path = templates_path.to_str().unwrap();
-
-    let mut tera = match Tera::new(templates_path) {
-        Ok(t) => t,
-        Err(e) => {
-            tracing::error!("Server error: {e}");
-            return Html(format!("Parsing error(s): {:#?}", e));
-        }
-    };
-    tera.register_function(
-        "path_for",
-        move |args: &HashMap<String, Value>| -> tera::Result<Value> {
-            match args.get("id") {
-                Some(val) => match tera::from_value::<String>(val.clone()) {
-                    Ok(v) => Ok(tera::to_value(site_graph.full_path(&v)).unwrap()),
-                    Err(_) => Err("oops".into()),
-                },
-                None => Err("oops".into()),
-            }
-        },
-    );
-
+fn serve_page(context: &Context, template_name: &str, tera: Tera) -> Html<String> {
     let index = tera.render(template_name, context);
     match index {
         Ok(content) => Html(content),

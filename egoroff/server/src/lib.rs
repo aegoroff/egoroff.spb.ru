@@ -5,10 +5,13 @@ use axum_prometheus::PrometheusMetricLayer;
 use axum_server::tls_rustls::RustlsConfig;
 use axum_server::Handle;
 use kernel::graph::{SiteGraph, SiteSection};
+use serde_json::Value;
+use std::collections::HashMap;
 use std::env;
 use std::time::Duration;
 use std::{fs::File, io::BufReader};
 use std::{net::SocketAddr, path::PathBuf};
+use tera::Tera;
 use tokio::signal;
 use tower::ServiceBuilder;
 use tower_http::classify::ServerErrorsFailureClass;
@@ -60,8 +63,33 @@ pub async fn run() {
 
     let root: SiteSection = serde_json::from_reader(reader).unwrap();
     let site_graph = SiteGraph::new(root);
+    let site_graph_clone = site_graph.clone();
 
-    let app = create_routes(base_path, site_graph, site_config);
+    let templates_path = base_path.join("static/dist/**/*.html");
+    let templates_path = templates_path.to_str().unwrap();
+
+    let mut tera = match Tera::new(templates_path) {
+        Ok(t) => t,
+        Err(e) => {
+            tracing::error!("Server error: {e}");
+            return;
+        }
+    };
+
+    tera.register_function(
+        "path_for",
+        move |args: &HashMap<String, Value>| -> tera::Result<Value> {
+            match args.get("id") {
+                Some(val) => match tera::from_value::<String>(val.clone()) {
+                    Ok(v) => Ok(tera::to_value(site_graph.full_path(&v)).unwrap()),
+                    Err(_) => Err("oops".into()),
+                },
+                None => Err("oops".into()),
+            }
+        },
+    );
+
+    let app = create_routes(base_path, site_graph_clone, site_config, tera);
 
     let ports = Ports {
         http: http_port.parse().unwrap(),
@@ -115,7 +143,12 @@ async fn https_server(ports: Ports, handle: Handle, app: Router) {
         .unwrap();
 }
 
-pub fn create_routes(base_path: PathBuf, site_graph: SiteGraph, site_config: Config) -> Router {
+pub fn create_routes(
+    base_path: PathBuf,
+    site_graph: SiteGraph,
+    site_config: Config,
+    tera: Tera,
+) -> Router {
     let (prometheus_layer, metric_handle) = PrometheusMetricLayer::pair();
 
     Router::new()
@@ -155,6 +188,7 @@ pub fn create_routes(base_path: PathBuf, site_graph: SiteGraph, site_config: Con
         .layer(Extension(base_path))
         .layer(Extension(site_graph))
         .layer(Extension(site_config))
+        .layer(Extension(tera))
         .layer(prometheus_layer)
 }
 
