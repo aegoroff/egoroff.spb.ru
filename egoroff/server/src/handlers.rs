@@ -6,7 +6,7 @@ use std::{
 };
 
 use axum::{
-    body::{Bytes, Empty, Full},
+    body::{Empty, Full},
     extract,
     http::{HeaderValue, StatusCode},
     response::{Html, IntoResponse},
@@ -17,13 +17,15 @@ use kernel::graph::{SiteGraph, SiteSection};
 use rust_embed::RustEmbed;
 use tera::{Context, Tera};
 
-use crate::domain::{Config, Navigation, Poster, Uri};
+use crate::domain::{Config, Error, Navigation, Poster, Uri};
 
 #[cfg(debug_assertions)]
 const MODE: &str = "debug";
 
 #[cfg(not(debug_assertions))]
 const MODE: &str = "release";
+
+const TITLE_KEY: &str = "title";
 
 #[derive(RustEmbed)]
 #[folder = "../../static/dist/css"]
@@ -66,7 +68,7 @@ pub async fn serve_index(
     let section = site_graph.get_section("/").unwrap();
     let mut context = Context::new();
     context.insert("html_class", "welcome");
-    context.insert("title", "egoroff.spb.ru");
+    context.insert(TITLE_KEY, "egoroff.spb.ru");
     let messages: Vec<String> = Vec::new();
     context.insert("flashed_messages", &messages);
     context.insert("gin_mode", MODE);
@@ -90,7 +92,7 @@ pub async fn serve_portfolio(
 
     let mut context = Context::new();
     context.insert("html_class", "portfolio");
-    context.insert("title", &section.title);
+    context.insert(TITLE_KEY, &section.title);
     let messages: Vec<String> = Vec::new();
     context.insert("flashed_messages", &messages);
     context.insert("gin_mode", MODE);
@@ -109,7 +111,7 @@ pub async fn serve_portfolio_document(
     Extension(site_config): Extension<Config>,
     extract::Path(path): extract::Path<String>,
     Extension(tera): Extension<Tera>,
-) -> Either<Html<String>, (StatusCode, Empty<Bytes>)> {
+) -> Either<Html<String>, (StatusCode, Html<String>)> {
     let asset = ApacheTemplates::get(&path);
     let apache_documents = apache_documents(&base_path);
     let map: HashMap<&str, &crate::domain::Apache> = apache_documents
@@ -117,29 +119,32 @@ pub async fn serve_portfolio_document(
         .map(|item| (item.id.as_str(), item))
         .collect();
 
+    let mut context = Context::new();
+
+    let messages: Vec<String> = Vec::new();
+    context.insert("flashed_messages", &messages);
+    context.insert("gin_mode", MODE);
+    context.insert("html_class", "");
+    context.insert("ctx", "");
+    context.insert("config", &site_config);
+
     let doc = path.trim_end_matches(".html");
 
     let doc = match map.get(doc) {
         Some(item) => item,
-        None => return Either::E2((StatusCode::NOT_FOUND, Empty::new())),
+        None => return Either::E2((StatusCode::NOT_FOUND, make_404_page(&mut context, tera))),
     };
 
-    let mut context = Context::new();
-    context.insert("title", &doc.title);
-    let messages: Vec<String> = Vec::new();
-    context.insert("flashed_messages", &messages);
-    context.insert("gin_mode", MODE);
+    context.insert(TITLE_KEY, &doc.title);
     context.insert("keywords", &doc.keywords);
     context.insert("meta_description", &doc.description);
-    context.insert("html_class", "");
-    context.insert("ctx", "");
-    context.insert("config", &site_config);
+
     if let Some(file) = asset {
         let content = String::from_utf8_lossy(&file.data);
         context.insert("content", &content);
         Either::E1(serve_page(&context, "portfolio/apache.html", tera))
     } else {
-        Either::E2((StatusCode::NOT_FOUND, Empty::new()))
+        Either::E2((StatusCode::NOT_FOUND, make_404_page(&mut context, tera)))
     }
 }
 
@@ -152,7 +157,7 @@ pub async fn serve_blog(
 
     let mut context = Context::new();
     context.insert("html_class", "blog");
-    context.insert("title", &section.title);
+    context.insert(TITLE_KEY, &section.title);
     let messages: Vec<String> = Vec::new();
     context.insert("flashed_messages", &messages);
     context.insert("gin_mode", MODE);
@@ -177,7 +182,7 @@ pub async fn serve_search(
 
     let mut context = Context::new();
     context.insert("html_class", "search");
-    context.insert("title", &section.title);
+    context.insert(TITLE_KEY, &section.title);
     let messages: Vec<String> = Vec::new();
     context.insert("flashed_messages", &messages);
     context.insert("gin_mode", MODE);
@@ -253,6 +258,19 @@ pub async fn navigation(
             ..Default::default()
         }),
     }
+}
+
+fn make_404_page(context: &mut Context, tera: Tera) -> Html<String> {
+    let error = Error {
+        code: "404".to_string(),
+        ..Default::default()
+    };
+    if context.contains_key(TITLE_KEY) {
+        context.remove(TITLE_KEY);
+    }
+    context.insert(TITLE_KEY, "404");
+    context.insert("error", &error);
+    serve_page(context, "error.html", tera)
 }
 
 fn serve_page(context: &Context, template_name: &str, tera: Tera) -> Html<String> {

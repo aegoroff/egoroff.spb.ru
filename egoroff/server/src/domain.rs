@@ -35,3 +35,9 @@ pub struct Apache {
 pub struct Poster {
     pub small_posts: Vec<SmallPost>,
 }
+
+#[derive(Deserialize, Serialize, Default)]
+pub struct Error {
+    pub code: String,
+    pub name: String,
+}
