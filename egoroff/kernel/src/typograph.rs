@@ -1,8 +1,16 @@
+use std::{borrow::Cow, iter};
+
 use lol_html::{
-    html_content::{ContentType, TextChunk},
-    text, HtmlRewriter, Settings,
+    element,
+    html_content::{ContentType, TextChunk, TextType},
+    text, ElementContentHandlers, HtmlRewriter, Selector, Settings,
 };
 use regex::Regex;
+
+const ALLOWED_TAGS: &'static [&'static str] = &[
+    "p", "div", "span", "a", "dt", "dd", "li", "i", "b", "em", "strong", "small", "h1", "h2", "h3",
+    "h4", "h5", "h6", "td", "th",
+];
 
 pub fn typograph(str: String) -> String {
     let mut result = vec![];
@@ -18,8 +26,13 @@ pub fn typograph(str: String) -> String {
     let hellip = Regex::new(r"\.{2,}").unwrap();
     let minus_beetween_digits = Regex::new(r"(\d)-(\d)").unwrap();
 
-    let handler = |t: &mut TextChunk| {
+    let text_handler = |t: &mut TextChunk| {
+        if t.text_type() != TextType::Data {
+            return Ok(());
+        }
+
         let original = t.as_str().to_string();
+
         let replace = spaces.replace_all(&original, "$1 -$2");
         let replace = plusmn.replace_all(&replace, "&plusmn;");
         let replace = nbsp.replace_all(&replace, "&nbsp;&mdash;$3");
@@ -31,30 +44,24 @@ pub fn typograph(str: String) -> String {
         Ok(())
     };
 
+    let element_handler: (Cow<Selector>, ElementContentHandlers) = element!("*", |e| {
+        e.on_end_tag(|_end| {
+            Ok(())
+        })
+        .unwrap();
+
+        Ok(())
+    });
+
+    let handlers: Vec<(Cow<Selector>, ElementContentHandlers)> = ALLOWED_TAGS
+        .iter()
+        .map(|t| text!(*t, text_handler))
+        .chain(iter::once(element_handler))
+        .collect();
+
     let mut rewriter = HtmlRewriter::new(
         Settings {
-            element_content_handlers: vec![
-                text!("p", handler),
-                text!("div", handler),
-                text!("span", handler),
-                text!("a", handler),
-                text!("dt", handler),
-                text!("dd", handler),
-                text!("li", handler),
-                text!("i", handler),
-                text!("b", handler),
-                text!("em", handler),
-                text!("strong", handler),
-                text!("h1", handler),
-                text!("h2", handler),
-                text!("h3", handler),
-                text!("h4", handler),
-                text!("h5", handler),
-                text!("h6", handler),
-                text!("td", handler),
-                text!("th", handler),
-                text!("small", handler),
-            ],
+            element_content_handlers: handlers,
             ..Settings::default()
         },
         output_sink,
@@ -74,6 +81,14 @@ mod tests {
     #[rstest]
     #[case("<p>a - b</p>", "<p>a&nbsp;&mdash; b</p>")]
     // TODO: #[case("<div>a - b<code>c - d</code>e - f</div>", "<div>a&nbsp;&mdash; b<code>c - d</code>e&nbsp;&mdash; f</div>")]
+    #[case(
+        "<div>a - b<code><![CDATA[c - d]]></code>e - f</div>",
+        "<div>a&nbsp;&mdash; b<code><![CDATA[c - d]]></code>e&nbsp;&mdash; f</div>"
+    )]
+    #[case(
+        "<div>a - b<script>c - d</script>e - f</div>",
+        "<div>a&nbsp;&mdash; b<script>c - d</script>e&nbsp;&mdash; f</div>"
+    )]
     #[case("<p>a - b c - d</p>", "<p>a&nbsp;&mdash; b c&nbsp;&mdash; d</p>")]
     #[case("<p>- b</p>", "<p>&mdash; b</p>")]
     #[case("<p>- b..</p>", "<p>&mdash; b&hellip;</p>")]
@@ -100,8 +115,14 @@ mod tests {
     #[case("<small>a - b</small>", "<small>a&nbsp;&mdash; b</small>")]
     #[case("<strong>a - b</strong>", "<strong>a&nbsp;&mdash; b</strong>")]
     #[case("<pre>a - b</pre>", "<pre>a - b</pre>")]
-    #[case("<i>a - b</i> <b>c - d</b>", "<i>a&nbsp;&mdash; b</i> <b>c&nbsp;&mdash; d</b>")]
-    #[case("<i>a - b</i> <b>c -- d</b>", "<i>a&nbsp;&mdash; b</i> <b>c&nbsp;&mdash; d</b>")]
+    #[case(
+        "<i>a - b</i> <b>c - d</b>",
+        "<i>a&nbsp;&mdash; b</i> <b>c&nbsp;&mdash; d</b>"
+    )]
+    #[case(
+        "<i>a - b</i> <b>c -- d</b>",
+        "<i>a&nbsp;&mdash; b</i> <b>c&nbsp;&mdash; d</b>"
+    )]
     fn typograph_tests(#[case] str: &str, #[case] expected: &str) {
         // arrange
 
