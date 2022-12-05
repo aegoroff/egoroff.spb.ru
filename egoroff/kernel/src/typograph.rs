@@ -8,7 +8,7 @@ use lol_html::{
 };
 use regex::Regex;
 
-const ALLOWED_TAGS: &'static [&'static str] = &[
+const ALLOWED_TAGS: &[&str] = &[
     "p", "div", "span", "a", "dt", "dd", "li", "i", "b", "em", "strong", "small", "h1", "h2", "h3",
     "h4", "h5", "h6", "td", "th",
 ];
@@ -56,13 +56,16 @@ pub fn typograph(str: String) -> String {
     };
 
     let element_handler: (Cow<Selector>, ElementContentHandlers) = element!("*", |e| {
-        stack.borrow_mut().push(e.tag_name().clone());
+        stack.borrow_mut().push(e.tag_name());
+        let to_use_if_err = stack.clone();
         let stack = stack.clone();
-        e.on_end_tag(move |_end| {
+        let end_tag_handler = e.on_end_tag(move |_end| {
             stack.borrow_mut().pop();
             Ok(())
-        })
-        .unwrap();
+        });
+        if end_tag_handler.is_err() {
+            to_use_if_err.borrow_mut().pop();
+        }
 
         Ok(())
     });
@@ -94,9 +97,14 @@ mod tests {
 
     #[rstest]
     #[case("<p>a - b</p>", "<p>a&nbsp;&mdash; b</p>")]
+    #[case("<p>a - b</p><br/>", "<p>a&nbsp;&mdash; b</p><br/>")]
     #[case(
         "<div>a - b<code>c - d</code>e - f</div>",
         "<div>a&nbsp;&mdash; b<code>c - d</code>e&nbsp;&mdash; f</div>"
+    )]
+    #[case(
+        "<div>a - b<br/><code>c - d</code>e - f</div>",
+        "<div>a&nbsp;&mdash; b<br/><code>c - d</code>e&nbsp;&mdash; f</div>"
     )]
     #[case(
         "<div>a - b<code><![CDATA[c - d]]></code>e - f</div>",
