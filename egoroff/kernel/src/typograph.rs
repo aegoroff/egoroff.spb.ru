@@ -53,6 +53,7 @@ pub fn typograph(str: String) -> String {
                 text!("h6", handler),
                 text!("td", handler),
                 text!("th", handler),
+                text!("small", handler),
             ],
             ..Settings::default()
         },
@@ -95,6 +96,7 @@ mod tests {
     #[case("<h4>a - b</h4>", "<h4>a&nbsp;&mdash; b</h4>")]
     #[case("<h5>a - b</h5>", "<h5>a&nbsp;&mdash; b</h5>")]
     #[case("<h6>a - b</h6>", "<h6>a&nbsp;&mdash; b</h6>")]
+    #[case("<small>a - b</small>", "<small>a&nbsp;&mdash; b</small>")]
     #[case("<strong>a - b</strong>", "<strong>a&nbsp;&mdash; b</strong>")]
     #[case("<pre>a - b</pre>", "<pre>a - b</pre>")]
     #[case("<i>a - b</i> <b>c - d</b>", "<i>a&nbsp;&mdash; b</i> <b>c&nbsp;&mdash; d</b>")]
