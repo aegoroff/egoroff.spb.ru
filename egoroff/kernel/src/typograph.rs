@@ -7,16 +7,25 @@ use regex::Regex;
 pub fn typograph(str: String) -> String {
     let mut result = vec![];
 
-    // Use stdout as an output sink for the rewriter
     let output_sink = |c: &[u8]| {
         result.extend(c);
     };
 
+    let spaces = Regex::new(r"(\w)-(\s+)").unwrap();
+    let plusmn = Regex::new(r"\+-").unwrap();
     let nbsp = Regex::new(r"(\s+)(--?|—|-)(\s|\u00a0)").unwrap();
+    let mdash = Regex::new(r"(^)(--?|—|-)(\s|\u00a0)").unwrap();
+    let hellip = Regex::new(r"\.{2,}").unwrap();
+    let minus_beetween_digits = Regex::new(r"(\d)-(\d)").unwrap();
 
     let handler = |t: &mut TextChunk| {
         let original = t.as_str().to_string();
-        let replace = nbsp.replace_all(&original, "&nbsp;&mdash;$3");
+        let replace = spaces.replace_all(&original, "$1 -$2");
+        let replace = plusmn.replace_all(&replace, "&plusmn;");
+        let replace = nbsp.replace_all(&replace, "&nbsp;&mdash;$3");
+        let replace = mdash.replace_all(&replace, "&mdash;$3");
+        let replace = hellip.replace_all(&replace, "&hellip;");
+        let replace = minus_beetween_digits.replace_all(&replace, "$1&minus;$2");
         t.replace(&replace, ContentType::Html);
 
         Ok(())
@@ -50,6 +59,12 @@ mod tests {
 
     #[rstest]
     #[case("<p>a - b</p>", "<p>a&nbsp;&mdash; b</p>")]
+    #[case("<p>a - b c - d</p>", "<p>a&nbsp;&mdash; b c&nbsp;&mdash; d</p>")]
+    #[case("<p>- b</p>", "<p>&mdash; b</p>")]
+    #[case("<p>- b..</p>", "<p>&mdash; b&hellip;</p>")]
+    #[case("<p>- b 1-2</p>", "<p>&mdash; b 1&minus;2</p>")]
+    #[case("<p>a- b</p>", "<p>a&nbsp;&mdash; b</p>")]
+    #[case("<p>a- b+-</p>", "<p>a&nbsp;&mdash; b&plusmn;</p>")]
     #[case("<div>a - b</div>", "<div>a&nbsp;&mdash; b</div>")]
     #[case("<span>a - b</span>", "<span>a&nbsp;&mdash; b</span>")]
     #[case("<a>a - b</a>", "<a>a&nbsp;&mdash; b</a>")]
