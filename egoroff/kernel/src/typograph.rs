@@ -73,6 +73,7 @@ mod tests {
 
     #[rstest]
     #[case("<p>a - b</p>", "<p>a&nbsp;&mdash; b</p>")]
+    // TODO: #[case("<div>a - b<code>c - d</code>e - f</div>", "<div>a&nbsp;&mdash; b<code>c - d</code>e&nbsp;&mdash; f</div>")]
     #[case("<p>a - b c - d</p>", "<p>a&nbsp;&mdash; b c&nbsp;&mdash; d</p>")]
     #[case("<p>- b</p>", "<p>&mdash; b</p>")]
     #[case("<p>- b..</p>", "<p>&mdash; b&hellip;</p>")]
