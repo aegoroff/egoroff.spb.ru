@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::{borrow::Cow, iter};
 
 use lol_html::{
@@ -26,9 +27,19 @@ pub fn typograph(str: String) -> String {
     let hellip = Regex::new(r"\.{2,}").unwrap();
     let minus_beetween_digits = Regex::new(r"(\d)-(\d)").unwrap();
 
+    let stack = std::rc::Rc::new(std::cell::RefCell::new(Vec::<String>::new()));
+
+    let allowed: HashSet<&&str> = ALLOWED_TAGS.iter().collect();
+
     let text_handler = |t: &mut TextChunk| {
         if t.text_type() != TextType::Data {
             return Ok(());
+        }
+
+        if let Some(t) = stack.borrow().last() {
+            if !allowed.contains(&t.as_str()) {
+                return Ok(());
+            }
         }
 
         let original = t.as_str().to_string();
@@ -45,7 +56,10 @@ pub fn typograph(str: String) -> String {
     };
 
     let element_handler: (Cow<Selector>, ElementContentHandlers) = element!("*", |e| {
-        e.on_end_tag(|_end| {
+        stack.borrow_mut().push(e.tag_name().clone());
+        let stack = stack.clone();
+        e.on_end_tag(move |_end| {
+            stack.borrow_mut().pop();
             Ok(())
         })
         .unwrap();
@@ -80,7 +94,10 @@ mod tests {
 
     #[rstest]
     #[case("<p>a - b</p>", "<p>a&nbsp;&mdash; b</p>")]
-    // TODO: #[case("<div>a - b<code>c - d</code>e - f</div>", "<div>a&nbsp;&mdash; b<code>c - d</code>e&nbsp;&mdash; f</div>")]
+    #[case(
+        "<div>a - b<code>c - d</code>e - f</div>",
+        "<div>a&nbsp;&mdash; b<code>c - d</code>e&nbsp;&mdash; f</div>"
+    )]
     #[case(
         "<div>a - b<code><![CDATA[c - d]]></code>e - f</div>",
         "<div>a&nbsp;&mdash; b<code><![CDATA[c - d]]></code>e&nbsp;&mdash; f</div>"
