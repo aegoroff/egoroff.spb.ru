@@ -6,7 +6,7 @@ use lol_html::{
     html_content::{ContentType, TextChunk, TextType},
     text, ElementContentHandlers, HtmlRewriter, Selector, Settings,
 };
-use regex::Regex;
+use fancy_regex::Regex;
 
 const ALLOWED_TAGS: &[&str] = &[
     "p", "div", "span", "a", "dt", "dd", "li", "i", "b", "em", "strong", "small", "h1", "h2", "h3",
@@ -26,6 +26,8 @@ pub fn typograph(str: String) -> String {
     let mdash = Regex::new(r"(^)(--?|—|-)(\s|\u00a0)").unwrap();
     let hellip = Regex::new(r"\.{2,}").unwrap();
     let minus_beetween_digits = Regex::new(r"(\d)-(\d)").unwrap();
+    let open_quote = Regex::new(r#"["»](?=\S)"#).unwrap();
+    let close_quote = Regex::new(r#"(?<=\S)["«]"#).unwrap();
 
     let stack = std::rc::Rc::new(std::cell::RefCell::new(Vec::<String>::new()));
 
@@ -50,6 +52,8 @@ pub fn typograph(str: String) -> String {
         let replace = mdash.replace_all(&replace, "&mdash;$3");
         let replace = hellip.replace_all(&replace, "&hellip;");
         let replace = minus_beetween_digits.replace_all(&replace, "$1&minus;$2");
+        let replace = open_quote.replace_all(&replace, "«");
+        let replace = close_quote.replace_all(&replace, "»");
         t.replace(&replace, ContentType::Html);
 
         Ok(())
@@ -148,6 +152,9 @@ mod tests {
         "<i>a - b</i> <b>c -- d</b>",
         "<i>a&nbsp;&mdash; b</i> <b>c&nbsp;&mdash; d</b>"
     )]
+    #[case("<p>test \"a\"bc</p>", "<p>test «a»bc</p>")]
+    #[case("<p>URL \"/\". </p>", "<p>URL «/». </p>")]
+    #[case("<p>test \"a - b\"cd</p>", "<p>test «a&nbsp;&mdash; b»cd</p>")]
     fn typograph_tests(#[case] str: &str, #[case] expected: &str) {
         // arrange
 

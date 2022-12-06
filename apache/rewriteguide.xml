@@ -154,7 +154,7 @@ RewriteRule ^/(.*)         http://fully.qualified.domain.name/$1 [L,R]
 
         <dd>
           <p>Обычно <directive module="core">DocumentRoot</directive> вебсервера в 
-        точности совпадает с URL "<code>/</code>". 
+        точности совпадает с URL "/". 
         Однако часто <directive module="core">DocumentRoot</directive> выше по иерархии
         нежели чем URL "/" и в одном <directive module="core">DocumentRoot</directive> 
         могут располагаться несколько сайтов. 
