@@ -13,5 +13,9 @@ chrono = {version="0.4.23", default-features = false, features = ["serde", "cloc
 lol_html = "0.3.1"
 regex = "1"
 
+[dependencies.rusqlite]
+version = "0.28"
+features = ["bundled", "chrono"]
+
 [dev-dependencies]
 rstest = "0.16.0"

@@ -29,3 +29,13 @@ pub struct Post {
     #[serde(rename(deserialize = "Tags"))]
     pub tags: Vec<String>,
 }
+
+pub trait Storage {
+    type Err;
+
+    fn new_database(&self) -> Result<(), Self::Err>;
+    fn get_small_posts(&self, limit: i64, offset: i64) -> Result<Vec<SmallPost>, Self::Err>;
+    fn get_post(&self, id: i64) -> Result<Post, Self::Err>;
+    fn upsert_post(&mut self, post: Post) -> Result<(), Self::Err>;
+    fn delete_post(&mut self, id: i64) -> Result<(), Self::Err>;
+}
