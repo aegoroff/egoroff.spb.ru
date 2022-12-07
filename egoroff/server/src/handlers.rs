@@ -173,6 +173,30 @@ pub async fn serve_blog(
     serve_page(&context, "blog/index.html", tera)
 }
 
+pub async fn serve_blog_page(
+    Extension(site_graph): Extension<SiteGraph>,
+    Extension(site_config): Extension<Config>,
+    Extension(tera): Extension<Tera>,
+    extract::Path(path): extract::Path<String>,
+) -> impl IntoResponse {
+    let section = site_graph.get_section("blog").unwrap();
+
+    let mut context = Context::new();
+    context.insert("html_class", "blog");
+    context.insert(TITLE_KEY, &section.title);
+    let messages: Vec<String> = Vec::new();
+    context.insert("flashed_messages", &messages);
+    context.insert("gin_mode", MODE);
+    context.insert("keywords", &section.keywords);
+    context.insert("meta_description", &section.descr);
+    context.insert("ctx", "");
+    context.insert("config", &site_config);
+
+    tracing::info!("Not implemented so far: {path}");
+
+    (StatusCode::NOT_FOUND, make_404_page(&mut context, tera))
+}
+
 pub async fn serve_search(
     Extension(site_graph): Extension<SiteGraph>,
     Extension(site_config): Extension<Config>,
