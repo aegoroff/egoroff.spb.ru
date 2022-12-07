@@ -23,6 +23,11 @@ func NewPostsAdaptor() *DatastoreAdaptor {
 	return NewDatastoreAdaptor(q)
 }
 
+func NewAllPostsAdaptor() *DatastoreAdaptor {
+	q := datastore.NewQuery("Post").Order("-created")
+	return NewDatastoreAdaptor(q)
+}
+
 func (a *DatastoreAdaptor) Nums() (int64, error) {
 	c, err := a.conn.Connect()
 	if err != nil {

@@ -3,7 +3,6 @@ package db
 import (
 	"cloud.google.com/go/datastore"
 	"context"
-	"database/sql"
 	"egoroff.spb.ru/app/domain"
 	"egoroff.spb.ru/app/lib"
 	"log"
@@ -152,24 +151,6 @@ func (r *Repository) PostKeys() []*datastore.Key {
 	}
 
 	return keys
-}
-
-func (r *Repository) ExportPosts() {
-	err := r.query(func(c *datastore.Client, ctx context.Context) error {
-		q := datastore.NewQuery("Post")
-		var posts []*domain.Post
-		_, err := c.GetAll(ctx, q, &posts)
-		if err != nil {
-			return err
-		}
-		db, err := sql.Open("sqlite3", "egoroff.db")
-		_, err = db.Exec("insert into products (model, company, price) values ('iPhone X', $1, $2)",
-			"Apple", 72000)
-		return nil
-	})
-	if err != nil {
-		log.Println(err)
-	}
 }
 
 func (r *Repository) Folders() []*domain.Folder {

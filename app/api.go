@@ -43,6 +43,7 @@ func (a *api) Route(r *gin.Engine) {
 		b := ap.Group("/blog")
 		{
 			b.GET("/posts/", a.posts)
+			b.GET("/all/", a.allPosts)
 			b.GET("/archive/", a.archive)
 		}
 		adm := ap.Group("/admin").Use(auth.OnlyAdmin())
@@ -207,6 +208,26 @@ func (a *api) rawPosts(c *gin.Context) {
 		Status: "success",
 		Count:  len(posts),
 		Page:   int(page),
+		Pages:  poster.PageNums(),
+		Now:    time.Now(),
+		Result: posts,
+	})
+}
+
+func (a *api) allPosts(c *gin.Context) {
+	adaptor := db.NewAllPostsAdaptor()
+	poster := db.NewCustomPoster(adaptor, 1000)
+	poster.SetPage(1)
+
+	posts := poster.Posts()
+	for _, post := range posts {
+		post.Id = post.Key.ID
+	}
+
+	c.JSON(http.StatusOK, ApiResult{
+		Status: "success",
+		Count:  len(posts),
+		Page:   1,
 		Pages:  poster.PageNums(),
 		Now:    time.Now(),
 		Result: posts,
