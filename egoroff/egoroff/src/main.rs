@@ -1,4 +1,4 @@
-use clap::{Command, command, crate_name};
+use clap::{command, crate_name, Command, arg};
 
 mod cli;
 
@@ -9,8 +9,15 @@ async fn main() {
         .about(clap::crate_description!())
         .subcommand(Command::new(cli::VERSION_SUBCOMMAND).about(cli::VERSION_DESCRIPTION))
         .subcommand(
-            Command::new(cli::SERVER_SUBCOMMAND).about(cli::SERVER_DESCRIPTION),
+            Command::new(cli::MIGRATE_SUBCOMMAND)
+                .about(cli::MIGRATE_DESCRIPTION)
+                .arg(
+                    arg!(-u --uri <URI>)
+                        .required(true)
+                        .help("All posts URI"),
+                ),
         )
+        .subcommand(Command::new(cli::SERVER_SUBCOMMAND).about(cli::SERVER_DESCRIPTION))
         .arg_required_else_help(true)
         .disable_version_flag(true)
         .get_matches();
@@ -19,5 +26,7 @@ async fn main() {
         cli::version::run();
     } else if let Some(server_matches) = cli.subcommand_matches(cli::SERVER_SUBCOMMAND) {
         cli::server::run(server_matches).await;
+    } else if let Some(migrate_matches) = cli.subcommand_matches(cli::MIGRATE_SUBCOMMAND) {
+        cli::migrate::run(migrate_matches).await;
     }
 }
