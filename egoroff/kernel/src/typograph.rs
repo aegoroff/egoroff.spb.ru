@@ -1,4 +1,6 @@
+use std::cell::RefCell;
 use std::collections::HashSet;
+use std::rc::Rc;
 use std::{borrow::Cow, iter};
 
 use lol_html::{
@@ -29,7 +31,7 @@ pub fn typograph(str: String) -> String {
     let open_quote = Regex::new(r#"["»](\S)"#).unwrap();
     let close_quote = Regex::new(r#"(\S)["«]"#).unwrap();
 
-    let stack = std::rc::Rc::new(std::cell::RefCell::new(Vec::<String>::new()));
+    let stack = Rc::new(RefCell::new(Vec::<String>::new()));
 
     let allowed: HashSet<&&str> = ALLOWED_TAGS.iter().collect();
 
