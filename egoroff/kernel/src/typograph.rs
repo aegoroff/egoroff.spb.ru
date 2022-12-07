@@ -6,7 +6,7 @@ use lol_html::{
     html_content::{ContentType, TextChunk, TextType},
     text, ElementContentHandlers, HtmlRewriter, Selector, Settings,
 };
-use fancy_regex::Regex;
+use regex::Regex;
 
 const ALLOWED_TAGS: &[&str] = &[
     "p", "div", "span", "a", "dt", "dd", "li", "i", "b", "em", "strong", "small", "h1", "h2", "h3",
@@ -26,8 +26,8 @@ pub fn typograph(str: String) -> String {
     let mdash = Regex::new(r"(^)(--?|—|-)(\s|\u00a0)").unwrap();
     let hellip = Regex::new(r"\.{2,}").unwrap();
     let minus_beetween_digits = Regex::new(r"(\d)-(\d)").unwrap();
-    let open_quote = Regex::new(r#"["»](?=\S)"#).unwrap();
-    let close_quote = Regex::new(r#"(?<=\S)["«]"#).unwrap();
+    let open_quote = Regex::new(r#"["»](\S)"#).unwrap();
+    let close_quote = Regex::new(r#"(\S)["«]"#).unwrap();
 
     let stack = std::rc::Rc::new(std::cell::RefCell::new(Vec::<String>::new()));
 
@@ -52,8 +52,8 @@ pub fn typograph(str: String) -> String {
         let replace = mdash.replace_all(&replace, "&mdash;$3");
         let replace = hellip.replace_all(&replace, "&hellip;");
         let replace = minus_beetween_digits.replace_all(&replace, "$1&minus;$2");
-        let replace = open_quote.replace_all(&replace, "«");
-        let replace = close_quote.replace_all(&replace, "»");
+        let replace = open_quote.replace_all(&replace, "«$1");
+        let replace = close_quote.replace_all(&replace, "$1»");
         t.replace(&replace, ContentType::Html);
 
         Ok(())
