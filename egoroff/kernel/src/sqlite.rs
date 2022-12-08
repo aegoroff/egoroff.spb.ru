@@ -34,6 +34,11 @@ impl Storage for Sqlite {
         )?;
 
         self.conn.execute(
+            "CREATE INDEX created_ix ON post(created)",
+            [],
+        )?;
+
+        self.conn.execute(
             "CREATE TABLE post_tag (
                   post_id              INTEGER NOT NULL,
                   tag                  TEXT NOT NULL,
