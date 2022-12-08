@@ -9,6 +9,8 @@ pub enum Mode {
     ReadOnly,
 }
 
+pub const DATABASE: &str = "egoroff.db";
+
 pub struct Sqlite {
     conn: Connection,
 }
@@ -27,7 +29,7 @@ impl Storage for Sqlite {
                   text            TEXT NOT NULL,
                   markdown        INTEGER,
                   is_public       INTEGER,
-                  created         INTEGER NOT NULL
+                  created         INTEGER NOT NULL,
                   modified        INTEGER NOT NULL
                   )",
             [],
@@ -39,17 +41,19 @@ impl Storage for Sqlite {
         )?;
 
         self.conn.execute(
-            "CREATE TABLE post_tag (
-                  post_id              INTEGER NOT NULL,
-                  tag                  TEXT NOT NULL,
-                  PRIMARY KEY (post_id, tag)
+            "CREATE TABLE tag (
+                   tag           TEXT PRIMARY KEY
                   )",
             [],
         )?;
 
         self.conn.execute(
-            "CREATE TABLE tag (
-                  title           TEXT PRIMARY KEY
+            "CREATE TABLE post_tag (
+                  post_id              INTEGER NOT NULL,
+                  tag                  TEXT NOT NULL,
+                  PRIMARY KEY (post_id, tag)
+                  FOREIGN KEY(post_id) REFERENCES post(id)
+                  FOREIGN KEY(tag) REFERENCES tag(tag)
                   )",
             [],
         )?;
@@ -90,13 +94,32 @@ impl Sqlite {
     }
 
     fn upsert_post(tx: &Transaction, p: &Post) -> usize {
-        tx.prepare_cached(
+        let result = tx.prepare_cached(
             "INSERT INTO post (id, title, short_text, text, created, modified, is_public, markdown) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
-                ON CONFLICT(id) DO UPDATE SET title=?2, short_text=?3, text=?4, created=?5, modified=?6, is_piblic=?7, markdown=?8",
+                ON CONFLICT(id) DO UPDATE SET title=?2, short_text=?3, text=?4, created=?5, modified=?6, is_public=?7, markdown=?8",
         )
         .unwrap()
         .execute(params![p.id, p.title, p.short_text, p.text, p.created.timestamp(), p.modified.timestamp(), p.is_public, p.markdown])
-        .unwrap_or_default()
+        .unwrap_or_default();
+
+        let mut tag_statement = tx.prepare_cached(
+            "INSERT INTO tag (tag) VALUES (?1)
+                ON CONFLICT(tag) DO UPDATE SET tag=?1",
+        )
+        .unwrap();
+        
+        let mut post_tag_statement = tx.prepare_cached(
+            "INSERT INTO post_tag (post_id, tag) VALUES (?1, ?2)
+                ON CONFLICT(post_id, tag) DO UPDATE SET post_id=?1, tag=?2",
+        )
+        .unwrap();
+
+        for t in p.tags.iter() {
+            tag_statement.execute(params![t]).unwrap_or_default();
+            post_tag_statement.execute(params![p.id, t]).unwrap_or_default();
+        }
+
+        result
     }
 
     fn upsert<T>(

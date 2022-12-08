@@ -1,4 +1,5 @@
 use chrono::{DateTime, Utc};
+use std::fmt::{Debug, Display};
 
 #[derive(Debug, Default, Clone, Deserialize, Serialize)]
 pub struct SmallPost {
@@ -31,7 +32,7 @@ pub struct Post {
 }
 
 pub trait Storage {
-    type Err;
+    type Err : Debug + Display;
 
     fn new_database(&self) -> Result<(), Self::Err>;
     fn get_small_posts(&self, limit: i64, offset: i64) -> Result<Vec<SmallPost>, Self::Err>;

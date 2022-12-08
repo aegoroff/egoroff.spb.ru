@@ -15,6 +15,11 @@ async fn main() {
                     arg!(-u --uri <URI>)
                         .required(true)
                         .help("All posts URI"),
+                )
+                .arg(
+                    arg!(-d --dbpath <DBPATH>)
+                        .required(true)
+                        .help("Database directory path"),
                 ),
         )
         .subcommand(Command::new(cli::SERVER_SUBCOMMAND).about(cli::SERVER_DESCRIPTION))
