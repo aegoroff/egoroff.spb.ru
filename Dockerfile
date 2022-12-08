@@ -29,6 +29,7 @@ RUN ls -lah /apache
 COPY templates/apache/ /templates/apache/
 RUN ls -lah /templates/apache
 COPY egoroff/kernel/ ./kernel/
+COPY egoroff/migrate/ ./migrate/
 COPY egoroff/server/ ./server/
 COPY egoroff/egoroff/ ./egoroff/
 COPY egoroff/Cargo.toml ./
@@ -40,6 +41,7 @@ FROM gcr.io/distroless/cc-debian11:latest
 ENV EGOROFF_HTTP_PORT=4200
 ENV EGOROFF_HTTPS_PORT=4201
 ENV EGOROFF_CERT_DIR=/data/certs
+ENV EGOROFF_DATA_DIR=/data/data
 ENV EGOROFF_HOME_DIR=/
 COPY --from=rust-build /apache/config.json /apache/
 COPY --from=rust-build /static /static

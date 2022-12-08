@@ -1,8 +1,9 @@
 use std::path::Path;
 
+use chrono::{NaiveDateTime, DateTime, Utc};
 use rusqlite::{params, Connection, Error, ErrorCode, OpenFlags, Transaction};
 
-use crate::domain::{Post, Storage};
+use crate::domain::{Post, Storage, SmallPost};
 
 pub enum Mode {
     ReadWrite,
@@ -63,10 +64,29 @@ impl Storage for Sqlite {
 
     fn get_small_posts(
         &self,
-        _limit: i64,
-        _offset: i64,
+        limit: i64,
+        offset: i64,
     ) -> Result<Vec<crate::domain::SmallPost>, Self::Err> {
-        todo!()
+        self.enable_foreign_keys()?;
+
+        let mut stmt = self.conn.prepare("SELECT id, title, created, short_text, markdown \
+                                                       FROM post ORDER BY created DESC LIMIT ?1 OFFSET ?2")?;
+        let files = stmt.query_map([limit, offset], |row| {
+            let registered: i64 = row.get(2)?;
+            let datetime = NaiveDateTime::from_timestamp_opt(registered, 0).unwrap_or(NaiveDateTime::MIN);
+            let created = DateTime::<Utc>::from_utc(datetime, Utc);
+
+            let post = SmallPost {
+                id: row.get(0)?,
+                title: row.get(1)?,
+                created,
+                short_text: row.get(3)?,
+                markdown: row.get(4)?,
+            };
+            Ok(post)
+        })?;
+
+        Ok(files.filter_map(|r| r.ok()).collect())
     }
 
     fn get_post(&self, _id: i64) -> Result<crate::domain::Post, Self::Err> {
@@ -138,6 +158,10 @@ impl Sqlite {
 
             Ok(result)
         })
+    }
+
+    fn enable_foreign_keys(&self) -> Result<(), Error> {
+        self.pragma_update("foreign_keys", "ON")
     }
 
     fn pragma_update(&self, name: &str, value: &str) -> Result<(), Error> {

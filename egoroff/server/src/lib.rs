@@ -4,6 +4,7 @@ use axum::{routing::get, Router};
 use axum_prometheus::PrometheusMetricLayer;
 use axum_server::tls_rustls::RustlsConfig;
 use axum_server::Handle;
+use domain::PageContext;
 use kernel::graph::{SiteGraph, SiteSection};
 use kernel::typograph;
 use serde_json::Value;
@@ -12,7 +13,7 @@ use std::env;
 use std::time::Duration;
 use std::{fs::File, io::BufReader};
 use std::{net::SocketAddr, path::PathBuf};
-use tera::{Tera, try_get_value};
+use tera::{try_get_value, Tera};
 use tokio::signal;
 use tower::ServiceBuilder;
 use tower_http::classify::ServerErrorsFailureClass;
@@ -53,6 +54,13 @@ pub async fn run() {
     };
     tracing::debug!("Base path {}", base_path.to_str().unwrap());
 
+    let data_path = if let Ok(d) = env::var("EGOROFF_DATA_DIR") {
+        PathBuf::from(d)
+    } else {
+        std::env::current_dir().unwrap()
+    };
+    tracing::debug!("Data path {}", data_path.to_str().unwrap());
+
     let config_path = base_path.join("static/config.json");
     let file = File::open(config_path).unwrap();
     let reader = BufReader::new(file);
@@ -92,7 +100,7 @@ pub async fn run() {
 
     tera.register_filter("typograph", typograph);
 
-    let app = create_routes(base_path, site_graph_clone, site_config, tera);
+    let app = create_routes(base_path, site_graph_clone, site_config, tera, data_path);
 
     let ports = Ports {
         http: http_port.parse().unwrap(),
@@ -151,8 +159,19 @@ pub fn create_routes(
     site_graph: SiteGraph,
     site_config: Config,
     tera: Tera,
+    data_path: PathBuf,
 ) -> Router {
     let (prometheus_layer, metric_handle) = PrometheusMetricLayer::pair();
+
+    let storage_path = data_path.join(kernel::sqlite::DATABASE);
+
+    let page_context = PageContext {
+        base_path,
+        storage_path,
+        tera,
+        site_graph,
+        site_config,
+    };
 
     Router::new()
         .route("/", get(handlers::serve_index))
@@ -189,10 +208,7 @@ pub fn create_routes(
         )
         .layer(DefaultBodyLimit::disable())
         .layer(RequestBodyLimitLayer::new(20 * 1024 * 1024))
-        .layer(Extension(base_path))
-        .layer(Extension(site_graph))
-        .layer(Extension(site_config))
-        .layer(Extension(tera))
+        .layer(Extension(page_context))
         .layer(prometheus_layer)
 }
 

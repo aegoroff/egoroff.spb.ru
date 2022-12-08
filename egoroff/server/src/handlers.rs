@@ -13,11 +13,15 @@ use axum::{
     Extension, Json,
 };
 use axum_extra::either::Either;
-use kernel::graph::{SiteGraph, SiteSection};
+use kernel::{
+    domain::Storage,
+    graph::SiteSection,
+    sqlite::{Mode, Sqlite},
+};
 use rust_embed::RustEmbed;
 use tera::{Context, Tera};
 
-use crate::domain::{Config, Error, Navigation, Poster, Uri};
+use crate::domain::{Error, Navigation, PageContext, Poster, Uri};
 
 #[cfg(debug_assertions)]
 const MODE: &str = "debug";
@@ -59,13 +63,11 @@ struct Apache;
 #[folder = "../../templates/apache"]
 struct ApacheTemplates;
 
-pub async fn serve_index(
-    Extension(base_path): Extension<PathBuf>,
-    Extension(site_graph): Extension<SiteGraph>,
-    Extension(site_config): Extension<Config>,
-    Extension(tera): Extension<Tera>,
-) -> impl IntoResponse {
-    let section = site_graph.get_section("/").unwrap();
+pub async fn serve_index(Extension(page_context): Extension<PageContext>) -> impl IntoResponse {
+    let storage = Sqlite::open(page_context.storage_path, Mode::ReadOnly).unwrap();
+    let posts = storage.get_small_posts(5, 0).unwrap();
+
+    let section = page_context.site_graph.get_section("/").unwrap();
     let mut context = Context::new();
     context.insert("html_class", "welcome");
     context.insert(TITLE_KEY, "egoroff.spb.ru");
@@ -74,21 +76,17 @@ pub async fn serve_index(
     context.insert("gin_mode", MODE);
     context.insert("keywords", &section.keywords);
     context.insert("meta_description", &section.descr);
-    context.insert("config", &site_config);
+    context.insert("config", &page_context.site_config);
     context.insert("ctx", "");
-    let apache_documents = apache_documents(&base_path);
+    let apache_documents = apache_documents(&page_context.base_path);
     context.insert("apache_docs", &apache_documents);
+    context.insert("posts", &posts);
 
-    serve_page(&context, "welcome.html", tera)
+    serve_page(&context, "welcome.html", page_context.tera)
 }
 
-pub async fn serve_portfolio(
-    Extension(base_path): Extension<PathBuf>,
-    Extension(site_graph): Extension<SiteGraph>,
-    Extension(site_config): Extension<Config>,
-    Extension(tera): Extension<Tera>,
-) -> impl IntoResponse {
-    let section = site_graph.get_section("portfolio").unwrap();
+pub async fn serve_portfolio(Extension(page_context): Extension<PageContext>) -> impl IntoResponse {
+    let section = page_context.site_graph.get_section("portfolio").unwrap();
 
     let mut context = Context::new();
     context.insert("html_class", "portfolio");
@@ -98,22 +96,20 @@ pub async fn serve_portfolio(
     context.insert("gin_mode", MODE);
     context.insert("keywords", &section.keywords);
     context.insert("meta_description", &section.descr);
-    context.insert("config", &site_config);
+    context.insert("config", &page_context.site_config);
     context.insert("ctx", "");
-    let apache_documents = apache_documents(&base_path);
+    let apache_documents = apache_documents(&page_context.base_path);
     context.insert("apache_docs", &apache_documents);
 
-    serve_page(&context, "portfolio/index.html", tera)
+    serve_page(&context, "portfolio/index.html", page_context.tera)
 }
 
 pub async fn serve_portfolio_document(
-    Extension(base_path): Extension<PathBuf>,
-    Extension(site_config): Extension<Config>,
+    Extension(page_context): Extension<PageContext>,
     extract::Path(path): extract::Path<String>,
-    Extension(tera): Extension<Tera>,
 ) -> Either<Html<String>, (StatusCode, Html<String>)> {
     let asset = ApacheTemplates::get(&path);
-    let apache_documents = apache_documents(&base_path);
+    let apache_documents = apache_documents(&page_context.base_path);
     let map: HashMap<&str, &crate::domain::Apache> = apache_documents
         .iter()
         .map(|item| (item.id.as_str(), item))
@@ -126,13 +122,18 @@ pub async fn serve_portfolio_document(
     context.insert("gin_mode", MODE);
     context.insert("html_class", "");
     context.insert("ctx", "");
-    context.insert("config", &site_config);
+    context.insert("config", &page_context.site_config);
 
     let doc = path.trim_end_matches(".html");
 
     let doc = match map.get(doc) {
         Some(item) => item,
-        None => return Either::E2((StatusCode::NOT_FOUND, make_404_page(&mut context, tera))),
+        None => {
+            return Either::E2((
+                StatusCode::NOT_FOUND,
+                make_404_page(&mut context, page_context.tera),
+            ))
+        }
     };
 
     context.insert(TITLE_KEY, &doc.title);
@@ -142,18 +143,23 @@ pub async fn serve_portfolio_document(
     if let Some(file) = asset {
         let content = String::from_utf8_lossy(&file.data);
         context.insert("content", &content);
-        Either::E1(serve_page(&context, "portfolio/apache.html", tera))
+        Either::E1(serve_page(
+            &context,
+            "portfolio/apache.html",
+            page_context.tera,
+        ))
     } else {
-        Either::E2((StatusCode::NOT_FOUND, make_404_page(&mut context, tera)))
+        Either::E2((
+            StatusCode::NOT_FOUND,
+            make_404_page(&mut context, page_context.tera),
+        ))
     }
 }
 
-pub async fn serve_blog(
-    Extension(site_graph): Extension<SiteGraph>,
-    Extension(site_config): Extension<Config>,
-    Extension(tera): Extension<Tera>,
-) -> impl IntoResponse {
-    let section = site_graph.get_section("blog").unwrap();
+pub async fn serve_blog(Extension(page_context): Extension<PageContext>) -> impl IntoResponse {
+    let section = page_context.site_graph.get_section("blog").unwrap();
+    let storage = Sqlite::open(page_context.storage_path, Mode::ReadOnly).unwrap();
+    let posts = storage.get_small_posts(20, 0).unwrap();
 
     let mut context = Context::new();
     context.insert("html_class", "blog");
@@ -164,22 +170,18 @@ pub async fn serve_blog(
     context.insert("keywords", &section.keywords);
     context.insert("meta_description", &section.descr);
     context.insert("ctx", "");
-    context.insert("config", &site_config);
-    let poster = Poster {
-        small_posts: vec![],
-    };
+    context.insert("config", &page_context.site_config);
+    let poster = Poster { small_posts: posts };
     context.insert("poster", &poster);
 
-    serve_page(&context, "blog/index.html", tera)
+    serve_page(&context, "blog/index.html", page_context.tera)
 }
 
 pub async fn serve_blog_page(
-    Extension(site_graph): Extension<SiteGraph>,
-    Extension(site_config): Extension<Config>,
-    Extension(tera): Extension<Tera>,
+    Extension(page_context): Extension<PageContext>,
     extract::Path(path): extract::Path<String>,
 ) -> impl IntoResponse {
-    let section = site_graph.get_section("blog").unwrap();
+    let section = page_context.site_graph.get_section("blog").unwrap();
 
     let mut context = Context::new();
     context.insert("html_class", "blog");
@@ -190,19 +192,18 @@ pub async fn serve_blog_page(
     context.insert("keywords", &section.keywords);
     context.insert("meta_description", &section.descr);
     context.insert("ctx", "");
-    context.insert("config", &site_config);
+    context.insert("config", &page_context.site_config);
 
     tracing::info!("Not implemented so far: {path}");
 
-    (StatusCode::NOT_FOUND, make_404_page(&mut context, tera))
+    (
+        StatusCode::NOT_FOUND,
+        make_404_page(&mut context, page_context.tera),
+    )
 }
 
-pub async fn serve_search(
-    Extension(site_graph): Extension<SiteGraph>,
-    Extension(site_config): Extension<Config>,
-    Extension(tera): Extension<Tera>,
-) -> impl IntoResponse {
-    let section = site_graph.get_section("search").unwrap();
+pub async fn serve_search(Extension(page_context): Extension<PageContext>) -> impl IntoResponse {
+    let section = page_context.site_graph.get_section("search").unwrap();
 
     let mut context = Context::new();
     context.insert("html_class", "search");
@@ -213,9 +214,9 @@ pub async fn serve_search(
     context.insert("keywords", &section.keywords);
     context.insert("meta_description", &section.descr);
     context.insert("ctx", "");
-    context.insert("config", &site_config);
+    context.insert("config", &page_context.site_config);
 
-    serve_page(&context, "search.html", tera)
+    serve_page(&context, "search.html", page_context.tera)
 }
 
 pub async fn serve_js(extract::Path(path): extract::Path<String>) -> impl IntoResponse {
@@ -265,15 +266,15 @@ pub async fn serve_apache_images(extract::Path(path): extract::Path<String>) -> 
 // otherwise a 400 Bad Request error response is returned
 pub async fn navigation(
     extract::Query(query): extract::Query<Uri>,
-    Extension(site_graph): Extension<SiteGraph>,
+    Extension(page_context): Extension<PageContext>,
 ) -> impl IntoResponse {
     let q = query.uri;
 
-    let (breadcrumbs, current) = site_graph.breadcrumbs(&q);
+    let (breadcrumbs, current) = page_context.site_graph.breadcrumbs(&q);
 
     let breadcrumbs = if q != "/" { Some(breadcrumbs) } else { None };
 
-    match site_graph.get_section("/") {
+    match page_context.site_graph.get_section("/") {
         Some(r) => Json(Navigation {
             sections: activate_section(r.children, &current),
             breadcrumbs,

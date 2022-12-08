@@ -1,5 +1,8 @@
-use kernel::{graph::SiteSection, domain::SmallPost};
+use std::path::PathBuf;
+
+use kernel::{graph::{SiteSection, SiteGraph}, domain::SmallPost};
 use serde::{Deserialize, Serialize};
+use tera::Tera;
 
 #[derive(Deserialize)]
 pub struct Uri {
@@ -20,6 +23,15 @@ pub struct Config {
     pub search_api_key: String,
     pub google_site_id: String,
     pub analytics_id: String,
+}
+
+#[derive(Clone)]
+pub struct PageContext {
+    pub base_path: PathBuf,
+    pub storage_path: PathBuf,
+    pub tera: Tera,
+    pub site_graph: SiteGraph,
+    pub site_config: Config,
 }
 
 #[derive(Serialize, Deserialize, Default, Clone)]
