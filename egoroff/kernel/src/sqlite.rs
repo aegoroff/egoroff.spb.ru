@@ -1,9 +1,9 @@
 use std::path::Path;
 
-use chrono::{NaiveDateTime, DateTime, Utc};
+use chrono::{DateTime, NaiveDateTime, Utc};
 use rusqlite::{params, Connection, Error, ErrorCode, OpenFlags, Transaction};
 
-use crate::domain::{Post, Storage, SmallPost};
+use crate::domain::{Post, SmallPost, Storage};
 
 pub enum Mode {
     ReadWrite,
@@ -36,10 +36,8 @@ impl Storage for Sqlite {
             [],
         )?;
 
-        self.conn.execute(
-            "CREATE INDEX created_ix ON post(created)",
-            [],
-        )?;
+        self.conn
+            .execute("CREATE INDEX created_ix ON post(created)", [])?;
 
         self.conn.execute(
             "CREATE TABLE tag (
@@ -72,8 +70,9 @@ impl Storage for Sqlite {
         let mut stmt = self.conn.prepare("SELECT id, title, created, short_text, markdown \
                                                        FROM post ORDER BY created DESC LIMIT ?1 OFFSET ?2")?;
         let files = stmt.query_map([limit, offset], |row| {
-            let registered: i64 = row.get(2)?;
-            let datetime = NaiveDateTime::from_timestamp_opt(registered, 0).unwrap_or(NaiveDateTime::MIN);
+            let created: i64 = row.get(2)?;
+            let datetime =
+                NaiveDateTime::from_timestamp_opt(created, 0).unwrap_or(NaiveDateTime::MIN);
             let created = DateTime::<Utc>::from_utc(datetime, Utc);
 
             let post = SmallPost {
@@ -89,8 +88,44 @@ impl Storage for Sqlite {
         Ok(files.filter_map(|r| r.ok()).collect())
     }
 
-    fn get_post(&self, _id: i64) -> Result<crate::domain::Post, Self::Err> {
-        todo!()
+    fn get_post(&self, id: i64) -> Result<crate::domain::Post, Self::Err> {
+        let mut stmt = self
+            .conn
+            .prepare("SELECT tag FROM post_tag WHERE post_id = ?1")?;
+        let tags = stmt.query_map([id], |row| {
+            let tag = row.get(0)?;
+            Ok(tag)
+        })?;
+
+        let mut stmt = self
+            .conn
+            .prepare("SELECT title, created, short_text, markdown, text, is_public, modified FROM post WHERE id=?1")?;
+        let post: Post = stmt.query_row([id], |row| {
+            let created: i64 = row.get(1)?;
+            let modified: i64 = row.get(6)?;
+            let created_datetime =
+                NaiveDateTime::from_timestamp_opt(created, 0).unwrap_or(NaiveDateTime::MIN);
+            let modified_datetime =
+                NaiveDateTime::from_timestamp_opt(modified, 0).unwrap_or(NaiveDateTime::MIN);
+            let created = DateTime::<Utc>::from_utc(created_datetime, Utc);
+            let modified = DateTime::<Utc>::from_utc(modified_datetime, Utc);
+
+            let post = Post {
+                created,
+                modified,
+                id,
+                title: row.get(0)?,
+                short_text: row.get(2)?,
+                text: row.get(4)?,
+                markdown: row.get(3)?,
+                is_public: row.get(5)?,
+                tags: tags.filter_map(|r| r.ok()).collect(),
+            };
+
+            Ok(post)
+        })?;
+
+        Ok(post)
     }
 
     fn upsert_post(&mut self, post: crate::domain::Post) -> Result<(), Self::Err> {
@@ -122,21 +157,25 @@ impl Sqlite {
         .execute(params![p.id, p.title, p.short_text, p.text, p.created.timestamp(), p.modified.timestamp(), p.is_public, p.markdown])
         .unwrap_or_default();
 
-        let mut tag_statement = tx.prepare_cached(
-            "INSERT INTO tag (tag) VALUES (?1)
+        let mut tag_statement = tx
+            .prepare_cached(
+                "INSERT INTO tag (tag) VALUES (?1)
                 ON CONFLICT(tag) DO UPDATE SET tag=?1",
-        )
-        .unwrap();
-        
-        let mut post_tag_statement = tx.prepare_cached(
-            "INSERT INTO post_tag (post_id, tag) VALUES (?1, ?2)
+            )
+            .unwrap();
+
+        let mut post_tag_statement = tx
+            .prepare_cached(
+                "INSERT INTO post_tag (post_id, tag) VALUES (?1, ?2)
                 ON CONFLICT(post_id, tag) DO UPDATE SET post_id=?1, tag=?2",
-        )
-        .unwrap();
+            )
+            .unwrap();
 
         for t in p.tags.iter() {
             tag_statement.execute(params![t]).unwrap_or_default();
-            post_tag_statement.execute(params![p.id, t]).unwrap_or_default();
+            post_tag_statement
+                .execute(params![p.id, t])
+                .unwrap_or_default();
         }
 
         result

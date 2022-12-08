@@ -180,26 +180,53 @@ pub async fn serve_blog(Extension(page_context): Extension<PageContext>) -> impl
 pub async fn serve_blog_page(
     Extension(page_context): Extension<PageContext>,
     extract::Path(path): extract::Path<String>,
-) -> impl IntoResponse {
-    let section = page_context.site_graph.get_section("blog").unwrap();
-
+) -> Either<Html<String>, (StatusCode, Html<String>)> {
     let mut context = Context::new();
     context.insert("html_class", "blog");
-    context.insert(TITLE_KEY, &section.title);
     let messages: Vec<String> = Vec::new();
     context.insert("flashed_messages", &messages);
     context.insert("gin_mode", MODE);
-    context.insert("keywords", &section.keywords);
-    context.insert("meta_description", &section.descr);
     context.insert("ctx", "");
     context.insert("config", &page_context.site_config);
 
-    tracing::info!("Not implemented so far: {path}");
+    let doc = path.trim_end_matches(".html");
 
-    (
-        StatusCode::NOT_FOUND,
-        make_404_page(&mut context, page_context.tera),
-    )
+    let id: i64 = match doc.parse() {
+        Ok(item) => item,
+        Err(e) => {
+            tracing::error!("Invalid post id: {e:#?}");
+            return Either::E2((
+                StatusCode::NOT_FOUND,
+                make_404_page(&mut context, page_context.tera),
+            ));
+        }
+    };
+
+    let storage = Sqlite::open(page_context.storage_path, Mode::ReadOnly).unwrap();
+
+    let post = match storage.get_post(id) {
+        Ok(item) => item,
+        Err(e) => {
+            tracing::error!("Post not found: {e:#?}");
+            return Either::E2((
+                StatusCode::NOT_FOUND,
+                make_404_page(&mut context, page_context.tera),
+            ));
+        }
+    };
+
+    context.insert(TITLE_KEY, &post.title);
+
+    let keywords = post
+        .tags
+        .iter()
+        .fold(String::new(), |acc, t| acc + "," + t);
+
+    context.insert("keywords", &keywords);
+    context.insert("main_post", &post);
+    context.insert("content", &post.text);
+
+    Either::E1(serve_page(&context, "blog/post.html", page_context.tera))
 }
 
 pub async fn serve_search(Extension(page_context): Extension<PageContext>) -> impl IntoResponse {
