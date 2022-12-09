@@ -76,6 +76,11 @@ pub fn xml2html(input: String) -> String {
 
                 assert!(writer.write_event(Event::End(elem)).is_ok());
             }
+            Ok(Event::CData(e)) => {
+                let escaped = e.escape().unwrap();
+                let evt = Event::Text(escaped);
+                assert!(writer.write_event(evt).is_ok());
+            }
             Ok(Event::Eof) => break,
             // we can either move or borrow the event to write, depending on your use-case
             Ok(e) => assert!(writer.write_event(e).is_ok()),
@@ -105,6 +110,10 @@ mod tests {
     #[case(
         "<?xml version=\"1.0\"?><example>test</example>",
         "<?xml version=\"1.0\"?><pre>test</pre>"
+    )]
+    #[case(
+        "<?xml version=\"1.0\"?><example><![CDATA[<p>test</p>]]></example>",
+        "<?xml version=\"1.0\"?><pre>&lt;p&gt;test&lt;/p&gt;</pre>"
     )]
     #[case(
         "<?xml version=\"1.0\"?><example class=\"lang-rust\">test</example>",
