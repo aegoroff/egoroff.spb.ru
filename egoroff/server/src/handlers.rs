@@ -16,7 +16,7 @@ use axum_extra::either::Either;
 use kernel::{
     domain::Storage,
     graph::SiteSection,
-    sqlite::{Mode, Sqlite},
+    sqlite::{Mode, Sqlite}, converter::xml2html,
 };
 use rust_embed::RustEmbed;
 use tera::{Context, Tera};
@@ -224,7 +224,9 @@ pub async fn serve_blog_page(
 
     context.insert("keywords", &keywords);
     context.insert("main_post", &post);
-    context.insert("content", &post.text);
+
+    let content = xml2html(post.text);
+    context.insert("content", &content);
 
     Either::E1(serve_page(&context, "blog/post.html", page_context.tera))
 }
