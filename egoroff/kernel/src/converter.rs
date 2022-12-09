@@ -17,6 +17,8 @@ const REPLACES: &[(&[u8], &str)] = &[
     (b"div2", "3"),
     (b"div3", "4"),
     (b"head", "h"),
+    (b"table", "table"),
+    (b"acronym", "acronym"),
 ];
 
 const PARENTS: &[&[u8]] = &[b"div1", b"div2", b"div3"];
@@ -49,6 +51,13 @@ pub fn xml2html(input: String) -> String {
                 };
 
                 elem.extend_attributes(e.attributes().map(|attr| attr.unwrap()));
+
+                if *replace == "table" {
+                    elem.push_attribute(("class", "table table-condensed table-striped"));
+                }
+                if *replace == "acronym" {
+                    elem.push_attribute(("class", "initialism"));
+                }
 
                 assert!(writer.write_event(Event::Start(elem)).is_ok());
             }
@@ -120,6 +129,14 @@ mod tests {
     #[case(
         "<?xml version=\"1.0\"?><div3><head>test</head><p>b</p></div3>",
         "<?xml version=\"1.0\"?><h4>test</h4><p>b</p>"
+    )]
+    #[case(
+        "<?xml version=\"1.0\"?><table><tr><td>test</td></tr></table>",
+        "<?xml version=\"1.0\"?><table class=\"table table-condensed table-striped\"><tr><td>test</td></tr></table>"
+    )]
+    #[case(
+        "<?xml version=\"1.0\"?><acronym>test</acronym>",
+        "<?xml version=\"1.0\"?><acronym class=\"initialism\">test</acronym>"
     )]
     fn converter_tests(#[case] str: &str, #[case] expected: &str) {
         // arrange
