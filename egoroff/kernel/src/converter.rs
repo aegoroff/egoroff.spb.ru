@@ -1,6 +1,7 @@
 use std::{
     collections::{HashMap, HashSet},
     io::Cursor,
+    str,
 };
 
 use quick_xml::{
@@ -30,7 +31,7 @@ pub fn xml2html(input: String) -> String {
     let mut reader = Reader::from_str(&input);
     let mut writer = Writer::new(Cursor::new(Vec::new()));
 
-    let parents: HashSet<&[u8]> = PARENTS.iter().map(|i| *i).collect();
+    let parents: HashSet<&[u8]> = PARENTS.iter().copied().collect();
     let replaces: HashMap<&[u8], &str> = REPLACES.iter().map(|(k, v)| (*k, *v)).collect();
 
     let mut parent = String::new();
@@ -50,7 +51,29 @@ pub fn xml2html(input: String) -> String {
                     BytesStart::new(*replace)
                 };
 
-                elem.extend_attributes(e.attributes().map(|attr| attr.unwrap()));
+                let original_attributes = e.attributes().filter_map(|attr| attr.ok());
+                if *replace == "a" {
+                    let mut href = String::new();
+                    original_attributes.for_each(|a| {
+                        let attr = a.key.local_name();
+                        let id = str::from_utf8(attr.as_ref()).unwrap_or("");
+                        let val = str::from_utf8(a.value.as_ref()).unwrap_or("");
+                        href = match id {
+                            "id" => match val {
+                                "1" | "53" | "62" => "/portfolio/".to_string(),
+                                "2" => "/blog/".to_string(),
+                                _ => "/".to_string(),
+                            },
+                            "hame" => format!("/blog/{}.html", val),
+                            _ => "".to_string(),
+                        };
+                    });
+                    if !href.is_empty() {
+                        elem.push_attribute(("href", href.as_str()));
+                    }
+                } else {
+                    elem.extend_attributes(original_attributes);
+                }
 
                 if *replace == "table" {
                     elem.push_attribute(("class", "table table-condensed table-striped"));
@@ -146,6 +169,30 @@ mod tests {
     #[case(
         "<?xml version=\"1.0\"?><acronym>test</acronym>",
         "<?xml version=\"1.0\"?><acronym class=\"initialism\">test</acronym>"
+    )]
+    #[case(
+        "<?xml version=\"1.0\"?><link id=\"3\">test</link>",
+        "<?xml version=\"1.0\"?><a href=\"/\">test</a>"
+    )]
+    #[case(
+        "<?xml version=\"1.0\"?><link id=\"2\">test</link>",
+        "<?xml version=\"1.0\"?><a href=\"/blog/\">test</a>"
+    )]
+    #[case(
+        "<?xml version=\"1.0\"?><link hame=\"2\">test</link>",
+        "<?xml version=\"1.0\"?><a href=\"/blog/2.html\">test</a>"
+    )]
+    #[case(
+        "<?xml version=\"1.0\"?><link id=\"1\">test</link>",
+        "<?xml version=\"1.0\"?><a href=\"/portfolio/\">test</a>"
+    )]
+    #[case(
+        "<?xml version=\"1.0\"?><link id=\"53\">test</link>",
+        "<?xml version=\"1.0\"?><a href=\"/portfolio/\">test</a>"
+    )]
+    #[case(
+        "<?xml version=\"1.0\"?><link id=\"62\">test</link>",
+        "<?xml version=\"1.0\"?><a href=\"/portfolio/\">test</a>"
     )]
     fn converter_tests(#[case] str: &str, #[case] expected: &str) {
         // arrange
