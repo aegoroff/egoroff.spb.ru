@@ -1,4 +1,7 @@
-use std::{collections::HashMap, io::Cursor};
+use std::{
+    collections::{HashMap, HashSet},
+    io::Cursor,
+};
 
 use quick_xml::{
     events::{BytesEnd, BytesStart, Event},
@@ -10,11 +13,13 @@ const REPLACES: &[(&[u8], &str)] = &[
     (b"quote", "blockquote"),
     (b"link", "a"),
     (b"center", "div"),
-    // ("div1", "2"),
-    // ("div2", "3"),
-    // ("div3", "4"),
-    // ("head", "h"),
+    (b"div1", "2"),
+    (b"div2", "3"),
+    (b"div3", "4"),
+    (b"head", "h"),
 ];
+
+const PARENTS: &[&[u8]] = &[b"div1", b"div2", b"div3"];
 
 pub fn xml2html(input: String) -> String {
     if !input.starts_with("<?xml version=\"1.0\"?>") {
@@ -23,21 +28,43 @@ pub fn xml2html(input: String) -> String {
     let mut reader = Reader::from_str(&input);
     let mut writer = Writer::new(Cursor::new(Vec::new()));
 
+    let parents: HashSet<&[u8]> = PARENTS.iter().map(|i| *i).collect();
     let replaces: HashMap<&[u8], &str> = REPLACES.iter().map(|(k, v)| (*k, *v)).collect();
 
+    let mut parent = String::new();
     loop {
         match reader.read_event() {
             Ok(Event::Start(e)) if replaces.contains_key(e.name().as_ref()) => {
                 let replace = replaces.get(e.name().as_ref()).unwrap();
-                let mut elem = BytesStart::new(*replace);
+                if parents.contains(e.name().as_ref()) {
+                    parent = String::from(*replace);
+                    continue;
+                }
+
+                let mut elem = if *replace == "h" {
+                    let new_tag = String::from("h");
+                    BytesStart::new(new_tag + &parent)
+                } else {
+                    BytesStart::new(*replace)
+                };
 
                 elem.extend_attributes(e.attributes().map(|attr| attr.unwrap()));
 
                 assert!(writer.write_event(Event::Start(elem)).is_ok());
             }
             Ok(Event::End(e)) if replaces.contains_key(e.name().as_ref()) => {
+                if parents.contains(e.name().as_ref()) {
+                    continue;
+                }
+
                 let replace = replaces.get(e.name().as_ref()).unwrap();
-                let elem = BytesEnd::new(*replace);
+                let elem = if *replace == "h" {
+                    let new_tag = String::from("h");
+                    BytesEnd::new(new_tag + &parent)
+                } else {
+                    BytesEnd::new(*replace)
+                };
+
                 assert!(writer.write_event(Event::End(elem)).is_ok());
             }
             Ok(Event::Eof) => break,
@@ -81,6 +108,18 @@ mod tests {
     #[case(
         "<?xml version=\"1.0\"?><link>test</link>",
         "<?xml version=\"1.0\"?><a>test</a>"
+    )]
+    #[case(
+        "<?xml version=\"1.0\"?><div1><head>test</head><p>b</p></div1>",
+        "<?xml version=\"1.0\"?><h2>test</h2><p>b</p>"
+    )]
+    #[case(
+        "<?xml version=\"1.0\"?><div2><head>test</head><p>b</p></div2>",
+        "<?xml version=\"1.0\"?><h3>test</h3><p>b</p>"
+    )]
+    #[case(
+        "<?xml version=\"1.0\"?><div3><head>test</head><p>b</p></div3>",
+        "<?xml version=\"1.0\"?><h4>test</h4><p>b</p>"
     )]
     fn converter_tests(#[case] str: &str, #[case] expected: &str) {
         // arrange
