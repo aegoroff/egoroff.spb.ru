@@ -88,19 +88,6 @@ pub async fn serve_index(Extension(page_context): Extension<PageContext>) -> imp
     serve_page(&context, "welcome.html", page_context.tera)
 }
 
-fn update_short_text(posts: Vec<SmallPost>) -> Vec<SmallPost> {
-    let posts: Vec<SmallPost> = posts
-        .into_iter()
-        .map(|mut x| {
-            if x.markdown {
-                x.short_text = markdown2html(x.short_text)
-            }
-            x
-        })
-        .collect();
-    posts
-}
-
 pub async fn serve_portfolio(Extension(page_context): Extension<PageContext>) -> impl IntoResponse {
     let section = page_context.site_graph.get_section("portfolio").unwrap();
 
@@ -298,7 +285,7 @@ pub async fn serve_blog_page(
 
     context.insert(TITLE_KEY, &post.title);
 
-    let keywords = post.tags.iter().fold(String::new(), |acc, t| acc + "," + t);
+    let keywords = post.tags.join(",");
 
     context.insert("keywords", &keywords);
     context.insert("main_post", &post);
@@ -394,6 +381,19 @@ pub async fn navigation(
             ..Default::default()
         }),
     }
+}
+
+fn update_short_text(posts: Vec<SmallPost>) -> Vec<SmallPost> {
+    let posts: Vec<SmallPost> = posts
+        .into_iter()
+        .map(|mut x| {
+            if x.markdown {
+                x.short_text = markdown2html(x.short_text)
+            }
+            x
+        })
+        .collect();
+    posts
 }
 
 fn make_404_page(context: &mut Context, tera: Tera) -> Html<String> {
