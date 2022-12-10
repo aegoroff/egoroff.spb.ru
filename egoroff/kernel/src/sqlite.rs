@@ -62,13 +62,13 @@ impl Storage for Sqlite {
 
     fn get_small_posts(
         &self,
-        limit: i64,
-        offset: i64,
+        limit: i32,
+        offset: i32,
     ) -> Result<Vec<crate::domain::SmallPost>, Self::Err> {
         self.enable_foreign_keys()?;
 
         let mut stmt = self.conn.prepare("SELECT id, title, created, short_text, markdown \
-                                                       FROM post ORDER BY created DESC LIMIT ?1 OFFSET ?2")?;
+                                                       FROM post WHERE is_public = 1 ORDER BY created DESC LIMIT ?1 OFFSET ?2")?;
         let files = stmt.query_map([limit, offset], |row| {
             let created: i64 = row.get(2)?;
             let datetime =
@@ -136,6 +136,13 @@ impl Storage for Sqlite {
 
     fn delete_post(&mut self, _id: i64) -> Result<(), Self::Err> {
         todo!()
+    }
+
+    fn count_posts(&self) -> Result<i32, Self::Err> {
+        let mut stmt = self
+            .conn
+            .prepare("SELECT COUNT(1) FROM post WHERE is_public = 1")?;
+        stmt.query_row([], |row| row.get(0))
     }
 }
 

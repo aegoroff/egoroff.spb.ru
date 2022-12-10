@@ -185,7 +185,9 @@ pub fn create_routes(
             "/portfolio/portfolio/:path",
             get(handlers::serve_portfolio_document),
         )
-        .route("/blog/", get(handlers::serve_blog))
+        .route("/blog/", get(handlers::serve_blog_default))
+        .route("/blog/page/:page", get(handlers::serve_blog_not_default_page))
+        .route("/blog/page/:page/", get(handlers::serve_blog_not_default_page))
         .route("/blog/:path", get(handlers::serve_blog_page))
         .route("/search/", get(handlers::serve_search))
         .route("/:path", get(handlers::serve_root))

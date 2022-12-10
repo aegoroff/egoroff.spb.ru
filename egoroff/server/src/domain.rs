@@ -10,6 +10,11 @@ pub struct Uri {
 }
 
 #[derive(Deserialize, Serialize, Default)]
+pub struct BlogRequest {
+    pub tag: Option<String>,
+}
+
+#[derive(Deserialize, Serialize, Default)]
 pub struct Navigation {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sections: Option<Vec<SiteSection>>,

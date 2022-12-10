@@ -1,6 +1,6 @@
 {% if poster.has_pages %}
 <!--noindex-->
-    {% if "tag" in request.args %}
+    {% if request.tag %}
         {% set tag_query = "?tag=" %}
     {% else %}
         {% set tag_query = "" %}
@@ -14,7 +14,7 @@
             {% if poster.prev_page == 1 %}
                 {% set href = tag_query %}
             {% else %}
-                {% set href = "page/" %}
+            {% set href = poster.prev_page ~ "/" ~ tag_query %}
             {% endif %}
         {% else %}
             {% set li_class = "disabled" %}
@@ -40,7 +40,7 @@
 
         {% if poster.has_next %}
             {% set li_class = "" %}
-            {% set href = poster.next_page %}
+            {% set href = poster.next_page ~ "/" ~ tag_query %}
         {% else %}
             {% set li_class = "disabled" %}
             {% set href = "#" %}

@@ -22,7 +22,7 @@ use kernel::{
 use rust_embed::RustEmbed;
 use tera::{Context, Tera};
 
-use crate::domain::{Error, Navigation, PageContext, Poster, Uri};
+use crate::domain::{BlogRequest, Error, Navigation, PageContext, Poster, Uri};
 
 #[cfg(debug_assertions)]
 const MODE: &str = "debug";
@@ -157,34 +157,89 @@ pub async fn serve_portfolio_document(
     }
 }
 
-pub async fn serve_blog(Extension(page_context): Extension<PageContext>) -> impl IntoResponse {
-    let section = page_context.site_graph.get_section("blog").unwrap();
-    let storage = Sqlite::open(page_context.storage_path, Mode::ReadOnly).unwrap();
-    let posts = storage.get_small_posts(20, 0).unwrap();
+pub async fn serve_blog_default(
+    axum::extract::Query(request): axum::extract::Query<BlogRequest>,
+    Extension(page_context): Extension<PageContext>,
+) -> Either<Html<String>, (StatusCode, Html<String>)> {
+    serve_blog_index(request, page_context, None)
+}
 
+pub async fn serve_blog_not_default_page(
+    axum::extract::Query(request): axum::extract::Query<BlogRequest>,
+    Extension(page_context): Extension<PageContext>,
+    extract::Path(page): extract::Path<String>,
+) -> Either<Html<String>, (StatusCode, Html<String>)> {
+    serve_blog_index(request, page_context, Some(page))
+}
+
+fn serve_blog_index(
+    request: BlogRequest,
+    page_context: PageContext,
+    page: Option<String>,
+) -> Either<Html<String>, (StatusCode, Html<String>)> {
     let mut context = Context::new();
     context.insert("html_class", "blog");
-    context.insert(TITLE_KEY, &section.title);
-    let messages: Vec<String> = Vec::new();
-    context.insert("flashed_messages", &messages);
     context.insert("gin_mode", MODE);
-    context.insert("keywords", &section.keywords);
-    context.insert("meta_description", &section.descr);
     context.insert("ctx", "");
     context.insert("config", &page_context.site_config);
+    let messages: Vec<String> = Vec::new();
+    context.insert("flashed_messages", &messages);
+
+    let page = if let Some(page) = page {
+        match page.parse() {
+            Ok(item) => item,
+            Err(e) => {
+                tracing::error!("Invalid page: {e:#?}");
+                return Either::E2((
+                    StatusCode::NOT_FOUND,
+                    make_404_page(&mut context, page_context.tera),
+                ));
+            }
+        }
+    } else {
+        1
+    };
+
+    let page_size = 20;
+    let section = page_context.site_graph.get_section("blog").unwrap();
+    let storage = Sqlite::open(page_context.storage_path, Mode::ReadOnly).unwrap();
+    let posts = storage
+        .get_small_posts(page_size, page_size * (page - 1))
+        .unwrap();
+    let count = storage.count_posts().unwrap();
+
+    let pages_count = count / page_size + count % page_size;
+    let pages: Vec<i32> = (1..=pages_count).collect();
+
+    let title = if page != 1 {
+        format!("{page}-я страница")
+    } else {
+        section.title
+    };
+
+    context.insert(TITLE_KEY, &title);
+    context.insert("keywords", &section.keywords);
+    context.insert("meta_description", &section.descr);    
+    context.insert("request", &request);
+    let prev_page = if page == 1 { 1 } else { page - 1 };
+    let next_page = if page == pages_count {
+        pages_count
+    } else {
+        page + 1
+    };
     let poster = Poster {
         small_posts: posts,
-        has_pages: true,
-        has_prev: false,
-        has_next: true,
-        page: 1,
-        prev_page: 1,
-        next_page: 2,
-        pages: Vec::new(),
+        has_pages: pages_count > 0,
+        has_prev: page > 1,
+        has_next: page < pages_count,
+        page,
+        prev_page,
+        next_page,
+        pages,
     };
     context.insert("poster", &poster);
 
-    serve_page(&context, "blog/index.html", page_context.tera)
+    Either::E1(serve_page(&context, "blog/index.html", page_context.tera))
 }
 
 pub async fn serve_blog_page(
