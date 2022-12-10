@@ -1,9 +1,11 @@
 use std::{
     collections::{HashMap, HashSet},
     io::Cursor,
-    str,
+    str, borrow::Cow,
 };
 
+use lol_html::{HtmlRewriter, Settings, Selector, ElementContentHandlers, element};
+use pulldown_cmark::{html, Options, Parser};
 use quick_xml::{
     events::{BytesEnd, BytesStart, Event},
     Reader, Writer,
@@ -113,6 +115,43 @@ pub fn xml2html(input: String) -> String {
     }
 
     let result = writer.into_inner().into_inner();
+    String::from_utf8(result).unwrap()
+}
+
+pub fn markdown2html(input: String) -> String {
+    let mut options = Options::empty();
+    options.insert(
+        Options::ENABLE_STRIKETHROUGH
+            | Options::ENABLE_TABLES
+            | Options::ENABLE_HEADING_ATTRIBUTES
+            | Options::ENABLE_TASKLISTS,
+    );
+    let parser = Parser::new_ext(&input, options);
+    let mut html = String::new();
+    html::push_html(&mut html, parser);
+
+    let mut result = vec![];
+
+    let output_sink = |c: &[u8]| {
+        result.extend(c);
+    };
+
+    let table_handler: (Cow<Selector>, ElementContentHandlers) = element!("table", |e| {
+        e.set_attribute("class", "table table-condensed table-striped").unwrap_or_default();
+        Ok(())
+    });
+
+    let mut rewriter = HtmlRewriter::new(
+        Settings {
+            element_content_handlers: vec![table_handler],
+            ..Settings::default()
+        },
+        output_sink,
+    );
+
+    rewriter.write(html.as_bytes()).unwrap();
+    rewriter.end().unwrap();
+
     String::from_utf8(result).unwrap()
 }
 

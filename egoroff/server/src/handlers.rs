@@ -14,8 +14,8 @@ use axum::{
 };
 use axum_extra::either::Either;
 use kernel::{
-    converter::xml2html,
-    domain::Storage,
+    converter::{markdown2html, xml2html},
+    domain::{SmallPost, Storage},
     graph::SiteSection,
     sqlite::{Mode, Sqlite},
 };
@@ -66,7 +66,9 @@ struct ApacheTemplates;
 
 pub async fn serve_index(Extension(page_context): Extension<PageContext>) -> impl IntoResponse {
     let storage = Sqlite::open(page_context.storage_path, Mode::ReadOnly).unwrap();
-    let posts = storage.get_small_posts(5, 0).unwrap();
+    let posts: Vec<SmallPost> = storage.get_small_posts(5, 0).unwrap();
+
+    let posts = update_short_text(posts);
 
     let section = page_context.site_graph.get_section("/").unwrap();
     let mut context = Context::new();
@@ -84,6 +86,19 @@ pub async fn serve_index(Extension(page_context): Extension<PageContext>) -> imp
     context.insert("posts", &posts);
 
     serve_page(&context, "welcome.html", page_context.tera)
+}
+
+fn update_short_text(posts: Vec<SmallPost>) -> Vec<SmallPost> {
+    let posts: Vec<SmallPost> = posts
+        .into_iter()
+        .map(|mut x| {
+            if x.markdown {
+                x.short_text = markdown2html(x.short_text)
+            }
+            x
+        })
+        .collect();
+    posts
 }
 
 pub async fn serve_portfolio(Extension(page_context): Extension<PageContext>) -> impl IntoResponse {
@@ -203,12 +218,13 @@ fn serve_blog_index(
     let page_size = 20;
     let section = page_context.site_graph.get_section("blog").unwrap();
     let storage = Sqlite::open(page_context.storage_path, Mode::ReadOnly).unwrap();
-    let posts = storage
+    let posts: Vec<SmallPost> = storage
         .get_small_posts(page_size, page_size * (page - 1))
         .unwrap();
+    let posts = update_short_text(posts);
     let count = storage.count_posts().unwrap();
 
-    let pages_count = count / page_size + count % page_size;
+    let pages_count = count / page_size + if count % page_size > 0 { 1 } else { 0};
     let pages: Vec<i32> = (1..=pages_count).collect();
 
     let title = if page != 1 {
@@ -219,7 +235,7 @@ fn serve_blog_index(
 
     context.insert(TITLE_KEY, &title);
     context.insert("keywords", &section.keywords);
-    context.insert("meta_description", &section.descr);    
+    context.insert("meta_description", &section.descr);
     context.insert("request", &request);
     let prev_page = if page == 1 { 1 } else { page - 1 };
     let next_page = if page == pages_count {
@@ -287,7 +303,11 @@ pub async fn serve_blog_page(
     context.insert("keywords", &keywords);
     context.insert("main_post", &post);
 
-    let content = xml2html(post.text);
+    let content = if post.markdown {
+        markdown2html(post.text)
+    } else {
+        xml2html(post.text)
+    };
     context.insert("content", &content);
 
     Either::E1(serve_page(&context, "blog/post.html", page_context.tera))
