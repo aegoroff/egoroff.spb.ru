@@ -1,4 +1,4 @@
-use clap::{command, crate_name, Command, arg};
+use clap::{command, crate_name, Command, arg, ArgAction};
 
 mod cli;
 
@@ -20,6 +20,12 @@ async fn main() {
                     arg!(-d --dbpath <DBPATH>)
                         .required(true)
                         .help("Database directory path"),
+                )
+                .arg(
+                    arg!(-f --file)
+                        .required(false)
+                        .action(ArgAction::SetTrue)
+                        .help("Use files instead if remote resource"),
                 ),
         )
         .subcommand(Command::new(cli::SERVER_SUBCOMMAND).about(cli::SERVER_DESCRIPTION))
