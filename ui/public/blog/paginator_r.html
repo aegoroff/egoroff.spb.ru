@@ -1,4 +1,4 @@
-{% if poster.HasPages %}
+{% if poster.has_pages %}
 <!--noindex-->
     {% if "tag" in request.args %}
         {% set tag_query = "?tag=" %}
@@ -8,10 +8,10 @@
     {% set older = "старее &rarr;" %}
     {% set newer = "&larr; новее" %}
     <ul class="pagination justify-content-center" id="blogPager">
-        {% if poster.HasPrev %}
+        {% if poster.has_prev %}
             {% set li_class = "" %}
 
-            {% if poster.PrevPage == 1 %}
+            {% if poster.prev_page == 1 %}
                 {% set href = tag_query %}
             {% else %}
                 {% set href = "page/" %}
@@ -21,11 +21,11 @@
             {% set href = "#" %}
         {% endif %}
         <li class="{{ li_class }} page-item">
-            <a href="{{path_for(id='blog') | safe}}{% if poster.PrevPage > 1 %}page/{% endif %}{{ href }}" class="page-link">{{ newer | safe }}</a>
+            <a href="{{path_for(id='blog') | safe}}{% if poster.prev_page > 1 %}page/{% endif %}{{ href }}" class="page-link">{{ newer | safe }}</a>
         </li>
-        {% for page in poster.Pages %}
+        {% for page in poster.pages %}
             {% if page %}
-                <li {% if page == poster.Page %} class="active page-item" {% else %} class="page-item" {% endif %}>
+                <li {% if page == poster.page %} class="active page-item" {% else %} class="page-item" {% endif %}>
                     {% if page == 1 %}
                     <a href="{{ path_for(id='blog') | safe}}{{ tag_query }}" class="page-link">{{ page }}</a>
                     {% else %}
@@ -38,9 +38,9 @@
             {% endif %}
         {% endfor %}
 
-        {% if poster.HasNext %}
+        {% if poster.has_next %}
             {% set li_class = "" %}
-            {% set href = poster.NextPage %}
+            {% set href = poster.next_page %}
         {% else %}
             {% set li_class = "disabled" %}
             {% set href = "#" %}

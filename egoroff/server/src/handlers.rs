@@ -14,9 +14,10 @@ use axum::{
 };
 use axum_extra::either::Either;
 use kernel::{
+    converter::xml2html,
     domain::Storage,
     graph::SiteSection,
-    sqlite::{Mode, Sqlite}, converter::xml2html,
+    sqlite::{Mode, Sqlite},
 };
 use rust_embed::RustEmbed;
 use tera::{Context, Tera};
@@ -171,7 +172,16 @@ pub async fn serve_blog(Extension(page_context): Extension<PageContext>) -> impl
     context.insert("meta_description", &section.descr);
     context.insert("ctx", "");
     context.insert("config", &page_context.site_config);
-    let poster = Poster { small_posts: posts };
+    let poster = Poster {
+        small_posts: posts,
+        has_pages: true,
+        has_prev: false,
+        has_next: true,
+        page: 1,
+        prev_page: 1,
+        next_page: 2,
+        pages: Vec::new(),
+    };
     context.insert("poster", &poster);
 
     serve_page(&context, "blog/index.html", page_context.tera)
@@ -217,10 +227,7 @@ pub async fn serve_blog_page(
 
     context.insert(TITLE_KEY, &post.title);
 
-    let keywords = post
-        .tags
-        .iter()
-        .fold(String::new(), |acc, t| acc + "," + t);
+    let keywords = post.tags.iter().fold(String::new(), |acc, t| acc + "," + t);
 
     context.insert("keywords", &keywords);
     context.insert("main_post", &post);

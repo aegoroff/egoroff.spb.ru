@@ -46,6 +46,13 @@ pub struct Apache {
 #[derive(Serialize, Default)]
 pub struct Poster {
     pub small_posts: Vec<SmallPost>,
+    pub pages: Vec<i32>,
+    pub has_pages: bool,
+    pub has_prev: bool,
+    pub has_next: bool,
+    pub page: i32,
+    pub prev_page: i32,
+    pub next_page: i32,
 }
 
 #[derive(Deserialize, Serialize, Default)]
