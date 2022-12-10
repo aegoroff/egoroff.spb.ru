@@ -71,6 +71,7 @@ pub fn xml2html(input: String) -> String {
                     if !href.is_empty() {
                         elem.push_attribute(("href", href.as_str()));
                     }
+                    elem.push_attribute(("itemprop", "url"));
                 } else {
                     elem.extend_attributes(original_attributes);
                 }
@@ -148,7 +149,7 @@ mod tests {
     )]
     #[case(
         "<?xml version=\"1.0\"?><link>test</link>",
-        "<?xml version=\"1.0\"?><a>test</a>"
+        "<?xml version=\"1.0\"?><a itemprop=\"url\">test</a>"
     )]
     #[case(
         "<?xml version=\"1.0\"?><div1><head>test</head><p>b</p></div1>",
@@ -163,6 +164,10 @@ mod tests {
         "<?xml version=\"1.0\"?><h4>test</h4><p>b</p>"
     )]
     #[case(
+        "<?xml version=\"1.0\"?><div1><head>h</head><div2><head>h</head></div2></div1>",
+        "<?xml version=\"1.0\"?><h2>h</h2><h3>h</h3>"
+    )]
+    #[case(
         "<?xml version=\"1.0\"?><table><tr><td>test</td></tr></table>",
         "<?xml version=\"1.0\"?><table class=\"table table-condensed table-striped\"><tr><td>test</td></tr></table>"
     )]
@@ -172,27 +177,27 @@ mod tests {
     )]
     #[case(
         "<?xml version=\"1.0\"?><link id=\"3\">test</link>",
-        "<?xml version=\"1.0\"?><a href=\"/\">test</a>"
+        "<?xml version=\"1.0\"?><a href=\"/\" itemprop=\"url\">test</a>"
     )]
     #[case(
         "<?xml version=\"1.0\"?><link id=\"2\">test</link>",
-        "<?xml version=\"1.0\"?><a href=\"/blog/\">test</a>"
+        "<?xml version=\"1.0\"?><a href=\"/blog/\" itemprop=\"url\">test</a>"
     )]
     #[case(
         "<?xml version=\"1.0\"?><link hame=\"2\">test</link>",
-        "<?xml version=\"1.0\"?><a href=\"/blog/2.html\">test</a>"
+        "<?xml version=\"1.0\"?><a href=\"/blog/2.html\" itemprop=\"url\">test</a>"
     )]
     #[case(
         "<?xml version=\"1.0\"?><link id=\"1\">test</link>",
-        "<?xml version=\"1.0\"?><a href=\"/portfolio/\">test</a>"
+        "<?xml version=\"1.0\"?><a href=\"/portfolio/\" itemprop=\"url\">test</a>"
     )]
     #[case(
         "<?xml version=\"1.0\"?><link id=\"53\">test</link>",
-        "<?xml version=\"1.0\"?><a href=\"/portfolio/\">test</a>"
+        "<?xml version=\"1.0\"?><a href=\"/portfolio/\" itemprop=\"url\">test</a>"
     )]
     #[case(
         "<?xml version=\"1.0\"?><link id=\"62\">test</link>",
-        "<?xml version=\"1.0\"?><a href=\"/portfolio/\">test</a>"
+        "<?xml version=\"1.0\"?><a href=\"/portfolio/\" itemprop=\"url\">test</a>"
     )]
     fn converter_tests(#[case] str: &str, #[case] expected: &str) {
         // arrange
