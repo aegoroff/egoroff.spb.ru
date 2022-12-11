@@ -101,14 +101,10 @@ impl SiteGraph {
                 .iter()
                 .filter_map(|s| self.map.get(s))
                 .map(|x| x.id.clone())
-                .fold(String::from(""), |acc, x| {
-                    if x == SEP {
-                        String::new()
-                    } else {
-                        format!("{acc}{SEP}{x}")
-                    }
-                });
-            format!("{path}{SEP}")
+                .filter(|x| x != SEP)
+                .collect::<Vec<String>>()
+                .join(SEP);
+            format!("{SEP}{path}{SEP}")
         }
     }
 
@@ -159,7 +155,7 @@ mod tests {
         // assert
         assert_eq!(actual, expected);
     }
-    
+
     #[rstest]
     #[case("/")]
     #[case("a")]
@@ -174,7 +170,7 @@ mod tests {
         // assert
         assert!(actual.is_some());
     }
-    
+
     #[rstest]
     #[case("")]
     #[case("ab")]

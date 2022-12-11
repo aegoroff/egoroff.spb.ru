@@ -120,7 +120,7 @@ pub fn xml2html(input: String) -> Result<String> {
     Ok(String::from_utf8(result)?)
 }
 
-pub fn markdown2html(input: &String) -> Result<String> {
+pub fn markdown2html(input: &str) -> Result<String> {
     let mut options = Options::empty();
     options.insert(
         Options::ENABLE_STRIKETHROUGH
