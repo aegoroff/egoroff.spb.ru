@@ -28,6 +28,11 @@ const REPLACES: &[(&[u8], &str)] = &[
 
 const PARENTS: &[&[u8]] = &[b"div1", b"div2", b"div3"];
 
+lazy_static::lazy_static! {
+    static ref PARENTS_SET: HashSet<&'static [u8]> = PARENTS.iter().copied().collect();
+    static ref REPLACES_MAP: HashMap<&'static [u8], &'static str> = REPLACES.iter().map(|(k, v)| (*k, *v)).collect();
+}
+
 pub fn xml2html(input: String) -> Result<String> {
     if !input.starts_with("<?xml version=\"1.0\"?>") {
         return Ok(input);
@@ -35,15 +40,12 @@ pub fn xml2html(input: String) -> Result<String> {
     let mut reader = Reader::from_str(&input);
     let mut writer = Writer::new(Cursor::new(Vec::new()));
 
-    let parents: HashSet<&[u8]> = PARENTS.iter().copied().collect();
-    let replaces: HashMap<&[u8], &str> = REPLACES.iter().map(|(k, v)| (*k, *v)).collect();
-
     let mut parent = String::new();
     loop {
         match reader.read_event() {
-            Ok(Event::Start(e)) if replaces.contains_key(e.name().as_ref()) => {
-                let replace = replaces.get(e.name().as_ref()).unwrap_or(&"");
-                if parents.contains(e.name().as_ref()) {
+            Ok(Event::Start(e)) if REPLACES_MAP.contains_key(e.name().as_ref()) => {
+                let replace = REPLACES_MAP.get(e.name().as_ref()).unwrap_or(&"");
+                if PARENTS_SET.contains(e.name().as_ref()) {
                     parent = String::from(*replace);
                     continue;
                 }
@@ -89,12 +91,12 @@ pub fn xml2html(input: String) -> Result<String> {
 
                 writer.write_event(Event::Start(elem))?;
             }
-            Ok(Event::End(e)) if replaces.contains_key(e.name().as_ref()) => {
-                if parents.contains(e.name().as_ref()) {
+            Ok(Event::End(e)) if REPLACES_MAP.contains_key(e.name().as_ref()) => {
+                if PARENTS_SET.contains(e.name().as_ref()) {
                     continue;
                 }
 
-                let replace = replaces.get(e.name().as_ref()).unwrap_or(&"");
+                let replace = REPLACES_MAP.get(e.name().as_ref()).unwrap_or(&"");
                 let elem = if *replace == "h" {
                     let new_tag = String::from("h");
                     BytesEnd::new(new_tag + &parent)

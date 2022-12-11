@@ -15,6 +15,18 @@ const ALLOWED_TAGS: &[&str] = &[
     "h4", "h5", "h6", "td", "th",
 ];
 
+lazy_static::lazy_static! {
+    static ref SPACES_RE : Regex = Regex::new(r"(\w)-(\s+)").unwrap();
+    static ref PLUSMN_RE : Regex = Regex::new(r"\+-").unwrap();
+    static ref NBSP_RE : Regex = Regex::new(r"(\s+)(--?|—|-)(\s|\u00a0)").unwrap();
+    static ref MDASH_RE : Regex = Regex::new(r"(^)(--?|—|-)(\s|\u00a0)").unwrap();
+    static ref HELLIP_RE : Regex = Regex::new(r"\.{2,}").unwrap();
+    static ref MINUS_BEETWEEN_DIGITS_RE : Regex = Regex::new(r"(\d)-(\d)").unwrap();
+    static ref OPEN_QUOTE_RE : Regex = Regex::new(r#"["»](\S)"#).unwrap();
+    static ref CLOSE_QUOTE_RE : Regex = Regex::new(r#"(\S)["«]"#).unwrap();
+    static ref ALLOWED_SET: HashSet<&'static &'static str> = ALLOWED_TAGS.iter().collect();
+}
+
 pub fn typograph(str: String) -> String {
     let mut result = vec![];
 
@@ -22,18 +34,7 @@ pub fn typograph(str: String) -> String {
         result.extend(c);
     };
 
-    let spaces = Regex::new(r"(\w)-(\s+)").unwrap();
-    let plusmn = Regex::new(r"\+-").unwrap();
-    let nbsp = Regex::new(r"(\s+)(--?|—|-)(\s|\u00a0)").unwrap();
-    let mdash = Regex::new(r"(^)(--?|—|-)(\s|\u00a0)").unwrap();
-    let hellip = Regex::new(r"\.{2,}").unwrap();
-    let minus_beetween_digits = Regex::new(r"(\d)-(\d)").unwrap();
-    let open_quote = Regex::new(r#"["»](\S)"#).unwrap();
-    let close_quote = Regex::new(r#"(\S)["«]"#).unwrap();
-
     let stack = Rc::new(RefCell::new(Vec::<String>::new()));
-
-    let allowed: HashSet<&&str> = ALLOWED_TAGS.iter().collect();
 
     let text_handler = |t: &mut TextChunk| {
         if t.text_type() != TextType::Data {
@@ -41,21 +42,21 @@ pub fn typograph(str: String) -> String {
         }
 
         if let Some(t) = stack.borrow().last() {
-            if !allowed.contains(&t.as_str()) {
+            if !ALLOWED_SET.contains(&t.as_str()) {
                 return Ok(());
             }
         }
 
         let original = t.as_str().to_string();
 
-        let replace = spaces.replace_all(&original, "$1 -$2");
-        let replace = plusmn.replace_all(&replace, "&plusmn;");
-        let replace = nbsp.replace_all(&replace, "&nbsp;&mdash;$3");
-        let replace = mdash.replace_all(&replace, "&mdash;$3");
-        let replace = hellip.replace_all(&replace, "&hellip;");
-        let replace = minus_beetween_digits.replace_all(&replace, "$1&minus;$2");
-        let replace = open_quote.replace_all(&replace, "«$1");
-        let replace = close_quote.replace_all(&replace, "$1»");
+        let replace = SPACES_RE.replace_all(&original, "$1 -$2");
+        let replace = PLUSMN_RE.replace_all(&replace, "&plusmn;");
+        let replace = NBSP_RE.replace_all(&replace, "&nbsp;&mdash;$3");
+        let replace = MDASH_RE.replace_all(&replace, "&mdash;$3");
+        let replace = HELLIP_RE.replace_all(&replace, "&hellip;");
+        let replace = MINUS_BEETWEEN_DIGITS_RE.replace_all(&replace, "$1&minus;$2");
+        let replace = OPEN_QUOTE_RE.replace_all(&replace, "«$1");
+        let replace = CLOSE_QUOTE_RE.replace_all(&replace, "$1»");
         t.replace(&replace, ContentType::Html);
 
         Ok(())
