@@ -211,7 +211,7 @@ fn serve_blog_index(
     let posts = update_short_text(posts);
     let count = storage.count_posts().unwrap();
 
-    let pages_count = count / page_size + if count % page_size > 0 { 1 } else { 0 };
+    let pages_count = count / page_size + i32::from(count % page_size > 0);
     let pages: Vec<i32> = (1..=pages_count).collect();
 
     let title = if page != 1 {

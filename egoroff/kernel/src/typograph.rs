@@ -2,6 +2,7 @@ use std::cell::RefCell;
 use std::collections::HashSet;
 use std::rc::Rc;
 use std::{borrow::Cow, iter};
+use anyhow::Result;
 
 use lol_html::{
     element,
@@ -27,7 +28,7 @@ lazy_static::lazy_static! {
     static ref ALLOWED_SET: HashSet<&'static &'static str> = ALLOWED_TAGS.iter().collect();
 }
 
-pub fn typograph(str: String) -> String {
+pub fn typograph(str: String) -> Result<String> {
     let mut result = vec![];
 
     let output_sink = |c: &[u8]| {
@@ -91,10 +92,10 @@ pub fn typograph(str: String) -> String {
         output_sink,
     );
 
-    rewriter.write(str.as_bytes()).unwrap();
-    rewriter.end().unwrap();
+    rewriter.write(str.as_bytes())?;
+    rewriter.end()?;
 
-    String::from_utf8(result).unwrap()
+    Ok(String::from_utf8(result)?)
 }
 
 #[cfg(test)]
@@ -162,7 +163,7 @@ mod tests {
         // arrange
 
         // act
-        let actual = typograph(str.to_string());
+        let actual = typograph(str.to_string()).unwrap();
 
         // assert
         assert_eq!(expected, actual);

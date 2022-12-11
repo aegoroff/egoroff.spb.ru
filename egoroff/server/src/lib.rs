@@ -186,8 +186,14 @@ pub fn create_routes(
             get(handlers::serve_portfolio_document),
         )
         .route("/blog/", get(handlers::serve_blog_default))
-        .route("/blog/page/:page", get(handlers::serve_blog_not_default_page))
-        .route("/blog/page/:page/", get(handlers::serve_blog_not_default_page))
+        .route(
+            "/blog/page/:page",
+            get(handlers::serve_blog_not_default_page),
+        )
+        .route(
+            "/blog/page/:page/",
+            get(handlers::serve_blog_not_default_page),
+        )
         .route("/blog/:path", get(handlers::serve_blog_page))
         .route("/search/", get(handlers::serve_search))
         .route("/:path", get(handlers::serve_root))
@@ -243,5 +249,9 @@ async fn shutdown_signal(handle: Handle) {
 
 fn typograph(value: &Value, _: &HashMap<String, Value>) -> tera::Result<Value> {
     let s = try_get_value!("typograph", "value", String, value);
-    Ok(Value::String(typograph::typograph(s)))
+    let result = typograph::typograph(s);
+    match result {
+        Ok(s) => Ok(Value::String(s)),
+        Err(e) => Err(tera::Error::from(e.to_string())),
+    }
 }
