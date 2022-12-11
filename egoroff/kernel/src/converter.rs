@@ -34,7 +34,7 @@ lazy_static::lazy_static! {
 }
 
 pub fn xml2html(input: &str) -> Result<String> {
-    let mut reader = Reader::from_str(&input);
+    let mut reader = Reader::from_str(input);
     let mut writer = Writer::new(Cursor::new(Vec::new()));
 
     let mut parent = String::new();
@@ -48,8 +48,7 @@ pub fn xml2html(input: &str) -> Result<String> {
                 }
 
                 let mut elem = if *replace == "h" {
-                    let new_tag = String::from("h");
-                    BytesStart::new(new_tag + &parent)
+                    BytesStart::new(format!("h{parent}"))
                 } else {
                     BytesStart::new(*replace)
                 };
@@ -95,8 +94,7 @@ pub fn xml2html(input: &str) -> Result<String> {
 
                 let replace = REPLACES_MAP.get(e.name().as_ref()).unwrap_or(&"");
                 let elem = if *replace == "h" {
-                    let new_tag = String::from("h");
-                    BytesEnd::new(new_tag + &parent)
+                    BytesEnd::new(format!("h{parent}"))
                 } else {
                     BytesEnd::new(*replace)
                 };
@@ -116,7 +114,8 @@ pub fn xml2html(input: &str) -> Result<String> {
     }
 
     let result = writer.into_inner().into_inner();
-    Ok(String::from_utf8(result)?)
+    let result = String::from_utf8(result)?;
+    Ok(result)
 }
 
 pub fn markdown2html(input: &str) -> Result<String> {
@@ -153,8 +152,8 @@ pub fn markdown2html(input: &str) -> Result<String> {
 
     rewriter.write(html.as_bytes())?;
     rewriter.end()?;
-
-    Ok(String::from_utf8(result)?)
+    let result = String::from_utf8(result)?;
+    Ok(result)
 }
 
 #[cfg(test)]
@@ -244,11 +243,31 @@ mod tests {
         "<link id=\"62\">test</link>",
         "<a href=\"/portfolio/\" itemprop=\"url\">test</a>"
     )]
-    fn converter_tests(#[case] test_data: &str, #[case] expected: &str) {
+    #[case(
+        "<link id=\"62\">test",
+        "<a href=\"/portfolio/\" itemprop=\"url\">test"
+    )]
+    #[case("a", "a")]
+    fn xml2html_tests(#[case] test_data: &str, #[case] expected: &str) {
         // arrange
 
         // act
         let actual = xml2html(test_data).unwrap();
+
+        // assert
+        assert_eq!(expected, actual);
+    }
+    
+    #[rstest]
+    #[case("# a\nb", "<h1>a</h1>\n<p>b</p>\n")]
+    #[case("## a\nb", "<h2>a</h2>\n<p>b</p>\n")]
+    #[case("1. a\n2. b", "<ol>\n<li>a</li>\n<li>b</li>\n</ol>\n")]
+    #[case("- a\n- b", "<ul>\n<li>a</li>\n<li>b</li>\n</ul>\n")]
+    fn markdown2html_tests(#[case] test_data: &str, #[case] expected: &str) {
+        // arrange
+
+        // act
+        let actual = markdown2html(test_data).unwrap();
 
         // assert
         assert_eq!(expected, actual);
