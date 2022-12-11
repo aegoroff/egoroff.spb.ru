@@ -14,8 +14,9 @@ use axum::{
 };
 use axum_extra::either::Either;
 use kernel::{
+    archive,
     converter::{markdown2html, xml2html},
-    domain::{SmallPost, Storage},
+    domain::{PostsRequest, Storage},
     graph::SiteSection,
     sqlite::{Mode, Sqlite},
 };
@@ -23,6 +24,8 @@ use rust_embed::RustEmbed;
 use tera::{Context, Tera};
 
 use crate::domain::{BlogRequest, Error, Navigation, PageContext, Poster, Uri};
+
+const PAGE_SIZE: i32 = 20;
 
 #[cfg(debug_assertions)]
 const MODE: &str = "debug";
@@ -65,10 +68,11 @@ struct Apache;
 struct ApacheTemplates;
 
 pub async fn serve_index(Extension(page_context): Extension<PageContext>) -> impl IntoResponse {
-    let storage = Sqlite::open(page_context.storage_path, Mode::ReadOnly).unwrap();
-    let posts: Vec<SmallPost> = storage.get_small_posts(5, 0).unwrap();
+    let req = PostsRequest {
+        ..Default::default()
+    };
 
-    let posts = update_short_text(posts);
+    let result = archive::get_posts(page_context.storage_path, 5, req);
 
     let section = page_context.site_graph.get_section("/").unwrap();
     let mut context = Context::new();
@@ -83,7 +87,7 @@ pub async fn serve_index(Extension(page_context): Extension<PageContext>) -> imp
     context.insert("ctx", "");
     let apache_documents = apache_documents(&page_context.base_path);
     context.insert("apache_docs", &apache_documents);
-    context.insert("posts", &posts);
+    context.insert("posts", &result.result);
 
     serve_page(&context, "welcome.html", page_context.tera)
 }
@@ -202,16 +206,15 @@ fn serve_blog_index(
         1
     };
 
-    let page_size = 20;
     let section = page_context.site_graph.get_section("blog").unwrap();
-    let storage = Sqlite::open(page_context.storage_path, Mode::ReadOnly).unwrap();
-    let posts: Vec<SmallPost> = storage
-        .get_small_posts(page_size, page_size * (page - 1))
-        .unwrap();
-    let posts = update_short_text(posts);
-    let count = storage.count_posts().unwrap();
+    let req = PostsRequest {
+        page: Some(page),
+        ..Default::default()
+    };
 
-    let pages_count = count / page_size + i32::from(count % page_size > 0);
+    let result = archive::get_posts(page_context.storage_path, PAGE_SIZE, req);
+    let pages_count = result.pages;
+
     let pages: Vec<i32> = (1..=pages_count).collect();
 
     let title = if page != 1 {
@@ -231,7 +234,7 @@ fn serve_blog_index(
         page + 1
     };
     let poster = Poster {
-        small_posts: posts,
+        small_posts: result.result,
         has_pages: pages_count > 0,
         has_prev: page > 1,
         has_next: page < pages_count,
@@ -395,22 +398,18 @@ pub async fn navigation(
     }
 }
 
-fn update_short_text(posts: Vec<SmallPost>) -> Vec<SmallPost> {
-    let posts: Vec<SmallPost> = posts
-        .into_iter()
-        .map(|mut post| {
-            if post.markdown {
-                match markdown2html(&post.short_text) {
-                    Ok(text) => post.short_text = text,
-                    Err(e) => {
-                        tracing::error!("Error converting markdown to html in short text {e:#?}")
-                    }
-                }
-            }
-            post
-        })
-        .collect();
-    posts
+pub async fn serve_archive_api(
+    Extension(page_context): Extension<PageContext>,
+) -> impl IntoResponse {
+    Json(archive::archive(page_context.storage_path))
+}
+
+pub async fn service_posts_api(
+    Extension(page_context): Extension<PageContext>,
+    axum::extract::Query(request): axum::extract::Query<PostsRequest>,
+) -> impl IntoResponse {
+    let result = archive::get_posts(page_context.storage_path, PAGE_SIZE, request);
+    Json(result)
 }
 
 fn make_404_page(context: &mut Context, tera: Tera) -> Html<String> {

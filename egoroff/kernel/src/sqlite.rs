@@ -1,9 +1,9 @@
 use std::path::Path;
 
 use chrono::{DateTime, NaiveDateTime, Utc};
-use rusqlite::{params, Connection, Error, ErrorCode, OpenFlags, Transaction};
+use rusqlite::{params, Connection, Error, ErrorCode, OpenFlags, Row, Transaction};
 
-use crate::domain::{Post, SmallPost, Storage};
+use crate::domain::{Post, PostsRequest, SmallPost, Storage, TagAggregate};
 
 pub enum Mode {
     ReadWrite,
@@ -64,28 +64,30 @@ impl Storage for Sqlite {
         &self,
         limit: i32,
         offset: i32,
+        request: PostsRequest,
     ) -> Result<Vec<crate::domain::SmallPost>, Self::Err> {
         self.enable_foreign_keys()?;
 
-        let mut stmt = self.conn.prepare("SELECT id, title, created, short_text, markdown \
-                                                       FROM post WHERE is_public = 1 ORDER BY created DESC LIMIT ?1 OFFSET ?2")?;
-        let files = stmt.query_map([limit, offset], |row| {
-            let created: i64 = row.get(2)?;
-            let datetime =
-                NaiveDateTime::from_timestamp_opt(created, 0).unwrap_or(NaiveDateTime::MIN);
-            let created = DateTime::<Utc>::from_utc(datetime, Utc);
-
-            let post = SmallPost {
-                id: row.get(0)?,
-                title: row.get(1)?,
-                created,
-                short_text: row.get(3)?,
-                markdown: row.get(4)?,
-            };
-            Ok(post)
-        })?;
-
-        Ok(files.filter_map(|r| r.ok()).collect())
+        match request.tag {
+            Some(tag) => {
+                let mut stmt = self.conn.prepare("SELECT id, title, created, short_text, markdown \
+                                    FROM post INNER JOIN post_tag ON post_tag.post_id = post.id 
+                                    WHERE is_public = 1 AND post_tag.tag = ?3 ORDER BY created DESC LIMIT ?1 OFFSET ?2")?;
+                let files = stmt.query_map(
+                    [limit.to_string(), offset.to_string(), tag],
+                    Sqlite::map_small_post_row,
+                )?;
+                Ok(files.filter_map(|r| r.ok()).collect())
+            }
+            None => {
+                let mut stmt = self.conn.prepare(
+                    "SELECT id, title, created, short_text, markdown \
+                FROM post WHERE is_public = 1 ORDER BY created DESC LIMIT ?1 OFFSET ?2",
+                )?;
+                let files = stmt.query_map([limit, offset], Sqlite::map_small_post_row)?;
+                Ok(files.filter_map(|r| r.ok()).collect())
+            }
+        }
     }
 
     fn get_post(&self, id: i64) -> Result<crate::domain::Post, Self::Err> {
@@ -138,11 +140,38 @@ impl Storage for Sqlite {
         todo!()
     }
 
-    fn count_posts(&self) -> Result<i32, Self::Err> {
-        let mut stmt = self
-            .conn
-            .prepare("SELECT COUNT(1) FROM post WHERE is_public = 1")?;
-        stmt.query_row([], |row| row.get(0))
+    fn count_posts(&self, request: PostsRequest) -> Result<i32, Self::Err> {
+        match request.tag {
+            Some(tag) => {
+                let mut stmt = self.conn.prepare(
+                    "SELECT COUNT(1) FROM post INNER JOIN post_tag ON post_tag.post_id = post.id 
+                    WHERE is_public = 1 AND post_tag.tag = ?1",
+                )?;
+                stmt.query_row([tag], |row| row.get(0))
+            }
+            None => {
+                let mut stmt = self
+                    .conn
+                    .prepare("SELECT COUNT(1) FROM post WHERE is_public = 1")?;
+                stmt.query_row([], |row| row.get(0))
+            }
+        }
+    }
+
+    fn get_aggregate_tags(&self) -> Result<Vec<crate::domain::TagAggregate>, Self::Err> {
+        self.enable_foreign_keys()?;
+
+        let mut stmt = self.conn.prepare("SELECT post_tag.tag, count(1) FROM post_tag \
+                                                            INNER JOIN post ON post_tag.post_id = post.id WHERE post.is_public = 1 GROUP BY tag")?;
+        let files = stmt.query_map([], |row| {
+            let tag = TagAggregate {
+                title: row.get(0)?,
+                count: row.get(1)?,
+            };
+            Ok(tag)
+        })?;
+
+        Ok(files.filter_map(|r| r.ok()).collect())
     }
 }
 
@@ -153,6 +182,21 @@ impl Sqlite {
             Mode::ReadOnly => Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_ONLY),
         };
         Ok(Self { conn: c? })
+    }
+
+    fn map_small_post_row<E: std::convert::From<Error>>(row: &Row<'_>) -> Result<SmallPost, E> {
+        let created: i64 = row.get(2)?;
+        let datetime = NaiveDateTime::from_timestamp_opt(created, 0).unwrap_or(NaiveDateTime::MIN);
+        let created = DateTime::<Utc>::from_utc(datetime, Utc);
+
+        let post = SmallPost {
+            id: row.get(0)?,
+            title: row.get(1)?,
+            created,
+            short_text: row.get(3)?,
+            markdown: row.get(4)?,
+        };
+        Ok(post)
     }
 
     fn upsert_post(tx: &Transaction, p: &Post) -> usize {

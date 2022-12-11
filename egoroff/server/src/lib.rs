@@ -203,6 +203,8 @@ pub fn create_routes(
         .route("/apache/:path", get(handlers::serve_apache))
         .route("/apache/images/:path", get(handlers::serve_apache_images))
         .route("/api/v2/navigation/", get(handlers::navigation))
+        .route("/api/v2/blog/archive/", get(handlers::serve_archive_api))
+        .route("/api/v2/blog/posts/", get(handlers::service_posts_api))
         .route("/metrics", get(|| async move { metric_handle.render() }))
         .layer(
             ServiceBuilder::new()

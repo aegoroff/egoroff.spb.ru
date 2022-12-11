@@ -1,6 +1,9 @@
 use std::path::PathBuf;
 
-use kernel::{graph::{SiteSection, SiteGraph}, domain::SmallPost};
+use kernel::{
+    domain::SmallPost,
+    graph::{SiteGraph, SiteSection},
+};
 use serde::{Deserialize, Serialize};
 use tera::Tera;
 
@@ -18,7 +21,7 @@ pub struct BlogRequest {
 pub struct Navigation {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sections: Option<Vec<SiteSection>>,
-    
+
     #[serde(skip_serializing_if = "Option::is_none")]
     pub breadcrumbs: Option<Vec<SiteSection>>,
 }
