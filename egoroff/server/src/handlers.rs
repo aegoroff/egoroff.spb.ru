@@ -292,8 +292,10 @@ pub async fn serve_blog_page(
 
     let content = if post.markdown {
         markdown2html(&post.text)
+    } else if post.text.starts_with("<?xml version=\"1.0\"?>") {
+        xml2html(&post.text)
     } else {
-        xml2html(post.text)
+        Ok(post.text)
     };
 
     match content {

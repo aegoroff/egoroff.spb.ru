@@ -33,10 +33,7 @@ lazy_static::lazy_static! {
     static ref REPLACES_MAP: HashMap<&'static [u8], &'static str> = REPLACES.iter().map(|(k, v)| (*k, *v)).collect();
 }
 
-pub fn xml2html(input: String) -> Result<String> {
-    if !input.starts_with("<?xml version=\"1.0\"?>") {
-        return Ok(input);
-    }
+pub fn xml2html(input: &str) -> Result<String> {
     let mut reader = Reader::from_str(&input);
     let mut writer = Writer::new(Cursor::new(Vec::new()));
 
@@ -243,11 +240,15 @@ mod tests {
         "<?xml version=\"1.0\"?><link id=\"62\">test</link>",
         "<?xml version=\"1.0\"?><a href=\"/portfolio/\" itemprop=\"url\">test</a>"
     )]
-    fn converter_tests(#[case] str: &str, #[case] expected: &str) {
+    #[case(
+        "<link id=\"62\">test</link>",
+        "<a href=\"/portfolio/\" itemprop=\"url\">test</a>"
+    )]
+    fn converter_tests(#[case] test_data: &str, #[case] expected: &str) {
         // arrange
 
         // act
-        let actual = xml2html(str.to_string()).unwrap();
+        let actual = xml2html(test_data).unwrap();
 
         // assert
         assert_eq!(expected, actual);
