@@ -1,10 +1,12 @@
 use std::{
+    borrow::Cow,
     collections::{HashMap, HashSet},
     io::Cursor,
-    str, borrow::Cow,
+    str,
 };
 
-use lol_html::{HtmlRewriter, Settings, Selector, ElementContentHandlers, element};
+use anyhow::Result;
+use lol_html::{element, ElementContentHandlers, HtmlRewriter, Selector, Settings};
 use pulldown_cmark::{html, Options, Parser};
 use quick_xml::{
     events::{BytesEnd, BytesStart, Event},
@@ -26,9 +28,9 @@ const REPLACES: &[(&[u8], &str)] = &[
 
 const PARENTS: &[&[u8]] = &[b"div1", b"div2", b"div3"];
 
-pub fn xml2html(input: String) -> String {
+pub fn xml2html(input: String) -> Result<String> {
     if !input.starts_with("<?xml version=\"1.0\"?>") {
-        return input;
+        return Ok(input);
     }
     let mut reader = Reader::from_str(&input);
     let mut writer = Writer::new(Cursor::new(Vec::new()));
@@ -40,7 +42,7 @@ pub fn xml2html(input: String) -> String {
     loop {
         match reader.read_event() {
             Ok(Event::Start(e)) if replaces.contains_key(e.name().as_ref()) => {
-                let replace = replaces.get(e.name().as_ref()).unwrap();
+                let replace = replaces.get(e.name().as_ref()).unwrap_or(&"");
                 if parents.contains(e.name().as_ref()) {
                     parent = String::from(*replace);
                     continue;
@@ -85,14 +87,14 @@ pub fn xml2html(input: String) -> String {
                     elem.push_attribute(("class", "initialism"));
                 }
 
-                assert!(writer.write_event(Event::Start(elem)).is_ok());
+                writer.write_event(Event::Start(elem))?;
             }
             Ok(Event::End(e)) if replaces.contains_key(e.name().as_ref()) => {
                 if parents.contains(e.name().as_ref()) {
                     continue;
                 }
 
-                let replace = replaces.get(e.name().as_ref()).unwrap();
+                let replace = replaces.get(e.name().as_ref()).unwrap_or(&"");
                 let elem = if *replace == "h" {
                     let new_tag = String::from("h");
                     BytesEnd::new(new_tag + &parent)
@@ -100,25 +102,25 @@ pub fn xml2html(input: String) -> String {
                     BytesEnd::new(*replace)
                 };
 
-                assert!(writer.write_event(Event::End(elem)).is_ok());
+                writer.write_event(Event::End(elem))?;
             }
             Ok(Event::CData(e)) => {
-                let escaped = e.escape().unwrap();
+                let escaped = e.escape()?;
                 let evt = Event::Text(escaped);
-                assert!(writer.write_event(evt).is_ok());
+                writer.write_event(evt)?;
             }
             Ok(Event::Eof) => break,
             // we can either move or borrow the event to write, depending on your use-case
-            Ok(e) => assert!(writer.write_event(e).is_ok()),
-            Err(e) => panic!("Error at position {}: {:?}", reader.buffer_position(), e),
+            Ok(e) => writer.write_event(e)?,
+            Err(e) => return Err(anyhow::Error::new(e)),
         }
     }
 
     let result = writer.into_inner().into_inner();
-    String::from_utf8(result).unwrap()
+    Ok(String::from_utf8(result)?)
 }
 
-pub fn markdown2html(input: String) -> String {
+pub fn markdown2html(input: &String) -> Result<String> {
     let mut options = Options::empty();
     options.insert(
         Options::ENABLE_STRIKETHROUGH
@@ -126,7 +128,7 @@ pub fn markdown2html(input: String) -> String {
             | Options::ENABLE_HEADING_ATTRIBUTES
             | Options::ENABLE_TASKLISTS,
     );
-    let parser = Parser::new_ext(&input, options);
+    let parser = Parser::new_ext(input, options);
     let mut html = String::new();
     html::push_html(&mut html, parser);
 
@@ -137,7 +139,8 @@ pub fn markdown2html(input: String) -> String {
     };
 
     let table_handler: (Cow<Selector>, ElementContentHandlers) = element!("table", |e| {
-        e.set_attribute("class", "table table-condensed table-striped").unwrap_or_default();
+        e.set_attribute("class", "table table-condensed table-striped")
+            .unwrap_or_default();
         Ok(())
     });
 
@@ -149,10 +152,10 @@ pub fn markdown2html(input: String) -> String {
         output_sink,
     );
 
-    rewriter.write(html.as_bytes()).unwrap();
-    rewriter.end().unwrap();
+    rewriter.write(html.as_bytes())?;
+    rewriter.end()?;
 
-    String::from_utf8(result).unwrap()
+    Ok(String::from_utf8(result)?)
 }
 
 #[cfg(test)]
@@ -242,7 +245,7 @@ mod tests {
         // arrange
 
         // act
-        let actual = xml2html(str.to_string());
+        let actual = xml2html(str.to_string()).unwrap();
 
         // assert
         assert_eq!(expected, actual);

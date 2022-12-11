@@ -211,7 +211,7 @@ fn serve_blog_index(
     let posts = update_short_text(posts);
     let count = storage.count_posts().unwrap();
 
-    let pages_count = count / page_size + if count % page_size > 0 { 1 } else { 0};
+    let pages_count = count / page_size + if count % page_size > 0 { 1 } else { 0 };
     let pages: Vec<i32> = (1..=pages_count).collect();
 
     let title = if page != 1 {
@@ -262,7 +262,7 @@ pub async fn serve_blog_page(
     let id: i64 = match doc.parse() {
         Ok(item) => item,
         Err(e) => {
-            tracing::error!("Invalid post id: {e:#?}");
+            tracing::error!("Invalid post id: {e:#?}. Expected number but was {doc}");
             return Either::E2((
                 StatusCode::NOT_FOUND,
                 make_404_page(&mut context, page_context.tera),
@@ -275,7 +275,7 @@ pub async fn serve_blog_page(
     let post = match storage.get_post(id) {
         Ok(item) => item,
         Err(e) => {
-            tracing::error!("Post not found: {e:#?}");
+            tracing::error!("Post ID '{id}' not found: {e:#?}");
             return Either::E2((
                 StatusCode::NOT_FOUND,
                 make_404_page(&mut context, page_context.tera),
@@ -291,11 +291,21 @@ pub async fn serve_blog_page(
     context.insert("main_post", &post);
 
     let content = if post.markdown {
-        markdown2html(post.text)
+        markdown2html(&post.text)
     } else {
         xml2html(post.text)
     };
-    context.insert("content", &content);
+
+    match content {
+        Ok(c) => context.insert("content", &c),
+        Err(e) => {
+            tracing::error!("{e:#?}");
+            return Either::E2((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                make_500_page(&mut context, page_context.tera),
+            ));
+        }
+    }
 
     Either::E1(serve_page(&context, "blog/post.html", page_context.tera))
 }
@@ -386,25 +396,38 @@ pub async fn navigation(
 fn update_short_text(posts: Vec<SmallPost>) -> Vec<SmallPost> {
     let posts: Vec<SmallPost> = posts
         .into_iter()
-        .map(|mut x| {
-            if x.markdown {
-                x.short_text = markdown2html(x.short_text)
+        .map(|mut post| {
+            if post.markdown {
+                match markdown2html(&post.short_text) {
+                    Ok(text) => post.short_text = text,
+                    Err(e) => {
+                        tracing::error!("Error converting markdown to html in short text {e:#?}")
+                    }
+                }
             }
-            x
+            post
         })
         .collect();
     posts
 }
 
 fn make_404_page(context: &mut Context, tera: Tera) -> Html<String> {
+    make_error_page(context, "404", tera)
+}
+
+fn make_500_page(context: &mut Context, tera: Tera) -> Html<String> {
+    make_error_page(context, "500", tera)
+}
+
+fn make_error_page(context: &mut Context, code: &str, tera: Tera) -> Html<String> {
     let error = Error {
-        code: "404".to_string(),
+        code: code.to_string(),
         ..Default::default()
     };
     if context.contains_key(TITLE_KEY) {
         context.remove(TITLE_KEY);
     }
-    context.insert(TITLE_KEY, "404");
+    context.insert(TITLE_KEY, code);
     context.insert("error", &error);
     serve_page(context, "error.html", tera)
 }
