@@ -176,7 +176,7 @@ impl Storage for Sqlite {
 
     fn get_posts_create_dates(&self) -> Result<Vec<DateTime<Utc>>, Self::Err> {
         let mut stmt = self.conn.prepare(
-            "SELECT created FROM post WHERE is_public = 1 ORDER BY created",
+            "SELECT created FROM post WHERE is_public = 1 ORDER BY created DESC",
         )?;
         let dates = stmt.query_map([], |row| {
             let created: i64 = row.get(0)?;

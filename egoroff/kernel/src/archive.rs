@@ -1,12 +1,14 @@
 use std::path::PathBuf;
 
-use chrono::{DateTime, Utc, Datelike};
-use itertools::Itertools;
 use crate::{
     converter::markdown2html,
-    domain::{ApiResult, Archive, PostsRequest, SmallPost, Storage, Tag, TagAggregate},
+    domain::{
+        ApiResult, Archive, Month, PostsRequest, SmallPost, Storage, Tag, TagAggregate, Year,
+    },
     sqlite::{Mode, Sqlite},
 };
+use chrono::{DateTime, Datelike, Utc};
+use itertools::Itertools;
 
 const RANKS: &[&str] = &[
     "tagRank10",
@@ -21,6 +23,21 @@ const RANKS: &[&str] = &[
     "tagRank1",
 ];
 
+const MONTHS: &[&str] = &[
+    "Январь",
+    "Февраль",
+    "Март",
+    "Апрель",
+    "Май",
+    "Июнь",
+    "Июль",
+    "Август",
+    "Сентябрь",
+    "Октябрь",
+    "Ноябрь",
+    "Декабрь",
+];
+
 pub fn archive(storage_path: PathBuf) -> Archive {
     let storage = Sqlite::open(storage_path, Mode::ReadOnly).unwrap();
     let aggregated_tags: Vec<TagAggregate> = storage.get_aggregate_tags().unwrap();
@@ -28,9 +45,9 @@ pub fn archive(storage_path: PathBuf) -> Archive {
         ..Default::default()
     };
     let total_posts = storage.count_posts(req).unwrap();
-    let dates : Vec<DateTime<Utc>> = storage.get_posts_create_dates().unwrap();
+    let dates: Vec<DateTime<Utc>> = storage.get_posts_create_dates().unwrap();
 
-    dates.iter().map(|dt| (dt.year(), dt.month())).group_by(|(year, month)| *year);
+    let years = group_by_years(dates);
 
     let tags = aggregated_tags
         .iter()
@@ -43,10 +60,38 @@ pub fn archive(storage_path: PathBuf) -> Archive {
         })
         .collect();
 
-    Archive {
-        tags,
-        ..Default::default()
+    Archive { tags, years }
+}
+
+fn group_by_years(dates: Vec<DateTime<Utc>>) -> Vec<Year> {
+    let ygrp = dates
+        .iter()
+        .map(|dt| (dt.year(), dt.month()))
+        .group_by(|(year, _month)| *year);
+    let mut result = vec![];
+    for (k, g) in &ygrp {
+        let mgrp = g.group_by(|(_y, m)| *m);
+
+        let mut months = vec![];
+        let mut posts_in_year = 0;
+        for (k, mg) in &mgrp {
+            let m = Month {
+                month: k as i32,
+                posts: mg.count() as i32,
+                name: MONTHS[k as usize - 1].to_string(),
+            };
+            posts_in_year += m.posts;
+            months.push(m)
+        }
+
+        let year = Year {
+            year: k,
+            posts: posts_in_year,
+            months,
+        };
+        result.push(year);
     }
+    result
 }
 
 pub fn get_posts(storage_path: PathBuf, page_size: i32, request: PostsRequest) -> ApiResult {
@@ -92,6 +137,7 @@ fn update_short_text(posts: Vec<SmallPost>) -> Vec<SmallPost> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use chrono::NaiveDate;
     use rstest::*;
 
     #[rstest]
@@ -111,5 +157,43 @@ mod tests {
 
         // assert
         assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn group_by_years_tests() {
+        // arrange
+        let dt1 = NaiveDate::from_ymd_opt(2015, 2, 2)
+            .unwrap()
+            .and_hms_opt(2, 0, 0)
+            .unwrap();
+        let dt1 = DateTime::<Utc>::from_local(dt1, Utc);
+
+        let dt2 = NaiveDate::from_ymd_opt(2015, 2, 3)
+            .unwrap()
+            .and_hms_opt(2, 0, 0)
+            .unwrap();
+        let dt2 = DateTime::<Utc>::from_local(dt2, Utc);
+
+        let dt3 = NaiveDate::from_ymd_opt(2015, 3, 3)
+            .unwrap()
+            .and_hms_opt(2, 0, 0)
+            .unwrap();
+        let dt3 = DateTime::<Utc>::from_local(dt3, Utc);
+
+        let dt4 = NaiveDate::from_ymd_opt(2016, 3, 3)
+            .unwrap()
+            .and_hms_opt(2, 0, 0)
+            .unwrap();
+        let dt4 = DateTime::<Utc>::from_local(dt4, Utc);
+
+        let dates = vec![dt1, dt2, dt3, dt4];
+
+        // act
+        let actual = group_by_years(dates);
+
+        // assert
+        assert_eq!(2, actual.len());
+        assert_eq!(3, actual[0].posts);
+        assert_eq!(1, actual[1].posts);
     }
 }
