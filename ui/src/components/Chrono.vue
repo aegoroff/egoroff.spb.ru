@@ -109,7 +109,8 @@ export default class Chrono extends Vue {
     })
     ba.$mount('#blogcontainer')
 
-    const mnt = moment(new Date(year, month, 1)).locale('ru')
+    const m = month - 1
+    const mnt = moment(new Date(year, m, 1)).locale('ru')
     const bt = new BlogTitle({
       propsData: {
         text: `записи за ${mnt.format('MMMM YYYY')}`

@@ -1,4 +1,4 @@
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Datelike, NaiveDate, Utc};
 use std::fmt::{Debug, Display};
 
 #[derive(Debug, Default, Clone, Deserialize, Serialize)]
@@ -39,6 +39,51 @@ pub struct Post {
 pub struct PostsRequest {
     pub tag: Option<String>,
     pub page: Option<i32>,
+    pub year: Option<i32>,
+    pub month: Option<i32>,
+}
+
+pub struct Period {
+    pub from: DateTime<Utc>,
+    pub to: DateTime<Utc>,
+}
+
+impl PostsRequest {
+    pub fn as_query_period(&self) -> Option<Period> {
+        let year = match self.year {
+            Some(y) => y,
+            None => 0,
+        };
+        let month = match self.month {
+            Some(m) => m,
+            None => 0,
+        };
+        if year > 0 {
+            let m: u32 = if month > 0 { month as u32 } else { 1 };
+            let from_dt = NaiveDate::from_ymd_opt(year, m, 1)?.and_hms_opt(0, 0, 0)?;
+            let from_dt = DateTime::<Utc>::from_local(from_dt, Utc);
+
+            let m: u32 = if month > 0 { month as u32 } else { 12 };
+            let d = Self::last_day_of_month(year, m)?;
+            let to_dt = NaiveDate::from_ymd_opt(year, m, d)?.and_hms_opt(23, 59, 59)?;
+            let to_dt = DateTime::<Utc>::from_local(to_dt, Utc);
+            Some(Period {
+                from: from_dt,
+                to: to_dt,
+            })
+        } else {
+            None
+        }
+    }
+
+    fn last_day_of_month(year: i32, month: u32) -> Option<u32> {
+        let first_day_of_next_year = NaiveDate::from_ymd_opt(year + 1, 1, 1)?;
+        let d = NaiveDate::from_ymd_opt(year, month + 1, 1)
+            .unwrap_or_else(|| first_day_of_next_year)
+            .pred_opt()?
+            .day();
+        Some(d)
+    }
 }
 
 #[derive(Deserialize, Serialize, Default)]
@@ -86,11 +131,103 @@ pub trait Storage {
     type Err: Debug + Display;
 
     fn new_database(&self) -> Result<(), Self::Err>;
-    fn get_small_posts(&self, limit: i32, offset: i32, request: PostsRequest) -> Result<Vec<SmallPost>, Self::Err>;
+    fn get_small_posts(
+        &self,
+        limit: i32,
+        offset: i32,
+        request: PostsRequest,
+    ) -> Result<Vec<SmallPost>, Self::Err>;
     fn get_post(&self, id: i64) -> Result<Post, Self::Err>;
     fn upsert_post(&mut self, post: Post) -> Result<(), Self::Err>;
     fn delete_post(&mut self, id: i64) -> Result<(), Self::Err>;
     fn count_posts(&self, request: PostsRequest) -> Result<i32, Self::Err>;
     fn get_aggregate_tags(&self) -> Result<Vec<TagAggregate>, Self::Err>;
     fn get_posts_create_dates(&self) -> Result<Vec<DateTime<Utc>>, Self::Err>;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn as_query_period_single_first_month() {
+        // arrange
+        let req = PostsRequest {
+            year: Some(2022),
+            month: Some(1),
+            ..Default::default()
+        };
+
+        // act
+        let period = req.as_query_period();
+
+        // assert
+        assert!(period.is_some());
+        let period = period.unwrap();
+        assert_eq!(period.from.year(), 2022);
+        assert_eq!(period.from.month(), 1);
+        assert_eq!(period.from.day(), 1);
+        assert_eq!(period.to.year(), 2022);
+        assert_eq!(period.to.month(), 1);
+        assert_eq!(period.to.day(), 31);
+    }
+
+    #[test]
+    fn as_query_period_single_last_month() {
+        // arrange
+        let req = PostsRequest {
+            year: Some(2022),
+            month: Some(12),
+            ..Default::default()
+        };
+
+        // act
+        let period = req.as_query_period();
+
+        // assert
+        assert!(period.is_some());
+        let period = period.unwrap();
+        assert_eq!(period.from.year(), 2022);
+        assert_eq!(period.from.month(), 12);
+        assert_eq!(period.from.day(), 1);
+        assert_eq!(period.to.year(), 2022);
+        assert_eq!(period.to.month(), 12);
+        assert_eq!(period.to.day(), 31);
+    }
+
+    #[test]
+    fn as_query_period_single_year() {
+        // arrange
+        let req = PostsRequest {
+            year: Some(2022),
+            ..Default::default()
+        };
+
+        // act
+        let period = req.as_query_period();
+
+        // assert
+        assert!(period.is_some());
+        let period = period.unwrap();
+        assert_eq!(period.from.year(), 2022);
+        assert_eq!(period.from.month(), 1);
+        assert_eq!(period.from.day(), 1);
+        assert_eq!(period.to.year(), 2022);
+        assert_eq!(period.to.month(), 12);
+        assert_eq!(period.to.day(), 31);
+    }
+
+    #[test]
+    fn as_query_period_no_period() {
+        // arrange
+        let req = PostsRequest {
+            ..Default::default()
+        };
+
+        // act
+        let period = req.as_query_period();
+
+        // assert
+        assert!(period.is_none());
+    }
 }

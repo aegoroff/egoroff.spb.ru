@@ -68,7 +68,7 @@ impl Storage for Sqlite {
     ) -> Result<Vec<crate::domain::SmallPost>, Self::Err> {
         self.enable_foreign_keys()?;
 
-        match request.tag {
+        let files: Vec<crate::domain::SmallPost> = match request.tag {
             Some(tag) => {
                 let mut stmt = self.conn.prepare("SELECT id, title, created, short_text, markdown \
                                     FROM post INNER JOIN post_tag ON post_tag.post_id = post.id 
@@ -77,17 +77,30 @@ impl Storage for Sqlite {
                     [limit.to_string(), offset.to_string(), tag],
                     Sqlite::map_small_post_row,
                 )?;
-                Ok(files.filter_map(|r| r.ok()).collect())
+                files.filter_map(|r| r.ok()).collect()
             }
             None => {
-                let mut stmt = self.conn.prepare(
-                    "SELECT id, title, created, short_text, markdown \
-                FROM post WHERE is_public = 1 ORDER BY created DESC LIMIT ?1 OFFSET ?2",
-                )?;
-                let files = stmt.query_map([limit, offset], Sqlite::map_small_post_row)?;
-                Ok(files.filter_map(|r| r.ok()).collect())
+                if let Some(period) = request.as_query_period() {
+                    let mut stmt = self.conn.prepare(
+                        "SELECT id, title, created, short_text, markdown \
+                    FROM post WHERE is_public = 1 AND created > ?1 AND created < ?2 ORDER BY created DESC  LIMIT ?3 OFFSET ?4",
+                    )?;
+                    let files = stmt.query_map(
+                        [period.from.timestamp(), period.to.timestamp(), limit as i64, offset as i64],
+                        Sqlite::map_small_post_row,
+                    )?;
+                    files.filter_map(|r| r.ok()).collect()
+                } else {
+                    let mut stmt = self.conn.prepare(
+                        "SELECT id, title, created, short_text, markdown \
+                    FROM post WHERE is_public = 1 ORDER BY created DESC LIMIT ?1 OFFSET ?2",
+                    )?;
+                    let files = stmt.query_map([limit, offset], Sqlite::map_small_post_row)?;
+                    files.filter_map(|r| r.ok()).collect()
+                }
             }
-        }
+        };
+        Ok(files)
     }
 
     fn get_post(&self, id: i64) -> Result<crate::domain::Post, Self::Err> {
@@ -150,10 +163,19 @@ impl Storage for Sqlite {
                 stmt.query_row([tag], |row| row.get(0))
             }
             None => {
-                let mut stmt = self
-                    .conn
-                    .prepare("SELECT COUNT(1) FROM post WHERE is_public = 1")?;
-                stmt.query_row([], |row| row.get(0))
+                if let Some(period) = request.as_query_period() {
+                    let mut stmt = self.conn.prepare(
+                        "SELECT COUNT(1) FROM post WHERE is_public = 1 AND created > ?1 AND created < ?2",
+                    )?;
+                    stmt.query_row([period.from.timestamp(), period.to.timestamp()], |row| {
+                        row.get(0)
+                    })
+                } else {
+                    let mut stmt = self
+                        .conn
+                        .prepare("SELECT COUNT(1) FROM post WHERE is_public = 1")?;
+                    stmt.query_row([], |row| row.get(0))
+                }
             }
         }
     }
@@ -175,9 +197,9 @@ impl Storage for Sqlite {
     }
 
     fn get_posts_create_dates(&self) -> Result<Vec<DateTime<Utc>>, Self::Err> {
-        let mut stmt = self.conn.prepare(
-            "SELECT created FROM post WHERE is_public = 1 ORDER BY created DESC",
-        )?;
+        let mut stmt = self
+            .conn
+            .prepare("SELECT created FROM post WHERE is_public = 1 ORDER BY created DESC")?;
         let dates = stmt.query_map([], |row| {
             let created: i64 = row.get(0)?;
             let created_datetime =
