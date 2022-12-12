@@ -1,5 +1,7 @@
 use std::path::PathBuf;
 
+use chrono::{DateTime, Utc, Datelike};
+use itertools::Itertools;
 use crate::{
     converter::markdown2html,
     domain::{ApiResult, Archive, PostsRequest, SmallPost, Storage, Tag, TagAggregate},
@@ -26,6 +28,9 @@ pub fn archive(storage_path: PathBuf) -> Archive {
         ..Default::default()
     };
     let total_posts = storage.count_posts(req).unwrap();
+    let dates : Vec<DateTime<Utc>> = storage.get_posts_create_dates().unwrap();
+
+    dates.iter().map(|dt| (dt.year(), dt.month())).group_by(|(year, month)| *year);
 
     let tags = aggregated_tags
         .iter()

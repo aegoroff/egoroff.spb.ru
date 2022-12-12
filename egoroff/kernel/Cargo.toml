@@ -16,6 +16,7 @@ quick-xml = "0.26.0"
 pulldown-cmark = "0.9.2"
 anyhow = "1.0"
 lazy_static = "1.4.0"
+itertools = "0.10.5"
 
 [dependencies.rusqlite]
 version = "0.28"

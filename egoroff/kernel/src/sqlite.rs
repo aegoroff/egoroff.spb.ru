@@ -173,6 +173,19 @@ impl Storage for Sqlite {
 
         Ok(files.filter_map(|r| r.ok()).collect())
     }
+
+    fn get_posts_create_dates(&self) -> Result<Vec<DateTime<Utc>>, Self::Err> {
+        let mut stmt = self.conn.prepare(
+            "SELECT created FROM post WHERE is_public = 1 ORDER BY created",
+        )?;
+        let dates = stmt.query_map([], |row| {
+            let created: i64 = row.get(0)?;
+            let created_datetime =
+                NaiveDateTime::from_timestamp_opt(created, 0).unwrap_or(NaiveDateTime::MIN);
+            Ok(DateTime::<Utc>::from_utc(created_datetime, Utc))
+        })?;
+        Ok(dates.filter_map(|r| r.ok()).collect())
+    }
 }
 
 impl Sqlite {

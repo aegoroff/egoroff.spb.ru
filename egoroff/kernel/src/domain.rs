@@ -92,4 +92,5 @@ pub trait Storage {
     fn delete_post(&mut self, id: i64) -> Result<(), Self::Err>;
     fn count_posts(&self, request: PostsRequest) -> Result<i32, Self::Err>;
     fn get_aggregate_tags(&self) -> Result<Vec<TagAggregate>, Self::Err>;
+    fn get_posts_create_dates(&self) -> Result<Vec<DateTime<Utc>>, Self::Err>;
 }
