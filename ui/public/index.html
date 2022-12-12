@@ -24,17 +24,17 @@
           rel="alternate"
           title="Recent Posts"
           type="application/atom+xml">
-    <!-- Google Analytics -->
     {% if gin_mode == 'release' %}
-    <script>
-      window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-      ga('create', '{{config.AnalyticsId}}', 'egoroff.spb.ru');
-      ga('require', 'linkid', 'linkid.js');
-      ga('send', 'pageview');
-    </script>
-    <script async src='https://www.google-analytics.com/analytics.js'></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-HRFZ3XCBK8"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-HRFZ3XCBK8');
+</script>
     {% endif %}
-    <!-- End Google Analytics -->
 </head>
 <body>
 <noscript>
