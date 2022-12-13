@@ -1,7 +1,10 @@
 use axum::extract::DefaultBodyLimit;
 use axum::Extension;
 use axum::{routing::get, Router};
+
+#[cfg(feature = "prometheus")]
 use axum_prometheus::PrometheusMetricLayer;
+
 use axum_server::tls_rustls::RustlsConfig;
 use axum_server::Handle;
 use domain::PageContext;
@@ -32,9 +35,9 @@ struct Ports {
     https: u16,
 }
 
+mod atom;
 mod domain;
 mod handlers;
-mod atom;
 
 pub async fn run() {
     tracing_subscriber::registry()
@@ -162,6 +165,7 @@ pub fn create_routes(
     tera: Tera,
     data_path: PathBuf,
 ) -> Router {
+    #[cfg(feature = "prometheus")]
     let (prometheus_layer, metric_handle) = PrometheusMetricLayer::pair();
 
     let storage_path = data_path.join(kernel::sqlite::DATABASE);
@@ -174,7 +178,7 @@ pub fn create_routes(
         site_config,
     };
 
-    Router::new()
+    let router = Router::new()
         .route("/", get(handlers::serve_index))
         .route("/recent.atom", get(handlers::serve_atom))
         .route("/news/rss", get(handlers::serve_atom))
@@ -208,7 +212,10 @@ pub fn create_routes(
         .route("/api/v2/navigation/", get(handlers::navigation))
         .route("/api/v2/blog/archive/", get(handlers::serve_archive_api))
         .route("/api/v2/blog/posts/", get(handlers::service_posts_api))
-        .route("/metrics", get(|| async move { metric_handle.render() }))
+        .route("/metrics", get(|| async move { 
+            #[cfg(feature = "prometheus")]
+            metric_handle.render() 
+        }))
         .layer(
             ServiceBuilder::new()
                 .layer(TraceLayer::new_for_http().on_failure(
@@ -221,8 +228,13 @@ pub fn create_routes(
         )
         .layer(DefaultBodyLimit::disable())
         .layer(RequestBodyLimitLayer::new(20 * 1024 * 1024))
-        .layer(Extension(page_context))
-        .layer(prometheus_layer)
+        .layer(Extension(page_context));
+
+        #[cfg(feature = "prometheus")]
+        return router.layer(prometheus_layer);
+
+        #[cfg(not(feature = "prometheus"))]
+        return router;
 }
 
 async fn shutdown_signal(handle: Handle) {

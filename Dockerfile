@@ -33,11 +33,10 @@ COPY egoroff/migrate/ ./migrate/
 COPY egoroff/server/ ./server/
 COPY egoroff/egoroff/ ./egoroff/
 COPY egoroff/Cargo.toml ./
-RUN cargo test --workspace --all-features --release
+RUN cargo test --workspace --release
 RUN cargo build --workspace --release
 
 FROM gcr.io/distroless/cc-debian11:latest
-#FROM debian:11-slim
 ENV EGOROFF_HTTP_PORT=4200
 ENV EGOROFF_HTTPS_PORT=4201
 ENV EGOROFF_CERT_DIR=/data/certs
