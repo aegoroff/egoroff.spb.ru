@@ -176,6 +176,8 @@ pub fn create_routes(
 
     Router::new()
         .route("/", get(handlers::serve_index))
+        .route("/recent.atom", get(handlers::serve_atom))
+        .route("/news/rss", get(handlers::serve_atom))
         .route("/portfolio/", get(handlers::serve_portfolio))
         .route("/portfolio/:path", get(handlers::serve_portfolio_document))
         .route(

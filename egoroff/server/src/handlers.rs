@@ -12,7 +12,7 @@ use axum::{
     response::{Html, IntoResponse},
     Extension, Json,
 };
-use axum_extra::either::Either;
+use axum_extra::either::{Either, Either3};
 use kernel::{
     archive,
     converter::{markdown2html, xml2html},
@@ -23,7 +23,10 @@ use kernel::{
 use rust_embed::RustEmbed;
 use tera::{Context, Tera};
 
-use crate::domain::{BlogRequest, Error, Navigation, PageContext, Poster, Uri};
+use crate::{
+    atom::{self, Xml},
+    domain::{BlogRequest, Error, Navigation, PageContext, Poster, Uri},
+};
 
 const PAGE_SIZE: i32 = 20;
 
@@ -251,7 +254,11 @@ fn serve_blog_index(
 pub async fn serve_blog_page(
     Extension(page_context): Extension<PageContext>,
     extract::Path(path): extract::Path<String>,
-) -> Either<Html<String>, (StatusCode, Html<String>)> {
+) -> Either3<Html<String>, Xml<String>, (StatusCode, Html<String>)> {
+    if path == "recent.atom" {
+        return Either3::E2(make_atom_content(page_context));
+    }
+
     let mut context = Context::new();
     context.insert("html_class", "blog");
     let messages: Vec<String> = Vec::new();
@@ -266,7 +273,7 @@ pub async fn serve_blog_page(
         Ok(item) => item,
         Err(e) => {
             tracing::error!("Invalid post id: {e:#?}. Expected number but was {doc}");
-            return Either::E2((
+            return Either3::E3((
                 StatusCode::NOT_FOUND,
                 make_404_page(&mut context, page_context.tera),
             ));
@@ -279,7 +286,7 @@ pub async fn serve_blog_page(
         Ok(item) => item,
         Err(e) => {
             tracing::error!("Post ID '{id}' not found: {e:#?}");
-            return Either::E2((
+            return Either3::E3((
                 StatusCode::NOT_FOUND,
                 make_404_page(&mut context, page_context.tera),
             ));
@@ -305,14 +312,14 @@ pub async fn serve_blog_page(
         Ok(c) => context.insert("content", &c),
         Err(e) => {
             tracing::error!("{e:#?}");
-            return Either::E2((
+            return Either3::E3((
                 StatusCode::INTERNAL_SERVER_ERROR,
                 make_500_page(&mut context, page_context.tera),
             ));
         }
     }
 
-    Either::E1(serve_page(&context, "blog/post.html", page_context.tera))
+    Either3::E1(serve_page(&context, "blog/post.html", page_context.tera))
 }
 
 pub async fn serve_search(Extension(page_context): Extension<PageContext>) -> impl IntoResponse {
@@ -330,6 +337,21 @@ pub async fn serve_search(Extension(page_context): Extension<PageContext>) -> im
     context.insert("config", &page_context.site_config);
 
     serve_page(&context, "search.html", page_context.tera)
+}
+
+pub async fn serve_atom(Extension(page_context): Extension<PageContext>) -> impl IntoResponse {
+    make_atom_content(page_context)
+}
+
+fn make_atom_content(page_context: PageContext) -> Xml<String> {
+    let req = PostsRequest {
+        ..Default::default()
+    };
+
+    let result = archive::get_posts(page_context.storage_path, 20, req);
+    let xml = atom::from_small_posts(result.result).unwrap();
+
+    Xml(xml)
 }
 
 pub async fn serve_js(extract::Path(path): extract::Path<String>) -> impl IntoResponse {
