@@ -51,7 +51,7 @@ pub fn from_small_posts(posts: Vec<SmallPost>) -> String {
         })
         .collect();
     let feed = Feed { entries };
-    to_string(&feed).unwrap()
+    to_string(&feed).unwrap_or_default()
 }
 
 #[cfg(test)]
@@ -94,6 +94,6 @@ mod tests {
         let actual = from_small_posts(posts);
 
         // assert
-        assert!(!actual.is_empty())
+        assert!(actual.is_empty())
     }
 }
