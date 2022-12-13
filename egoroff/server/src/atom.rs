@@ -8,7 +8,6 @@ use axum::{
 };
 use chrono::SecondsFormat;
 use kernel::domain::SmallPost;
-use mime_guess::mime;
 use quick_xml::{
     events::{BytesEnd, BytesStart, BytesText, Event},
     Writer,
@@ -33,7 +32,7 @@ where
         (
             [(
                 header::CONTENT_TYPE,
-                HeaderValue::from_static(mime::TEXT_XML.as_ref()),
+                HeaderValue::from_static("text/xml; charset=utf-8"),
             )],
             self.0.into(),
         )
