@@ -34,6 +34,7 @@ struct Ports {
 
 mod domain;
 mod handlers;
+mod atom;
 
 pub async fn run() {
     tracing_subscriber::registry()
