@@ -33,7 +33,6 @@ pub struct Config {
     pub analytics_id: String,
 }
 
-#[derive(Clone)]
 pub struct PageContext {
     pub base_path: PathBuf,
     pub storage_path: PathBuf,

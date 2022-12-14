@@ -2,7 +2,7 @@ use std::{
     collections::HashMap,
     fs::File,
     io::BufReader,
-    path::{Path, PathBuf},
+    path::{Path, PathBuf}, sync::Arc,
 };
 
 use axum::{
@@ -70,12 +70,12 @@ struct Apache;
 #[folder = "../../templates/apache"]
 struct ApacheTemplates;
 
-pub async fn serve_index(Extension(page_context): Extension<PageContext>) -> impl IntoResponse {
+pub async fn serve_index(Extension(page_context): Extension<Arc<PageContext>>) -> impl IntoResponse {
     let req = PostsRequest {
         ..Default::default()
     };
 
-    let result = archive::get_posts(page_context.storage_path, 5, req);
+    let result = archive::get_posts(&page_context.storage_path, 5, req);
 
     let section = page_context.site_graph.get_section("/").unwrap();
     let mut context = Context::new();
@@ -92,10 +92,10 @@ pub async fn serve_index(Extension(page_context): Extension<PageContext>) -> imp
     context.insert("apache_docs", &apache_documents);
     context.insert("posts", &result.result);
 
-    serve_page(&context, "welcome.html", page_context.tera)
+    serve_page(&context, "welcome.html", &page_context.tera)
 }
 
-pub async fn serve_portfolio(Extension(page_context): Extension<PageContext>) -> impl IntoResponse {
+pub async fn serve_portfolio(Extension(page_context): Extension<Arc<PageContext>>) -> impl IntoResponse {
     let section = page_context.site_graph.get_section("portfolio").unwrap();
 
     let mut context = Context::new();
@@ -111,11 +111,11 @@ pub async fn serve_portfolio(Extension(page_context): Extension<PageContext>) ->
     let apache_documents = apache_documents(&page_context.base_path);
     context.insert("apache_docs", &apache_documents);
 
-    serve_page(&context, "portfolio/index.html", page_context.tera)
+    serve_page(&context, "portfolio/index.html", &page_context.tera)
 }
 
 pub async fn serve_portfolio_document(
-    Extension(page_context): Extension<PageContext>,
+    Extension(page_context): Extension<Arc<PageContext>>,
     extract::Path(path): extract::Path<String>,
 ) -> Either<Html<String>, (StatusCode, Html<String>)> {
     let asset = ApacheTemplates::get(&path);
@@ -141,7 +141,7 @@ pub async fn serve_portfolio_document(
         None => {
             return Either::E2((
                 StatusCode::NOT_FOUND,
-                make_404_page(&mut context, page_context.tera),
+                make_404_page(&mut context, &page_context.tera),
             ))
         }
     };
@@ -156,26 +156,26 @@ pub async fn serve_portfolio_document(
         Either::E1(serve_page(
             &context,
             "portfolio/apache.html",
-            page_context.tera,
+            &page_context.tera,
         ))
     } else {
         Either::E2((
             StatusCode::NOT_FOUND,
-            make_404_page(&mut context, page_context.tera),
+            make_404_page(&mut context, &page_context.tera),
         ))
     }
 }
 
 pub async fn serve_blog_default(
     axum::extract::Query(request): axum::extract::Query<BlogRequest>,
-    Extension(page_context): Extension<PageContext>,
+    Extension(page_context): Extension<Arc<PageContext>>,
 ) -> Either<Html<String>, (StatusCode, Html<String>)> {
     serve_blog_index(request, page_context, None)
 }
 
 pub async fn serve_blog_not_default_page(
     axum::extract::Query(request): axum::extract::Query<BlogRequest>,
-    Extension(page_context): Extension<PageContext>,
+    Extension(page_context): Extension<Arc<PageContext>>,
     extract::Path(page): extract::Path<String>,
 ) -> Either<Html<String>, (StatusCode, Html<String>)> {
     serve_blog_index(request, page_context, Some(page))
@@ -183,7 +183,7 @@ pub async fn serve_blog_not_default_page(
 
 fn serve_blog_index(
     request: BlogRequest,
-    page_context: PageContext,
+    page_context: Arc<PageContext>,
     page: Option<String>,
 ) -> Either<Html<String>, (StatusCode, Html<String>)> {
     let mut context = Context::new();
@@ -201,7 +201,7 @@ fn serve_blog_index(
                 tracing::error!("Invalid page: {e:#?}");
                 return Either::E2((
                     StatusCode::NOT_FOUND,
-                    make_404_page(&mut context, page_context.tera),
+                    make_404_page(&mut context, &page_context.tera),
                 ));
             }
         }
@@ -215,7 +215,7 @@ fn serve_blog_index(
         ..Default::default()
     };
 
-    let result = archive::get_posts(page_context.storage_path, PAGE_SIZE, req);
+    let result = archive::get_posts(&page_context.storage_path, PAGE_SIZE, req);
     let pages_count = result.pages;
 
     let pages: Vec<i32> = (1..=pages_count).collect();
@@ -248,11 +248,11 @@ fn serve_blog_index(
     };
     context.insert("poster", &poster);
 
-    Either::E1(serve_page(&context, "blog/index.html", page_context.tera))
+    Either::E1(serve_page(&context, "blog/index.html", &page_context.tera))
 }
 
 pub async fn serve_blog_page(
-    Extension(page_context): Extension<PageContext>,
+    Extension(page_context): Extension<Arc<PageContext>>,
     extract::Path(path): extract::Path<String>,
 ) -> Either3<Html<String>, Xml<String>, (StatusCode, Html<String>)> {
     if path == "recent.atom" {
@@ -275,12 +275,12 @@ pub async fn serve_blog_page(
             tracing::error!("Invalid post id: {e:#?}. Expected number but was {doc}");
             return Either3::E3((
                 StatusCode::NOT_FOUND,
-                make_404_page(&mut context, page_context.tera),
+                make_404_page(&mut context, &page_context.tera),
             ));
         }
     };
 
-    let storage = Sqlite::open(page_context.storage_path, Mode::ReadOnly).unwrap();
+    let storage = Sqlite::open(&page_context.storage_path, Mode::ReadOnly).unwrap();
 
     let post = match storage.get_post(id) {
         Ok(item) => item,
@@ -288,7 +288,7 @@ pub async fn serve_blog_page(
             tracing::error!("Post ID '{id}' not found: {e:#?}");
             return Either3::E3((
                 StatusCode::NOT_FOUND,
-                make_404_page(&mut context, page_context.tera),
+                make_404_page(&mut context, &page_context.tera),
             ));
         }
     };
@@ -314,15 +314,15 @@ pub async fn serve_blog_page(
             tracing::error!("{e:#?}");
             return Either3::E3((
                 StatusCode::INTERNAL_SERVER_ERROR,
-                make_500_page(&mut context, page_context.tera),
+                make_500_page(&mut context, &page_context.tera),
             ));
         }
     }
 
-    Either3::E1(serve_page(&context, "blog/post.html", page_context.tera))
+    Either3::E1(serve_page(&context, "blog/post.html", &page_context.tera))
 }
 
-pub async fn serve_search(Extension(page_context): Extension<PageContext>) -> impl IntoResponse {
+pub async fn serve_search(Extension(page_context): Extension<Arc<PageContext>>) -> impl IntoResponse {
     let section = page_context.site_graph.get_section("search").unwrap();
 
     let mut context = Context::new();
@@ -336,19 +336,19 @@ pub async fn serve_search(Extension(page_context): Extension<PageContext>) -> im
     context.insert("ctx", "");
     context.insert("config", &page_context.site_config);
 
-    serve_page(&context, "search.html", page_context.tera)
+    serve_page(&context, "search.html", &page_context.tera)
 }
 
-pub async fn serve_atom(Extension(page_context): Extension<PageContext>) -> impl IntoResponse {
+pub async fn serve_atom(Extension(page_context): Extension<Arc<PageContext>>) -> impl IntoResponse {
     make_atom_content(page_context)
 }
 
-fn make_atom_content(page_context: PageContext) -> Xml<String> {
+fn make_atom_content(page_context: Arc<PageContext>) -> Xml<String> {
     let req = PostsRequest {
         ..Default::default()
     };
 
-    let result = archive::get_posts(page_context.storage_path, 20, req);
+    let result = archive::get_posts(&page_context.storage_path, 20, req);
     let xml = atom::from_small_posts(result.result).unwrap();
 
     Xml(xml)
@@ -401,7 +401,7 @@ pub async fn serve_apache_images(extract::Path(path): extract::Path<String>) -> 
 // otherwise a 400 Bad Request error response is returned
 pub async fn navigation(
     extract::Query(query): extract::Query<Uri>,
-    Extension(page_context): Extension<PageContext>,
+    Extension(page_context): Extension<Arc<PageContext>>,
 ) -> impl IntoResponse {
     let q = query.uri;
 
@@ -421,28 +421,28 @@ pub async fn navigation(
 }
 
 pub async fn serve_archive_api(
-    Extension(page_context): Extension<PageContext>,
+    Extension(page_context): Extension<Arc<PageContext>>,
 ) -> impl IntoResponse {
-    Json(archive::archive(page_context.storage_path))
+    Json(archive::archive(&page_context.storage_path))
 }
 
 pub async fn service_posts_api(
-    Extension(page_context): Extension<PageContext>,
+    Extension(page_context): Extension<Arc<PageContext>>,
     axum::extract::Query(request): axum::extract::Query<PostsRequest>,
 ) -> impl IntoResponse {
-    let result = archive::get_posts(page_context.storage_path, PAGE_SIZE, request);
+    let result = archive::get_posts(&page_context.storage_path, PAGE_SIZE, request);
     Json(result)
 }
 
-fn make_404_page(context: &mut Context, tera: Tera) -> Html<String> {
+fn make_404_page(context: &mut Context, tera: &Tera) -> Html<String> {
     make_error_page(context, "404", tera)
 }
 
-fn make_500_page(context: &mut Context, tera: Tera) -> Html<String> {
+fn make_500_page(context: &mut Context, tera: &Tera) -> Html<String> {
     make_error_page(context, "500", tera)
 }
 
-fn make_error_page(context: &mut Context, code: &str, tera: Tera) -> Html<String> {
+fn make_error_page(context: &mut Context, code: &str, tera: &Tera) -> Html<String> {
     let error = Error {
         code: code.to_string(),
         ..Default::default()
@@ -455,7 +455,7 @@ fn make_error_page(context: &mut Context, code: &str, tera: Tera) -> Html<String
     serve_page(context, "error.html", tera)
 }
 
-fn serve_page(context: &Context, template_name: &str, tera: Tera) -> Html<String> {
+fn serve_page(context: &Context, template_name: &str, tera: &Tera) -> Html<String> {
     let index = tera.render(template_name, context);
     match index {
         Ok(content) => Html(content),

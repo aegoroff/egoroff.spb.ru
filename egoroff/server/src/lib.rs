@@ -13,6 +13,7 @@ use kernel::typograph;
 use serde_json::Value;
 use std::collections::HashMap;
 use std::env;
+use std::sync::Arc;
 use std::time::Duration;
 use std::{fs::File, io::BufReader};
 use std::{net::SocketAddr, path::PathBuf};
@@ -170,13 +171,13 @@ pub fn create_routes(
 
     let storage_path = data_path.join(kernel::sqlite::DATABASE);
 
-    let page_context = PageContext {
+    let page_context = Arc::new(PageContext {
         base_path,
         storage_path,
         tera,
         site_graph,
         site_config,
-    };
+    });
 
     let router = Router::new()
         .route("/", get(handlers::serve_index))

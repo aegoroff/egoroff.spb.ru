@@ -22,12 +22,14 @@ RUN npm run build
 # Build service
 FROM rust:latest as rust-build
 WORKDIR /egoroff
+RUN apt update && apt -y install lld
 COPY --from=node-build /static /static
 RUN ls -lah /static
 COPY apache/ /apache/
 RUN ls -lah /apache
 COPY templates/apache/ /templates/apache/
 RUN ls -lah /templates/apache
+COPY egoroff/.cargo/ ./.cargo/
 COPY egoroff/kernel/ ./kernel/
 COPY egoroff/migrate/ ./migrate/
 COPY egoroff/server/ ./server/

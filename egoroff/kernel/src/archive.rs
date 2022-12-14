@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::Path;
 
 use crate::{
     converter::markdown2html,
@@ -38,7 +38,7 @@ const MONTHS: &[&str] = &[
     "Декабрь",
 ];
 
-pub fn archive(storage_path: PathBuf) -> Archive {
+pub fn archive<P: AsRef<Path>>(storage_path: P) -> Archive {
     let storage = Sqlite::open(storage_path, Mode::ReadOnly).unwrap();
     let aggregated_tags: Vec<TagAggregate> = storage.get_aggregate_tags().unwrap();
     let req = PostsRequest {
@@ -94,7 +94,11 @@ fn group_by_years(dates: Vec<DateTime<Utc>>) -> Vec<Year> {
     result
 }
 
-pub fn get_posts(storage_path: PathBuf, page_size: i32, request: PostsRequest) -> ApiResult {
+pub fn get_posts<P: AsRef<Path>>(
+    storage_path: P,
+    page_size: i32,
+    request: PostsRequest,
+) -> ApiResult {
     let storage = Sqlite::open(storage_path, Mode::ReadOnly).unwrap();
 
     let page = request.page.unwrap_or(1);
