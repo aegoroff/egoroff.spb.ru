@@ -213,10 +213,13 @@ pub fn create_routes(
         .route("/api/v2/navigation/", get(handlers::navigation))
         .route("/api/v2/blog/archive/", get(handlers::serve_archive_api))
         .route("/api/v2/blog/posts/", get(handlers::service_posts_api))
-        .route("/metrics", get(|| async move { 
-            #[cfg(feature = "prometheus")]
-            metric_handle.render() 
-        }))
+        .route(
+            "/metrics",
+            get(|| async move {
+                #[cfg(feature = "prometheus")]
+                metric_handle.render()
+            }),
+        )
         .layer(
             ServiceBuilder::new()
                 .layer(TraceLayer::new_for_http().on_failure(
@@ -231,11 +234,11 @@ pub fn create_routes(
         .layer(RequestBodyLimitLayer::new(20 * 1024 * 1024))
         .layer(Extension(page_context));
 
-        #[cfg(feature = "prometheus")]
-        return router.layer(prometheus_layer);
+    #[cfg(feature = "prometheus")]
+    return router.layer(prometheus_layer);
 
-        #[cfg(not(feature = "prometheus"))]
-        return router;
+    #[cfg(not(feature = "prometheus"))]
+    return router;
 }
 
 async fn shutdown_signal(handle: Handle) {

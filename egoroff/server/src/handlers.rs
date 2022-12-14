@@ -2,7 +2,8 @@ use std::{
     collections::HashMap,
     fs::File,
     io::BufReader,
-    path::{Path, PathBuf}, sync::Arc,
+    path::{Path, PathBuf},
+    sync::Arc,
 };
 
 use axum::{
@@ -70,7 +71,9 @@ struct Apache;
 #[folder = "../../templates/apache"]
 struct ApacheTemplates;
 
-pub async fn serve_index(Extension(page_context): Extension<Arc<PageContext>>) -> impl IntoResponse {
+pub async fn serve_index(
+    Extension(page_context): Extension<Arc<PageContext>>,
+) -> impl IntoResponse {
     let req = PostsRequest {
         ..Default::default()
     };
@@ -95,7 +98,9 @@ pub async fn serve_index(Extension(page_context): Extension<Arc<PageContext>>) -
     serve_page(&context, "welcome.html", &page_context.tera)
 }
 
-pub async fn serve_portfolio(Extension(page_context): Extension<Arc<PageContext>>) -> impl IntoResponse {
+pub async fn serve_portfolio(
+    Extension(page_context): Extension<Arc<PageContext>>,
+) -> impl IntoResponse {
     let section = page_context.site_graph.get_section("portfolio").unwrap();
 
     let mut context = Context::new();
@@ -322,7 +327,9 @@ pub async fn serve_blog_page(
     Either3::E1(serve_page(&context, "blog/post.html", &page_context.tera))
 }
 
-pub async fn serve_search(Extension(page_context): Extension<Arc<PageContext>>) -> impl IntoResponse {
+pub async fn serve_search(
+    Extension(page_context): Extension<Arc<PageContext>>,
+) -> impl IntoResponse {
     let section = page_context.site_graph.get_section("search").unwrap();
 
     let mut context = Context::new();
