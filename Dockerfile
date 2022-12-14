@@ -34,7 +34,7 @@ COPY egoroff/server/ ./server/
 COPY egoroff/egoroff/ ./egoroff/
 COPY egoroff/Cargo.toml ./
 RUN cargo test --workspace --release
-RUN cargo build --workspace --release
+RUN cargo build --workspace --all-features --release
 
 FROM gcr.io/distroless/cc-debian11:latest
 ENV EGOROFF_HTTP_PORT=4200
