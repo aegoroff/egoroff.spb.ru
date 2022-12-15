@@ -137,6 +137,7 @@ pub trait Storage {
     fn count_posts(&self, request: PostsRequest) -> Result<i32, Self::Err>;
     fn get_aggregate_tags(&self) -> Result<Vec<TagAggregate>, Self::Err>;
     fn get_posts_create_dates(&self) -> Result<Vec<DateTime<Utc>>, Self::Err>;
+    fn get_posts_ids(&self) -> Result<Vec<i64>, Self::Err>;
 }
 
 #[cfg(test)]

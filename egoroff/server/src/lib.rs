@@ -40,6 +40,7 @@ mod atom;
 mod domain;
 mod handlers;
 mod body;
+mod sitemap;
 
 pub async fn run() {
     tracing_subscriber::registry()
@@ -183,6 +184,7 @@ pub fn create_routes(
     let router = Router::new()
         .route("/", get(handlers::serve_index))
         .route("/recent.atom", get(handlers::serve_atom))
+        .route("/sitemap.xml", get(handlers::serve_sitemap))
         .route("/news/rss", get(handlers::serve_atom))
         .route("/portfolio/", get(handlers::serve_portfolio))
         .route("/portfolio/:path", get(handlers::serve_portfolio_document))

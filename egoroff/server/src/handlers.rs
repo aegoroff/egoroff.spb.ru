@@ -25,9 +25,9 @@ use rust_embed::RustEmbed;
 use tera::{Context, Tera};
 
 use crate::{
-    atom::{self},
+    atom,
     body::Xml,
-    domain::{BlogRequest, Error, Navigation, PageContext, Poster, Uri},
+    domain::{BlogRequest, Error, Navigation, PageContext, Poster, Uri}, sitemap,
 };
 
 const PAGE_SIZE: i32 = 20;
@@ -366,6 +366,14 @@ pub async fn serve_search(
 
 pub async fn serve_atom(Extension(page_context): Extension<Arc<PageContext>>) -> impl IntoResponse {
     make_atom_content(page_context)
+}
+
+pub async fn serve_sitemap(Extension(page_context): Extension<Arc<PageContext>>) -> impl IntoResponse {
+    let apache_documents = apache_documents(&page_context.base_path);
+    let storage = Sqlite::open(&page_context.storage_path, Mode::ReadOnly).unwrap();
+    let post_ids = storage.get_posts_ids().unwrap();
+    let xml = sitemap::make_site_map(apache_documents, post_ids).unwrap();
+    Xml(xml)
 }
 
 fn make_atom_content(page_context: Arc<PageContext>) -> Xml<String> {

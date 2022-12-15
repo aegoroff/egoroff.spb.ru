@@ -86,7 +86,12 @@ impl Storage for Sqlite {
                     FROM post WHERE is_public = 1 AND created > ?1 AND created < ?2 ORDER BY created DESC  LIMIT ?3 OFFSET ?4",
                     )?;
                     let files = stmt.query_map(
-                        [period.from.timestamp(), period.to.timestamp(), limit as i64, offset as i64],
+                        [
+                            period.from.timestamp(),
+                            period.to.timestamp(),
+                            limit as i64,
+                            offset as i64,
+                        ],
                         Sqlite::map_small_post_row,
                     )?;
                     files.filter_map(|r| r.ok()).collect()
@@ -207,6 +212,17 @@ impl Storage for Sqlite {
             Ok(DateTime::<Utc>::from_utc(created_datetime, Utc))
         })?;
         Ok(dates.filter_map(|r| r.ok()).collect())
+    }
+
+    fn get_posts_ids(&self) -> Result<Vec<i64>, Self::Err> {
+        let mut stmt = self
+            .conn
+            .prepare("SELECT id FROM post WHERE is_public = 1 ORDER BY created DESC")?;
+        let ids = stmt.query_map([], |row| {
+            let id: i64 = row.get(0)?;
+            Ok(id)
+        })?;
+        Ok(ids.filter_map(|r| r.ok()).collect())
     }
 }
 
