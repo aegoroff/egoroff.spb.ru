@@ -103,9 +103,13 @@ pub async fn serve_portfolio(
 ) -> impl IntoResponse {
     let section = page_context.site_graph.get_section("portfolio").unwrap();
 
+    let uri = page_context.site_graph.full_path("portfolio");
+    let title_path = page_context.site_graph.make_title_path(&uri);
+
     let mut context = Context::new();
     context.insert("html_class", "portfolio");
     context.insert(TITLE_KEY, &section.title);
+    context.insert("title_path", &title_path);
     let messages: Vec<String> = Vec::new();
     context.insert("flashed_messages", &messages);
     context.insert("gin_mode", MODE);
@@ -151,7 +155,12 @@ pub async fn serve_portfolio_document(
         }
     };
 
+    let uri = page_context.site_graph.full_path("portfolio");
+    let uri = format!("{uri}/{path}");
+    let title_path = page_context.site_graph.make_title_path(&uri);
+
     context.insert(TITLE_KEY, &doc.title);
+    context.insert("title_path", &title_path);
     context.insert("keywords", &doc.keywords);
     context.insert("meta_description", &doc.description);
 
@@ -219,6 +228,8 @@ fn serve_blog_index(
         page: Some(page),
         ..Default::default()
     };
+    let uri = page_context.site_graph.full_path("blog");
+    let title_path = page_context.site_graph.make_title_path(&uri);
 
     let result = archive::get_posts(&page_context.storage_path, PAGE_SIZE, req);
     let pages_count = result.pages;
@@ -235,6 +246,7 @@ fn serve_blog_index(
     context.insert("keywords", &section.keywords);
     context.insert("meta_description", &section.descr);
     context.insert("request", &request);
+    context.insert("title_path", &title_path);
     let prev_page = if page == 1 { 1 } else { page - 1 };
     let next_page = if page == pages_count {
         pages_count
@@ -297,8 +309,12 @@ pub async fn serve_blog_page(
             ));
         }
     };
+    let uri = page_context.site_graph.full_path("blog");
+    let uri = format!("{uri}/{path}");
+    let title_path = page_context.site_graph.make_title_path(&uri);
 
     context.insert(TITLE_KEY, &post.title);
+    context.insert("title_path", &title_path);
 
     let keywords = post.tags.join(",");
 

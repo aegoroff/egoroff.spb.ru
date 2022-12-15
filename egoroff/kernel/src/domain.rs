@@ -50,14 +50,8 @@ pub struct Period {
 
 impl PostsRequest {
     pub fn as_query_period(&self) -> Option<Period> {
-        let year = match self.year {
-            Some(y) => y,
-            None => 0,
-        };
-        let month = match self.month {
-            Some(m) => m,
-            None => 0,
-        };
+        let year = self.year.unwrap_or(0);
+        let month = self.month.unwrap_or(0);
         if year > 0 {
             let m: u32 = if month > 0 { month as u32 } else { 1 };
             let from_dt = NaiveDate::from_ymd_opt(year, m, 1)?.and_hms_opt(0, 0, 0)?;
@@ -79,7 +73,7 @@ impl PostsRequest {
     fn last_day_of_month(year: i32, month: u32) -> Option<u32> {
         let first_day_of_next_year = NaiveDate::from_ymd_opt(year + 1, 1, 1)?;
         let d = NaiveDate::from_ymd_opt(year, month + 1, 1)
-            .unwrap_or_else(|| first_day_of_next_year)
+            .unwrap_or(first_day_of_next_year)
             .pred_opt()?
             .day();
         Some(d)

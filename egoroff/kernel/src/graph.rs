@@ -1,8 +1,11 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, iter::once};
 
+use itertools::Itertools;
 use petgraph::prelude::*;
 
 const SEP: &str = "/";
+
+const BRAND: &str = "egoroff.spb.ru";
 
 #[derive(Debug, Default, Clone, Deserialize, Serialize)]
 pub struct SiteSection {
@@ -102,7 +105,6 @@ impl SiteGraph {
                 .filter_map(|s| self.map.get(s))
                 .map(|x| x.id.clone())
                 .filter(|x| x != SEP)
-                .collect::<Vec<String>>()
                 .join(SEP);
             format!("{SEP}{path}{SEP}")
         }
@@ -130,6 +132,20 @@ impl SiteGraph {
             .collect();
         (result, current)
     }
+
+    pub fn make_title_path(&self, uri: &str) -> String {
+        if uri == SEP || uri.is_empty() {
+            return String::new();
+        }
+        let (path, _) = self.breadcrumbs(uri);
+
+        path.iter()
+            .skip(1)
+            .rev()
+            .map(|s| s.title.clone())
+            .chain(once(BRAND.to_string()))
+            .join(" | ")
+    }
 }
 
 #[cfg(test)]
@@ -144,7 +160,7 @@ mod tests {
     #[case("bb", "/b/bb/")]
     #[case("ab", "")]
     #[case("/", "/")]
-    fn full_path(#[case] id: &str, #[case] expected: &str) {
+    fn full_path_tests(#[case] id: &str, #[case] expected: &str) {
         // arrange
         let tg = create_test_data();
         let g = SiteGraph::new(tg);
@@ -209,31 +225,54 @@ mod tests {
         assert_eq!(nodes.len(), expected_nodes_count);
     }
 
+    #[rstest]
+    #[case("/a/", "egoroff.spb.ru")]
+    #[case("/a/1.html", "a | egoroff.spb.ru")]
+    #[case("/b/bb/", "b | egoroff.spb.ru")]
+    #[case("/b/bb/1.html", "bb | b | egoroff.spb.ru")]
+    #[case("", "")]
+    #[case("/", "")]
+    fn make_title_path_test(#[case] path: &str, #[case] expected: &str) {
+        // arrange
+        let graph = SiteGraph::new(create_test_data());
+
+        // act
+        let actual = graph.make_title_path(path);
+
+        // assert
+        assert_eq!(actual, expected);
+    }
+
     fn create_test_data() -> SiteSection {
         let aa = SiteSection {
             id: String::from("aa"),
+            title: String::from("aa"),
             ..Default::default()
         };
 
         let bb = SiteSection {
             id: String::from("bb"),
+            title: String::from("bb"),
             ..Default::default()
         };
 
         let a = SiteSection {
             id: String::from("a"),
+            title: String::from("a"),
             children: Some(vec![aa]),
             ..Default::default()
         };
 
         let b = SiteSection {
             id: String::from("b"),
+            title: String::from("b"),
             children: Some(vec![bb]),
             ..Default::default()
         };
 
         SiteSection {
             id: String::from("/"),
+            title: String::from("main"),
             children: Some(vec![a, b]),
             ..Default::default()
         }
