@@ -213,6 +213,8 @@ pub fn create_routes(
         .route("/img/:path", get(handlers::serve_img))
         .route("/apache/:path", get(handlers::serve_apache))
         .route("/apache/images/:path", get(handlers::serve_apache_images))
+        .route("/login", get(handlers::serve_login))
+        .route("/login/", get(handlers::serve_login))
         .route("/api/v2/navigation/", get(handlers::navigation))
         .route("/api/v2/blog/archive/", get(handlers::serve_archive_api))
         .route("/api/v2/blog/posts/", get(handlers::service_posts_api))

@@ -364,6 +364,24 @@ pub async fn serve_search(
     serve_page(&context, "search.html", &page_context.tera)
 }
 
+pub async fn serve_login(
+    Extension(page_context): Extension<Arc<PageContext>>,
+) -> impl IntoResponse {
+
+    let mut context = Context::new();
+    context.insert("html_class", "");
+    context.insert(TITLE_KEY, "Авторизация");
+    let messages: Vec<String> = Vec::new();
+    context.insert("flashed_messages", &messages);
+    context.insert("gin_mode", MODE);
+    context.insert("google_signin_url", "");
+    context.insert("github_signin_url", "");
+    context.insert("ctx", "");
+    context.insert("config", &page_context.site_config);
+
+    serve_page(&context, "signin.html", &page_context.tera)
+}
+
 pub async fn serve_atom(Extension(page_context): Extension<Arc<PageContext>>) -> impl IntoResponse {
     make_atom_content(page_context)
 }
