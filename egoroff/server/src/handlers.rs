@@ -228,19 +228,20 @@ fn serve_blog_index(
         page: Some(page),
         ..Default::default()
     };
-    let uri = page_context.site_graph.full_path("blog");
-    let title_path = page_context.site_graph.make_title_path(&uri);
 
     let result = archive::get_posts(&page_context.storage_path, PAGE_SIZE, req);
     let pages_count = result.pages;
 
     let pages: Vec<i32> = (1..=pages_count).collect();
 
-    let title = if page != 1 {
-        format!("{page}-я страница")
-    } else {
-        section.title
-    };
+    let mut title = section.title;
+    let mut uri = page_context.site_graph.full_path("blog");
+    if page != 1 {
+        title = format!("{page}-я страница");
+        uri = format!("{uri}{page}")
+    }
+
+    let title_path = page_context.site_graph.make_title_path(&uri);
 
     context.insert(TITLE_KEY, &title);
     context.insert("keywords", &section.keywords);
