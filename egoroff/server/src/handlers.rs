@@ -25,7 +25,8 @@ use rust_embed::RustEmbed;
 use tera::{Context, Tera};
 
 use crate::{
-    atom::{self, Xml},
+    atom::{self},
+    body::Xml,
     domain::{BlogRequest, Error, Navigation, PageContext, Poster, Uri},
 };
 
