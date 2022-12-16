@@ -121,6 +121,15 @@ pub struct ApiResult {
     pub status: String,
 }
 
+#[derive(Serialize, Default)]
+pub struct OAuthProvider {
+    pub name: String,
+    pub client_id: String,
+    pub secret: String,
+    pub redirect_url: String,
+    pub scopes: Vec<String>,
+}
+
 pub trait Storage {
     type Err: Debug + Display;
 
@@ -138,6 +147,7 @@ pub trait Storage {
     fn get_aggregate_tags(&self) -> Result<Vec<TagAggregate>, Self::Err>;
     fn get_posts_create_dates(&self) -> Result<Vec<DateTime<Utc>>, Self::Err>;
     fn get_posts_ids(&self) -> Result<Vec<i64>, Self::Err>;
+    fn get_oauth_provider(&self, name: &str) -> Result<OAuthProvider, Self::Err>;
 }
 
 #[cfg(test)]

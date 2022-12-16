@@ -3,7 +3,7 @@ use std::path::Path;
 use chrono::{DateTime, NaiveDateTime, Utc};
 use rusqlite::{params, Connection, Error, ErrorCode, OpenFlags, Row, Transaction};
 
-use crate::domain::{Post, PostsRequest, SmallPost, Storage, TagAggregate};
+use crate::domain::{OAuthProvider, Post, PostsRequest, SmallPost, Storage, TagAggregate};
 
 pub enum Mode {
     ReadWrite,
@@ -223,6 +223,33 @@ impl Storage for Sqlite {
             Ok(id)
         })?;
         Ok(ids.filter_map(|r| r.ok()).collect())
+    }
+
+    fn get_oauth_provider(&self, name: &str) -> Result<crate::domain::OAuthProvider, Self::Err> {
+        let mut stmt = self
+            .conn
+            .prepare("SELECT scope FROM oauth_provider_scopes WHERE provider = ?1")?;
+        let scopes = stmt.query_map([name], |row| {
+            let tag = row.get(0)?;
+            Ok(tag)
+        })?;
+
+        let mut stmt = self.conn.prepare(
+            "SELECT name, clientid, secret, redirect_url FROM oauth_provider WHERE name=?1",
+        )?;
+        let provider: OAuthProvider = stmt.query_row([name], |row| {
+            let provider = OAuthProvider {
+                name: row.get(0)?,
+                client_id: row.get(1)?,
+                secret: row.get(2)?,
+                redirect_url: row.get(3)?,
+                scopes: scopes.filter_map(|r| r.ok()).collect(),
+            };
+
+            Ok(provider)
+        })?;
+
+        Ok(provider)
     }
 }
 
