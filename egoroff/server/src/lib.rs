@@ -205,6 +205,7 @@ pub fn create_routes(
             "/blog/page/:page/",
             get(handlers::serve_blog_not_default_page),
         )
+        .route("/blog/recent.atom", get(handlers::serve_atom))
         .route("/blog/:path", get(handlers::serve_blog_page))
         .route("/search/", get(handlers::serve_search))
         .route("/:path", get(handlers::serve_root))

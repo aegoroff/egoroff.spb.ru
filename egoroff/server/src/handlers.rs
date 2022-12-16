@@ -13,7 +13,6 @@ use axum::{
     response::{Html, IntoResponse},
     Extension, Json,
 };
-use axum_extra::either::{Either, Either3};
 use kernel::{
     archive,
     converter::{markdown2html, xml2html},
@@ -27,7 +26,8 @@ use tera::{Context, Tera};
 use crate::{
     atom,
     body::Xml,
-    domain::{BlogRequest, Error, Navigation, PageContext, Poster, Uri}, sitemap,
+    domain::{BlogRequest, Error, Navigation, PageContext, Poster, Uri},
+    sitemap,
 };
 
 const PAGE_SIZE: i32 = 20;
@@ -127,7 +127,7 @@ pub async fn serve_portfolio(
 pub async fn serve_portfolio_document(
     Extension(page_context): Extension<Arc<PageContext>>,
     extract::Path(path): extract::Path<String>,
-) -> Either<Html<String>, (StatusCode, Html<String>)> {
+) -> (StatusCode, Html<String>) {
     let asset = ApacheTemplates::get(&path);
     let apache_documents = apache_documents(&page_context.base_path);
     let map: HashMap<&str, &crate::domain::Apache> = apache_documents
@@ -149,10 +149,10 @@ pub async fn serve_portfolio_document(
     let doc = match map.get(doc) {
         Some(item) => item,
         None => {
-            return Either::E2((
+            return (
                 StatusCode::NOT_FOUND,
                 make_404_page(&mut context, &page_context.tera),
-            ))
+            )
         }
     };
 
@@ -168,23 +168,22 @@ pub async fn serve_portfolio_document(
     if let Some(file) = asset {
         let content = String::from_utf8_lossy(&file.data);
         context.insert("content", &content);
-        Either::E1(serve_page(
-            &context,
-            "portfolio/apache.html",
-            &page_context.tera,
-        ))
+        (
+            StatusCode::OK,
+            serve_page(&context, "portfolio/apache.html", &page_context.tera),
+        )
     } else {
-        Either::E2((
+        (
             StatusCode::NOT_FOUND,
             make_404_page(&mut context, &page_context.tera),
-        ))
+        )
     }
 }
 
 pub async fn serve_blog_default(
     axum::extract::Query(request): axum::extract::Query<BlogRequest>,
     Extension(page_context): Extension<Arc<PageContext>>,
-) -> Either<Html<String>, (StatusCode, Html<String>)> {
+) -> impl IntoResponse {
     serve_blog_index(request, page_context, None)
 }
 
@@ -192,7 +191,7 @@ pub async fn serve_blog_not_default_page(
     axum::extract::Query(request): axum::extract::Query<BlogRequest>,
     Extension(page_context): Extension<Arc<PageContext>>,
     extract::Path(page): extract::Path<String>,
-) -> Either<Html<String>, (StatusCode, Html<String>)> {
+) -> impl IntoResponse {
     serve_blog_index(request, page_context, Some(page))
 }
 
@@ -200,7 +199,7 @@ fn serve_blog_index(
     request: BlogRequest,
     page_context: Arc<PageContext>,
     page: Option<String>,
-) -> Either<Html<String>, (StatusCode, Html<String>)> {
+) -> (StatusCode, Html<String>) {
     let mut context = Context::new();
     context.insert("html_class", "blog");
     context.insert("gin_mode", MODE);
@@ -214,10 +213,10 @@ fn serve_blog_index(
             Ok(item) => item,
             Err(e) => {
                 tracing::error!("Invalid page: {e:#?}");
-                return Either::E2((
+                return (
                     StatusCode::NOT_FOUND,
                     make_404_page(&mut context, &page_context.tera),
-                ));
+                );
             }
         }
     } else {
@@ -267,17 +266,16 @@ fn serve_blog_index(
     };
     context.insert("poster", &poster);
 
-    Either::E1(serve_page(&context, "blog/index.html", &page_context.tera))
+    (
+        StatusCode::OK,
+        serve_page(&context, "blog/index.html", &page_context.tera),
+    )
 }
 
 pub async fn serve_blog_page(
     Extension(page_context): Extension<Arc<PageContext>>,
     extract::Path(path): extract::Path<String>,
-) -> Either3<Html<String>, Xml<String>, (StatusCode, Html<String>)> {
-    if path == "recent.atom" {
-        return Either3::E2(make_atom_content(page_context));
-    }
-
+) -> (StatusCode, Html<String>) {
     let mut context = Context::new();
     context.insert("html_class", "blog");
     let messages: Vec<String> = Vec::new();
@@ -292,10 +290,10 @@ pub async fn serve_blog_page(
         Ok(item) => item,
         Err(e) => {
             tracing::error!("Invalid post id: {e:#?}. Expected number but was {doc}");
-            return Either3::E3((
+            return (
                 StatusCode::NOT_FOUND,
                 make_404_page(&mut context, &page_context.tera),
-            ));
+            );
         }
     };
 
@@ -305,10 +303,10 @@ pub async fn serve_blog_page(
         Ok(item) => item,
         Err(e) => {
             tracing::error!("Post ID '{id}' not found: {e:#?}");
-            return Either3::E3((
+            return (
                 StatusCode::NOT_FOUND,
                 make_404_page(&mut context, &page_context.tera),
-            ));
+            );
         }
     };
     let uri = page_context.site_graph.full_path("blog");
@@ -332,17 +330,21 @@ pub async fn serve_blog_page(
     };
 
     match content {
-        Ok(c) => context.insert("content", &c),
+        Ok(c) => {
+            context.insert("content", &c);
+            (
+                StatusCode::OK,
+                serve_page(&context, "blog/post.html", &page_context.tera),
+            )
+        }
         Err(e) => {
             tracing::error!("{e:#?}");
-            return Either3::E3((
+            (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 make_500_page(&mut context, &page_context.tera),
-            ));
+            )
         }
     }
-
-    Either3::E1(serve_page(&context, "blog/post.html", &page_context.tera))
 }
 
 pub async fn serve_search(
@@ -367,7 +369,6 @@ pub async fn serve_search(
 pub async fn serve_login(
     Extension(page_context): Extension<Arc<PageContext>>,
 ) -> impl IntoResponse {
-
     let mut context = Context::new();
     context.insert("html_class", "");
     context.insert(TITLE_KEY, "Авторизация");
@@ -383,18 +384,6 @@ pub async fn serve_login(
 }
 
 pub async fn serve_atom(Extension(page_context): Extension<Arc<PageContext>>) -> impl IntoResponse {
-    make_atom_content(page_context)
-}
-
-pub async fn serve_sitemap(Extension(page_context): Extension<Arc<PageContext>>) -> impl IntoResponse {
-    let apache_documents = apache_documents(&page_context.base_path);
-    let storage = Sqlite::open(&page_context.storage_path, Mode::ReadOnly).unwrap();
-    let post_ids = storage.get_posts_ids().unwrap();
-    let xml = sitemap::make_site_map(apache_documents, post_ids).unwrap();
-    Xml(xml)
-}
-
-fn make_atom_content(page_context: Arc<PageContext>) -> Xml<String> {
     let req = PostsRequest {
         ..Default::default()
     };
@@ -402,6 +391,16 @@ fn make_atom_content(page_context: Arc<PageContext>) -> Xml<String> {
     let result = archive::get_posts(&page_context.storage_path, 20, req);
     let xml = atom::from_small_posts(result.result).unwrap();
 
+    Xml(xml)
+}
+
+pub async fn serve_sitemap(
+    Extension(page_context): Extension<Arc<PageContext>>,
+) -> impl IntoResponse {
+    let apache_documents = apache_documents(&page_context.base_path);
+    let storage = Sqlite::open(&page_context.storage_path, Mode::ReadOnly).unwrap();
+    let post_ids = storage.get_posts_ids().unwrap();
+    let xml = sitemap::make_site_map(apache_documents, post_ids).unwrap();
     Xml(xml)
 }
 
