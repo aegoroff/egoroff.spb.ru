@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use kernel::{
-    domain::SmallPost,
+    domain::{ApiResult, SmallPost},
     graph::{SiteGraph, SiteSection},
 };
 use serde::{Deserialize, Serialize};
@@ -66,4 +66,128 @@ pub struct Poster {
 pub struct Error {
     pub code: String,
     pub name: String,
+}
+
+impl Poster {
+    pub fn new(api: ApiResult, page: i32) -> Self {
+        let pages_count = api.pages;
+        let prev_page = if page == 1 { 1 } else { page - 1 };
+        let next_page = if page == pages_count {
+            pages_count
+        } else {
+            page + 1
+        };
+        let pages: Vec<i32> = (1..=pages_count).collect();
+        Self {
+            small_posts: api.result,
+            pages,
+            has_pages: pages_count > 1,
+            has_prev: page > 1,
+            has_next: page < pages_count,
+            page,
+            prev_page,
+            next_page,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn poster_new_with_pages_first_page() {
+        // arrange
+        let api_result = ApiResult {
+            result: vec![],
+            pages: 2,
+            page: 1,
+            count: 40,
+            status: String::new(),
+        };
+        let page = 1;
+
+        // act
+        let poster = Poster::new(api_result, page);
+
+        // assert
+        assert!(poster.has_pages);
+        assert!(poster.has_next);
+        assert!(!poster.has_prev);
+        assert_eq!(poster.pages, vec![1, 2]);
+        assert_eq!(poster.prev_page, 1);
+        assert_eq!(poster.next_page, 2);
+    }
+
+    #[test]
+    fn poster_new_with_pages_last_page() {
+        // arrange
+        let api_result = ApiResult {
+            result: vec![],
+            pages: 2,
+            page: 1,
+            count: 40,
+            status: String::new(),
+        };
+        let page = 2;
+
+        // act
+        let poster = Poster::new(api_result, page);
+
+        // assert
+        assert!(poster.has_pages);
+        assert!(!poster.has_next);
+        assert!(poster.has_prev);
+        assert_eq!(poster.pages, vec![1, 2]);
+        assert_eq!(poster.prev_page, 1);
+        assert_eq!(poster.next_page, 2);
+    }
+
+    #[test]
+    fn poster_new_with_pages_middle_page() {
+        // arrange
+        let api_result = ApiResult {
+            result: vec![],
+            pages: 3,
+            page: 1,
+            count: 60,
+            status: String::new(),
+        };
+        let page = 2;
+
+        // act
+        let poster = Poster::new(api_result, page);
+
+        // assert
+        assert!(poster.has_pages);
+        assert!(poster.has_next);
+        assert!(poster.has_prev);
+        assert_eq!(poster.pages, vec![1, 2, 3]);
+        assert_eq!(poster.prev_page, 1);
+        assert_eq!(poster.next_page, 3);
+    }
+
+    #[test]
+    fn poster_new_without_pages() {
+        // arrange
+        let api_result = ApiResult {
+            result: vec![],
+            pages: 1,
+            page: 1,
+            count: 20,
+            status: String::new(),
+        };
+        let page = 1;
+
+        // act
+        let poster = Poster::new(api_result, page);
+
+        // assert
+        assert!(!poster.has_pages);
+        assert!(!poster.has_next);
+        assert!(!poster.has_prev);
+        assert_eq!(poster.pages, vec![1]);
+        assert_eq!(poster.prev_page, 1);
+        assert_eq!(poster.next_page, 1);
+    }
 }

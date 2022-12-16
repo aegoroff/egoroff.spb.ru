@@ -268,9 +268,8 @@ fn serve_blog_index(
     };
 
     let result = archive::get_posts(&page_context.storage_path, PAGE_SIZE, req);
-    let pages_count = result.pages;
 
-    let pages: Vec<i32> = (1..=pages_count).collect();
+    let poster = Poster::new(result, page);
 
     let mut title = section.title;
     let mut uri = page_context.site_graph.full_path("blog");
@@ -286,22 +285,6 @@ fn serve_blog_index(
     context.insert("meta_description", &section.descr);
     context.insert("request", &request);
     context.insert("title_path", &title_path);
-    let prev_page = if page == 1 { 1 } else { page - 1 };
-    let next_page = if page == pages_count {
-        pages_count
-    } else {
-        page + 1
-    };
-    let poster = Poster {
-        small_posts: result.result,
-        has_pages: pages_count > 0,
-        has_prev: page > 1,
-        has_next: page < pages_count,
-        page,
-        prev_page,
-        next_page,
-        pages,
-    };
     context.insert("poster", &poster);
 
     (
