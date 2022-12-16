@@ -23,15 +23,13 @@ use kernel::{
     graph::SiteSection,
     sqlite::{Mode, Sqlite},
 };
-use oauth2::{
-    basic::BasicClient, reqwest::async_http_client, AuthorizationCode, CsrfToken,
-    PkceCodeChallenge, PkceCodeVerifier, Scope,
-};
+use oauth2::{CsrfToken, PkceCodeVerifier};
 use rust_embed::RustEmbed;
 use tera::{Context, Tera};
 
 use crate::{
     atom,
+    auth::{Authorizer, GoogleAuthorizer},
     body::Xml,
     domain::{AuthRequest, BlogRequest, Error, Navigation, PageContext, Poster, Uri},
     sitemap,
@@ -394,7 +392,7 @@ pub async fn serve_search(
 
 pub async fn serve_login(
     Extension(page_context): Extension<Arc<PageContext>>,
-    Extension(google_auth_client): Extension<Arc<BasicClient>>,
+    Extension(google_authorizer): Extension<Arc<GoogleAuthorizer>>,
     mut session: WritableSession,
 ) -> impl IntoResponse {
     let mut context = Context::new();
@@ -407,26 +405,8 @@ pub async fn serve_login(
     context.insert("ctx", "");
     context.insert("config", &page_context.site_config);
 
-    let storage = Sqlite::open(&page_context.storage_path, Mode::ReadOnly).unwrap();
-
-    let google = match storage.get_oauth_provider("google") {
-        Ok(item) => item,
-        Err(e) => {
-            tracing::error!("Google OAuth provider not found: {e:#?}");
-            return (
-                StatusCode::NOT_FOUND,
-                make_404_page(&mut context, &page_context.tera),
-            );
-        }
-    };
-
-    let (pkce_code_challenge, pkce_code_verifier) = PkceCodeChallenge::new_random_sha256();
-
-    let mut request = google_auth_client.authorize_url(CsrfToken::new_random);
-    for scope in google.scopes {
-        request = request.add_scope(Scope::new(scope));
-    }
-    let (authorize_url, csrf_state) = request.set_pkce_challenge(pkce_code_challenge).url();
+    let (authorize_url, csrf_state, pkce_code_verifier) =
+        google_authorizer.generate_authorize_url();
 
     session.insert("csrf_state", csrf_state).unwrap();
     session
@@ -445,7 +425,7 @@ pub async fn serve_login(
 
 pub async fn google_oauth_callback(
     Query(query): Query<AuthRequest>,
-    Extension(google_auth_client): Extension<Arc<BasicClient>>,
+    Extension(google_authorizer): Extension<Arc<GoogleAuthorizer>>,
     session: ReadableSession,
 ) -> impl IntoResponse {
     tracing::debug!("{query:#?}");
@@ -461,11 +441,7 @@ pub async fn google_oauth_callback(
     }
     match session.get::<PkceCodeVerifier>("pkce_code_verifier") {
         Some(pkce_code_verifier) => {
-            let token = google_auth_client
-                .exchange_code(AuthorizationCode::new(query.code))
-                .set_pkce_verifier(pkce_code_verifier)
-                .request_async(async_http_client)
-                .await;
+            let token = google_authorizer.exchange_code(query.code, pkce_code_verifier);
             match token {
                 Ok(token) => {
                     tracing::info!("token: {token:#?}");

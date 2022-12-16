@@ -1,3 +1,4 @@
+use auth::GoogleAuthorizer;
 use axum::extract::DefaultBodyLimit;
 use axum::Extension;
 use axum::{routing::get, Router};
@@ -177,8 +178,9 @@ pub fn create_routes(
 
     let storage_path = data_path.join(kernel::sqlite::DATABASE);
 
-    let google_auth_client = auth::build_google_oauth_client(storage_path.as_path()).unwrap();
-    let google_auth_client = Arc::new(google_auth_client);
+    let google_authorizer = GoogleAuthorizer::new(storage_path.as_path()).unwrap();
+
+    let google_authorizer = Arc::new(google_authorizer);
 
     let page_context = Arc::new(PageContext {
         base_path,
@@ -256,7 +258,7 @@ pub fn create_routes(
         .layer(DefaultBodyLimit::disable())
         .layer(RequestBodyLimitLayer::new(20 * 1024 * 1024))
         .layer(Extension(page_context))
-        .layer(Extension(google_auth_client))
+        .layer(Extension(google_authorizer))
         .layer(session_layer);
 
     #[cfg(feature = "prometheus")]
