@@ -127,7 +127,7 @@ pub async fn serve_portfolio(
 pub async fn serve_portfolio_document(
     Extension(page_context): Extension<Arc<PageContext>>,
     extract::Path(path): extract::Path<String>,
-) -> (StatusCode, Html<String>) {
+) -> impl IntoResponse {
     let asset = ApacheTemplates::get(&path);
     let apache_documents = apache_documents(&page_context.base_path);
     let map: HashMap<&str, &crate::domain::Apache> = apache_documents
@@ -199,7 +199,7 @@ fn serve_blog_index(
     request: BlogRequest,
     page_context: Arc<PageContext>,
     page: Option<String>,
-) -> (StatusCode, Html<String>) {
+) -> impl IntoResponse {
     let mut context = Context::new();
     context.insert("html_class", "blog");
     context.insert("gin_mode", MODE);
@@ -275,7 +275,7 @@ fn serve_blog_index(
 pub async fn serve_blog_page(
     Extension(page_context): Extension<Arc<PageContext>>,
     extract::Path(path): extract::Path<String>,
-) -> (StatusCode, Html<String>) {
+) -> impl IntoResponse {
     let mut context = Context::new();
     context.insert("html_class", "blog");
     let messages: Vec<String> = Vec::new();
