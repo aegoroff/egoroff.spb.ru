@@ -6,6 +6,8 @@ use std::{
     sync::Arc,
 };
 
+use anyhow::Result;
+
 use axum::{
     body::{Empty, Full},
     extract,
@@ -92,11 +94,24 @@ pub async fn serve_index(
     context.insert("meta_description", &section.descr);
     context.insert("config", &page_context.site_config);
     context.insert("ctx", "");
-    let apache_documents = apache_documents(&page_context.base_path);
-    context.insert("apache_docs", &apache_documents);
     context.insert("posts", &result.result);
 
-    serve_page(&context, "welcome.html", &page_context.tera)
+    match apache_documents(&page_context.base_path) {
+        Ok(docs) => {
+            context.insert("apache_docs", &docs);
+            (
+                StatusCode::OK,
+                serve_page(&context, "welcome.html", &page_context.tera),
+            )
+        }
+        Err(e) => {
+            tracing::error!("{e:#?}");
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                make_500_page(&mut context, &page_context.tera),
+            )
+        }
+    }
 }
 
 pub async fn serve_portfolio(
@@ -118,23 +133,29 @@ pub async fn serve_portfolio(
     context.insert("meta_description", &section.descr);
     context.insert("config", &page_context.site_config);
     context.insert("ctx", "");
-    let apache_documents = apache_documents(&page_context.base_path);
-    context.insert("apache_docs", &apache_documents);
 
-    serve_page(&context, "portfolio/index.html", &page_context.tera)
+    match apache_documents(&page_context.base_path) {
+        Ok(docs) => {
+            context.insert("apache_docs", &docs);
+            (
+                StatusCode::OK,
+                serve_page(&context, "portfolio/index.html", &page_context.tera),
+            )
+        }
+        Err(e) => {
+            tracing::error!("{e:#?}");
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                make_500_page(&mut context, &page_context.tera),
+            )
+        }
+    }
 }
 
 pub async fn serve_portfolio_document(
     Extension(page_context): Extension<Arc<PageContext>>,
     extract::Path(path): extract::Path<String>,
 ) -> impl IntoResponse {
-    let asset = ApacheTemplates::get(&path);
-    let apache_documents = apache_documents(&page_context.base_path);
-    let map: HashMap<&str, &crate::domain::Apache> = apache_documents
-        .iter()
-        .map(|item| (item.id.as_str(), item))
-        .collect();
-
     let mut context = Context::new();
 
     let messages: Vec<String> = Vec::new();
@@ -143,6 +164,22 @@ pub async fn serve_portfolio_document(
     context.insert("html_class", "");
     context.insert("ctx", "");
     context.insert("config", &page_context.site_config);
+
+    let apache_documents = match apache_documents(&page_context.base_path) {
+        Ok(docs) => docs,
+        Err(e) => {
+            tracing::error!("{e:#?}");
+            return (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                make_500_page(&mut context, &page_context.tera),
+            );
+        }
+    };
+
+    let map: HashMap<&str, &crate::domain::Apache> = apache_documents
+        .iter()
+        .map(|item| (item.id.as_str(), item))
+        .collect();
 
     let doc = path.trim_end_matches(".html");
 
@@ -165,6 +202,7 @@ pub async fn serve_portfolio_document(
     context.insert("keywords", &doc.keywords);
     context.insert("meta_description", &doc.description);
 
+    let asset = ApacheTemplates::get(&path);
     if let Some(file) = asset {
         let content = String::from_utf8_lossy(&file.data);
         context.insert("content", &content);
@@ -398,10 +436,20 @@ pub async fn serve_sitemap(
     Extension(page_context): Extension<Arc<PageContext>>,
 ) -> impl IntoResponse {
     let apache_documents = apache_documents(&page_context.base_path);
+
+    let apache_documents = match apache_documents {
+        Ok(docs) => docs,
+        Err(e) => {
+            tracing::error!("{e:#?}");
+            let content = format!("<?xml version=\"1.0\"?><error>{}</error>", e);
+            return (StatusCode::INTERNAL_SERVER_ERROR, Xml(content));
+        }
+    };
+
     let storage = Sqlite::open(&page_context.storage_path, Mode::ReadOnly).unwrap();
     let post_ids = storage.get_posts_ids().unwrap();
     let xml = sitemap::make_site_map(apache_documents, post_ids).unwrap();
-    Xml(xml)
+    (StatusCode::OK, Xml(xml))
 }
 
 pub async fn serve_js(extract::Path(path): extract::Path<String>) -> impl IntoResponse {
@@ -530,11 +578,12 @@ fn get_embed(path: &str, asset: Option<rust_embed::EmbeddedFile>) -> impl IntoRe
     }
 }
 
-fn apache_documents(base_path: &Path) -> Vec<crate::domain::Apache> {
+fn apache_documents(base_path: &Path) -> Result<Vec<crate::domain::Apache>> {
     let config_path = base_path.join("apache/config.json");
-    let file = File::open(config_path).unwrap();
+    let file = File::open(config_path)?;
     let reader = BufReader::new(file);
-    serde_json::from_reader(reader).unwrap()
+    let result = serde_json::from_reader(reader)?;
+    Ok(result)
 }
 
 fn activate_section(sections: Option<Vec<SiteSection>>, current: &str) -> Option<Vec<SiteSection>> {
