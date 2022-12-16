@@ -12,7 +12,7 @@ use axum::{
     body::{Empty, Full},
     extract::{self, Query},
     http::{HeaderValue, StatusCode},
-    response::{Html, IntoResponse},
+    response::{Html, IntoResponse, Redirect},
     Extension, Json,
 };
 use axum_sessions::extractors::{ReadableSession, WritableSession};
@@ -25,7 +25,7 @@ use kernel::{
 };
 use oauth2::{
     basic::BasicClient, reqwest::async_http_client, AuthorizationCode, CsrfToken,
-    PkceCodeChallenge, Scope,
+    PkceCodeChallenge, PkceCodeVerifier, Scope,
 };
 use rust_embed::RustEmbed;
 use tera::{Context, Tera};
@@ -420,7 +420,7 @@ pub async fn serve_login(
         }
     };
 
-    let (pkce_code_challenge, _pkce_code_verifier) = PkceCodeChallenge::new_random_sha256();
+    let (pkce_code_challenge, pkce_code_verifier) = PkceCodeChallenge::new_random_sha256();
 
     let mut request = google_auth_client.authorize_url(CsrfToken::new_random);
     for scope in google.scopes {
@@ -428,7 +428,10 @@ pub async fn serve_login(
     }
     let (authorize_url, csrf_state) = request.set_pkce_challenge(pkce_code_challenge).url();
 
-    session.insert("csrf_state", csrf_state.secret().clone()).unwrap();
+    session.insert("csrf_state", csrf_state).unwrap();
+    session
+        .insert("pkce_code_verifier", pkce_code_verifier)
+        .unwrap();
 
     context.insert(TITLE_KEY, "Авторизация");
     context.insert("google_signin_url", authorize_url.as_str());
@@ -445,27 +448,37 @@ pub async fn google_oauth_callback(
     Extension(google_auth_client): Extension<Arc<BasicClient>>,
     session: ReadableSession,
 ) -> impl IntoResponse {
-
-    match session.get::<String>("csrf_state") {
+    tracing::debug!("{query:#?}");
+    match session.get::<CsrfToken>("csrf_state") {
         Some(original_csrf_state) => {
-            let query_csrf_state = query.state.secret();
-            let csrf_state_equal = original_csrf_state == *query_csrf_state;
-            if !csrf_state_equal {
-                tracing::error!("unauthorized");
-            } else {
+            if original_csrf_state.secret() == query.state.secret() {
                 tracing::info!("authorized");
+            } else {
+                tracing::error!("unauthorized");
             }
-        },
+        }
         None => tracing::error!("No state from session"),
+    }
+    match session.get::<PkceCodeVerifier>("pkce_code_verifier") {
+        Some(pkce_code_verifier) => {
+            let token = google_auth_client
+                .exchange_code(AuthorizationCode::new(query.code))
+                .set_pkce_verifier(pkce_code_verifier)
+                .request_async(async_http_client)
+                .await;
+            match token {
+                Ok(token) => {
+                    tracing::info!("token: {token:#?}");
+                }
+                Err(e) => tracing::error!("token error: {e:#?}"),
+            }
+        }
+        None => tracing::error!("No code verifier from session"),
     }
 
     drop(session);
 
-    let _token = google_auth_client
-        .exchange_code(AuthorizationCode::new(query.code))
-        .request_async(async_http_client)
-        .await
-        .unwrap();
+    Redirect::to("/login")
 }
 
 pub async fn serve_atom(Extension(page_context): Extension<Arc<PageContext>>) -> impl IntoResponse {
