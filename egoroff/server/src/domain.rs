@@ -4,6 +4,7 @@ use kernel::{
     domain::{ApiResult, SmallPost},
     graph::{SiteGraph, SiteSection},
 };
+use oauth2::CsrfToken;
 use serde::{Deserialize, Serialize};
 use tera::Tera;
 
@@ -66,6 +67,13 @@ pub struct Poster {
 pub struct Error {
     pub code: String,
     pub name: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct AuthRequest {
+    pub code: String,
+    pub scope: String,
+    pub state: CsrfToken,
 }
 
 impl Poster {

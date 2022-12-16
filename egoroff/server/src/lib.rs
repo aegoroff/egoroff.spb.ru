@@ -7,9 +7,12 @@ use axum_prometheus::PrometheusMetricLayer;
 
 use axum_server::tls_rustls::RustlsConfig;
 use axum_server::Handle;
+use axum_sessions::async_session::MemoryStore;
+use axum_sessions::{SameSite, SessionLayer};
 use domain::PageContext;
 use kernel::graph::{SiteGraph, SiteSection};
 use kernel::typograph;
+use rand::Rng;
 use serde_json::Value;
 use std::collections::HashMap;
 use std::env;
@@ -37,9 +40,10 @@ struct Ports {
 }
 
 mod atom;
+mod auth;
+mod body;
 mod domain;
 mod handlers;
-mod body;
 mod sitemap;
 
 pub async fn run() {
@@ -173,6 +177,9 @@ pub fn create_routes(
 
     let storage_path = data_path.join(kernel::sqlite::DATABASE);
 
+    let google_auth_client = auth::build_google_oauth_client(storage_path.as_path()).unwrap();
+    let google_auth_client = Arc::new(google_auth_client);
+
     let page_context = Arc::new(PageContext {
         base_path,
         storage_path,
@@ -180,6 +187,12 @@ pub fn create_routes(
         site_graph,
         site_config,
     });
+
+    let secret = rand::thread_rng().gen::<[u8; 64]>();
+    let session_store = MemoryStore::new();
+    let session_layer = SessionLayer::new(session_store, &secret)
+        .with_secure(false)
+        .with_same_site_policy(SameSite::Lax);
 
     let router = Router::new()
         .route("/", get(handlers::serve_index))
@@ -216,6 +229,10 @@ pub fn create_routes(
         .route("/apache/images/:path", get(handlers::serve_apache_images))
         .route("/login", get(handlers::serve_login))
         .route("/login/", get(handlers::serve_login))
+        .route(
+            "/_s/callback/google/authorized/",
+            get(handlers::google_oauth_callback),
+        )
         .route("/api/v2/navigation/", get(handlers::navigation))
         .route("/api/v2/blog/archive/", get(handlers::serve_archive_api))
         .route("/api/v2/blog/posts/", get(handlers::service_posts_api))
@@ -238,7 +255,9 @@ pub fn create_routes(
         )
         .layer(DefaultBodyLimit::disable())
         .layer(RequestBodyLimitLayer::new(20 * 1024 * 1024))
-        .layer(Extension(page_context));
+        .layer(Extension(page_context))
+        .layer(Extension(google_auth_client))
+        .layer(session_layer);
 
     #[cfg(feature = "prometheus")]
     return router.layer(prometheus_layer);

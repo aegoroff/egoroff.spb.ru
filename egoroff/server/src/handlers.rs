@@ -10,11 +10,12 @@ use anyhow::Result;
 
 use axum::{
     body::{Empty, Full},
-    extract,
+    extract::{self, Query},
     http::{HeaderValue, StatusCode},
     response::{Html, IntoResponse},
     Extension, Json,
 };
+use axum_sessions::extractors::{ReadableSession, WritableSession};
 use kernel::{
     archive,
     converter::{markdown2html, xml2html},
@@ -22,13 +23,17 @@ use kernel::{
     graph::SiteSection,
     sqlite::{Mode, Sqlite},
 };
+use oauth2::{
+    basic::BasicClient, reqwest::async_http_client, AuthorizationCode, CsrfToken,
+    PkceCodeChallenge, Scope,
+};
 use rust_embed::RustEmbed;
 use tera::{Context, Tera};
 
 use crate::{
     atom,
     body::Xml,
-    domain::{BlogRequest, Error, Navigation, PageContext, Poster, Uri},
+    domain::{AuthRequest, BlogRequest, Error, Navigation, PageContext, Poster, Uri},
     sitemap,
 };
 
@@ -389,19 +394,78 @@ pub async fn serve_search(
 
 pub async fn serve_login(
     Extension(page_context): Extension<Arc<PageContext>>,
+    Extension(google_auth_client): Extension<Arc<BasicClient>>,
+    mut session: WritableSession,
 ) -> impl IntoResponse {
     let mut context = Context::new();
     context.insert("html_class", "");
-    context.insert(TITLE_KEY, "Авторизация");
+
     let messages: Vec<String> = Vec::new();
     context.insert("flashed_messages", &messages);
     context.insert("gin_mode", MODE);
-    context.insert("google_signin_url", "");
-    context.insert("github_signin_url", "");
+
     context.insert("ctx", "");
     context.insert("config", &page_context.site_config);
 
-    serve_page(&context, "signin.html", &page_context.tera)
+    let storage = Sqlite::open(&page_context.storage_path, Mode::ReadOnly).unwrap();
+
+    let google = match storage.get_oauth_provider("google") {
+        Ok(item) => item,
+        Err(e) => {
+            tracing::error!("Google OAuth provider not found: {e:#?}");
+            return (
+                StatusCode::NOT_FOUND,
+                make_404_page(&mut context, &page_context.tera),
+            );
+        }
+    };
+
+    let (pkce_code_challenge, _pkce_code_verifier) = PkceCodeChallenge::new_random_sha256();
+
+    let mut request = google_auth_client.authorize_url(CsrfToken::new_random);
+    for scope in google.scopes {
+        request = request.add_scope(Scope::new(scope));
+    }
+    let (authorize_url, csrf_state) = request.set_pkce_challenge(pkce_code_challenge).url();
+
+    session.insert("csrf_state", csrf_state.secret().clone()).unwrap();
+
+    context.insert(TITLE_KEY, "Авторизация");
+    context.insert("google_signin_url", authorize_url.as_str());
+    context.insert("github_signin_url", "");
+
+    (
+        StatusCode::OK,
+        serve_page(&context, "signin.html", &page_context.tera),
+    )
+}
+
+pub async fn google_oauth_callback(
+    Query(query): Query<AuthRequest>,
+    Extension(google_auth_client): Extension<Arc<BasicClient>>,
+    session: ReadableSession,
+) -> impl IntoResponse {
+
+    match session.get::<String>("csrf_state") {
+        Some(original_csrf_state) => {
+            let query_csrf_state = query.state.secret();
+            let csrf_state_equal = original_csrf_state == *query_csrf_state;
+            if !csrf_state_equal {
+                tracing::error!("unauthorized");
+            } else {
+                tracing::info!("authorized");
+            }
+        },
+        None => tracing::error!("No state from session"),
+    }
+
+    drop(session);
+
+    let _token = google_auth_client
+        .exchange_code(AuthorizationCode::new(query.code))
+        .request_async(async_http_client)
+        .await
+        .unwrap();
 }
 
 pub async fn serve_atom(Extension(page_context): Extension<Arc<PageContext>>) -> impl IntoResponse {
