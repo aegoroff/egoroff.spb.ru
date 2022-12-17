@@ -7,11 +7,14 @@ use kernel::{
 };
 use oauth2::{
     basic::{BasicClient, BasicTokenType},
-    reqwest::http_client,
+    reqwest::async_http_client,
     url::Url,
-    AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken, EmptyExtraTokenFields,
-    PkceCodeChallenge, PkceCodeVerifier, RedirectUrl, Scope, StandardTokenResponse, TokenUrl,
+    AccessToken, AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken,
+    EmptyExtraTokenFields, PkceCodeChallenge, PkceCodeVerifier, RedirectUrl, Scope,
+    StandardTokenResponse, TokenUrl,
 };
+use reqwest::Client;
+use serde::Deserialize;
 
 pub struct GeneratedUrl {
     pub url: Url,
@@ -19,9 +22,33 @@ pub struct GeneratedUrl {
     pub verifier: Option<PkceCodeVerifier>,
 }
 
+// https://developers.google.com/identity/openid-connect/openid-connect#obtainuserinfo
+#[derive(Deserialize, Default, Debug)]
+pub struct GoogleUser {
+    pub sub: String,
+    pub name: Option<String>,
+    pub given_name: Option<String>,
+    pub family_name: Option<String>,
+    pub profile: Option<String>,
+    pub picture: Option<String>,
+    pub email: Option<String>,
+    pub email_verified: bool,
+    pub gender: Option<String>,
+    pub hd: Option<String>,
+}
+
+#[derive(Deserialize, Default, Debug)]
+pub struct GithubUser {
+    pub login: String,
+    pub id: i64,
+    pub name: Option<String>,
+    pub email: Option<String>,
+}
+
+#[async_trait]
 pub trait Authorizer {
     fn generate_authorize_url(&self) -> GeneratedUrl;
-    fn exchange_code(
+    async fn exchange_code(
         &self,
         code: String,
         pkce_code_verifier: Option<PkceCodeVerifier>,
@@ -48,6 +75,23 @@ impl GoogleAuthorizer {
         )?;
         Ok(Self { client, provider })
     }
+
+    pub async fn get_user(token: &AccessToken) -> Result<GoogleUser> {
+        let uri = "https://www.googleapis.com/oauth2/v3/userinfo";
+
+        let auth_value = format!("Bearer {}", token.secret());
+
+        let client = Client::builder().build()?;
+
+        let response = client
+            .get(uri)
+            .header("Authorization", auth_value)
+            .send()
+            .await?;
+        tracing::debug!("Get user status: {}", response.status());
+        let user = response.json::<GoogleUser>().await?;
+        Ok(user)
+    }
 }
 
 impl GithubAuthorizer {
@@ -60,8 +104,26 @@ impl GithubAuthorizer {
         )?;
         Ok(Self { client, provider })
     }
+
+    pub async fn get_user(token: &AccessToken) -> Result<GithubUser> {
+        let uri = "https://api.github.com/user";
+
+        let auth_value = format!("Bearer {}", token.secret());
+
+        let client = Client::builder().build()?;
+
+        let response = client
+            .get(uri)
+            .header("Authorization", auth_value)
+            .send()
+            .await?;
+        tracing::debug!("Get user status: {}", response.status());
+        let user = response.json::<GithubUser>().await?;
+        Ok(user)
+    }
 }
 
+#[async_trait]
 impl Authorizer for GoogleAuthorizer {
     fn generate_authorize_url(&self) -> GeneratedUrl {
         let (pkce_code_challenge, pkce_code_verifier) = PkceCodeChallenge::new_random_sha256();
@@ -78,26 +140,31 @@ impl Authorizer for GoogleAuthorizer {
         }
     }
 
-    fn exchange_code(
+    async fn exchange_code(
         &self,
         code: String,
         pkce_code_verifier: Option<PkceCodeVerifier>,
     ) -> Result<StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>> {
         let result = match pkce_code_verifier {
-            Some(verifier) => self
-                .client
-                .exchange_code(AuthorizationCode::new(code))
-                .set_pkce_verifier(verifier)
-                .request(http_client)?,
-            None => self
-                .client
-                .exchange_code(AuthorizationCode::new(code))
-                .request(http_client)?,
+            Some(verifier) => {
+                self.client
+                    .exchange_code(AuthorizationCode::new(code))
+                    .set_pkce_verifier(verifier)
+                    .request_async(async_http_client)
+                    .await?
+            }
+            None => {
+                self.client
+                    .exchange_code(AuthorizationCode::new(code))
+                    .request_async(async_http_client)
+                    .await?
+            }
         };
         Ok(result)
     }
 }
 
+#[async_trait]
 impl Authorizer for GithubAuthorizer {
     fn generate_authorize_url(&self) -> GeneratedUrl {
         let mut request = self.client.authorize_url(CsrfToken::new_random);
@@ -112,7 +179,7 @@ impl Authorizer for GithubAuthorizer {
         }
     }
 
-    fn exchange_code(
+    async fn exchange_code(
         &self,
         code: String,
         _pkce_code_verifier: Option<PkceCodeVerifier>,
@@ -120,7 +187,8 @@ impl Authorizer for GithubAuthorizer {
         let result = self
             .client
             .exchange_code(AuthorizationCode::new(code))
-            .request(http_client)?;
+            .request_async(async_http_client)
+            .await?;
         Ok(result)
     }
 }

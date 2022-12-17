@@ -33,6 +33,8 @@ use tracing_subscriber::prelude::__tracing_subscriber_SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 
 use crate::domain::Config;
+#[macro_use]
+extern crate async_trait;
 
 #[derive(Clone, Copy)]
 struct Ports {

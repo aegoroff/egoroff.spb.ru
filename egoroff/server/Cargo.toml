@@ -29,6 +29,8 @@ rust-embed = { version = "6", features = ["include-exclude"] }
 anyhow = "1.0"
 chrono = {version="0.4.23", default-features = false, features = ["serde", "clock", "std"]}
 oauth2 = {version= "4.3.0", features = ["reqwest"] }
+async-trait = "0.1"
+reqwest = { version = "0.11", features = ["json"] }
 
 [dependencies.rand]
 version = "0.8.5"

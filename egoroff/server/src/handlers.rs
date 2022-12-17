@@ -23,7 +23,7 @@ use kernel::{
     graph::SiteSection,
     sqlite::{Mode, Sqlite},
 };
-use oauth2::{CsrfToken, PkceCodeVerifier};
+use oauth2::{CsrfToken, PkceCodeVerifier, TokenResponse};
 use rust_embed::RustEmbed;
 use tera::{Context, Tera};
 
@@ -434,7 +434,6 @@ pub async fn google_oauth_callback(
     Extension(google_authorizer): Extension<Arc<GoogleAuthorizer>>,
     session: ReadableSession,
 ) -> impl IntoResponse {
-    tracing::debug!("{query:#?}");
     match session.get::<CsrfToken>("google_csrf_state") {
         Some(original_csrf_state) => {
             if original_csrf_state.secret() == query.state.secret() {
@@ -447,10 +446,16 @@ pub async fn google_oauth_callback(
     }
     match session.get::<PkceCodeVerifier>("pkce_code_verifier") {
         Some(pkce_code_verifier) => {
-            let token = google_authorizer.exchange_code(query.code, Some(pkce_code_verifier));
+            let token = google_authorizer.exchange_code(query.code, Some(pkce_code_verifier)).await;
             match token {
                 Ok(token) => {
-                    tracing::info!("token: {token:#?}");
+                    let user = GoogleAuthorizer::get_user(token.access_token()).await;
+                    match user {
+                        Ok(u) => {
+                            tracing::info!("{u:#?}");
+                        },
+                        Err(e) => tracing::error!("get user error: {e:#?}"),
+                    }
                 }
                 Err(e) => tracing::error!("token error: {e:#?}"),
             }
@@ -468,7 +473,6 @@ pub async fn github_oauth_callback(
     Extension(github_authorizer): Extension<Arc<GithubAuthorizer>>,
     session: ReadableSession,
 ) -> impl IntoResponse {
-    tracing::debug!("{query:#?}");
     match session.get::<CsrfToken>("github_csrf_state") {
         Some(original_csrf_state) => {
             if original_csrf_state.secret() == query.state.secret() {
@@ -479,10 +483,18 @@ pub async fn github_oauth_callback(
         }
         None => tracing::error!("No state from session"),
     }
-    let token = github_authorizer.exchange_code(query.code, None);
+    let token = github_authorizer.exchange_code(query.code, None).await;
     match token {
         Ok(token) => {
             tracing::info!("token: {token:#?}");
+            let user = GithubAuthorizer::get_user(token.access_token()).await;
+            match user {
+                Ok(u) => {
+                    tracing::info!("{u:#?}");
+                },
+                Err(e) => tracing::error!("get user error: {e:#?}"),
+            }
+            
         }
         Err(e) => tracing::error!("token error: {e:#?}"),
     }
