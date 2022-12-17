@@ -1,4 +1,4 @@
-use auth::GoogleAuthorizer;
+use auth::{GithubAuthorizer, GoogleAuthorizer};
 use axum::extract::DefaultBodyLimit;
 use axum::Extension;
 use axum::{routing::get, Router};
@@ -179,8 +179,10 @@ pub fn create_routes(
     let storage_path = data_path.join(kernel::sqlite::DATABASE);
 
     let google_authorizer = GoogleAuthorizer::new(storage_path.as_path()).unwrap();
+    let github_authorizer = GithubAuthorizer::new(storage_path.as_path()).unwrap();
 
     let google_authorizer = Arc::new(google_authorizer);
+    let github_authorizer = Arc::new(github_authorizer);
 
     let page_context = Arc::new(PageContext {
         base_path,
@@ -235,6 +237,10 @@ pub fn create_routes(
             "/_s/callback/google/authorized/",
             get(handlers::google_oauth_callback),
         )
+        .route(
+            "/_s/callback/github/authorized/",
+            get(handlers::github_oauth_callback),
+        )
         .route("/api/v2/navigation/", get(handlers::navigation))
         .route("/api/v2/blog/archive/", get(handlers::serve_archive_api))
         .route("/api/v2/blog/posts/", get(handlers::service_posts_api))
@@ -259,6 +265,7 @@ pub fn create_routes(
         .layer(RequestBodyLimitLayer::new(20 * 1024 * 1024))
         .layer(Extension(page_context))
         .layer(Extension(google_authorizer))
+        .layer(Extension(github_authorizer))
         .layer(session_layer);
 
     #[cfg(feature = "prometheus")]

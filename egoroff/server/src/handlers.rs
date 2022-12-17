@@ -29,7 +29,7 @@ use tera::{Context, Tera};
 
 use crate::{
     atom,
-    auth::{Authorizer, GoogleAuthorizer},
+    auth::{Authorizer, GithubAuthorizer, GoogleAuthorizer},
     body::Xml,
     domain::{AuthRequest, BlogRequest, Error, Navigation, PageContext, Poster, Uri},
     sitemap,
@@ -393,6 +393,7 @@ pub async fn serve_search(
 pub async fn serve_login(
     Extension(page_context): Extension<Arc<PageContext>>,
     Extension(google_authorizer): Extension<Arc<GoogleAuthorizer>>,
+    Extension(gitgub_authorizer): Extension<Arc<GoogleAuthorizer>>,
     mut session: WritableSession,
 ) -> impl IntoResponse {
     let mut context = Context::new();
@@ -405,17 +406,22 @@ pub async fn serve_login(
     context.insert("ctx", "");
     context.insert("config", &page_context.site_config);
 
-    let (authorize_url, csrf_state, pkce_code_verifier) =
-        google_authorizer.generate_authorize_url();
+    let google_url = google_authorizer.generate_authorize_url();
+    let github_url = gitgub_authorizer.generate_authorize_url();
 
-    session.insert("csrf_state", csrf_state).unwrap();
     session
-        .insert("pkce_code_verifier", pkce_code_verifier)
+        .insert("google_csrf_state", google_url.csrf_state)
+        .unwrap();
+    session
+        .insert("github_csrf_state", github_url.csrf_state)
+        .unwrap();
+    session
+        .insert("pkce_code_verifier", google_url.verifier.unwrap())
         .unwrap();
 
     context.insert(TITLE_KEY, "Авторизация");
-    context.insert("google_signin_url", authorize_url.as_str());
-    context.insert("github_signin_url", "");
+    context.insert("google_signin_url", google_url.url.as_str());
+    context.insert("github_signin_url", github_url.url.as_str());
 
     (
         StatusCode::OK,
@@ -429,7 +435,7 @@ pub async fn google_oauth_callback(
     session: ReadableSession,
 ) -> impl IntoResponse {
     tracing::debug!("{query:#?}");
-    match session.get::<CsrfToken>("csrf_state") {
+    match session.get::<CsrfToken>("google_csrf_state") {
         Some(original_csrf_state) => {
             if original_csrf_state.secret() == query.state.secret() {
                 tracing::info!("authorized");
@@ -441,7 +447,7 @@ pub async fn google_oauth_callback(
     }
     match session.get::<PkceCodeVerifier>("pkce_code_verifier") {
         Some(pkce_code_verifier) => {
-            let token = google_authorizer.exchange_code(query.code, pkce_code_verifier);
+            let token = google_authorizer.exchange_code(query.code, Some(pkce_code_verifier));
             match token {
                 Ok(token) => {
                     tracing::info!("token: {token:#?}");
@@ -450,6 +456,35 @@ pub async fn google_oauth_callback(
             }
         }
         None => tracing::error!("No code verifier from session"),
+    }
+
+    drop(session);
+
+    Redirect::to("/login")
+}
+
+pub async fn github_oauth_callback(
+    Query(query): Query<AuthRequest>,
+    Extension(github_authorizer): Extension<Arc<GithubAuthorizer>>,
+    session: ReadableSession,
+) -> impl IntoResponse {
+    tracing::debug!("{query:#?}");
+    match session.get::<CsrfToken>("github_csrf_state") {
+        Some(original_csrf_state) => {
+            if original_csrf_state.secret() == query.state.secret() {
+                tracing::info!("authorized");
+            } else {
+                tracing::error!("unauthorized");
+            }
+        }
+        None => tracing::error!("No state from session"),
+    }
+    let token = github_authorizer.exchange_code(query.code, None);
+    match token {
+        Ok(token) => {
+            tracing::info!("token: {token:#?}");
+        }
+        Err(e) => tracing::error!("token error: {e:#?}"),
     }
 
     drop(session);
