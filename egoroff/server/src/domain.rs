@@ -72,7 +72,7 @@ pub struct Error {
 #[derive(Debug, Deserialize)]
 pub struct AuthRequest {
     pub code: String,
-    pub scope: String,
+    pub scope: Option<String>,
     pub state: CsrfToken,
 }
 

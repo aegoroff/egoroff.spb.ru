@@ -393,7 +393,7 @@ pub async fn serve_search(
 pub async fn serve_login(
     Extension(page_context): Extension<Arc<PageContext>>,
     Extension(google_authorizer): Extension<Arc<GoogleAuthorizer>>,
-    Extension(gitgub_authorizer): Extension<Arc<GoogleAuthorizer>>,
+    Extension(gitgub_authorizer): Extension<Arc<GithubAuthorizer>>,
     mut session: WritableSession,
 ) -> impl IntoResponse {
     let mut context = Context::new();
