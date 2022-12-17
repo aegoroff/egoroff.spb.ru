@@ -1,8 +1,9 @@
-use auth::{GithubAuthorizer, GoogleAuthorizer};
+use auth::{GithubAuthorizer, GoogleAuthorizer, UserStorage};
 use axum::extract::DefaultBodyLimit;
 use axum::Extension;
 use axum::{routing::get, Router};
 
+use axum_login::AuthLayer;
 #[cfg(feature = "prometheus")]
 use axum_prometheus::PrometheusMetricLayer;
 
@@ -186,6 +187,9 @@ pub fn create_routes(
     let google_authorizer = Arc::new(google_authorizer);
     let github_authorizer = Arc::new(github_authorizer);
 
+    let storage_path_clone = storage_path.clone();
+    let user_store = UserStorage::from(Arc::new(storage_path_clone));
+
     let page_context = Arc::new(PageContext {
         base_path,
         storage_path,
@@ -199,6 +203,8 @@ pub fn create_routes(
     let session_layer = SessionLayer::new(session_store, &secret)
         .with_secure(false)
         .with_same_site_policy(SameSite::Lax);
+
+    let auth_layer = AuthLayer::new(user_store, &secret);
 
     let router = Router::new()
         .route("/", get(handlers::serve_index))
@@ -268,6 +274,7 @@ pub fn create_routes(
         .layer(Extension(page_context))
         .layer(Extension(google_authorizer))
         .layer(Extension(github_authorizer))
+        .layer(auth_layer)
         .layer(session_layer);
 
     #[cfg(feature = "prometheus")]

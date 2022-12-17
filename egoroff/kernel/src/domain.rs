@@ -2,6 +2,22 @@ use chrono::{DateTime, Datelike, NaiveDate, Utc};
 use std::fmt::{Debug, Display};
 
 #[derive(Debug, Default, Clone, Deserialize, Serialize)]
+pub struct User {
+    pub created: DateTime<Utc>,
+    pub id: i64,
+    pub email: String,
+    pub name: String,
+    #[serde(rename(serialize = "username"))]
+    pub login: String,
+    #[serde(rename(serialize = "avatarUrl"))]
+    pub avatar_url: String,
+    pub federated_id: String,
+    pub admin: bool,
+    pub verified: bool,
+    pub provider: String,
+}
+
+#[derive(Debug, Default, Clone, Deserialize, Serialize)]
 pub struct SmallPost {
     #[serde(rename(serialize = "Created"))]
     pub created: DateTime<Utc>,
@@ -148,6 +164,9 @@ pub trait Storage {
     fn get_posts_create_dates(&self) -> Result<Vec<DateTime<Utc>>, Self::Err>;
     fn get_posts_ids(&self) -> Result<Vec<i64>, Self::Err>;
     fn get_oauth_provider(&self, name: &str) -> Result<OAuthProvider, Self::Err>;
+    fn get_user(&self, id: i64) -> Result<User, Self::Err>;
+    fn get_federated_user(&self, federated_id: &str) -> Result<User, Self::Err>;
+    fn upsert_user(&mut self, user: &User) -> Result<(), Self::Err>;
 }
 
 #[cfg(test)]

@@ -76,6 +76,14 @@ pub struct AuthRequest {
     pub state: CsrfToken,
 }
 
+#[derive(Debug, Deserialize, Serialize, Default)]
+pub struct AuthorizedUser {
+    pub login_or_name: String,
+    pub authenticated: bool,
+    pub admin: bool,
+    pub provider: String,
+}
+
 impl Poster {
     pub fn new(api: ApiResult, page: i32) -> Self {
         let pages_count = api.pages;

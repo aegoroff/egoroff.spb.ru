@@ -3,7 +3,7 @@ use std::path::Path;
 use chrono::{DateTime, NaiveDateTime, Utc};
 use rusqlite::{params, Connection, Error, ErrorCode, OpenFlags, Row, Transaction};
 
-use crate::domain::{OAuthProvider, Post, PostsRequest, SmallPost, Storage, TagAggregate};
+use crate::domain::{OAuthProvider, Post, PostsRequest, SmallPost, Storage, TagAggregate, User};
 
 pub enum Mode {
     ReadWrite,
@@ -251,6 +251,77 @@ impl Storage for Sqlite {
 
         Ok(provider)
     }
+
+    fn get_user(&self, id: i64) -> Result<crate::domain::User, Self::Err> {
+        let mut stmt = self
+            .conn
+            .prepare("SELECT created, email, name, login, avatar_url, federated_id, admin, verified, provider FROM user WHERE id=?1")?;
+        let user: User = stmt.query_row([id], |row| {
+            let created: i64 = row.get(0)?;
+            let created_datetime =
+                NaiveDateTime::from_timestamp_opt(created, 0).unwrap_or(NaiveDateTime::MIN);
+            let created = DateTime::<Utc>::from_utc(created_datetime, Utc);
+
+            let user = User {
+                created,
+                id,
+                email: row.get(1)?,
+                name: row.get(2)?,
+                login: row.get(3)?,
+                avatar_url: row.get(4)?,
+                federated_id: row.get(5)?,
+                admin: row.get(6)?,
+                verified: row.get(7)?,
+                provider: row.get(8)?,
+            };
+
+            Ok(user)
+        })?;
+
+        Ok(user)
+    }
+
+    fn get_federated_user(&self, federated_id: &str) -> Result<crate::domain::User, Self::Err> {
+        let mut stmt = self
+            .conn
+            .prepare("SELECT created, email, name, login, avatar_url, federated_id, admin, verified, provider, id FROM user WHERE federated_id=?1")?;
+        let user: User = stmt.query_row([federated_id], |row| {
+            let created: i64 = row.get(0)?;
+            let created_datetime =
+                NaiveDateTime::from_timestamp_opt(created, 0).unwrap_or(NaiveDateTime::MIN);
+            let created = DateTime::<Utc>::from_utc(created_datetime, Utc);
+
+            let user = User {
+                created,
+                id: row.get(9)?,
+                email: row.get(1)?,
+                name: row.get(2)?,
+                login: row.get(3)?,
+                avatar_url: row.get(4)?,
+                federated_id: row.get(5)?,
+                admin: row.get(6)?,
+                verified: row.get(7)?,
+                provider: row.get(8)?,
+            };
+
+            Ok(user)
+        })?;
+
+        Ok(user)
+    }
+
+    fn upsert_user(&mut self, user: &crate::domain::User) -> Result<(), Self::Err> {
+        
+        Sqlite::execute_with_retry(|| {
+            let tx = self.conn.transaction()?;
+            Sqlite::upsert_user(&tx, user);
+            tx.commit()?;
+
+            Ok(())
+        })?;
+
+        Ok(())
+    }
 }
 
 impl Sqlite {
@@ -306,6 +377,18 @@ impl Sqlite {
                 .execute(params![p.id, t])
                 .unwrap_or_default();
         }
+
+        result
+    }
+
+    fn upsert_user(tx: &Transaction, u: &User) -> usize {
+        let result = tx.prepare_cached(
+            "INSERT INTO user (created, email, name, login, avatar_url, federated_id, admin, verified, provider) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
+                ON CONFLICT(id) DO UPDATE SET email=?2, name=?3, login=?4, avatar_url=?5, federated_id=?6, admin=?7, verified=?8, provider=?9",
+        )
+        .unwrap()
+        .execute(params![u.created.timestamp(), u.email, u.name, u.login, u.avatar_url, u.federated_id, u.admin, u.verified, u.provider])
+        .unwrap_or_default();
 
         result
     }

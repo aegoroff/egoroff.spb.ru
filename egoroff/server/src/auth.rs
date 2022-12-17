@@ -1,8 +1,12 @@
-use std::path::Path;
+use std::{
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 
-use anyhow::{Ok, Result};
+use anyhow::Result;
+use axum_login::{secrecy::SecretVec, AuthUser, UserStore};
 use kernel::{
-    domain::{OAuthProvider, Storage},
+    domain::{OAuthProvider, Storage, User},
     sqlite::{Mode, Sqlite},
 };
 use oauth2::{
@@ -16,10 +20,27 @@ use oauth2::{
 use reqwest::{Client, StatusCode};
 use serde::Deserialize;
 
+#[derive(Clone)]
+pub struct UserStorage {
+    db_path: Arc<PathBuf>,
+}
+
+impl UserStorage {
+    pub fn from(db_path: Arc<PathBuf>) -> Self {
+        Self { db_path }
+    }
+}
+
 pub struct GeneratedUrl {
     pub url: Url,
     pub csrf_state: CsrfToken,
     pub verifier: Option<PkceCodeVerifier>,
+}
+
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
+pub enum Role {
+    User,
+    Admin,
 }
 
 // https://developers.google.com/identity/openid-connect/openid-connect#obtainuserinfo
@@ -197,6 +218,47 @@ impl Authorizer for GithubAuthorizer {
             .request_async(async_http_client)
             .await?;
         Ok(result)
+    }
+}
+
+impl AuthUser<Role> for User {
+    fn get_id(&self) -> String {
+        self.federated_id.to_owned()
+    }
+
+    fn get_password_hash(&self) -> SecretVec<u8> {
+        SecretVec::new(self.federated_id.clone().into())
+    }
+
+    fn get_role(&self) -> Option<Role> {
+        if self.admin {
+            Some(Role::Admin)
+        } else {
+            Some(Role::User)
+        }
+    }
+}
+
+#[async_trait]
+impl UserStore<Role> for UserStorage
+where
+    Role: PartialOrd + PartialEq + Clone + Send + Sync + 'static,
+{
+    type User = User;
+
+    async fn load_user(
+        &self,
+        user_id: &str,
+    ) -> std::result::Result<Option<Self::User>, eyre::Error> {
+        let storage = Sqlite::open(self.db_path.as_path(), Mode::ReadOnly)?;
+        let user = storage.get_federated_user(user_id);
+        match user {
+            Ok(user) => Ok(Some(user)),
+            Err(err) => {
+                let msg = format!("{err}");
+                Err(eyre::Error::msg(msg))
+            }
+        }
     }
 }
 
