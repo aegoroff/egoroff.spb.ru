@@ -13,7 +13,7 @@ use oauth2::{
     EmptyExtraTokenFields, PkceCodeChallenge, PkceCodeVerifier, RedirectUrl, Scope,
     StandardTokenResponse, TokenUrl,
 };
-use reqwest::Client;
+use reqwest::{Client, StatusCode};
 use serde::Deserialize;
 
 pub struct GeneratedUrl {
@@ -115,11 +115,18 @@ impl GithubAuthorizer {
         let response = client
             .get(uri)
             .header("Authorization", auth_value)
+            .header("User-Agent", "egoroff.spb.ru API auth request")
             .send()
             .await?;
         tracing::debug!("Get user status: {}", response.status());
-        let user = response.json::<GithubUser>().await?;
-        Ok(user)
+        if response.status() != StatusCode::OK {
+            let error = response.text().await.unwrap_or_default();
+            let err = anyhow::Error::msg(error);
+            Err(err)
+        } else {
+            let user = response.json::<GithubUser>().await?;
+            Ok(user)
+        }
     }
 }
 

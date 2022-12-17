@@ -486,7 +486,6 @@ pub async fn github_oauth_callback(
     let token = github_authorizer.exchange_code(query.code, None).await;
     match token {
         Ok(token) => {
-            tracing::info!("token: {token:#?}");
             let user = GithubAuthorizer::get_user(token.access_token()).await;
             match user {
                 Ok(u) => {
