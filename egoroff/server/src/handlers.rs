@@ -485,6 +485,7 @@ pub async fn google_oauth_callback(
                     match user {
                         Ok(u) => {
                             tracing::info!("{u:#?}");
+                            drop(session);
                             let login_result = login(u, page_context, auth).await;
                             match login_result {
                                 Ok(_) => tracing::info!("login success"),
@@ -511,8 +512,6 @@ pub async fn google_oauth_callback(
             return Redirect::to("/login");
         }
     }
-
-    drop(session);
 
     Redirect::to("/profile/")
 }
@@ -545,6 +544,7 @@ pub async fn github_oauth_callback(
             match user {
                 Ok(u) => {
                     tracing::info!("{u:#?}");
+                    drop(session);
                     let login_result = login(u, page_context, auth).await;
                     match login_result {
                         Ok(_) => tracing::info!("login success"),
@@ -565,8 +565,6 @@ pub async fn github_oauth_callback(
             return Redirect::to("/login");
         }
     }
-
-    drop(session);
 
     Redirect::to("/profile/")
 }
