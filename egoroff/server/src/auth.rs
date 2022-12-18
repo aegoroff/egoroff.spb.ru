@@ -5,6 +5,7 @@ use std::{
 
 use anyhow::Result;
 use axum_login::{secrecy::SecretVec, AuthUser, UserStore};
+use chrono::Utc;
 use kernel::{
     domain::{OAuthProvider, Storage, User},
     sqlite::{Mode, Sqlite},
@@ -43,6 +44,10 @@ pub enum Role {
     Admin,
 }
 
+pub trait ToUser {
+    fn to_user(&self) -> User;
+}
+
 // https://developers.google.com/identity/openid-connect/openid-connect#obtainuserinfo
 #[derive(Deserialize, Default, Debug)]
 pub struct GoogleUser {
@@ -64,6 +69,42 @@ pub struct GithubUser {
     pub id: i64,
     pub name: Option<String>,
     pub email: Option<String>,
+}
+
+impl ToUser for GoogleUser {
+    fn to_user(&self) -> User {
+        let created = Utc::now();
+        User {
+            created,
+            id: 1,
+            email: self.email.clone().unwrap_or_default(),
+            name: String::new(),
+            login: self.name.clone().unwrap_or_default(),
+            avatar_url: self.picture.clone().unwrap_or_default(),
+            federated_id: self.sub.clone(),
+            admin: false,
+            verified: true,
+            provider: "google".to_owned(),
+        }
+    }
+}
+
+impl ToUser for GithubUser {
+    fn to_user(&self) -> User {
+        let created = Utc::now();
+        User {
+            created,
+            id: 1,
+            email: self.email.clone().unwrap_or_default(),
+            name: self.name.clone().unwrap_or_default(),
+            login: self.login.clone(),
+            avatar_url: String::new(),
+            federated_id: format!("{}", self.id),
+            admin: false,
+            verified: true,
+            provider: "github".to_owned(),
+        }
+    }
 }
 
 #[async_trait]

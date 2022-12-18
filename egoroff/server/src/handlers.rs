@@ -8,6 +8,7 @@ use std::{
 
 use anyhow::Result;
 
+use crate::auth::ToUser;
 use axum::{
     body::{Empty, Full},
     extract::{self, Query},
@@ -16,7 +17,6 @@ use axum::{
     Extension, Json,
 };
 use axum_sessions::extractors::{ReadableSession, WritableSession};
-use chrono::Utc;
 use kernel::{
     archive,
     converter::{markdown2html, xml2html},
@@ -437,7 +437,7 @@ pub async fn google_oauth_callback(
     Extension(google_authorizer): Extension<Arc<GoogleAuthorizer>>,
     Extension(page_context): Extension<Arc<PageContext>>,
     session: ReadableSession,
-    mut auth: AuthContext,
+    auth: AuthContext,
 ) -> impl IntoResponse {
     match session.get::<CsrfToken>("google_csrf_state") {
         Some(original_csrf_state) => {
@@ -460,32 +460,10 @@ pub async fn google_oauth_callback(
                     match user {
                         Ok(u) => {
                             tracing::info!("{u:#?}");
-
-                            let created = Utc::now();
-                            let user = User {
-                                created,
-                                id: 1,
-                                email: u.email.unwrap_or_default(),
-                                name: String::new(),
-                                login: u.name.unwrap_or_default(),
-                                avatar_url: u.picture.unwrap_or_default(),
-                                federated_id: u.sub,
-                                admin: false,
-                                verified: true,
-                                provider: "google".to_owned(),
-                            };
-                            let storage = Sqlite::open(&page_context.storage_path, Mode::ReadWrite);
-                            match storage {
-                                Ok(mut storage) => {
-                                    storage.upsert_user(&user).unwrap_or(());
-                                }
-                                Err(e) => tracing::error!("database open error: {e:#?}"),
-                            }
-
-                            let login = auth.login(&user).await;
-                            match login {
-                                Ok(_) => tracing::info!("Login success"),
-                                Err(e) => tracing::error!("login failed: {e:#?}"),
+                            let login_result = login(u, page_context, auth).await;
+                            match login_result {
+                                Ok(_) => tracing::info!("login success"),
+                                Err(e) => tracing::error!("login error: {e:#?}"),
                             }
                         }
                         Err(e) => tracing::error!("get user error: {e:#?}"),
@@ -507,7 +485,7 @@ pub async fn github_oauth_callback(
     Extension(github_authorizer): Extension<Arc<GithubAuthorizer>>,
     Extension(page_context): Extension<Arc<PageContext>>,
     session: ReadableSession,
-    mut auth: AuthContext,
+    auth: AuthContext,
 ) -> impl IntoResponse {
     match session.get::<CsrfToken>("github_csrf_state") {
         Some(original_csrf_state) => {
@@ -526,32 +504,10 @@ pub async fn github_oauth_callback(
             match user {
                 Ok(u) => {
                     tracing::info!("{u:#?}");
-
-                    let created = Utc::now();
-                    let user = User {
-                        created,
-                        id: 1,
-                        email: u.email.unwrap_or_default(),
-                        name: u.name.unwrap_or_default(),
-                        login: u.login,
-                        avatar_url: String::new(),
-                        federated_id: format!("{}", u.id),
-                        admin: false,
-                        verified: true,
-                        provider: "github".to_owned(),
-                    };
-                    let storage = Sqlite::open(&page_context.storage_path, Mode::ReadWrite);
-                    match storage {
-                        Ok(mut storage) => {
-                            storage.upsert_user(&user).unwrap_or(());
-                        }
-                        Err(e) => tracing::error!("database open error: {e:#?}"),
-                    }
-
-                    let login = auth.login(&user).await;
-                    match login {
-                        Ok(_) => tracing::info!("Login success"),
-                        Err(e) => tracing::error!("login failed: {e:#?}"),
+                    let login_result = login(u, page_context, auth).await;
+                    match login_result {
+                        Ok(_) => tracing::info!("login success"),
+                        Err(e) => tracing::error!("login error: {e:#?}"),
                     }
                 }
                 Err(e) => tracing::error!("get user error: {e:#?}"),
@@ -563,6 +519,23 @@ pub async fn github_oauth_callback(
     drop(session);
 
     Redirect::to("/login")
+}
+
+async fn login<U: ToUser>(
+    u: U,
+    page_context: Arc<PageContext>,
+    mut auth: AuthContext,
+) -> Result<()> {
+    let user = u.to_user();
+    let mut storage = Sqlite::open(&page_context.storage_path, Mode::ReadWrite)?;
+    storage.upsert_user(&user).unwrap_or(());
+
+    let login = auth.login(&user).await;
+    match login {
+        Ok(_) => tracing::info!("Login success"),
+        Err(e) => tracing::error!("login failed: {e:#?}"),
+    }
+    Ok(())
 }
 
 pub async fn serve_atom(Extension(page_context): Extension<Arc<PageContext>>) -> impl IntoResponse {
