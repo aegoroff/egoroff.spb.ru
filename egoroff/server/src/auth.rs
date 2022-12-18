@@ -77,10 +77,9 @@ impl ToUser for GoogleUser {
         let created = Utc::now();
         User {
             created,
-            id: 1,
             email: self.email.clone().unwrap_or_default(),
-            name: String::new(),
-            login: self.name.clone().unwrap_or_default(),
+            name: self.name.clone().unwrap_or_default(),
+            login: self.email.clone().unwrap_or_default(),
             avatar_url: self.picture.clone().unwrap_or_default(),
             federated_id: self.sub.clone(),
             admin: false,
@@ -95,7 +94,6 @@ impl ToUser for GithubUser {
         let created = Utc::now();
         User {
             created,
-            id: 1,
             email: self.email.clone().unwrap_or_default(),
             name: self.name.clone().unwrap_or_default(),
             login: self.login.clone(),
@@ -265,7 +263,7 @@ impl Authorizer for GithubAuthorizer {
 
 impl AuthUser<Role> for User {
     fn get_id(&self) -> String {
-        self.federated_id.to_owned()
+        format!("{}_{}", self.provider, self.federated_id)
     }
 
     fn get_password_hash(&self) -> SecretVec<u8> {
@@ -293,7 +291,10 @@ where
         user_id: &str,
     ) -> std::result::Result<Option<Self::User>, eyre::Error> {
         let storage = Sqlite::open(self.db_path.as_path(), Mode::ReadOnly)?;
-        let user = storage.get_federated_user(user_id);
+        let mut id_parts = user_id.split('_');
+        let provider = id_parts.next().ok_or_else(|| eyre::Error::msg("invalid id"))?;
+        let federated_id = id_parts.next().ok_or_else(|| eyre::Error::msg("invalid id"))?;
+        let user = storage.get_user(federated_id, provider);
         match user {
             Ok(user) => Ok(Some(user)),
             Err(err) => {

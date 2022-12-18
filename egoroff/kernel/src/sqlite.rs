@@ -252,11 +252,11 @@ impl Storage for Sqlite {
         Ok(provider)
     }
 
-    fn get_user(&self, id: i64) -> Result<crate::domain::User, Self::Err> {
+    fn get_user(&self, federated_id: &str, provider: &str) -> Result<crate::domain::User, Self::Err> {
         let mut stmt = self
             .conn
-            .prepare("SELECT created, email, name, login, avatar_url, federated_id, admin, verified, provider FROM user WHERE id=?1")?;
-        let user: User = stmt.query_row([id], |row| {
+            .prepare("SELECT created, email, name, login, avatar_url, federated_id, admin, verified, provider FROM user WHERE federated_id=?1 AND provider=?2")?;
+        let user: User = stmt.query_row([federated_id, provider], |row| {
             let created: i64 = row.get(0)?;
             let created_datetime =
                 NaiveDateTime::from_timestamp_opt(created, 0).unwrap_or(NaiveDateTime::MIN);
@@ -264,36 +264,6 @@ impl Storage for Sqlite {
 
             let user = User {
                 created,
-                id,
-                email: row.get(1)?,
-                name: row.get(2)?,
-                login: row.get(3)?,
-                avatar_url: row.get(4)?,
-                federated_id: row.get(5)?,
-                admin: row.get(6)?,
-                verified: row.get(7)?,
-                provider: row.get(8)?,
-            };
-
-            Ok(user)
-        })?;
-
-        Ok(user)
-    }
-
-    fn get_federated_user(&self, federated_id: &str) -> Result<crate::domain::User, Self::Err> {
-        let mut stmt = self
-            .conn
-            .prepare("SELECT created, email, name, login, avatar_url, federated_id, admin, verified, provider, id FROM user WHERE federated_id=?1")?;
-        let user: User = stmt.query_row([federated_id], |row| {
-            let created: i64 = row.get(0)?;
-            let created_datetime =
-                NaiveDateTime::from_timestamp_opt(created, 0).unwrap_or(NaiveDateTime::MIN);
-            let created = DateTime::<Utc>::from_utc(created_datetime, Utc);
-
-            let user = User {
-                created,
-                id: row.get(9)?,
                 email: row.get(1)?,
                 name: row.get(2)?,
                 login: row.get(3)?,
@@ -384,7 +354,7 @@ impl Sqlite {
     fn upsert_user(tx: &Transaction, u: &User) -> usize {
         let result = tx.prepare_cached(
             "INSERT INTO user (created, email, name, login, avatar_url, federated_id, admin, verified, provider) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
-                ON CONFLICT(id) DO UPDATE SET email=?2, name=?3, login=?4, avatar_url=?5, federated_id=?6, admin=?7, verified=?8, provider=?9",
+                ON CONFLICT(federated_id, provider) DO UPDATE SET email=?2, name=?3, login=?4, avatar_url=?5, admin=?7, verified=?8",
         )
         .unwrap()
         .execute(params![u.created.timestamp(), u.email, u.name, u.login, u.avatar_url, u.federated_id, u.admin, u.verified, u.provider])

@@ -4,7 +4,6 @@ use std::{error::Error, fmt::Debug};
 #[derive(Debug, Default, Clone, Deserialize, Serialize)]
 pub struct User {
     pub created: DateTime<Utc>,
-    pub id: i64,
     pub email: String,
     pub name: String,
     #[serde(rename(serialize = "username"))]
@@ -164,8 +163,7 @@ pub trait Storage {
     fn get_posts_create_dates(&self) -> Result<Vec<DateTime<Utc>>, Self::Err>;
     fn get_posts_ids(&self) -> Result<Vec<i64>, Self::Err>;
     fn get_oauth_provider(&self, name: &str) -> Result<OAuthProvider, Self::Err>;
-    fn get_user(&self, id: i64) -> Result<User, Self::Err>;
-    fn get_federated_user(&self, federated_id: &str) -> Result<User, Self::Err>;
+    fn get_user(&self, federated_id: &str, provider: &str) -> Result<User, Self::Err>;
     fn upsert_user(&mut self, user: &User) -> Result<(), Self::Err>;
 }
 
