@@ -69,6 +69,7 @@ pub struct GithubUser {
     pub id: i64,
     pub name: Option<String>,
     pub email: Option<String>,
+    pub avatar_url: Option<String>,
 }
 
 impl ToUser for GoogleUser {
@@ -98,7 +99,7 @@ impl ToUser for GithubUser {
             email: self.email.clone().unwrap_or_default(),
             name: self.name.clone().unwrap_or_default(),
             login: self.login.clone(),
-            avatar_url: String::new(),
+            avatar_url: self.avatar_url.clone().unwrap_or_default(),
             federated_id: format!("{}", self.id),
             admin: false,
             verified: true,
