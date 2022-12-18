@@ -1,5 +1,5 @@
 use chrono::{DateTime, Datelike, NaiveDate, Utc};
-use std::fmt::{Debug, Display};
+use std::{error::Error, fmt::Debug};
 
 #[derive(Debug, Default, Clone, Deserialize, Serialize)]
 pub struct User {
@@ -147,7 +147,7 @@ pub struct OAuthProvider {
 }
 
 pub trait Storage {
-    type Err: Debug + Display;
+    type Err: Sync + Send + Error;
 
     fn new_database(&self) -> Result<(), Self::Err>;
     fn get_small_posts(
