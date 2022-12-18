@@ -208,7 +208,10 @@ pub fn create_routes(
     let auth_layer = AuthLayer::new(user_store, &secret);
 
     let router = Router::new()
+        .route("/profile", get(handlers::serve_profile))
         .route("/profile/", get(handlers::serve_profile))
+        .route("/logout", get(handlers::serve_logout))
+        .route("/logout/", get(handlers::serve_logout))
         // Important all protected routes must be the first in the list
         .route_layer(RequireAuthorizationLayer::<User, Role>::login())
         .route("/", get(handlers::serve_index))

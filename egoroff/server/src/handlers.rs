@@ -432,6 +432,11 @@ pub async fn serve_login(
     )
 }
 
+pub async fn serve_logout(mut auth: AuthContext) -> impl IntoResponse {
+    auth.logout().await;
+    Redirect::to("/login")
+}
+
 pub async fn serve_profile(
     Extension(page_context): Extension<Arc<PageContext>>,
 ) -> impl IntoResponse {
@@ -484,7 +489,6 @@ pub async fn google_oauth_callback(
                     let user = GoogleAuthorizer::get_user(token.access_token()).await;
                     match user {
                         Ok(u) => {
-                            tracing::info!("{u:#?}");
                             drop(session);
                             let login_result = login(u, page_context, auth).await;
                             match login_result {
@@ -543,7 +547,6 @@ pub async fn github_oauth_callback(
             let user = GithubAuthorizer::get_user(token.access_token()).await;
             match user {
                 Ok(u) => {
-                    tracing::info!("{u:#?}");
                     drop(session);
                     let login_result = login(u, page_context, auth).await;
                     match login_result {
@@ -575,7 +578,6 @@ async fn login<U: ToUser>(
     mut auth: AuthContext,
 ) -> Result<()> {
     let user = u.to_user();
-    tracing::info!("Converted user: {user:#?}");
     let mut storage = Sqlite::open(&page_context.storage_path, Mode::ReadWrite)?;
     storage.upsert_user(&user).unwrap_or(());
     tracing::info!("User updated");
