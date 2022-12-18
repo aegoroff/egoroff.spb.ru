@@ -21,8 +21,6 @@ pub async fn serve_login(
     let messages: Vec<String> = Vec::new();
     context.insert("flashed_messages", &messages);
     context.insert("gin_mode", MODE);
-
-    context.insert("ctx", "");
     context.insert("config", &page_context.site_config);
 
     let google_url = google_authorizer.generate_authorize_url();
@@ -62,8 +60,6 @@ pub async fn serve_profile(
     let messages: Vec<String> = Vec::new();
     context.insert("flashed_messages", &messages);
     context.insert("gin_mode", MODE);
-
-    context.insert("ctx", "");
     context.insert("config", &page_context.site_config);
 
     context.insert(TITLE_KEY, "Редактирование профиля");

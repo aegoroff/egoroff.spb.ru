@@ -93,7 +93,6 @@ pub async fn serve_index(
     context.insert("keywords", &section.keywords);
     context.insert("meta_description", &section.descr);
     context.insert("config", &page_context.site_config);
-    context.insert("ctx", "");
     context.insert("posts", &result.result);
 
     match portfolio::apache_documents(&page_context.base_path) {
@@ -127,7 +126,6 @@ pub async fn serve_search(
     context.insert("gin_mode", MODE);
     context.insert("keywords", &section.keywords);
     context.insert("meta_description", &section.descr);
-    context.insert("ctx", "");
     context.insert("config", &page_context.site_config);
 
     serve_page(&context, "search.html", &page_context.tera)

@@ -22,7 +22,6 @@ pub async fn serve_portfolio(
     context.insert("keywords", &section.keywords);
     context.insert("meta_description", &section.descr);
     context.insert("config", &page_context.site_config);
-    context.insert("ctx", "");
 
     match apache_documents(&page_context.base_path) {
         Ok(docs) => {
@@ -52,7 +51,6 @@ pub async fn serve_portfolio_document(
     context.insert("flashed_messages", &messages);
     context.insert("gin_mode", MODE);
     context.insert("html_class", "");
-    context.insert("ctx", "");
     context.insert("config", &page_context.site_config);
 
     let apache_documents = match apache_documents(&page_context.base_path) {

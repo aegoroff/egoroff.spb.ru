@@ -25,7 +25,6 @@ fn serve_blog_index(
     let mut context = Context::new();
     context.insert("html_class", "blog");
     context.insert("gin_mode", MODE);
-    context.insert("ctx", "");
     context.insert("config", &page_context.site_config);
     let messages: Vec<String> = Vec::new();
     context.insert("flashed_messages", &messages);
@@ -86,7 +85,6 @@ pub async fn serve_blog_page(
     let messages: Vec<String> = Vec::new();
     context.insert("flashed_messages", &messages);
     context.insert("gin_mode", MODE);
-    context.insert("ctx", "");
     context.insert("config", &page_context.site_config);
 
     let doc = path.trim_end_matches(".html");
