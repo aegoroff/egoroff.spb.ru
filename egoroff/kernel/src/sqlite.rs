@@ -354,7 +354,7 @@ impl Sqlite {
     fn upsert_user(tx: &Transaction, u: &User) -> usize {
         let result = tx.prepare_cached(
             "INSERT INTO user (created, email, name, login, avatar_url, federated_id, admin, verified, provider) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
-                ON CONFLICT(federated_id, provider) DO UPDATE SET email=?2, name=?3, login=?4, avatar_url=?5, admin=?7, verified=?8",
+                ON CONFLICT(federated_id, provider) DO UPDATE SET email=?2, name=?3, login=?4, avatar_url=?5",
         )
         .unwrap()
         .execute(params![u.created.timestamp(), u.email, u.name, u.login, u.avatar_url, u.federated_id, u.admin, u.verified, u.provider])
