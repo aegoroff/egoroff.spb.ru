@@ -432,6 +432,27 @@ pub async fn serve_login(
     )
 }
 
+pub async fn serve_profile(
+    Extension(page_context): Extension<Arc<PageContext>>,
+) -> impl IntoResponse {
+    let mut context = Context::new();
+    context.insert("html_class", "");
+
+    let messages: Vec<String> = Vec::new();
+    context.insert("flashed_messages", &messages);
+    context.insert("gin_mode", MODE);
+
+    context.insert("ctx", "");
+    context.insert("config", &page_context.site_config);
+
+    context.insert(TITLE_KEY, "Редактирование профиля");
+
+    (
+        StatusCode::OK,
+        serve_page(&context, "profile.html", &page_context.tera),
+    )
+}
+
 pub async fn google_oauth_callback(
     Query(query): Query<AuthRequest>,
     Extension(google_authorizer): Extension<Arc<GoogleAuthorizer>>,
@@ -445,9 +466,13 @@ pub async fn google_oauth_callback(
                 tracing::info!("authorized");
             } else {
                 tracing::error!("unauthorized");
+                return Redirect::to("/login");
             }
         }
-        None => tracing::error!("No state from session"),
+        None => {
+            tracing::error!("No state from session");
+            return Redirect::to("/login");
+        }
     }
     match session.get::<PkceCodeVerifier>("pkce_code_verifier") {
         Some(pkce_code_verifier) => {
@@ -463,21 +488,33 @@ pub async fn google_oauth_callback(
                             let login_result = login(u, page_context, auth).await;
                             match login_result {
                                 Ok(_) => tracing::info!("login success"),
-                                Err(e) => tracing::error!("login error: {e:#?}"),
+                                Err(e) => {
+                                    tracing::error!("login error: {e:#?}");
+                                    return Redirect::to("/login");
+                                }
                             }
                         }
-                        Err(e) => tracing::error!("get user error: {e:#?}"),
+                        Err(e) => {
+                            tracing::error!("get user error: {e:#?}");
+                            return Redirect::to("/login");
+                        }
                     }
                 }
-                Err(e) => tracing::error!("token error: {e:#?}"),
+                Err(e) => {
+                    tracing::error!("token error: {e:#?}");
+                    return Redirect::to("/login");
+                }
             }
         }
-        None => tracing::error!("No code verifier from session"),
+        None => {
+            tracing::error!("No code verifier from session");
+            return Redirect::to("/login");
+        }
     }
 
     drop(session);
 
-    Redirect::to("/login")
+    Redirect::to("/profile/")
 }
 
 pub async fn github_oauth_callback(
@@ -493,9 +530,13 @@ pub async fn github_oauth_callback(
                 tracing::info!("authorized");
             } else {
                 tracing::error!("unauthorized");
+                return Redirect::to("/login");
             }
         }
-        None => tracing::error!("No state from session"),
+        None => {
+            tracing::error!("No state from session");
+            return Redirect::to("/login");
+        }
     }
     let token = github_authorizer.exchange_code(query.code, None).await;
     match token {
@@ -507,18 +548,27 @@ pub async fn github_oauth_callback(
                     let login_result = login(u, page_context, auth).await;
                     match login_result {
                         Ok(_) => tracing::info!("login success"),
-                        Err(e) => tracing::error!("login error: {e:#?}"),
+                        Err(e) => {
+                            tracing::error!("login error: {e:#?}");
+                            return Redirect::to("/login");
+                        }
                     }
                 }
-                Err(e) => tracing::error!("get user error: {e:#?}"),
+                Err(e) => {
+                    tracing::error!("get user error: {e:#?}");
+                    return Redirect::to("/login");
+                }
             }
         }
-        Err(e) => tracing::error!("token error: {e:#?}"),
+        Err(e) => {
+            tracing::error!("token error: {e:#?}");
+            return Redirect::to("/login");
+        }
     }
 
     drop(session);
 
-    Redirect::to("/login")
+    Redirect::to("/profile/")
 }
 
 async fn login<U: ToUser>(
@@ -527,8 +577,10 @@ async fn login<U: ToUser>(
     mut auth: AuthContext,
 ) -> Result<()> {
     let user = u.to_user();
+    tracing::info!("Converted user: {user:#?}");
     let mut storage = Sqlite::open(&page_context.storage_path, Mode::ReadWrite)?;
     storage.upsert_user(&user).unwrap_or(());
+    tracing::info!("User updated");
 
     let login = auth.login(&user).await;
     match login {
@@ -550,6 +602,15 @@ pub async fn serve_user_api_call(auth: AuthContext) -> impl IntoResponse {
             Json(authenticated)
         }
         None => Json(AuthorizedUser {
+            ..Default::default()
+        }),
+    }
+}
+
+pub async fn serve_user_info_api_call(auth: AuthContext) -> impl IntoResponse {
+    match auth.current_user {
+        Some(user) => Json(user),
+        None => Json(User {
             ..Default::default()
         }),
     }

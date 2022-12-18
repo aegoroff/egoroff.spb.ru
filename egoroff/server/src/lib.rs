@@ -1,9 +1,9 @@
-use auth::{GithubAuthorizer, GoogleAuthorizer, UserStorage};
+use auth::{GithubAuthorizer, GoogleAuthorizer, UserStorage, Role};
 use axum::extract::DefaultBodyLimit;
 use axum::Extension;
 use axum::{routing::get, Router};
 
-use axum_login::AuthLayer;
+use axum_login::{AuthLayer, RequireAuthorizationLayer};
 #[cfg(feature = "prometheus")]
 use axum_prometheus::PrometheusMetricLayer;
 
@@ -12,6 +12,7 @@ use axum_server::Handle;
 use axum_sessions::async_session::MemoryStore;
 use axum_sessions::{SameSite, SessionLayer};
 use domain::PageContext;
+use kernel::domain::User;
 use kernel::graph::{SiteGraph, SiteSection};
 use kernel::typograph;
 use rand::Rng;
@@ -207,6 +208,9 @@ pub fn create_routes(
     let auth_layer = AuthLayer::new(user_store, &secret);
 
     let router = Router::new()
+        .route("/profile/", get(handlers::serve_profile))
+        // Important all protected routes must be the first in the list
+        .route_layer(RequireAuthorizationLayer::<User, Role>::login())
         .route("/", get(handlers::serve_index))
         .route("/recent.atom", get(handlers::serve_atom))
         .route("/sitemap.xml", get(handlers::serve_sitemap))
@@ -254,6 +258,8 @@ pub fn create_routes(
         .route("/api/v2/blog/posts/", get(handlers::service_posts_api))
         .route("/api/v2/auth/user/", get(handlers::serve_user_api_call))
         .route("/api/v2/auth/user", get(handlers::serve_user_api_call))
+        .route("/api/v2/auth/userinfo", get(handlers::serve_user_info_api_call))
+        .route("/api/v2/auth/userinfo/", get(handlers::serve_user_info_api_call))
         .route(
             "/metrics",
             get(|| async move {
