@@ -252,6 +252,8 @@ pub fn create_routes(
         .route("/api/v2/navigation/", get(handlers::navigation))
         .route("/api/v2/blog/archive/", get(handlers::serve_archive_api))
         .route("/api/v2/blog/posts/", get(handlers::service_posts_api))
+        .route("/api/v2/auth/user/", get(handlers::serve_user_api_call))
+        .route("/api/v2/auth/user", get(handlers::serve_user_api_call))
         .route(
             "/metrics",
             get(|| async move {

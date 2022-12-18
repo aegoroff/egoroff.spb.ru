@@ -8,7 +8,7 @@ use std::{
 
 use anyhow::Result;
 
-use crate::auth::ToUser;
+use crate::{auth::ToUser, domain::AuthorizedUser};
 use axum::{
     body::{Empty, Full},
     extract::{self, Query},
@@ -536,6 +536,23 @@ async fn login<U: ToUser>(
         Err(e) => tracing::error!("login failed: {e:#?}"),
     }
     Ok(())
+}
+
+pub async fn serve_user_api_call(auth: AuthContext) -> impl IntoResponse {
+    match auth.current_user {
+        Some(user) => {
+            let authenticated = AuthorizedUser {
+                login_or_name: user.login,
+                authenticated: true,
+                admin: user.admin,
+                provider: user.provider,
+            };
+            Json(authenticated)
+        }
+        None => Json(AuthorizedUser {
+            ..Default::default()
+        }),
+    }
 }
 
 pub async fn serve_atom(Extension(page_context): Extension<Arc<PageContext>>) -> impl IntoResponse {
