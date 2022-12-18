@@ -208,37 +208,37 @@ pub fn create_routes(
     let auth_layer = AuthLayer::new(user_store, &secret);
 
     let router = Router::new()
-        .route("/profile", get(handlers::serve_profile))
-        .route("/profile/", get(handlers::serve_profile))
-        .route("/logout", get(handlers::serve_logout))
-        .route("/logout/", get(handlers::serve_logout))
+        .route("/profile", get(handlers::auth::serve_profile))
+        .route("/profile/", get(handlers::auth::serve_profile))
+        .route("/logout", get(handlers::auth::serve_logout))
+        .route("/logout/", get(handlers::auth::serve_logout))
         // Important all protected routes must be the first in the list
         .route_layer(RequireAuthorizationLayer::<User, Role>::login())
         .route("/", get(handlers::serve_index))
-        .route("/recent.atom", get(handlers::serve_atom))
+        .route("/recent.atom", get(handlers::blog::serve_atom))
         .route("/sitemap.xml", get(handlers::serve_sitemap))
-        .route("/news/rss", get(handlers::serve_atom))
-        .route("/portfolio/", get(handlers::serve_portfolio))
-        .route("/portfolio/:path", get(handlers::serve_portfolio_document))
+        .route("/news/rss", get(handlers::blog::serve_atom))
+        .route("/portfolio/", get(handlers::portfolio::serve_portfolio))
+        .route("/portfolio/:path", get(handlers::portfolio::serve_portfolio_document))
         .route(
             "/portfolio/apache/:path",
-            get(handlers::serve_portfolio_document),
+            get(handlers::portfolio::serve_portfolio_document),
         )
         .route(
             "/portfolio/portfolio/:path",
-            get(handlers::serve_portfolio_document),
+            get(handlers::portfolio::serve_portfolio_document),
         )
-        .route("/blog/", get(handlers::serve_blog_default))
+        .route("/blog/", get(handlers::blog::serve_blog_default))
         .route(
             "/blog/page/:page",
-            get(handlers::serve_blog_not_default_page),
+            get(handlers::blog::serve_blog_not_default_page),
         )
         .route(
             "/blog/page/:page/",
-            get(handlers::serve_blog_not_default_page),
+            get(handlers::blog::serve_blog_not_default_page),
         )
-        .route("/blog/recent.atom", get(handlers::serve_atom))
-        .route("/blog/:path", get(handlers::serve_blog_page))
+        .route("/blog/recent.atom", get(handlers::blog::serve_atom))
+        .route("/blog/:path", get(handlers::blog::serve_blog_page))
         .route("/search/", get(handlers::serve_search))
         .route("/:path", get(handlers::serve_root))
         .route("/js/:path", get(handlers::serve_js))
@@ -246,23 +246,23 @@ pub fn create_routes(
         .route("/img/:path", get(handlers::serve_img))
         .route("/apache/:path", get(handlers::serve_apache))
         .route("/apache/images/:path", get(handlers::serve_apache_images))
-        .route("/login", get(handlers::serve_login))
-        .route("/login/", get(handlers::serve_login))
+        .route("/login", get(handlers::auth::serve_login))
+        .route("/login/", get(handlers::auth::serve_login))
         .route(
             "/_s/callback/google/authorized/",
-            get(handlers::google_oauth_callback),
+            get(handlers::auth::google_oauth_callback),
         )
         .route(
             "/_s/callback/github/authorized/",
-            get(handlers::github_oauth_callback),
+            get(handlers::auth::github_oauth_callback),
         )
         .route("/api/v2/navigation/", get(handlers::navigation))
-        .route("/api/v2/blog/archive/", get(handlers::serve_archive_api))
-        .route("/api/v2/blog/posts/", get(handlers::service_posts_api))
-        .route("/api/v2/auth/user/", get(handlers::serve_user_api_call))
-        .route("/api/v2/auth/user", get(handlers::serve_user_api_call))
-        .route("/api/v2/auth/userinfo", get(handlers::serve_user_info_api_call))
-        .route("/api/v2/auth/userinfo/", get(handlers::serve_user_info_api_call))
+        .route("/api/v2/blog/archive/", get(handlers::blog::serve_archive_api))
+        .route("/api/v2/blog/posts/", get(handlers::blog::service_posts_api))
+        .route("/api/v2/auth/user/", get(handlers::auth::serve_user_api_call))
+        .route("/api/v2/auth/user", get(handlers::auth::serve_user_api_call))
+        .route("/api/v2/auth/userinfo", get(handlers::auth::serve_user_info_api_call))
+        .route("/api/v2/auth/userinfo/", get(handlers::auth::serve_user_info_api_call))
         .route(
             "/metrics",
             get(|| async move {
