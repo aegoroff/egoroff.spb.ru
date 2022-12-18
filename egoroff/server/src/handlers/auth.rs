@@ -2,6 +2,11 @@ use super::*;
 use crate::{auth::ToUser, domain::AuthorizedUser};
 use oauth2::{CsrfToken, PkceCodeVerifier, TokenResponse};
 
+use crate::{
+    auth::{Authorizer, GithubAuthorizer, GoogleAuthorizer, Role, UserStorage},
+    domain::AuthRequest,
+};
+
 type AuthContext = axum_login::extractors::AuthContext<User, UserStorage, Role>;
 
 pub async fn serve_login(

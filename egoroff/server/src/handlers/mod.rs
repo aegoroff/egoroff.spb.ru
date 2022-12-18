@@ -29,9 +29,8 @@ use tera::{Context, Tera};
 
 use crate::{
     atom,
-    auth::{Authorizer, GithubAuthorizer, GoogleAuthorizer, Role, UserStorage},
     body::Xml,
-    domain::{AuthRequest, BlogRequest, Error, Navigation, PageContext, Poster, Uri},
+    domain::{BlogRequest, Error, Navigation, PageContext, Poster, Uri},
     sitemap,
 };
 
