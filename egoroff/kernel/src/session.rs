@@ -31,6 +31,9 @@ impl SqliteSessionStore {
 
     fn create_connection(path: &PathBuf) -> Result<Connection> {
         let conn = Connection::open(path.as_path())?;
+        conn.pragma_update(None, "synchronous", "OFF")?;
+        conn.pragma_update(None, "journal_mode", "MEMORY")?;
+        conn.pragma_update(None, "temp_store", "MEMORY")?;
         Ok(conn)
     }
 }
