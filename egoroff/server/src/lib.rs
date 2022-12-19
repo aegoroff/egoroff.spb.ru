@@ -1,4 +1,4 @@
-use auth::{GithubAuthorizer, GoogleAuthorizer, UserStorage, Role};
+use auth::{GithubAuthorizer, GoogleAuthorizer, Role, UserStorage};
 use axum::extract::DefaultBodyLimit;
 use axum::Extension;
 use axum::{routing::get, Router};
@@ -9,11 +9,11 @@ use axum_prometheus::PrometheusMetricLayer;
 
 use axum_server::tls_rustls::RustlsConfig;
 use axum_server::Handle;
-use axum_sessions::async_session::MemoryStore;
 use axum_sessions::{SameSite, SessionLayer};
 use domain::PageContext;
 use kernel::domain::User;
 use kernel::graph::{SiteGraph, SiteSection};
+use kernel::session::SqliteSessionStore;
 use kernel::typograph;
 use rand::Rng;
 use serde_json::Value;
@@ -50,6 +50,8 @@ mod body;
 mod domain;
 mod handlers;
 mod sitemap;
+
+pub const SESSIONS_DATABASE: &str = "egoroff_sessions.db";
 
 pub async fn run() {
     tracing_subscriber::registry()
@@ -181,6 +183,7 @@ pub fn create_routes(
     let (prometheus_layer, metric_handle) = PrometheusMetricLayer::pair();
 
     let storage_path = data_path.join(kernel::sqlite::DATABASE);
+    let sessions_path = data_path.join(SESSIONS_DATABASE);
 
     let google_authorizer = GoogleAuthorizer::new(storage_path.as_path()).unwrap();
     let github_authorizer = GithubAuthorizer::new(storage_path.as_path()).unwrap();
@@ -200,7 +203,7 @@ pub fn create_routes(
     });
 
     let secret = rand::thread_rng().gen::<[u8; 64]>();
-    let session_store = MemoryStore::new();
+    let session_store = SqliteSessionStore::open(sessions_path).unwrap();
     let session_layer = SessionLayer::new(session_store, &secret)
         .with_secure(false)
         .with_same_site_policy(SameSite::Lax);
@@ -219,7 +222,10 @@ pub fn create_routes(
         .route("/sitemap.xml", get(handlers::serve_sitemap))
         .route("/news/rss", get(handlers::blog::serve_atom))
         .route("/portfolio/", get(handlers::portfolio::serve_portfolio))
-        .route("/portfolio/:path", get(handlers::portfolio::serve_portfolio_document))
+        .route(
+            "/portfolio/:path",
+            get(handlers::portfolio::serve_portfolio_document),
+        )
         .route(
             "/portfolio/apache/:path",
             get(handlers::portfolio::serve_portfolio_document),
@@ -257,12 +263,30 @@ pub fn create_routes(
             get(handlers::auth::github_oauth_callback),
         )
         .route("/api/v2/navigation/", get(handlers::navigation))
-        .route("/api/v2/blog/archive/", get(handlers::blog::serve_archive_api))
-        .route("/api/v2/blog/posts/", get(handlers::blog::service_posts_api))
-        .route("/api/v2/auth/user/", get(handlers::auth::serve_user_api_call))
-        .route("/api/v2/auth/user", get(handlers::auth::serve_user_api_call))
-        .route("/api/v2/auth/userinfo", get(handlers::auth::serve_user_info_api_call))
-        .route("/api/v2/auth/userinfo/", get(handlers::auth::serve_user_info_api_call))
+        .route(
+            "/api/v2/blog/archive/",
+            get(handlers::blog::serve_archive_api),
+        )
+        .route(
+            "/api/v2/blog/posts/",
+            get(handlers::blog::service_posts_api),
+        )
+        .route(
+            "/api/v2/auth/user/",
+            get(handlers::auth::serve_user_api_call),
+        )
+        .route(
+            "/api/v2/auth/user",
+            get(handlers::auth::serve_user_api_call),
+        )
+        .route(
+            "/api/v2/auth/userinfo",
+            get(handlers::auth::serve_user_info_api_call),
+        )
+        .route(
+            "/api/v2/auth/userinfo/",
+            get(handlers::auth::serve_user_info_api_call),
+        )
         .route(
             "/metrics",
             get(|| async move {
