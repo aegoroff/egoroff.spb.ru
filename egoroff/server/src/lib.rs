@@ -206,6 +206,7 @@ pub fn create_routes(
     let session_store = SqliteSessionStore::open(sessions_path).unwrap();
     let session_layer = SessionLayer::new(session_store, &secret)
         .with_secure(false)
+        .with_session_ttl(Some(Duration::from_secs(86400 * 14)))
         .with_same_site_policy(SameSite::Lax);
 
     let auth_layer = AuthLayer::new(user_store, &secret);
