@@ -216,6 +216,22 @@ pub fn create_routes(
         .route("/profile/", get(handlers::auth::serve_profile))
         .route("/logout", get(handlers::auth::serve_logout))
         .route("/logout/", get(handlers::auth::serve_logout))
+        .route(
+            "/api/v2/auth/user/",
+            get(handlers::auth::serve_user_api_call),
+        )
+        .route(
+            "/api/v2/auth/user",
+            get(handlers::auth::serve_user_api_call),
+        )
+        .route(
+            "/api/v2/auth/userinfo",
+            get(handlers::auth::serve_user_info_api_call),
+        )
+        .route(
+            "/api/v2/auth/userinfo/",
+            get(handlers::auth::serve_user_info_api_call),
+        )
         // Important all protected routes must be the first in the list
         .route_layer(RequireAuthorizationLayer::<User, Role>::login())
         .route("/", get(handlers::serve_index))
@@ -271,22 +287,6 @@ pub fn create_routes(
         .route(
             "/api/v2/blog/posts/",
             get(handlers::blog::service_posts_api),
-        )
-        .route(
-            "/api/v2/auth/user/",
-            get(handlers::auth::serve_user_api_call),
-        )
-        .route(
-            "/api/v2/auth/user",
-            get(handlers::auth::serve_user_api_call),
-        )
-        .route(
-            "/api/v2/auth/userinfo",
-            get(handlers::auth::serve_user_info_api_call),
-        )
-        .route(
-            "/api/v2/auth/userinfo/",
-            get(handlers::auth::serve_user_info_api_call),
         )
         .route(
             "/metrics",
