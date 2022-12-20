@@ -1,4 +1,7 @@
-use std::{path::PathBuf, sync::Arc};
+use std::{
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 
 use async_session::{async_trait, serde_json, Result, Session, SessionStore};
 use chrono::Utc;
@@ -29,8 +32,8 @@ impl SqliteSessionStore {
         })
     }
 
-    fn create_connection(path: &PathBuf) -> Result<Connection> {
-        let conn = Connection::open(path.as_path())?;
+    fn create_connection(path: &Path) -> Result<Connection> {
+        let conn = Connection::open(path)?;
         conn.pragma_update(None, "synchronous", "OFF")?;
         conn.pragma_update(None, "journal_mode", "MEMORY")?;
         conn.pragma_update(None, "temp_store", "MEMORY")?;
