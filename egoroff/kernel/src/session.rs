@@ -13,7 +13,7 @@ pub struct SqliteSessionStore {
 }
 
 impl SqliteSessionStore {
-    pub fn open(path: PathBuf) -> Result<impl SessionStore> {
+    pub fn open(path: PathBuf) -> Result<SqliteSessionStore> {
         let conn = SqliteSessionStore::create_connection(&path)?;
         let mut stmt = conn.prepare(
             r#"
@@ -30,6 +30,19 @@ impl SqliteSessionStore {
         Ok(Self {
             path: Arc::new(path),
         })
+    }
+
+    pub fn cleanup(&self) -> Result<()> {
+        let conn = SqliteSessionStore::create_connection(&self.path)?;
+        let mut stmt = conn.prepare(
+            r#"
+            DELETE FROM session WHERE expires < ?1
+            "#,
+        )?;
+
+        stmt.execute(params![Utc::now().timestamp()])?;
+
+        Ok(())
     }
 
     fn create_connection(path: &Path) -> Result<Connection> {

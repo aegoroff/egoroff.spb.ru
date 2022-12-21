@@ -204,10 +204,12 @@ pub fn create_routes(
 
     let secret = rand::thread_rng().gen::<[u8; 64]>();
     let session_store = SqliteSessionStore::open(sessions_path).unwrap();
+    session_store.cleanup().unwrap();
     let session_layer = SessionLayer::new(session_store, &secret)
         .with_secure(false)
         .with_session_ttl(Some(Duration::from_secs(86400 * 14)))
-        .with_same_site_policy(SameSite::Lax);
+        .with_same_site_policy(SameSite::Lax)
+        .with_persistence_policy(axum_sessions::PersistencePolicy::ExistingOnly);
 
     let auth_layer = AuthLayer::new(user_store, &secret);
 
