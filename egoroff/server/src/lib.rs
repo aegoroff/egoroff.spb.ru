@@ -203,8 +203,9 @@ pub fn create_routes(
     });
 
     let secret = rand::thread_rng().gen::<[u8; 64]>();
-    let session_store = SqliteSessionStore::open(sessions_path).unwrap();
+    let session_store = SqliteSessionStore::open(sessions_path, &secret).unwrap();
     session_store.cleanup().unwrap();
+    let secret = session_store.get_secret().unwrap();
     let session_layer = SessionLayer::new(session_store, &secret)
         .with_secure(false)
         .with_session_ttl(Some(Duration::from_secs(86400 * 14)))

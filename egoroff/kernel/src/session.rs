@@ -13,19 +13,41 @@ pub struct SqliteSessionStore {
 }
 
 impl SqliteSessionStore {
-    pub fn open(path: PathBuf) -> Result<SqliteSessionStore> {
+    pub fn open(path: PathBuf, secret: &[u8]) -> Result<SqliteSessionStore> {
         let conn = SqliteSessionStore::create_connection(&path)?;
-        let mut stmt = conn.prepare(
+        conn.execute(
             r#"
-            CREATE TABLE IF NOT EXISTS session (
-                id TEXT PRIMARY KEY NOT NULL,
-                expires INTEGER NULL,
-                session TEXT NOT NULL
-            )
-            "#,
+                    CREATE TABLE IF NOT EXISTS session (
+                        id TEXT PRIMARY KEY NOT NULL,
+                        expires INTEGER NULL,
+                        session TEXT NOT NULL
+                    )
+                 "#,
+            [],
         )?;
 
-        stmt.execute([])?;
+        conn.execute(
+            r#"
+                    CREATE TABLE IF NOT EXISTS secret (
+                        secret TEXT PRIMARY KEY NOT NULL
+                    )
+                 "#,
+            [],
+        )?;
+
+        let mut stmt = conn.prepare("SELECT COUNT(1) FROM secret")?;
+        let secret_count: i32 = stmt.query_row([], |row| row.get(0))?;
+        if secret_count == 0 {
+            let mut stmt = conn.prepare(
+                r#"
+                INSERT INTO secret
+                  (secret) VALUES (?1)
+                "#,
+            )?;
+            let secret = base64::encode(secret);
+            let parameters = params![secret];
+            stmt.execute(parameters)?;
+        }
 
         Ok(Self {
             path: Arc::new(path),
@@ -43,6 +65,19 @@ impl SqliteSessionStore {
         stmt.execute(params![Utc::now().timestamp()])?;
 
         Ok(())
+    }
+
+    pub fn get_secret(&self) -> Result<Vec<u8>> {
+        let conn = SqliteSessionStore::create_connection(&self.path)?;
+        let mut stmt = conn.prepare("SELECT secret FROM secret")?;
+        let encoded: String = stmt.query_row([], |row| {
+            let s: String = row.get(0)?;
+            Ok(s)
+        })?;
+
+        let result = base64::decode(encoded)?;
+
+        Ok(result)
     }
 
     fn create_connection(path: &Path) -> Result<Connection> {
