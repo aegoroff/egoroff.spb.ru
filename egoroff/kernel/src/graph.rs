@@ -112,25 +112,25 @@ impl SiteGraph {
 
     pub fn breadcrumbs(&self, uri: &str) -> (Vec<SiteSection>, String) {
         let root = self.get_section("/").unwrap();
-        let mut result = vec![root];
         let mut current = String::from(uri);
-        let _: Vec<()> = uri
-            .split('/')
-            .enumerate()
-            .filter(|(_, part)| !part.is_empty())
-            .map(|(i, part)| {
-                let section = self.get_section(part);
-                if let Some(s) = section {
-                    if self.full_path(&s.id) != uri {
-                        result.push(s);
-                    }
-                }
-                if i == 1 {
-                    current = String::from(part);
-                }
-            })
+
+        let parent_sections = once(root)
+            .chain(
+                uri.split('/')
+                    .enumerate()
+                    .filter(|(_, part)| !part.is_empty())
+                    .filter_map(|(i, part)| {
+                        if i == 1 {
+                            current = String::from(part);
+                        }
+                        match self.get_section(part) {
+                            Some(s) => (self.full_path(&s.id) != uri).then_some(s),
+                            None => None,
+                        }
+                    }),
+            )
             .collect();
-        (result, current)
+        (parent_sections, current)
     }
 
     pub fn make_title_path(&self, uri: &str) -> String {
