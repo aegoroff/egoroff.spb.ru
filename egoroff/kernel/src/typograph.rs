@@ -29,7 +29,7 @@ lazy_static::lazy_static! {
 }
 
 pub fn typograph(str: String) -> Result<String> {
-    let mut result = vec![];
+    let mut result = Vec::with_capacity(str.len());
 
     let output_sink = |c: &[u8]| {
         result.extend(c);

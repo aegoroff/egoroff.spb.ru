@@ -35,7 +35,7 @@ lazy_static::lazy_static! {
 
 pub fn xml2html(input: &str) -> Result<String> {
     let mut reader = Reader::from_str(input);
-    let mut writer = Writer::new(Cursor::new(Vec::new()));
+    let mut writer = Writer::new(Cursor::new(Vec::with_capacity(input.len())));
 
     let mut parent = String::new();
     loop {
@@ -130,7 +130,7 @@ pub fn markdown2html(input: &str) -> Result<String> {
     let mut html = String::new();
     html::push_html(&mut html, parser);
 
-    let mut result = vec![];
+    let mut result = Vec::with_capacity(input.len());
 
     let output_sink = |c: &[u8]| {
         result.extend(c);
