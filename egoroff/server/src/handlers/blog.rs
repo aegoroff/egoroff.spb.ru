@@ -2,6 +2,28 @@ use super::*;
 
 const PAGE_SIZE: i32 = 20;
 
+const OPINIONS_REMAP: &[(&str, &str)] = &[
+    ("1", "25002"),
+    ("4", "31001"),
+    ("8", "6003"),
+    ("11", "30001"),
+    ("13", "3006"),
+    ("18", "29001"),
+    ("21", "9002"),
+    ("22", "2004"),
+    ("24", "25003"),
+    ("25", "22002"),
+    ("26", "27002"),
+    ("27", "27001"),
+    ("28", "14004"),
+    ("29", "8003"),
+    ("30", "6004"),
+];
+
+lazy_static::lazy_static! {
+    static ref REPLACES_MAP: HashMap<&'static str, &'static str> = OPINIONS_REMAP.iter().map(|(k, v)| (*k, *v)).collect();
+}
+
 pub async fn serve_blog_default(
     axum::extract::Query(request): axum::extract::Query<BlogRequest>,
     Extension(page_context): Extension<Arc<PageContext>>,
@@ -173,4 +195,22 @@ pub async fn service_posts_api(
 ) -> impl IntoResponse {
     let result = archive::get_posts(&page_context.storage_path, PAGE_SIZE, request);
     Json(result)
+}
+
+pub async fn redirect_to_real_document(
+    extract::Path(path): extract::Path<String>,
+) -> impl IntoResponse {
+    let id = path
+        .strip_suffix(".html")
+        .unwrap_or_else(|| path.strip_suffix(".htm").unwrap_or_default());
+
+    if id.is_empty() {
+        Redirect::permanent("/blog/")
+    } else if REPLACES_MAP.contains_key(id) {
+        let new_page = REPLACES_MAP.get(id).unwrap();
+        let new_path = format!("/blog/{new_page}.html");
+        Redirect::permanent(&new_path)
+    } else {
+        Redirect::permanent("/blog/")
+    }
 }

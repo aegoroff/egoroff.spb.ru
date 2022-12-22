@@ -247,13 +247,14 @@ pub fn create_routes(
         )
         .route(
             "/portfolio/apache/:path",
-            get(handlers::portfolio::serve_portfolio_document),
+            get(handlers::portfolio::redirect_to_real_document),
         )
         .route(
             "/portfolio/portfolio/:path",
-            get(handlers::portfolio::serve_portfolio_document),
+            get(handlers::portfolio::redirect_to_real_document),
         )
         .route("/blog/", get(handlers::blog::serve_blog_default))
+        .route("/opinions/", get(handlers::blog::serve_blog_default))
         .route(
             "/blog/page/:page",
             get(handlers::blog::serve_blog_not_default_page),
@@ -264,6 +265,7 @@ pub fn create_routes(
         )
         .route("/blog/recent.atom", get(handlers::blog::serve_atom))
         .route("/blog/:path", get(handlers::blog::serve_blog_page))
+        .route("/opinions/:path", get(handlers::blog::redirect_to_real_document))
         .route("/search/", get(handlers::serve_search))
         .route("/:path", get(handlers::serve_root))
         .route("/js/:path", get(handlers::serve_js))

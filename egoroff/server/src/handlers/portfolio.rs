@@ -113,3 +113,10 @@ pub fn apache_documents(base_path: &Path) -> Result<Vec<crate::domain::Apache>> 
     let result = serde_json::from_reader(reader)?;
     Ok(result)
 }
+
+pub async fn redirect_to_real_document(
+    extract::Path(path): extract::Path<String>,
+) -> impl IntoResponse {
+    let new_path = format!("/portfolio/{path}");
+    Redirect::permanent(&new_path)
+}
