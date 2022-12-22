@@ -220,14 +220,6 @@ pub fn create_routes(
         .route("/logout", get(handlers::auth::serve_logout))
         .route("/logout/", get(handlers::auth::serve_logout))
         .route(
-            "/api/v2/auth/user/",
-            get(handlers::auth::serve_user_api_call),
-        )
-        .route(
-            "/api/v2/auth/user",
-            get(handlers::auth::serve_user_api_call),
-        )
-        .route(
             "/api/v2/auth/userinfo",
             get(handlers::auth::serve_user_info_api_call),
         )
@@ -290,6 +282,14 @@ pub fn create_routes(
         .route(
             "/api/v2/blog/posts/",
             get(handlers::blog::service_posts_api),
+        )
+        .route(
+            "/api/v2/auth/user/",
+            get(handlers::auth::serve_user_api_call),
+        )
+        .route(
+            "/api/v2/auth/user",
+            get(handlers::auth::serve_user_api_call),
         )
         .route(
             "/metrics",

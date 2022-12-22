@@ -202,14 +202,21 @@ async fn login<U: ToUser>(
     Ok(())
 }
 
-pub async fn serve_user_api_call(Extension(user): Extension<User>) -> impl IntoResponse {
-    let authenticated = AuthorizedUser {
-        login_or_name: user.login,
-        authenticated: true,
-        admin: user.admin,
-        provider: user.provider,
-    };
-    Json(authenticated)
+pub async fn serve_user_api_call(auth: AuthContext) -> impl IntoResponse {
+    match auth.current_user {
+        Some(user) => {
+            let authenticated = AuthorizedUser {
+                login_or_name: user.login,
+                authenticated: true,
+                admin: user.admin,
+                provider: user.provider,
+            };
+            Json(authenticated)
+        }
+        None => Json(AuthorizedUser {
+            ..Default::default()
+        }),
+    }
 }
 
 pub async fn serve_user_info_api_call(Extension(user): Extension<User>) -> impl IntoResponse {
