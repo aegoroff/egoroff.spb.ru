@@ -30,6 +30,7 @@ use tower_http::classify::ServerErrorsFailureClass;
 use tower_http::cors::{Any, CorsLayer};
 use tower_http::limit::RequestBodyLimitLayer;
 use tower_http::trace::TraceLayer;
+use tower_http::compression::CompressionLayer;
 use tracing::Span;
 use tracing_subscriber::prelude::__tracing_subscriber_SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
@@ -314,7 +315,8 @@ pub fn create_routes(
         .layer(Extension(google_authorizer))
         .layer(Extension(github_authorizer))
         .layer(auth_layer)
-        .layer(session_layer);
+        .layer(session_layer)
+        .layer(CompressionLayer::new());
 
     #[cfg(feature = "prometheus")]
     return router.layer(prometheus_layer);
