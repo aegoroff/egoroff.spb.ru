@@ -27,10 +27,10 @@ use tera::{try_get_value, Tera};
 use tokio::signal;
 use tower::ServiceBuilder;
 use tower_http::classify::ServerErrorsFailureClass;
+use tower_http::compression::CompressionLayer;
 use tower_http::cors::{Any, CorsLayer};
 use tower_http::limit::RequestBodyLimitLayer;
 use tower_http::trace::TraceLayer;
-use tower_http::compression::CompressionLayer;
 use tracing::Span;
 use tracing_subscriber::prelude::__tracing_subscriber_SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
@@ -53,6 +53,8 @@ mod handlers;
 mod sitemap;
 
 pub const SESSIONS_DATABASE: &str = "egoroff_sessions.db";
+
+type RequireAuth = RequireAuthorizationLayer<User, Role>;
 
 pub async fn run() {
     tracing_subscriber::registry()
@@ -229,7 +231,11 @@ pub fn create_routes(
             get(handlers::auth::serve_user_info_api_call),
         )
         // Important all protected routes must be the first in the list
-        .route_layer(RequireAuthorizationLayer::<User, Role>::login())
+        .route_layer(RequireAuth::login())
+        .route(
+            "/admin",
+            get(handlers::admin::serve_admin).layer(RequireAuth::login_with_role(Role::Admin..)),
+        )
         .route("/", get(handlers::serve_index))
         .route("/recent.atom", get(handlers::blog::serve_atom))
         .route("/sitemap.xml", get(handlers::serve_sitemap))

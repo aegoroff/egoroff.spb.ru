@@ -37,6 +37,7 @@ use crate::{
 pub mod auth;
 pub mod blog;
 pub mod portfolio;
+pub mod admin;
 
 #[cfg(debug_assertions)]
 const MODE: &str = "debug";
