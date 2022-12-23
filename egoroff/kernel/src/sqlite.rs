@@ -119,7 +119,7 @@ impl Storage for Sqlite {
 
         let mut stmt = self
             .conn
-            .prepare("SELECT title, created, short_text, markdown, text, is_public, modified FROM post WHERE id=?1")?;
+            .prepare("SELECT title, created, short_text, markdown, text, is_public, modified FROM post WHERE is_public = 1 AND id=?1")?;
         let post: Post = stmt.query_row([id], |row| {
             let created: i64 = row.get(1)?;
             let modified: i64 = row.get(6)?;
