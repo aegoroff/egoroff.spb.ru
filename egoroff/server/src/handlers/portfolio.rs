@@ -4,7 +4,7 @@ use super::*;
 #[folder = "../../templates/apache"]
 struct ApacheTemplates;
 
-pub async fn serve_portfolio(
+pub async fn serve_index(
     Extension(page_context): Extension<Arc<PageContext>>,
 ) -> impl IntoResponse {
     let section = page_context.site_graph.get_section("portfolio").unwrap();
@@ -23,7 +23,7 @@ pub async fn serve_portfolio(
     context.insert("meta_description", &section.descr);
     context.insert("config", &page_context.site_config);
 
-    match apache_documents(&page_context.base_path) {
+    match read_apache_documents(&page_context.base_path) {
         Ok(docs) => {
             context.insert("apache_docs", &docs);
             (
@@ -41,7 +41,7 @@ pub async fn serve_portfolio(
     }
 }
 
-pub async fn serve_portfolio_document(
+pub async fn serve_apache_document(
     Extension(page_context): Extension<Arc<PageContext>>,
     extract::Path(path): extract::Path<String>,
 ) -> impl IntoResponse {
@@ -53,7 +53,7 @@ pub async fn serve_portfolio_document(
     context.insert("html_class", "");
     context.insert("config", &page_context.site_config);
 
-    let apache_documents = match apache_documents(&page_context.base_path) {
+    let apache_documents = match read_apache_documents(&page_context.base_path) {
         Ok(docs) => docs,
         Err(e) => {
             tracing::error!("{e:#?}");
@@ -106,7 +106,7 @@ pub async fn serve_portfolio_document(
     }
 }
 
-pub fn apache_documents(base_path: &Path) -> Result<Vec<crate::domain::Apache>> {
+pub fn read_apache_documents(base_path: &Path) -> Result<Vec<crate::domain::Apache>> {
     let config_path = base_path.join("apache/config.json");
     let file = File::open(config_path)?;
     let reader = BufReader::new(file);

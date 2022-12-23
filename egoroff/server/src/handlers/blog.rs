@@ -24,22 +24,22 @@ lazy_static::lazy_static! {
     static ref REPLACES_MAP: HashMap<&'static str, &'static str> = OPINIONS_REMAP.iter().map(|(k, v)| (*k, *v)).collect();
 }
 
-pub async fn serve_blog_default(
+pub async fn serve_index_default(
     axum::extract::Query(request): axum::extract::Query<BlogRequest>,
     Extension(page_context): Extension<Arc<PageContext>>,
 ) -> impl IntoResponse {
-    serve_blog_index(request, page_context, None)
+    serve_index(request, page_context, None)
 }
 
-pub async fn serve_blog_not_default_page(
+pub async fn serve_index_not_default(
     axum::extract::Query(request): axum::extract::Query<BlogRequest>,
     Extension(page_context): Extension<Arc<PageContext>>,
     extract::Path(page): extract::Path<String>,
 ) -> impl IntoResponse {
-    serve_blog_index(request, page_context, Some(page))
+    serve_index(request, page_context, Some(page))
 }
 
-fn serve_blog_index(
+fn serve_index(
     request: BlogRequest,
     page_context: Arc<PageContext>,
     page: Option<String>,
@@ -98,7 +98,7 @@ fn serve_blog_index(
     )
 }
 
-pub async fn serve_blog_page(
+pub async fn serve_document(
     Extension(page_context): Extension<Arc<PageContext>>,
     extract::Path(path): extract::Path<String>,
 ) -> impl IntoResponse {

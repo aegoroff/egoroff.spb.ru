@@ -240,10 +240,10 @@ pub fn create_routes(
         .route("/recent.atom", get(handlers::blog::serve_atom))
         .route("/sitemap.xml", get(handlers::serve_sitemap))
         .route("/news/rss", get(handlers::blog::serve_atom))
-        .route("/portfolio/", get(handlers::portfolio::serve_portfolio))
+        .route("/portfolio/", get(handlers::portfolio::serve_index))
         .route(
             "/portfolio/:path",
-            get(handlers::portfolio::serve_portfolio_document),
+            get(handlers::portfolio::serve_apache_document),
         )
         .route(
             "/portfolio/apache/:path",
@@ -253,18 +253,18 @@ pub fn create_routes(
             "/portfolio/portfolio/:path",
             get(handlers::portfolio::redirect_to_real_document),
         )
-        .route("/blog/", get(handlers::blog::serve_blog_default))
-        .route("/opinions/", get(handlers::blog::serve_blog_default))
+        .route("/blog/", get(handlers::blog::serve_index_default))
+        .route("/opinions/", get(handlers::blog::serve_index_default))
         .route(
             "/blog/page/:page",
-            get(handlers::blog::serve_blog_not_default_page),
+            get(handlers::blog::serve_index_not_default),
         )
         .route(
             "/blog/page/:page/",
-            get(handlers::blog::serve_blog_not_default_page),
+            get(handlers::blog::serve_index_not_default),
         )
         .route("/blog/recent.atom", get(handlers::blog::serve_atom))
-        .route("/blog/:path", get(handlers::blog::serve_blog_page))
+        .route("/blog/:path", get(handlers::blog::serve_document))
         .route("/opinions/:path", get(handlers::blog::redirect_to_real_document))
         .route("/search/", get(handlers::serve_search))
         .route("/:path", get(handlers::serve_root))

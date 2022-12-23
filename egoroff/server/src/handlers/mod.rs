@@ -96,7 +96,7 @@ pub async fn serve_index(
     context.insert("config", &page_context.site_config);
     context.insert("posts", &result.result);
 
-    match portfolio::apache_documents(&page_context.base_path) {
+    match portfolio::read_apache_documents(&page_context.base_path) {
         Ok(docs) => {
             context.insert("apache_docs", &docs);
             (
@@ -135,7 +135,7 @@ pub async fn serve_search(
 pub async fn serve_sitemap(
     Extension(page_context): Extension<Arc<PageContext>>,
 ) -> impl IntoResponse {
-    let apache_documents = portfolio::apache_documents(&page_context.base_path);
+    let apache_documents = portfolio::read_apache_documents(&page_context.base_path);
 
     let apache_documents = match apache_documents {
         Ok(docs) => docs,
