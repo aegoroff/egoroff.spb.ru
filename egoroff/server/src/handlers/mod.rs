@@ -12,7 +12,7 @@ use axum::{
     body::{Empty, Full},
     extract::{self, Query},
     http::{HeaderValue, StatusCode},
-    response::{Html, IntoResponse, Redirect},
+    response::{IntoResponse, Redirect},
     Extension, Json,
 };
 use axum_sessions::extractors::{ReadableSession, WritableSession};
@@ -29,7 +29,7 @@ use tera::{Context, Tera};
 
 use crate::{
     atom,
-    body::Xml,
+    body::{Xml, Html},
     domain::{BlogRequest, Error, Navigation, PageContext, Poster, Uri},
     sitemap,
 };
