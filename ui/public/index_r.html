@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="{{html_class}}" lang="ru">
+<html  {% if html_class %}class="{{html_class}}"{% endif %} lang="ru">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -25,7 +25,6 @@
           title="Recent Posts"
           type="application/atom+xml">
     <!-- Google Analytics -->
-    {% if gin_mode == 'release' %}
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-HRFZ3XCBK8"></script>
 <script>
@@ -35,7 +34,6 @@
 
   gtag('config', 'G-HRFZ3XCBK8');
 </script>
-    {% endif %}
 </head>
 <body>
 <noscript>

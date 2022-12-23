@@ -16,12 +16,8 @@ pub async fn serve_login(
     mut session: WritableSession,
 ) -> impl IntoResponse {
     let mut context = Context::new();
-    context.insert("html_class", "");
-
-    let messages: Vec<String> = Vec::new();
-    context.insert("flashed_messages", &messages);
-    context.insert("gin_mode", MODE);
-    context.insert("config", &page_context.site_config);
+    context.insert(HTML_CLASS_KEY, "");
+    context.insert(CONFIG_KEY, &page_context.site_config);
 
     let google_url = google_authorizer.generate_authorize_url();
     let github_url = gitgub_authorizer.generate_authorize_url();
@@ -55,12 +51,8 @@ pub async fn serve_profile(
     Extension(page_context): Extension<Arc<PageContext>>,
 ) -> impl IntoResponse {
     let mut context = Context::new();
-    context.insert("html_class", "");
-
-    let messages: Vec<String> = Vec::new();
-    context.insert("flashed_messages", &messages);
-    context.insert("gin_mode", MODE);
-    context.insert("config", &page_context.site_config);
+    context.insert(HTML_CLASS_KEY, "");
+    context.insert(CONFIG_KEY, &page_context.site_config);
 
     context.insert(TITLE_KEY, "Редактирование профиля");
 

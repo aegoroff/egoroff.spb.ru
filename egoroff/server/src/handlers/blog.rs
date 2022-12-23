@@ -45,11 +45,8 @@ fn serve_index(
     page: Option<String>,
 ) -> impl IntoResponse {
     let mut context = Context::new();
-    context.insert("html_class", "blog");
-    context.insert("gin_mode", MODE);
-    context.insert("config", &page_context.site_config);
-    let messages: Vec<String> = Vec::new();
-    context.insert("flashed_messages", &messages);
+    context.insert(HTML_CLASS_KEY, "blog");
+    context.insert(CONFIG_KEY, &page_context.site_config);
 
     let page = if let Some(page) = page {
         match page.parse() {
@@ -86,10 +83,10 @@ fn serve_index(
     let title_path = page_context.site_graph.make_title_path(&uri);
 
     context.insert(TITLE_KEY, &title);
-    context.insert("keywords", &section.keywords);
-    context.insert("meta_description", &section.descr);
+    context.insert(KEYWORDS_KEY, &section.keywords);
+    context.insert(META_KEY, &section.descr);
     context.insert("request", &request);
-    context.insert("title_path", &title_path);
+    context.insert(TITLE_PATH_KEY, &title_path);
     context.insert("poster", &poster);
 
     (
@@ -103,11 +100,8 @@ pub async fn serve_document(
     extract::Path(path): extract::Path<String>,
 ) -> impl IntoResponse {
     let mut context = Context::new();
-    context.insert("html_class", "blog");
-    let messages: Vec<String> = Vec::new();
-    context.insert("flashed_messages", &messages);
-    context.insert("gin_mode", MODE);
-    context.insert("config", &page_context.site_config);
+    context.insert(HTML_CLASS_KEY, "blog");
+    context.insert(CONFIG_KEY, &page_context.site_config);
 
     let doc = path.trim_end_matches(".html");
 
@@ -139,11 +133,11 @@ pub async fn serve_document(
     let title_path = page_context.site_graph.make_title_path(&uri);
 
     context.insert(TITLE_KEY, &post.title);
-    context.insert("title_path", &title_path);
+    context.insert(TITLE_PATH_KEY, &title_path);
 
     let keywords = post.tags.join(",");
 
-    context.insert("keywords", &keywords);
+    context.insert(KEYWORDS_KEY, &keywords);
     context.insert("main_post", &post);
 
     let content = if post.markdown {

@@ -13,19 +13,16 @@ pub async fn serve_index(
     let title_path = page_context.site_graph.make_title_path(&uri);
 
     let mut context = Context::new();
-    context.insert("html_class", "portfolio");
+    context.insert(HTML_CLASS_KEY, "portfolio");
     context.insert(TITLE_KEY, &section.title);
-    context.insert("title_path", &title_path);
-    let messages: Vec<String> = Vec::new();
-    context.insert("flashed_messages", &messages);
-    context.insert("gin_mode", MODE);
-    context.insert("keywords", &section.keywords);
-    context.insert("meta_description", &section.descr);
-    context.insert("config", &page_context.site_config);
+    context.insert(TITLE_PATH_KEY, &title_path);
+    context.insert(KEYWORDS_KEY, &section.keywords);
+    context.insert(META_KEY, &section.descr);
+    context.insert(CONFIG_KEY, &page_context.site_config);
 
     match read_apache_documents(&page_context.base_path) {
         Ok(docs) => {
-            context.insert("apache_docs", &docs);
+            context.insert(APACHE_DOCS_KEY, &docs);
             (
                 StatusCode::OK,
                 serve_page(&context, "portfolio/index.html", &page_context.tera),
@@ -46,12 +43,8 @@ pub async fn serve_apache_document(
     extract::Path(path): extract::Path<String>,
 ) -> impl IntoResponse {
     let mut context = Context::new();
-
-    let messages: Vec<String> = Vec::new();
-    context.insert("flashed_messages", &messages);
-    context.insert("gin_mode", MODE);
-    context.insert("html_class", "");
-    context.insert("config", &page_context.site_config);
+    context.insert(HTML_CLASS_KEY, "");
+    context.insert(CONFIG_KEY, &page_context.site_config);
 
     let apache_documents = match read_apache_documents(&page_context.base_path) {
         Ok(docs) => docs,
@@ -86,9 +79,9 @@ pub async fn serve_apache_document(
     let title_path = page_context.site_graph.make_title_path(&uri);
 
     context.insert(TITLE_KEY, &doc.title);
-    context.insert("title_path", &title_path);
-    context.insert("keywords", &doc.keywords);
-    context.insert("meta_description", &doc.description);
+    context.insert(TITLE_PATH_KEY, &title_path);
+    context.insert(KEYWORDS_KEY, &doc.keywords);
+    context.insert(META_KEY, &doc.description);
 
     let asset = ApacheTemplates::get(&path);
     if let Some(file) = asset {

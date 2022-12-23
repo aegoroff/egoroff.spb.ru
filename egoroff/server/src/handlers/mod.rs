@@ -39,13 +39,13 @@ pub mod blog;
 pub mod portfolio;
 pub mod admin;
 
-#[cfg(debug_assertions)]
-const MODE: &str = "debug";
-
-#[cfg(not(debug_assertions))]
-const MODE: &str = "release";
-
 const TITLE_KEY: &str = "title";
+const TITLE_PATH_KEY: &str = "title_path";
+const HTML_CLASS_KEY: &str = "html_class";
+const KEYWORDS_KEY: &str = "keywords";
+const META_KEY: &str = "meta_description";
+const CONFIG_KEY: &str = "config";
+const APACHE_DOCS_KEY: &str = "apache_docs";
 
 #[derive(RustEmbed)]
 #[folder = "../../static/dist/css"]
@@ -86,19 +86,16 @@ pub async fn serve_index(
 
     let section = page_context.site_graph.get_section("/").unwrap();
     let mut context = Context::new();
-    context.insert("html_class", "welcome");
+    context.insert(HTML_CLASS_KEY, "welcome");
     context.insert(TITLE_KEY, "egoroff.spb.ru");
-    let messages: Vec<String> = Vec::new();
-    context.insert("flashed_messages", &messages);
-    context.insert("gin_mode", MODE);
-    context.insert("keywords", &section.keywords);
-    context.insert("meta_description", &section.descr);
-    context.insert("config", &page_context.site_config);
+    context.insert(KEYWORDS_KEY, &section.keywords);
+    context.insert(META_KEY, &section.descr);
+    context.insert(CONFIG_KEY, &page_context.site_config);
     context.insert("posts", &result.result);
 
     match portfolio::read_apache_documents(&page_context.base_path) {
         Ok(docs) => {
-            context.insert("apache_docs", &docs);
+            context.insert(APACHE_DOCS_KEY, &docs);
             (
                 StatusCode::OK,
                 serve_page(&context, "welcome.html", &page_context.tera),
@@ -120,14 +117,11 @@ pub async fn serve_search(
     let section = page_context.site_graph.get_section("search").unwrap();
 
     let mut context = Context::new();
-    context.insert("html_class", "search");
+    context.insert(HTML_CLASS_KEY, "search");
     context.insert(TITLE_KEY, &section.title);
-    let messages: Vec<String> = Vec::new();
-    context.insert("flashed_messages", &messages);
-    context.insert("gin_mode", MODE);
-    context.insert("keywords", &section.keywords);
-    context.insert("meta_description", &section.descr);
-    context.insert("config", &page_context.site_config);
+    context.insert(KEYWORDS_KEY, &section.keywords);
+    context.insert(META_KEY, &section.descr);
+    context.insert(CONFIG_KEY, &page_context.site_config);
 
     serve_page(&context, "search.html", &page_context.tera)
 }
