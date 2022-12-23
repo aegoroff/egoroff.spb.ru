@@ -35,10 +35,7 @@ pub async fn serve_login(
     context.insert("google_signin_url", google_url.url.as_str());
     context.insert("github_signin_url", github_url.url.as_str());
 
-    (
-        StatusCode::OK,
-        serve_page(&context, "signin.html", &page_context.tera),
-    )
+    serve_page(&context, "signin.html", &page_context.tera)
 }
 
 pub async fn serve_logout(mut auth: AuthContext) -> impl IntoResponse {
@@ -53,10 +50,7 @@ pub async fn serve_profile(
     context.insert(CONFIG_KEY, &page_context.site_config);
     context.insert(TITLE_KEY, "Редактирование профиля");
 
-    (
-        StatusCode::OK,
-        serve_page(&context, "profile.html", &page_context.tera),
-    )
+    serve_page(&context, "profile.html", &page_context.tera)
 }
 
 pub async fn google_oauth_callback(

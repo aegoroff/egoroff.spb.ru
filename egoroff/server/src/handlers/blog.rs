@@ -53,10 +53,7 @@ fn serve_index(
             Ok(item) => item,
             Err(e) => {
                 tracing::error!("Invalid page: {e:#?}");
-                return (
-                    StatusCode::NOT_FOUND,
-                    make_404_page(&mut context, &page_context.tera),
-                );
+                return make_404_page(&mut context, &page_context.tera);
             }
         }
     } else {
@@ -89,10 +86,7 @@ fn serve_index(
     context.insert(TITLE_PATH_KEY, &title_path);
     context.insert("poster", &poster);
 
-    (
-        StatusCode::OK,
-        serve_page(&context, "blog/index.html", &page_context.tera),
-    )
+    serve_page(&context, "blog/index.html", &page_context.tera)
 }
 
 pub async fn serve_document(
@@ -109,10 +103,7 @@ pub async fn serve_document(
         Ok(item) => item,
         Err(e) => {
             tracing::error!("Invalid post id: {e:#?}. Expected number but was {doc}");
-            return (
-                StatusCode::NOT_FOUND,
-                make_404_page(&mut context, &page_context.tera),
-            );
+            return make_404_page(&mut context, &page_context.tera);
         }
     };
 
@@ -122,10 +113,7 @@ pub async fn serve_document(
         Ok(item) => item,
         Err(e) => {
             tracing::error!("Post ID '{id}' not found: {e:#?}");
-            return (
-                StatusCode::NOT_FOUND,
-                make_404_page(&mut context, &page_context.tera),
-            );
+            return make_404_page(&mut context, &page_context.tera);
         }
     };
     let uri = page_context.site_graph.full_path("blog");
@@ -151,17 +139,11 @@ pub async fn serve_document(
     match content {
         Ok(c) => {
             context.insert("content", &c);
-            (
-                StatusCode::OK,
-                serve_page(&context, "blog/post.html", &page_context.tera),
-            )
+            serve_page(&context, "blog/post.html", &page_context.tera)
         }
         Err(e) => {
             tracing::error!("{e:#?}");
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                make_500_page(&mut context, &page_context.tera),
-            )
+            make_500_page(&mut context, &page_context.tera)
         }
     }
 }

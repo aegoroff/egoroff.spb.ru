@@ -96,17 +96,11 @@ pub async fn serve_index(
     match portfolio::read_apache_documents(&page_context.base_path) {
         Ok(docs) => {
             context.insert(APACHE_DOCS_KEY, &docs);
-            (
-                StatusCode::OK,
-                serve_page(&context, "welcome.html", &page_context.tera),
-            )
+            serve_page(&context, "welcome.html", &page_context.tera)
         }
         Err(e) => {
             tracing::error!("{e:#?}");
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                make_500_page(&mut context, &page_context.tera),
-            )
+            make_500_page(&mut context, &page_context.tera)
         }
     }
 }
@@ -212,12 +206,12 @@ pub async fn navigation(
     }
 }
 
-fn make_404_page(context: &mut Context, tera: &Tera) -> Html<String> {
-    make_error_page(context, "404", tera)
+fn make_404_page(context: &mut Context, tera: &Tera) -> (StatusCode, Html<String>) {
+    (StatusCode::NOT_FOUND, make_error_page(context, "404", tera))
 }
 
-fn make_500_page(context: &mut Context, tera: &Tera) -> Html<String> {
-    make_error_page(context, "500", tera)
+fn make_500_page(context: &mut Context, tera: &Tera) -> (StatusCode, Html<String>) {
+    (StatusCode::INTERNAL_SERVER_ERROR, make_error_page(context, "500", tera))
 }
 
 fn make_error_page(context: &mut Context, code: &str, tera: &Tera) -> Html<String> {
@@ -230,16 +224,23 @@ fn make_error_page(context: &mut Context, code: &str, tera: &Tera) -> Html<Strin
     }
     context.insert(TITLE_KEY, code);
     context.insert("error", &error);
-    serve_page(context, "error.html", tera)
-}
-
-fn serve_page(context: &Context, template_name: &str, tera: &Tera) -> Html<String> {
-    let index = tera.render(template_name, context);
+    let index = tera.render("error.html", context);
     match index {
-        Ok(content) => Html(content),
+        Ok(content) =>  Html(content),
         Err(err) => {
             tracing::error!("Server error: {err}");
             Html(format!("{:#?}", err))
+        }
+    }
+}
+
+fn serve_page(context: &Context, template_name: &str, tera: &Tera) -> (StatusCode, Html<String>) {
+    let index = tera.render(template_name, context);
+    match index {
+        Ok(content) => (StatusCode::OK, Html(content)),
+        Err(err) => {
+            tracing::error!("Server error: {err}");
+            (StatusCode::INTERNAL_SERVER_ERROR, Html(format!("{:#?}", err)))
         }
     }
 }

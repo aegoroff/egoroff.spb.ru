@@ -23,17 +23,11 @@ pub async fn serve_index(
     match read_apache_documents(&page_context.base_path) {
         Ok(docs) => {
             context.insert(APACHE_DOCS_KEY, &docs);
-            (
-                StatusCode::OK,
-                serve_page(&context, "portfolio/index.html", &page_context.tera),
-            )
+            serve_page(&context, "portfolio/index.html", &page_context.tera)
         }
         Err(e) => {
             tracing::error!("{e:#?}");
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                make_500_page(&mut context, &page_context.tera),
-            )
+            make_500_page(&mut context, &page_context.tera)
         }
     }
 }
@@ -49,10 +43,7 @@ pub async fn serve_apache_document(
         Ok(docs) => docs,
         Err(e) => {
             tracing::error!("{e:#?}");
-            return (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                make_500_page(&mut context, &page_context.tera),
-            );
+            return make_500_page(&mut context, &page_context.tera);
         }
     };
 
@@ -66,10 +57,7 @@ pub async fn serve_apache_document(
     let doc = match map.get(doc) {
         Some(item) => item,
         None => {
-            return (
-                StatusCode::NOT_FOUND,
-                make_404_page(&mut context, &page_context.tera),
-            )
+            return make_404_page(&mut context, &page_context.tera);
         }
     };
 
@@ -86,15 +74,9 @@ pub async fn serve_apache_document(
     if let Some(file) = asset {
         let content = String::from_utf8_lossy(&file.data);
         context.insert("content", &content);
-        (
-            StatusCode::OK,
-            serve_page(&context, "portfolio/apache.html", &page_context.tera),
-        )
+        serve_page(&context, "portfolio/apache.html", &page_context.tera)
     } else {
-        (
-            StatusCode::NOT_FOUND,
-            make_404_page(&mut context, &page_context.tera),
-        )
+        make_404_page(&mut context, &page_context.tera)
     }
 }
 
