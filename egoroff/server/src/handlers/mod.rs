@@ -253,6 +253,14 @@ fn get_embed(path: &str, asset: Option<rust_embed::EmbeddedFile>) -> impl IntoRe
             "content-type",
             HeaderValue::from_str(mime.as_ref()).unwrap(),
         );
+        res.headers_mut().insert(
+            "cache-control",
+            HeaderValue::from_str("public, max-age=315360000").unwrap(),
+        );
+        res.headers_mut().insert(
+            "expires",
+            HeaderValue::from_str("Thu, 31 Dec 2037 23:55:55 GMT").unwrap(),
+        );
         (StatusCode::OK, res)
     } else {
         (StatusCode::NOT_FOUND, Empty::new().into_response())
