@@ -16,7 +16,6 @@ pub async fn serve_login(
     mut session: WritableSession,
 ) -> impl IntoResponse {
     let mut context = Context::new();
-    context.insert(HTML_CLASS_KEY, "");
     context.insert(CONFIG_KEY, &page_context.site_config);
 
     let google_url = google_authorizer.generate_authorize_url();
@@ -51,9 +50,7 @@ pub async fn serve_profile(
     Extension(page_context): Extension<Arc<PageContext>>,
 ) -> impl IntoResponse {
     let mut context = Context::new();
-    context.insert(HTML_CLASS_KEY, "");
     context.insert(CONFIG_KEY, &page_context.site_config);
-
     context.insert(TITLE_KEY, "Редактирование профиля");
 
     (

@@ -43,7 +43,6 @@ pub async fn serve_apache_document(
     extract::Path(path): extract::Path<String>,
 ) -> impl IntoResponse {
     let mut context = Context::new();
-    context.insert(HTML_CLASS_KEY, "");
     context.insert(CONFIG_KEY, &page_context.site_config);
 
     let apache_documents = match read_apache_documents(&page_context.base_path) {
