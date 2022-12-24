@@ -134,8 +134,8 @@ pub struct Month {
 }
 
 #[derive(Serialize, Default)]
-pub struct ApiResult {
-    pub result: Vec<SmallPost>,
+pub struct ApiResult<T> {
+    pub result: Vec<T>,
     pub pages: i32,
     pub page: i32,
     pub count: i32,

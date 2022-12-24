@@ -98,7 +98,7 @@ pub fn get_posts<P: AsRef<Path>>(
     storage_path: P,
     page_size: i32,
     request: PostsRequest,
-) -> ApiResult {
+) -> ApiResult<SmallPost> {
     let storage = Sqlite::open(storage_path, Mode::ReadOnly).unwrap();
 
     let page = request.page.unwrap_or(1);

@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use kernel::{
-    domain::{ApiResult, SmallPost},
+    domain::ApiResult,
     graph::{SiteGraph, SiteSection},
 };
 use oauth2::CsrfToken;
@@ -52,8 +52,8 @@ pub struct Apache {
 }
 
 #[derive(Serialize, Default)]
-pub struct Poster {
-    pub small_posts: Vec<SmallPost>,
+pub struct Poster<T> {
+    pub posts: Vec<T>,
     pub pages: Vec<i32>,
     pub has_pages: bool,
     pub has_prev: bool,
@@ -84,8 +84,8 @@ pub struct AuthorizedUser {
     pub provider: String,
 }
 
-impl Poster {
-    pub fn new(api: ApiResult, page: i32) -> Self {
+impl<T> Poster<T> {
+    pub fn new(api: ApiResult<T>, page: i32) -> Self {
         let pages_count = api.pages;
         let prev_page = if page == 1 { 1 } else { page - 1 };
         let next_page = if page == pages_count {
@@ -95,7 +95,7 @@ impl Poster {
         };
         let pages: Vec<i32> = (1..=pages_count).collect();
         Self {
-            small_posts: api.result,
+            posts: api.result,
             pages,
             has_pages: pages_count > 1,
             has_prev: page > 1,
@@ -109,12 +109,14 @@ impl Poster {
 
 #[cfg(test)]
 mod tests {
+    use kernel::domain::SmallPost;
+
     use super::*;
 
     #[test]
     fn poster_new_with_pages_first_page() {
         // arrange
-        let api_result = ApiResult {
+        let api_result = ApiResult::<SmallPost> {
             result: vec![],
             pages: 2,
             page: 1,
@@ -138,7 +140,7 @@ mod tests {
     #[test]
     fn poster_new_with_pages_last_page() {
         // arrange
-        let api_result = ApiResult {
+        let api_result = ApiResult::<SmallPost> {
             result: vec![],
             pages: 2,
             page: 1,
@@ -162,7 +164,7 @@ mod tests {
     #[test]
     fn poster_new_with_pages_middle_page() {
         // arrange
-        let api_result = ApiResult {
+        let api_result = ApiResult::<SmallPost> {
             result: vec![],
             pages: 3,
             page: 1,
@@ -186,7 +188,7 @@ mod tests {
     #[test]
     fn poster_new_without_pages() {
         // arrange
-        let api_result = ApiResult {
+        let api_result = ApiResult::<SmallPost> {
             result: vec![],
             pages: 1,
             page: 1,
