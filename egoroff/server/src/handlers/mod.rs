@@ -9,9 +9,9 @@ use std::{
 use anyhow::Result;
 
 use axum::{
-    body::{Empty, Full},
+    body::Empty,
     extract::{self, Query},
-    http::{HeaderValue, StatusCode},
+    http::StatusCode,
     response::{IntoResponse, Redirect},
     Extension, Json,
 };
@@ -29,15 +29,15 @@ use tera::{Context, Tera};
 
 use crate::{
     atom,
-    body::{Xml, Html},
+    body::{Binary, Html, Xml},
     domain::{BlogRequest, Error, Navigation, PageContext, Poster, Uri},
     sitemap,
 };
 
+pub mod admin;
 pub mod auth;
 pub mod blog;
 pub mod portfolio;
-pub mod admin;
 
 const TITLE_KEY: &str = "title";
 const TITLE_PATH_KEY: &str = "title_path";
@@ -211,7 +211,10 @@ fn make_404_page(context: &mut Context, tera: &Tera) -> (StatusCode, Html<String
 }
 
 fn make_500_page(context: &mut Context, tera: &Tera) -> (StatusCode, Html<String>) {
-    (StatusCode::INTERNAL_SERVER_ERROR, make_error_page(context, "500", tera))
+    (
+        StatusCode::INTERNAL_SERVER_ERROR,
+        make_error_page(context, "500", tera),
+    )
 }
 
 fn make_error_page(context: &mut Context, code: &str, tera: &Tera) -> Html<String> {
@@ -226,7 +229,7 @@ fn make_error_page(context: &mut Context, code: &str, tera: &Tera) -> Html<Strin
     context.insert("error", &error);
     let index = tera.render("error.html", context);
     match index {
-        Ok(content) =>  Html(content),
+        Ok(content) => Html(content),
         Err(err) => {
             tracing::error!("Server error: {err}");
             Html(format!("{:#?}", err))
@@ -240,28 +243,17 @@ fn serve_page(context: &Context, template_name: &str, tera: &Tera) -> (StatusCod
         Ok(content) => (StatusCode::OK, Html(content)),
         Err(err) => {
             tracing::error!("Server error: {err}");
-            (StatusCode::INTERNAL_SERVER_ERROR, Html(format!("{:#?}", err)))
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Html(format!("{:#?}", err)),
+            )
         }
     }
 }
 
 fn get_embed(path: &str, asset: Option<rust_embed::EmbeddedFile>) -> impl IntoResponse {
     if let Some(file) = asset {
-        let mut res = Full::from(file.data).into_response();
-        let mime = mime_guess::from_path(path).first_or_octet_stream();
-        res.headers_mut().insert(
-            "content-type",
-            HeaderValue::from_str(mime.as_ref()).unwrap(),
-        );
-        res.headers_mut().insert(
-            "cache-control",
-            HeaderValue::from_str("public, max-age=315360000").unwrap(),
-        );
-        res.headers_mut().insert(
-            "expires",
-            HeaderValue::from_str("Thu, 31 Dec 2037 23:55:55 GMT").unwrap(),
-        );
-        (StatusCode::OK, res)
+        (StatusCode::OK, Binary::new(file.data, path).into_response())
     } else {
         (StatusCode::NOT_FOUND, Empty::new().into_response())
     }
