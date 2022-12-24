@@ -6,6 +6,23 @@ use axum::{
     response::{IntoResponse, Response},
 };
 
+/// Custom response with content type specified.
+#[derive(Clone, Copy, Debug)]
+pub struct Content<T>(pub T, pub &'static str);
+
+impl<T> IntoResponse for Content<T>
+where
+    T: Into<Full<Bytes>>,
+{
+    fn into_response(self) -> Response {
+        (
+            [(header::CONTENT_TYPE, HeaderValue::from_static(self.1))],
+            self.0.into(),
+        )
+            .into_response()
+    }
+}
+
 /// An XML response.
 ///
 /// Will automatically get `Content-Type: text/xml`.
@@ -17,14 +34,7 @@ where
     T: Into<Full<Bytes>>,
 {
     fn into_response(self) -> Response {
-        (
-            [(
-                header::CONTENT_TYPE,
-                HeaderValue::from_static("text/xml; charset=utf-8"),
-            )],
-            self.0.into(),
-        )
-            .into_response()
+        Content(self.0, "text/xml; charset=utf-8").into_response()
     }
 }
 

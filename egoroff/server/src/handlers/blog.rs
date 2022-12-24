@@ -1,3 +1,5 @@
+use crate::body::Content;
+
 use super::*;
 
 const PAGE_SIZE: i32 = 20;
@@ -156,7 +158,7 @@ pub async fn serve_atom(Extension(page_context): Extension<Arc<PageContext>>) ->
     let result = archive::get_posts(&page_context.storage_path, 20, req);
     let xml = atom::from_small_posts(result.result).unwrap();
 
-    Xml(xml)
+    Content(xml, "application/atom+xml")
 }
 
 pub async fn serve_archive_api(
