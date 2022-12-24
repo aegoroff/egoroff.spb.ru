@@ -123,7 +123,7 @@ pub async fn serve_document(
     context.insert(TITLE_KEY, &post.title);
     context.insert(TITLE_PATH_KEY, &title_path);
 
-    let keywords = post.tags.join(",");
+    let keywords = post.keywords();
 
     context.insert(KEYWORDS_KEY, &keywords);
     context.insert("main_post", &post);

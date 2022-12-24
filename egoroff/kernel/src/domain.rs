@@ -50,6 +50,12 @@ pub struct Post {
     pub tags: Vec<String>,
 }
 
+impl Post {
+    pub fn keywords(&self) -> String {
+        self.tags.join(",")
+    }
+}
+
 #[derive(Deserialize, Serialize, Default, Clone)]
 pub struct PostsRequest {
     pub tag: Option<String>,
@@ -251,5 +257,49 @@ mod tests {
 
         // assert
         assert!(period.is_none());
+    }
+
+    #[test]
+    fn keywords_notemptytags_stringasexpected() {
+        // arrange
+        let post = Post {
+            tags: vec!["a".to_string(), "b".to_string()],
+            ..Default::default()
+        };
+
+        // act
+        let actual = post.keywords();
+
+        // assert
+        assert_eq!("a,b", actual);
+    }
+
+    #[test]
+    fn keywords_onetag_stringasexpected() {
+        // arrange
+        let post = Post {
+            tags: vec!["a".to_string()],
+            ..Default::default()
+        };
+
+        // act
+        let actual = post.keywords();
+
+        // assert
+        assert_eq!("a", actual);
+    }
+
+    #[test]
+    fn keywords_notags_stringasexpected() {
+        // arrange
+        let post = Post {
+            ..Default::default()
+        };
+
+        // act
+        let actual = post.keywords();
+
+        // assert
+        assert!(actual.is_empty());
     }
 }
