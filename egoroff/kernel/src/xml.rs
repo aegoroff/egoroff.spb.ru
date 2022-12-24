@@ -25,7 +25,7 @@ impl Builder {
     pub fn to_string(self) -> Result<String> {
         let mut result = self.writer.into_inner().into_inner();
 
-        let mut xml: Vec<u8> = Vec::from("<?xml version=\"1.0\"?>");
+        let mut xml: Vec<u8> = Vec::from("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
         xml.append(&mut result);
         let result = String::from_utf8(xml)?;
         Ok(result)

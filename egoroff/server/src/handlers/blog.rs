@@ -158,7 +158,7 @@ pub async fn serve_atom(Extension(page_context): Extension<Arc<PageContext>>) ->
     let result = archive::get_posts(&page_context.storage_path, 20, req);
     let xml = atom::from_small_posts(result.result).unwrap();
 
-    Content(xml, "application/atom+xml")
+    Content(xml, "application/atom+xml; charset=utf-8")
 }
 
 pub async fn serve_archive_api(
