@@ -1,5 +1,6 @@
 use auth::{GithubAuthorizer, GoogleAuthorizer, Role, UserStorage};
 use axum::extract::DefaultBodyLimit;
+use axum::routing::put;
 use axum::Extension;
 use axum::{routing::get, Router};
 
@@ -218,6 +219,17 @@ pub fn create_routes(
     let auth_layer = AuthLayer::new(user_store, &secret);
 
     let router = Router::new()
+        .route("/admin", get(handlers::admin::serve_admin))
+        .route(
+            "/api/v2/admin/posts/",
+            get(handlers::blog::service_posts_admin_api),
+        )
+        .route(
+            "/api/v2/admin/post",
+            put(handlers::blog::service_post_update),
+        )
+        // Important all admin protected routes must be the first in the list
+        .route_layer(RequireAuth::login_with_role(Role::Admin..))
         .route("/profile", get(handlers::auth::serve_profile))
         .route("/profile/", get(handlers::auth::serve_profile))
         .route("/logout", get(handlers::auth::serve_logout))
@@ -232,10 +244,6 @@ pub fn create_routes(
         )
         // Important all protected routes must be the first in the list
         .route_layer(RequireAuth::login())
-        .route(
-            "/admin",
-            get(handlers::admin::serve_admin).layer(RequireAuth::login_with_role(Role::Admin..)),
-        )
         .route("/", get(handlers::serve_index))
         .route("/recent.atom", get(handlers::blog::serve_atom))
         .route("/sitemap.xml", get(handlers::serve_sitemap))
@@ -265,7 +273,10 @@ pub fn create_routes(
         )
         .route("/blog/recent.atom", get(handlers::blog::serve_atom))
         .route("/blog/:path", get(handlers::blog::serve_document))
-        .route("/opinions/:path", get(handlers::blog::redirect_to_real_document))
+        .route(
+            "/opinions/:path",
+            get(handlers::blog::redirect_to_real_document),
+        )
         .route("/search/", get(handlers::serve_search))
         .route("/:path", get(handlers::serve_root))
         .route("/js/:path", get(handlers::serve_js))

@@ -1,6 +1,7 @@
-use std::path::Path;
+use std::{collections::HashMap, path::Path};
 
 use chrono::{DateTime, NaiveDateTime, Utc};
+use itertools::Itertools;
 use rusqlite::{params, Connection, Error, ErrorCode, OpenFlags, Row, Transaction};
 
 use crate::domain::{OAuthProvider, Post, PostsRequest, SmallPost, Storage, TagAggregate, User};
@@ -159,26 +160,31 @@ impl Storage for Sqlite {
     }
 
     fn count_posts(&self, request: PostsRequest) -> Result<i32, Self::Err> {
+        let include_private = request.include_private.unwrap_or(false);
+        let private_filter = if include_private {
+            "(is_public = 1 OR is_public = 0)"
+        } else {
+            "is_public = 1"
+        };
         match request.tag {
             Some(tag) => {
-                let mut stmt = self.conn.prepare(
+                let query = format!(
                     "SELECT COUNT(1) FROM post INNER JOIN post_tag ON post_tag.post_id = post.id 
-                    WHERE is_public = 1 AND post_tag.tag = ?1",
-                )?;
+                WHERE {private_filter} AND post_tag.tag = ?1"
+                );
+                let mut stmt = self.conn.prepare(&query)?;
                 stmt.query_row([tag], |row| row.get(0))
             }
             None => {
                 if let Some(period) = request.as_query_period() {
-                    let mut stmt = self.conn.prepare(
-                        "SELECT COUNT(1) FROM post WHERE is_public = 1 AND created > ?1 AND created < ?2",
-                    )?;
+                    let query = format!("SELECT COUNT(1) FROM post WHERE {private_filter} AND created > ?1 AND created < ?2");
+                    let mut stmt = self.conn.prepare(&query)?;
                     stmt.query_row([period.from.timestamp(), period.to.timestamp()], |row| {
                         row.get(0)
                     })
                 } else {
-                    let mut stmt = self
-                        .conn
-                        .prepare("SELECT COUNT(1) FROM post WHERE is_public = 1")?;
+                    let query = format!("SELECT COUNT(1) FROM post WHERE {private_filter}");
+                    let mut stmt = self.conn.prepare(&query)?;
                     stmt.query_row([], |row| row.get(0))
                 }
             }
@@ -252,7 +258,11 @@ impl Storage for Sqlite {
         Ok(provider)
     }
 
-    fn get_user(&self, federated_id: &str, provider: &str) -> Result<crate::domain::User, Self::Err> {
+    fn get_user(
+        &self,
+        federated_id: &str,
+        provider: &str,
+    ) -> Result<crate::domain::User, Self::Err> {
         let mut stmt = self
             .conn
             .prepare("SELECT created, email, name, login, avatar_url, federated_id, admin, verified, provider FROM user WHERE federated_id=?1 AND provider=?2")?;
@@ -281,7 +291,6 @@ impl Storage for Sqlite {
     }
 
     fn upsert_user(&mut self, user: &crate::domain::User) -> Result<(), Self::Err> {
-        
         Sqlite::execute_with_retry(|| {
             let tx = self.conn.transaction()?;
             Sqlite::upsert_user(&tx, user);
@@ -291,6 +300,64 @@ impl Storage for Sqlite {
         })?;
 
         Ok(())
+    }
+
+    fn get_posts(&self, limit: i32, offset: i32) -> Result<Vec<Post>, Self::Err> {
+        let mut stmt = self.conn.prepare(
+            "SELECT id, title, created, short_text, markdown, text, is_public, modified \
+                 FROM post ORDER BY created DESC LIMIT ?1 OFFSET ?2",
+        )?;
+        let rows = stmt.query_map([limit, offset], |row| {
+            let created: i64 = row.get(2)?;
+            let modified: i64 = row.get(7)?;
+            let created_datetime =
+                NaiveDateTime::from_timestamp_opt(created, 0).unwrap_or(NaiveDateTime::MIN);
+            let modified_datetime =
+                NaiveDateTime::from_timestamp_opt(modified, 0).unwrap_or(NaiveDateTime::MIN);
+            let created = DateTime::<Utc>::from_utc(created_datetime, Utc);
+            let modified = DateTime::<Utc>::from_utc(modified_datetime, Utc);
+
+            let post = Post {
+                created,
+                modified,
+                id: row.get(0)?,
+                title: row.get(1)?,
+                short_text: row.get(3)?,
+                text: row.get(5)?,
+                markdown: row.get(4)?,
+                is_public: row.get(6)?,
+                ..Default::default()
+            };
+
+            Ok(post)
+        })?;
+        let posts = rows.filter_map(|r| r.ok());
+
+        let mut stmt = self.conn.prepare(
+            "SELECT post_id, tag FROM post_tag WHERE post_id IN (SELECT id FROM post ORDER BY created DESC LIMIT ?1 OFFSET ?2)",
+        )?;
+
+        let rows = stmt.query_map([limit, offset], |row| Ok((row.get(0)?, row.get(1)?)))?;
+
+        let tags: Vec<(i64, String)> = rows.filter_map(|r| r.ok()).collect();
+
+        let mut post_tags = tags
+            .iter()
+            .group_by(|(id, _tag)| *id)
+            .into_iter()
+            .map(|(id, g)| (id, g.map(|(_, tag)| tag.clone()).collect()))
+            .collect::<HashMap<i64, Vec<String>>>();
+
+        let posts = posts
+            .map(|mut post| {
+                if let Some(tags) = post_tags.get_mut(&post.id) {
+                    post.tags.append(tags);
+                }
+                post
+            })
+            .collect();
+
+        Ok(posts)
     }
 }
 
@@ -333,6 +400,13 @@ impl Sqlite {
                 ON CONFLICT(tag) DO UPDATE SET tag=?1",
             )
             .unwrap();
+
+        let mut delete_post_tags_statement = tx
+            .prepare_cached("DELETE FROM post_tag WHERE post_id=?1")
+            .unwrap();
+        delete_post_tags_statement
+            .execute(params![p.id])
+            .unwrap_or_default();
 
         let mut post_tag_statement = tx
             .prepare_cached(

@@ -82,7 +82,7 @@ pub async fn serve_index(
         ..Default::default()
     };
 
-    let result = archive::get_posts(&page_context.storage_path, 5, req);
+    let result = archive::get_small_posts(&page_context.storage_path, 5, req);
 
     let section = page_context.site_graph.get_section("/").unwrap();
     let mut context = Context::new();

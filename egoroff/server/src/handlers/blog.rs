@@ -1,4 +1,6 @@
-use crate::body::Content;
+use kernel::domain::Post;
+
+use crate::{body::Content, domain::OperationResult};
 
 use super::*;
 
@@ -68,7 +70,7 @@ fn serve_index(
         ..Default::default()
     };
 
-    let result = archive::get_posts(&page_context.storage_path, PAGE_SIZE, req);
+    let result = archive::get_small_posts(&page_context.storage_path, PAGE_SIZE, req);
 
     let poster = Poster::new(result, page);
 
@@ -155,7 +157,7 @@ pub async fn serve_atom(Extension(page_context): Extension<Arc<PageContext>>) ->
         ..Default::default()
     };
 
-    let result = archive::get_posts(&page_context.storage_path, 20, req);
+    let result = archive::get_small_posts(&page_context.storage_path, 20, req);
     let xml = atom::from_small_posts(result.result).unwrap();
 
     Content(xml, "application/atom+xml; charset=utf-8")
@@ -171,8 +173,31 @@ pub async fn service_posts_api(
     Extension(page_context): Extension<Arc<PageContext>>,
     axum::extract::Query(request): axum::extract::Query<PostsRequest>,
 ) -> impl IntoResponse {
-    let result = archive::get_posts(&page_context.storage_path, PAGE_SIZE, request);
+    let result = archive::get_small_posts(&page_context.storage_path, PAGE_SIZE, request);
     Json(result)
+}
+
+pub async fn service_posts_admin_api(
+    Extension(page_context): Extension<Arc<PageContext>>,
+    axum::extract::Query(request): axum::extract::Query<PostsRequest>,
+) -> impl IntoResponse {
+    let result = archive::get_posts(&page_context.storage_path, 10, request);
+    Json(result)
+}
+
+pub async fn service_post_update(
+    Extension(page_context): Extension<Arc<PageContext>>,
+    Json(post): Json<Post>,
+) -> impl IntoResponse {
+    let mut storage = Sqlite::open(&page_context.storage_path, Mode::ReadWrite).unwrap();
+    match storage.upsert_post(post) {
+        Ok(_) => Json(OperationResult {
+            result: "success".to_owned(),
+        }),
+        Err(e) => Json(OperationResult {
+            result: format!("{e}"),
+        }),
+    }
 }
 
 pub async fn redirect_to_real_document(

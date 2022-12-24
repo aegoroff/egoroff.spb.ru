@@ -14,6 +14,11 @@ pub struct Uri {
 }
 
 #[derive(Deserialize, Serialize, Default)]
+pub struct OperationResult {
+    pub result: String,
+}
+
+#[derive(Deserialize, Serialize, Default)]
 pub struct BlogRequest {
     pub tag: Option<String>,
 }

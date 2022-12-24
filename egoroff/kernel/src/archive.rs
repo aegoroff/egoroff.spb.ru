@@ -3,7 +3,7 @@ use std::path::Path;
 use crate::{
     converter::markdown2html,
     domain::{
-        ApiResult, Archive, Month, PostsRequest, SmallPost, Storage, Tag, TagAggregate, Year,
+        ApiResult, Archive, Month, Post, PostsRequest, SmallPost, Storage, Tag, TagAggregate, Year,
     },
     sqlite::{Mode, Sqlite},
 };
@@ -94,7 +94,7 @@ fn group_by_years(dates: Vec<DateTime<Utc>>) -> Vec<Year> {
     result
 }
 
-pub fn get_posts<P: AsRef<Path>>(
+pub fn get_small_posts<P: AsRef<Path>>(
     storage_path: P,
     page_size: i32,
     request: PostsRequest,
@@ -112,6 +112,33 @@ pub fn get_posts<P: AsRef<Path>>(
 
     ApiResult {
         result: update_short_text(posts),
+        pages: pages_count,
+        page,
+        count: total_posts_count,
+        status: "success".to_string(),
+    }
+}
+
+pub fn get_posts<P: AsRef<Path>>(
+    storage_path: P,
+    page_size: i32,
+    request: PostsRequest,
+) -> ApiResult<Post> {
+    let storage = Sqlite::open(storage_path, Mode::ReadOnly).unwrap();
+
+    let page = request.page.unwrap_or(1);
+
+    let mut req = request;
+    req.include_private = Some(true);
+    let total_posts_count = storage.count_posts(req).unwrap();
+    let pages_count = count_pages(total_posts_count, page_size);
+
+    let posts = storage
+        .get_posts(page_size, page_size * (page - 1))
+        .unwrap();
+
+    ApiResult {
+        result: posts,
         pages: pages_count,
         page,
         count: total_posts_count,

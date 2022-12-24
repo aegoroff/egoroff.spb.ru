@@ -31,22 +31,22 @@ pub struct SmallPost {
 
 #[derive(Debug, Default, Clone, Deserialize, Serialize)]
 pub struct Post {
-    #[serde(rename(deserialize = "Created"))]
+    #[serde(rename(serialize = "Created", deserialize = "Created"))]
     pub created: DateTime<Utc>,
-    #[serde(rename(deserialize = "Modified"))]
+    #[serde(rename(serialize = "Modified", deserialize = "Modified"))]
     pub modified: DateTime<Utc>,
     pub id: i64,
-    #[serde(rename(deserialize = "Title"))]
+    #[serde(rename(serialize = "Title", deserialize = "Title"))]
     pub title: String,
-    #[serde(rename(deserialize = "ShortText"))]
+    #[serde(rename(serialize = "ShortText", deserialize = "ShortText"))]
     pub short_text: String,
-    #[serde(rename(deserialize = "Text"))]
+    #[serde(rename(serialize = "Text", deserialize = "Text"))]
     pub text: String,
-    #[serde(rename(deserialize = "Markdown"))]
+    #[serde(rename(serialize = "Markdown", deserialize = "Markdown"))]
     pub markdown: bool,
-    #[serde(rename(deserialize = "IsPublic"))]
+    #[serde(rename(serialize = "IsPublic", deserialize = "IsPublic"))]
     pub is_public: bool,
-    #[serde(rename(deserialize = "Tags"))]
+    #[serde(rename(serialize = "Tags", deserialize = "Tags"))]
     pub tags: Vec<String>,
 }
 
@@ -62,6 +62,7 @@ pub struct PostsRequest {
     pub page: Option<i32>,
     pub year: Option<i32>,
     pub month: Option<i32>,
+    pub include_private: Option<bool>,
 }
 
 pub struct Period {
@@ -161,6 +162,7 @@ pub trait Storage {
         offset: i32,
         request: PostsRequest,
     ) -> Result<Vec<SmallPost>, Self::Err>;
+    fn get_posts(&self, limit: i32, offset: i32) -> Result<Vec<Post>, Self::Err>;
     fn get_post(&self, id: i64) -> Result<Post, Self::Err>;
     fn upsert_post(&mut self, post: Post) -> Result<(), Self::Err>;
     fn delete_post(&mut self, id: i64) -> Result<(), Self::Err>;
