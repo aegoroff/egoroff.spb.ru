@@ -307,7 +307,7 @@ impl Storage for Sqlite {
             "SELECT id, title, created, short_text, markdown, text, is_public, modified \
                  FROM post ORDER BY created DESC LIMIT ?1 OFFSET ?2",
         )?;
-        let rows = stmt.query_map([limit, offset], |row| {
+        let posts_query = stmt.query_map([limit, offset], |row| {
             let created: i64 = row.get(2)?;
             let modified: i64 = row.get(7)?;
             let created_datetime =
@@ -331,22 +331,20 @@ impl Storage for Sqlite {
 
             Ok(post)
         })?;
-        let posts = rows.filter_map(|r| r.ok());
+        let posts = posts_query.filter_map(|r| r.ok());
 
         let mut stmt = self.conn.prepare(
             "SELECT post_id, tag FROM post_tag WHERE post_id IN (SELECT id FROM post ORDER BY created DESC LIMIT ?1 OFFSET ?2)",
         )?;
 
-        let rows = stmt.query_map([limit, offset], |row| Ok((row.get(0)?, row.get(1)?)))?;
+        let tags_query = stmt.query_map([limit, offset], |row| Ok((row.get(0)?, row.get(1)?)))?;
 
-        let tags: Vec<(i64, String)> = rows.filter_map(|r| r.ok()).collect();
-
-        let mut post_tags = tags
-            .iter()
+        let mut post_tags: HashMap<i64, Vec<String>> = tags_query
+            .filter_map(|r: Result<(i64, String), Self::Err>| r.ok())
             .group_by(|(id, _tag)| *id)
             .into_iter()
-            .map(|(id, g)| (id, g.map(|(_, tag)| tag.clone()).collect()))
-            .collect::<HashMap<i64, Vec<String>>>();
+            .map(|(id, g)| (id, g.map(|(_, tag)| tag).collect()))
+            .collect();
 
         let posts = posts
             .map(|mut post| {
