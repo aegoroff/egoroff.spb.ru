@@ -331,7 +331,6 @@ impl Storage for Sqlite {
 
             Ok(post)
         })?;
-        let posts = posts_query.filter_map(|r| r.ok());
 
         let mut stmt = self.conn.prepare(
             "SELECT post_id, tag FROM post_tag WHERE post_id IN (SELECT id FROM post ORDER BY created DESC LIMIT ?1 OFFSET ?2)",
@@ -346,7 +345,8 @@ impl Storage for Sqlite {
             .map(|(id, g)| (id, g.map(|(_, tag)| tag).collect()))
             .collect();
 
-        let posts = posts
+        let posts = posts_query
+            .filter_map(|r| r.ok())
             .map(|mut post| {
                 if let Some(tags) = post_tags.get_mut(&post.id) {
                     post.tags.append(tags);
