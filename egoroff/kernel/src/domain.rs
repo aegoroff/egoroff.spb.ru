@@ -178,18 +178,17 @@ pub trait Storage {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use test_context::{test_context, TestContext};
 
+    #[test_context(PostsRequestContext)]
     #[test]
-    fn as_query_period_single_first_month() {
+    fn as_query_period_single_first_month(ctx: &mut PostsRequestContext) {
         // arrange
-        let req = PostsRequest {
-            year: Some(2022),
-            month: Some(1),
-            ..Default::default()
-        };
+        ctx.request.year = Some(2022);
+        ctx.request.month = Some(1);
 
         // act
-        let period = req.as_query_period();
+        let period = ctx.request.as_query_period();
 
         // assert
         assert!(period.is_some());
@@ -202,17 +201,15 @@ mod tests {
         assert_eq!(period.to.day(), 31);
     }
 
+    #[test_context(PostsRequestContext)]
     #[test]
-    fn as_query_period_single_last_month() {
+    fn as_query_period_single_last_month(ctx: &mut PostsRequestContext) {
         // arrange
-        let req = PostsRequest {
-            year: Some(2022),
-            month: Some(12),
-            ..Default::default()
-        };
+        ctx.request.year = Some(2022);
+        ctx.request.month = Some(12);
 
         // act
-        let period = req.as_query_period();
+        let period = ctx.request.as_query_period();
 
         // assert
         assert!(period.is_some());
@@ -225,16 +222,14 @@ mod tests {
         assert_eq!(period.to.day(), 31);
     }
 
+    #[test_context(PostsRequestContext)]
     #[test]
-    fn as_query_period_single_year() {
+    fn as_query_period_single_year(ctx: &mut PostsRequestContext) {
         // arrange
-        let req = PostsRequest {
-            year: Some(2022),
-            ..Default::default()
-        };
+        ctx.request.year = Some(2022);
 
         // act
-        let period = req.as_query_period();
+        let period = ctx.request.as_query_period();
 
         // assert
         assert!(period.is_some());
@@ -247,61 +242,89 @@ mod tests {
         assert_eq!(period.to.day(), 31);
     }
 
+    #[test_context(PostsRequestContext)]
     #[test]
-    fn as_query_period_no_period() {
+    fn as_query_period_no_period(ctx: &mut PostsRequestContext) {
         // arrange
-        let req = PostsRequest {
-            ..Default::default()
-        };
 
         // act
-        let period = req.as_query_period();
+        let period = ctx.request.as_query_period();
 
         // assert
         assert!(period.is_none());
     }
 
+    #[test_context(PostContext)]
     #[test]
-    fn keywords_notemptytags_stringasexpected() {
+    fn keywords_notemptytags_stringasexpected(ctx: &mut PostContext) {
         // arrange
-        let post = Post {
-            tags: vec!["a".to_string(), "b".to_string()],
-            ..Default::default()
-        };
+        ctx.post.tags = vec!["a".to_string(), "b".to_string()];
 
         // act
-        let actual = post.keywords();
+        let actual = ctx.post.keywords();
 
         // assert
         assert_eq!("a,b", actual);
     }
 
+    #[test_context(PostContext)]
     #[test]
-    fn keywords_onetag_stringasexpected() {
+    fn keywords_onetag_stringasexpected(ctx: &mut PostContext) {
         // arrange
-        let post = Post {
-            tags: vec!["a".to_string()],
-            ..Default::default()
-        };
+        ctx.post.tags = vec!["a".to_string()];
 
         // act
-        let actual = post.keywords();
+        let actual = ctx.post.keywords();
 
         // assert
         assert_eq!("a", actual);
     }
 
+    #[test_context(PostContext)]
     #[test]
-    fn keywords_notags_stringasexpected() {
+    fn keywords_notags_stringasexpected(ctx: &mut PostContext) {
         // arrange
-        let post = Post {
-            ..Default::default()
-        };
 
         // act
-        let actual = post.keywords();
+        let actual = ctx.post.keywords();
 
         // assert
         assert!(actual.is_empty());
+    }
+
+    struct PostContext {
+        post: Post,
+    }
+
+    struct PostsRequestContext {
+        request: PostsRequest,
+    }
+
+    impl TestContext for PostContext {
+        fn setup() -> PostContext {
+            PostContext {
+                post: Post {
+                    ..Default::default()
+                },
+            }
+        }
+
+        fn teardown(self) {
+            // Perform any teardown you wish.
+        }
+    }
+
+    impl TestContext for PostsRequestContext {
+        fn setup() -> PostsRequestContext {
+            PostsRequestContext {
+                request: PostsRequest {
+                    ..Default::default()
+                },
+            }
+        }
+
+        fn teardown(self) {
+            // Perform any teardown you wish.
+        }
     }
 }
