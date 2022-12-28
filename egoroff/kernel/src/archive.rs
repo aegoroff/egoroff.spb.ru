@@ -1,5 +1,3 @@
-use std::path::Path;
-
 use crate::{
     converter::markdown2html,
     domain::{
@@ -7,8 +5,10 @@ use crate::{
     },
     sqlite::{Mode, Sqlite},
 };
+use anyhow::Result;
 use chrono::{DateTime, Datelike, Utc};
 use itertools::Itertools;
+use std::path::Path;
 
 const RANKS: &[&str] = &[
     "tagRank10",
@@ -38,14 +38,14 @@ const MONTHS: &[&str] = &[
     "Декабрь",
 ];
 
-pub fn archive<P: AsRef<Path>>(storage_path: P) -> Archive {
-    let storage = Sqlite::open(storage_path, Mode::ReadOnly).unwrap();
-    let aggregated_tags: Vec<TagAggregate> = storage.get_aggregate_tags().unwrap();
+pub fn archive<P: AsRef<Path>>(storage_path: P) -> Result<Archive> {
+    let storage = Sqlite::open(storage_path, Mode::ReadOnly)?;
+    let aggregated_tags: Vec<TagAggregate> = storage.get_aggregate_tags()?;
     let req = PostsRequest {
         ..Default::default()
     };
-    let total_posts = storage.count_posts(req).unwrap();
-    let dates: Vec<DateTime<Utc>> = storage.get_posts_create_dates().unwrap();
+    let total_posts = storage.count_posts(req)?;
+    let dates: Vec<DateTime<Utc>> = storage.get_posts_create_dates()?;
 
     let years = group_by_years(dates);
 
@@ -60,7 +60,7 @@ pub fn archive<P: AsRef<Path>>(storage_path: P) -> Archive {
         })
         .collect();
 
-    Archive { tags, years }
+    Ok(Archive { tags, years })
 }
 
 fn group_by_years(dates: Vec<DateTime<Utc>>) -> Vec<Year> {
@@ -98,25 +98,23 @@ pub fn get_small_posts<P: AsRef<Path>>(
     storage_path: P,
     page_size: i32,
     request: PostsRequest,
-) -> ApiResult<SmallPost> {
-    let storage = Sqlite::open(storage_path, Mode::ReadOnly).unwrap();
+) -> Result<ApiResult<SmallPost>> {
+    let storage = Sqlite::open(storage_path, Mode::ReadOnly)?;
 
     let page = request.page.unwrap_or(1);
 
-    let total_posts_count = storage.count_posts(request.clone()).unwrap();
+    let total_posts_count = storage.count_posts(request.clone())?;
     let pages_count = count_pages(total_posts_count, page_size);
 
-    let posts = storage
-        .get_small_posts(page_size, page_size * (page - 1), request)
-        .unwrap();
+    let posts = storage.get_small_posts(page_size, page_size * (page - 1), request)?;
 
-    ApiResult {
+    Ok(ApiResult {
         result: update_short_text(posts),
         pages: pages_count,
         page,
         count: total_posts_count,
         status: "success".to_string(),
-    }
+    })
 }
 
 pub fn get_posts<P: AsRef<Path>>(

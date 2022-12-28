@@ -1,4 +1,4 @@
-use kernel::domain::Post;
+use kernel::domain::{ApiResult, Archive, Post};
 
 use crate::{body::Content, domain::OperationResult};
 
@@ -72,7 +72,15 @@ fn serve_index(
 
     let result = archive::get_small_posts(&page_context.storage_path, PAGE_SIZE, req);
 
-    let poster = Poster::new(result, page);
+    let posts = match result {
+        Ok(ar) => ar,
+        Err(e) => {
+            tracing::error!("Get posts error: {e:#?}");
+            return make_500_page(&mut context, &page_context.tera);
+        }
+    };
+
+    let poster = Poster::new(posts, page);
 
     let mut title = section.title;
     let mut uri = page_context.site_graph.full_path("blog");
@@ -158,15 +166,41 @@ pub async fn serve_atom(Extension(page_context): Extension<Arc<PageContext>>) ->
     };
 
     let result = archive::get_small_posts(&page_context.storage_path, 20, req);
-    let xml = atom::from_small_posts(result.result).unwrap();
 
-    Content(xml, "application/atom+xml; charset=utf-8")
+    match result {
+        Ok(r) => {
+            let xml = atom::from_small_posts(r.result).unwrap();
+            (
+                StatusCode::OK,
+                Content(xml, "application/atom+xml; charset=utf-8"),
+            )
+        }
+        Err(e) => {
+            tracing::error!("Get posts error: {e:#?}");
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Content(e.to_string(), "text/plain; charset=utf-8"),
+            )
+        }
+    }
 }
 
 pub async fn serve_archive_api(
     Extension(page_context): Extension<Arc<PageContext>>,
 ) -> impl IntoResponse {
-    Json(archive::archive(&page_context.storage_path))
+    let result = archive::archive(&page_context.storage_path);
+    match result {
+        Ok(r) => (StatusCode::OK, Json(r)),
+        Err(e) => {
+            tracing::error!("Get posts error: {e:#?}");
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(Archive {
+                    ..Default::default()
+                }),
+            )
+        }
+    }
 }
 
 pub async fn service_posts_api(
@@ -174,7 +208,17 @@ pub async fn service_posts_api(
     axum::extract::Query(request): axum::extract::Query<PostsRequest>,
 ) -> impl IntoResponse {
     let result = archive::get_small_posts(&page_context.storage_path, PAGE_SIZE, request);
-    Json(result)
+
+    match result {
+        Ok(ar) => (StatusCode::OK, Json(ar)),
+        Err(e) => {
+            tracing::error!("Get posts error: {e:#?}");
+            let r = ApiResult {
+                ..Default::default()
+            };
+            (StatusCode::INTERNAL_SERVER_ERROR, Json(r))
+        }
+    }
 }
 
 pub async fn service_posts_admin_api(

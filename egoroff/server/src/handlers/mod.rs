@@ -78,20 +78,28 @@ struct Apache;
 pub async fn serve_index(
     Extension(page_context): Extension<Arc<PageContext>>,
 ) -> impl IntoResponse {
+    let mut context = Context::new();
+    context.insert(HTML_CLASS_KEY, "welcome");
+    context.insert(CONFIG_KEY, &page_context.site_config);
+
     let req = PostsRequest {
         ..Default::default()
     };
-
     let result = archive::get_small_posts(&page_context.storage_path, 5, req);
 
+    let blog_posts = match result {
+        Ok(r) => r,
+        Err(e) => {
+            tracing::error!("{e:#?}");
+            return make_500_page(&mut context, &page_context.tera);
+        }
+    };
+
     let section = page_context.site_graph.get_section("/").unwrap();
-    let mut context = Context::new();
-    context.insert(HTML_CLASS_KEY, "welcome");
     context.insert(TITLE_KEY, "egoroff.spb.ru");
     context.insert(KEYWORDS_KEY, &section.keywords);
     context.insert(META_KEY, &section.descr);
-    context.insert(CONFIG_KEY, &page_context.site_config);
-    context.insert("posts", &result.result);
+    context.insert("posts", &blog_posts.result);
 
     match portfolio::read_apache_documents(&page_context.base_path) {
         Ok(docs) => {

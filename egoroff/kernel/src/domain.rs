@@ -153,7 +153,7 @@ pub struct OAuthProvider {
 }
 
 pub trait Storage {
-    type Err: Sync + Send + Error;
+    type Err: Sync + Send + Error + 'static;
 
     fn new_database(&self) -> Result<(), Self::Err>;
     fn get_small_posts(
