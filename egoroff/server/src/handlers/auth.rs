@@ -53,22 +53,31 @@ pub async fn serve_profile(
     serve_page(&context, "profile.html", &page_context.tera)
 }
 
-macro_rules! login_user {
-    ($user:ident, $session:ident, $page_context:ident, $auth:ident) => {{
-        match $user {
-            Ok(u) => {
-                drop($session);
-                let login_result = login(u, $page_context, $auth).await;
-                match login_result {
-                    Ok(_) => tracing::info!("login success"),
+macro_rules! login_user_using_token {
+    ($token:expr, $session:ident, $page_context:ident, $auth:ident, $type:tt) => {{
+        match $token {
+            Ok(token) => {
+                let user = $type::get_user(token.access_token()).await;
+                match user {
+                    Ok(u) => {
+                        drop($session);
+                        let login_result = login(u, $page_context, $auth).await;
+                        match login_result {
+                            Ok(_) => tracing::info!("login success"),
+                            Err(e) => {
+                                tracing::error!("login error: {e:#?}");
+                                return Redirect::to("/login");
+                            }
+                        }
+                    }
                     Err(e) => {
-                        tracing::error!("login error: {e:#?}");
+                        tracing::error!("get user error: {e:#?}");
                         return Redirect::to("/login");
                     }
                 }
             }
             Err(e) => {
-                tracing::error!("get user error: {e:#?}");
+                tracing::error!("token error: {e:#?}");
                 return Redirect::to("/login");
             }
         }
@@ -107,16 +116,7 @@ pub async fn google_oauth_callback(
             let token = google_authorizer
                 .exchange_code(query.code, Some(pkce_code_verifier))
                 .await;
-            match token {
-                Ok(token) => {
-                    let user = GoogleAuthorizer::get_user(token.access_token()).await;
-                    login_user!(user, session, page_context, auth);
-                }
-                Err(e) => {
-                    tracing::error!("token error: {e:#?}");
-                    return Redirect::to("/login");
-                }
-            }
+            login_user_using_token!(token, session, page_context, auth, GoogleAuthorizer);
         }
         None => {
             tracing::error!("No code verifier from session");
@@ -136,17 +136,7 @@ pub async fn github_oauth_callback(
 ) -> impl IntoResponse {
     validate_csrf!("github_csrf_state", session, query);
     let token = github_authorizer.exchange_code(query.code, None).await;
-    match token {
-        Ok(token) => {
-            let user = GithubAuthorizer::get_user(token.access_token()).await;
-            login_user!(user, session, page_context, auth);
-        }
-        Err(e) => {
-            tracing::error!("token error: {e:#?}");
-            return Redirect::to("/login");
-        }
-    }
-
+    login_user_using_token!(token, session, page_context, auth, GithubAuthorizer);
     Redirect::to("/profile/")
 }
 
