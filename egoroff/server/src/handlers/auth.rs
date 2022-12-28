@@ -53,6 +53,47 @@ pub async fn serve_profile(
     serve_page(&context, "profile.html", &page_context.tera)
 }
 
+macro_rules! login_user {
+    ($user:ident, $session:ident, $page_context:ident, $auth:ident) => {{
+        match $user {
+            Ok(u) => {
+                drop($session);
+                let login_result = login(u, $page_context, $auth).await;
+                match login_result {
+                    Ok(_) => tracing::info!("login success"),
+                    Err(e) => {
+                        tracing::error!("login error: {e:#?}");
+                        return Redirect::to("/login");
+                    }
+                }
+            }
+            Err(e) => {
+                tracing::error!("get user error: {e:#?}");
+                return Redirect::to("/login");
+            }
+        }
+    }};
+}
+
+macro_rules! validate_csrf {
+    ($key:expr, $session:ident, $query:ident) => {{
+        match $session.get::<CsrfToken>($key) {
+            Some(original_csrf_state) => {
+                if original_csrf_state.secret() == $query.state.secret() {
+                    tracing::info!("authorized");
+                } else {
+                    tracing::error!("unauthorized");
+                    return Redirect::to("/login");
+                }
+            }
+            None => {
+                tracing::error!("No state from session");
+                return Redirect::to("/login");
+            }
+        }
+    }};
+}
+
 pub async fn google_oauth_callback(
     Query(query): Query<AuthRequest>,
     Extension(google_authorizer): Extension<Arc<GoogleAuthorizer>>,
@@ -60,20 +101,7 @@ pub async fn google_oauth_callback(
     session: ReadableSession,
     auth: AuthContext,
 ) -> impl IntoResponse {
-    match session.get::<CsrfToken>("google_csrf_state") {
-        Some(original_csrf_state) => {
-            if original_csrf_state.secret() == query.state.secret() {
-                tracing::info!("authorized");
-            } else {
-                tracing::error!("unauthorized");
-                return Redirect::to("/login");
-            }
-        }
-        None => {
-            tracing::error!("No state from session");
-            return Redirect::to("/login");
-        }
-    }
+    validate_csrf!("google_csrf_state", session, query);
     match session.get::<PkceCodeVerifier>("pkce_code_verifier") {
         Some(pkce_code_verifier) => {
             let token = google_authorizer
@@ -82,23 +110,7 @@ pub async fn google_oauth_callback(
             match token {
                 Ok(token) => {
                     let user = GoogleAuthorizer::get_user(token.access_token()).await;
-                    match user {
-                        Ok(u) => {
-                            drop(session);
-                            let login_result = login(u, page_context, auth).await;
-                            match login_result {
-                                Ok(_) => tracing::info!("login success"),
-                                Err(e) => {
-                                    tracing::error!("login error: {e:#?}");
-                                    return Redirect::to("/login");
-                                }
-                            }
-                        }
-                        Err(e) => {
-                            tracing::error!("get user error: {e:#?}");
-                            return Redirect::to("/login");
-                        }
-                    }
+                    login_user!(user, session, page_context, auth);
                 }
                 Err(e) => {
                     tracing::error!("token error: {e:#?}");
@@ -122,41 +134,12 @@ pub async fn github_oauth_callback(
     session: ReadableSession,
     auth: AuthContext,
 ) -> impl IntoResponse {
-    match session.get::<CsrfToken>("github_csrf_state") {
-        Some(original_csrf_state) => {
-            if original_csrf_state.secret() == query.state.secret() {
-                tracing::info!("authorized");
-            } else {
-                tracing::error!("unauthorized");
-                return Redirect::to("/login");
-            }
-        }
-        None => {
-            tracing::error!("No state from session");
-            return Redirect::to("/login");
-        }
-    }
+    validate_csrf!("github_csrf_state", session, query);
     let token = github_authorizer.exchange_code(query.code, None).await;
     match token {
         Ok(token) => {
             let user = GithubAuthorizer::get_user(token.access_token()).await;
-            match user {
-                Ok(u) => {
-                    drop(session);
-                    let login_result = login(u, page_context, auth).await;
-                    match login_result {
-                        Ok(_) => tracing::info!("login success"),
-                        Err(e) => {
-                            tracing::error!("login error: {e:#?}");
-                            return Redirect::to("/login");
-                        }
-                    }
-                }
-                Err(e) => {
-                    tracing::error!("get user error: {e:#?}");
-                    return Redirect::to("/login");
-                }
-            }
+            login_user!(user, session, page_context, auth);
         }
         Err(e) => {
             tracing::error!("token error: {e:#?}");
