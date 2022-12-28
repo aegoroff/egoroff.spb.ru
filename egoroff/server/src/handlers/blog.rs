@@ -1,4 +1,4 @@
-use kernel::domain::{ApiResult, Archive, Post};
+use kernel::domain::Post;
 
 use crate::{body::Content, domain::OperationResult};
 
@@ -29,14 +29,14 @@ lazy_static::lazy_static! {
 }
 
 pub async fn serve_index_default(
-    axum::extract::Query(request): axum::extract::Query<BlogRequest>,
+    Query(request): Query<BlogRequest>,
     Extension(page_context): Extension<Arc<PageContext>>,
 ) -> impl IntoResponse {
     serve_index(request, page_context, None)
 }
 
 pub async fn serve_index_not_default(
-    axum::extract::Query(request): axum::extract::Query<BlogRequest>,
+    Query(request): Query<BlogRequest>,
     Extension(page_context): Extension<Arc<PageContext>>,
     extract::Path(page): extract::Path<String>,
 ) -> impl IntoResponse {
@@ -189,47 +189,26 @@ pub async fn serve_archive_api(
     Extension(page_context): Extension<Arc<PageContext>>,
 ) -> impl IntoResponse {
     let result = archive::archive(&page_context.storage_path);
-    match result {
-        Ok(r) => (StatusCode::OK, Json(r)),
-        Err(e) => {
-            tracing::error!("Get posts error: {e:#?}");
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                Json(Archive {
-                    ..Default::default()
-                }),
-            )
-        }
-    }
+    make_json_response(result)
 }
 
-pub async fn service_posts_api(
+pub async fn serve_posts_api(
     Extension(page_context): Extension<Arc<PageContext>>,
-    axum::extract::Query(request): axum::extract::Query<PostsRequest>,
+    Query(request): Query<PostsRequest>,
 ) -> impl IntoResponse {
     let result = archive::get_small_posts(&page_context.storage_path, PAGE_SIZE, request);
-
-    match result {
-        Ok(ar) => (StatusCode::OK, Json(ar)),
-        Err(e) => {
-            tracing::error!("Get posts error: {e:#?}");
-            let r = ApiResult {
-                ..Default::default()
-            };
-            (StatusCode::INTERNAL_SERVER_ERROR, Json(r))
-        }
-    }
+    make_json_response(result)
 }
 
-pub async fn service_posts_admin_api(
+pub async fn serve_posts_admin_api(
     Extension(page_context): Extension<Arc<PageContext>>,
-    axum::extract::Query(request): axum::extract::Query<PostsRequest>,
+    Query(request): Query<PostsRequest>,
 ) -> impl IntoResponse {
     let result = archive::get_posts(&page_context.storage_path, 10, request);
-    Json(result)
+    make_json_response(result)
 }
 
-pub async fn service_post_update(
+pub async fn serve_post_update(
     Extension(page_context): Extension<Arc<PageContext>>,
     Json(post): Json<Post>,
 ) -> impl IntoResponse {

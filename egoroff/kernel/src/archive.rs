@@ -121,27 +121,26 @@ pub fn get_posts<P: AsRef<Path>>(
     storage_path: P,
     page_size: i32,
     request: PostsRequest,
-) -> ApiResult<Post> {
-    let storage = Sqlite::open(storage_path, Mode::ReadOnly).unwrap();
+) -> Result<ApiResult<Post>> {
+    let storage = Sqlite::open(storage_path, Mode::ReadOnly)?;
 
     let page = request.page.unwrap_or(1);
 
     let mut req = request;
     req.include_private = Some(true);
-    let total_posts_count = storage.count_posts(req).unwrap();
+    let total_posts_count = storage.count_posts(req)?;
     let pages_count = count_pages(total_posts_count, page_size);
 
     let posts = storage
-        .get_posts(page_size, page_size * (page - 1))
-        .unwrap();
+        .get_posts(page_size, page_size * (page - 1))?;
 
-    ApiResult {
+    Ok(ApiResult {
         result: posts,
         pages: pages_count,
         page,
         count: total_posts_count,
         status: "success".to_string(),
-    }
+    })
 }
 
 fn count_pages(count: i32, page_size: i32) -> i32 {

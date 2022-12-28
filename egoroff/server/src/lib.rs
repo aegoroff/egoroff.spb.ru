@@ -222,11 +222,11 @@ pub fn create_routes(
         .route("/admin", get(handlers::admin::serve_admin))
         .route(
             "/api/v2/admin/posts/",
-            get(handlers::blog::service_posts_admin_api),
+            get(handlers::blog::serve_posts_admin_api),
         )
         .route(
             "/api/v2/admin/post",
-            put(handlers::blog::service_post_update),
+            put(handlers::blog::serve_post_update),
         )
         // Important all admin protected routes must be the first in the list
         .route_layer(RequireAuth::login_with_role(Role::Admin..))
@@ -301,7 +301,7 @@ pub fn create_routes(
         )
         .route(
             "/api/v2/blog/posts/",
-            get(handlers::blog::service_posts_api),
+            get(handlers::blog::serve_posts_api),
         )
         .route(
             "/api/v2/auth/user/",

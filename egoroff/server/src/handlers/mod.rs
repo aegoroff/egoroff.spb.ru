@@ -194,7 +194,7 @@ pub async fn serve_apache_images(extract::Path(path): extract::Path<String>) -> 
 // this handler gets called if the query deserializes into `Info` successfully
 // otherwise a 400 Bad Request error response is returned
 pub async fn navigation(
-    extract::Query(query): extract::Query<Uri>,
+    Query(query): Query<Uri>,
     Extension(page_context): Extension<Arc<PageContext>>,
 ) -> impl IntoResponse {
     let q = query.uri;
@@ -280,5 +280,19 @@ fn activate_section(sections: Option<Vec<SiteSection>>, current: &str) -> Option
         )
     } else {
         sections
+    }
+}
+
+fn make_json_response<T: Default>(result: Result<T>) -> impl IntoResponse
+where
+    (StatusCode, Json<T>): IntoResponse,
+{
+    match result {
+        Ok(ar) => (StatusCode::OK, Json(ar)),
+        Err(e) => {
+            tracing::error!("Get posts error: {e:#?}");
+            let r: T = Default::default();
+            (StatusCode::INTERNAL_SERVER_ERROR, Json(r))
+        }
     }
 }
