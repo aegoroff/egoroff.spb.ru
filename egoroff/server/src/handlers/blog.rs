@@ -208,7 +208,15 @@ pub async fn serve_post_update(
     Extension(page_context): Extension<Arc<PageContext>>,
     Json(post): Json<Post>,
 ) -> impl IntoResponse {
-    let mut storage = Sqlite::open(&page_context.storage_path, Mode::ReadWrite).unwrap();
+    let mut storage = match Sqlite::open(&page_context.storage_path, Mode::ReadWrite) {
+        Ok(s) => s,
+        Err(e) => {
+            return Json(OperationResult {
+                result: format!("{e}"),
+            })
+        }
+    };
+
     match storage.upsert_post(post) {
         Ok(_) => Json(OperationResult {
             result: "success".to_owned(),
