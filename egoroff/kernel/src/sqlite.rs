@@ -17,6 +17,15 @@ pub struct Sqlite {
     conn: Connection,
 }
 
+macro_rules! datetime_from_row {
+    ($row:ident, $ix:expr) => {{
+        let timespamp: i64 = $row.get($ix)?;
+        let datetime =
+            NaiveDateTime::from_timestamp_opt(timespamp, 0).unwrap_or(NaiveDateTime::MIN);
+        DateTime::<Utc>::from_utc(datetime, Utc)
+    }};
+}
+
 impl Storage for Sqlite {
     type Err = Error;
 
@@ -122,18 +131,9 @@ impl Storage for Sqlite {
             .conn
             .prepare("SELECT title, created, short_text, markdown, text, is_public, modified FROM post WHERE is_public = 1 AND id=?1")?;
         let post: Post = stmt.query_row([id], |row| {
-            let created: i64 = row.get(1)?;
-            let modified: i64 = row.get(6)?;
-            let created_datetime =
-                NaiveDateTime::from_timestamp_opt(created, 0).unwrap_or(NaiveDateTime::MIN);
-            let modified_datetime =
-                NaiveDateTime::from_timestamp_opt(modified, 0).unwrap_or(NaiveDateTime::MIN);
-            let created = DateTime::<Utc>::from_utc(created_datetime, Utc);
-            let modified = DateTime::<Utc>::from_utc(modified_datetime, Utc);
-
             let post = Post {
-                created,
-                modified,
+                created: datetime_from_row!(row, 1),
+                modified: datetime_from_row!(row, 6),
                 id,
                 title: row.get(0)?,
                 short_text: row.get(2)?,
@@ -211,12 +211,7 @@ impl Storage for Sqlite {
         let mut stmt = self
             .conn
             .prepare("SELECT created FROM post WHERE is_public = 1 ORDER BY created DESC")?;
-        let dates = stmt.query_map([], |row| {
-            let created: i64 = row.get(0)?;
-            let created_datetime =
-                NaiveDateTime::from_timestamp_opt(created, 0).unwrap_or(NaiveDateTime::MIN);
-            Ok(DateTime::<Utc>::from_utc(created_datetime, Utc))
-        })?;
+        let dates = stmt.query_map([], |row| Ok(datetime_from_row!(row, 0)))?;
         Ok(dates.filter_map(|r| r.ok()).collect())
     }
 
@@ -267,13 +262,8 @@ impl Storage for Sqlite {
             .conn
             .prepare("SELECT created, email, name, login, avatar_url, federated_id, admin, verified, provider FROM user WHERE federated_id=?1 AND provider=?2")?;
         let user: User = stmt.query_row([federated_id, provider], |row| {
-            let created: i64 = row.get(0)?;
-            let created_datetime =
-                NaiveDateTime::from_timestamp_opt(created, 0).unwrap_or(NaiveDateTime::MIN);
-            let created = DateTime::<Utc>::from_utc(created_datetime, Utc);
-
             let user = User {
-                created,
+                created: datetime_from_row!(row, 0),
                 email: row.get(1)?,
                 name: row.get(2)?,
                 login: row.get(3)?,
@@ -308,18 +298,9 @@ impl Storage for Sqlite {
                  FROM post ORDER BY created DESC LIMIT ?1 OFFSET ?2",
         )?;
         let posts_query = stmt.query_map([limit, offset], |row| {
-            let created: i64 = row.get(2)?;
-            let modified: i64 = row.get(7)?;
-            let created_datetime =
-                NaiveDateTime::from_timestamp_opt(created, 0).unwrap_or(NaiveDateTime::MIN);
-            let modified_datetime =
-                NaiveDateTime::from_timestamp_opt(modified, 0).unwrap_or(NaiveDateTime::MIN);
-            let created = DateTime::<Utc>::from_utc(created_datetime, Utc);
-            let modified = DateTime::<Utc>::from_utc(modified_datetime, Utc);
-
             let post = Post {
-                created,
-                modified,
+                created: datetime_from_row!(row, 2),
+                modified: datetime_from_row!(row, 7),
                 id: row.get(0)?,
                 title: row.get(1)?,
                 short_text: row.get(3)?,
@@ -369,14 +350,10 @@ impl Sqlite {
     }
 
     fn map_small_post_row<E: std::convert::From<Error>>(row: &Row<'_>) -> Result<SmallPost, E> {
-        let created: i64 = row.get(2)?;
-        let datetime = NaiveDateTime::from_timestamp_opt(created, 0).unwrap_or(NaiveDateTime::MIN);
-        let created = DateTime::<Utc>::from_utc(datetime, Utc);
-
         let post = SmallPost {
             id: row.get(0)?,
             title: row.get(1)?,
-            created,
+            created: datetime_from_row!(row, 2),
             short_text: row.get(3)?,
             markdown: row.get(4)?,
         };
