@@ -82,10 +82,7 @@ pub async fn serve_index(
     context.insert(HTML_CLASS_KEY, "welcome");
     context.insert(CONFIG_KEY, &page_context.site_config);
 
-    let req = PostsRequest {
-        ..Default::default()
-    };
-    let result = archive::get_small_posts(&page_context.storage_path, 5, req);
+    let result = archive::get_small_posts(&page_context.storage_path, 5, None);
 
     let blog_posts = match result {
         Ok(r) => r,

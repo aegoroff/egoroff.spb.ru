@@ -70,7 +70,7 @@ fn serve_index(
         ..Default::default()
     };
 
-    let result = archive::get_small_posts(&page_context.storage_path, PAGE_SIZE, req);
+    let result = archive::get_small_posts(&page_context.storage_path, PAGE_SIZE, Some(req));
 
     let posts = match result {
         Ok(ar) => ar,
@@ -161,11 +161,7 @@ pub async fn serve_document(
 }
 
 pub async fn serve_atom(Extension(page_context): Extension<Arc<PageContext>>) -> impl IntoResponse {
-    let req = PostsRequest {
-        ..Default::default()
-    };
-
-    let result = archive::get_small_posts(&page_context.storage_path, 20, req);
+    let result = archive::get_small_posts(&page_context.storage_path, 20, None);
 
     match result {
         Ok(r) => {
@@ -196,7 +192,7 @@ pub async fn serve_posts_api(
     Extension(page_context): Extension<Arc<PageContext>>,
     Query(request): Query<PostsRequest>,
 ) -> impl IntoResponse {
-    let result = archive::get_small_posts(&page_context.storage_path, PAGE_SIZE, request);
+    let result = archive::get_small_posts(&page_context.storage_path, PAGE_SIZE, Some(request));
     make_json_response(result)
 }
 

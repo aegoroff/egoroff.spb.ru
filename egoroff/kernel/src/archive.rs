@@ -97,10 +97,11 @@ fn group_by_years(dates: Vec<DateTime<Utc>>) -> Vec<Year> {
 pub fn get_small_posts<P: AsRef<Path>>(
     storage_path: P,
     page_size: i32,
-    request: PostsRequest,
+    request: Option<PostsRequest>,
 ) -> Result<ApiResult<SmallPost>> {
     let storage = Sqlite::open(storage_path, Mode::ReadOnly)?;
 
+    let request = request.unwrap_or_default();
     let page = request.page.unwrap_or(1);
 
     let total_posts_count = storage.count_posts(request.clone())?;
