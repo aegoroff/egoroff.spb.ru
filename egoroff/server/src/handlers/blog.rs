@@ -217,14 +217,11 @@ pub async fn serve_post_update(
         }
     };
 
-    match storage.upsert_post(post) {
-        Ok(_) => Json(OperationResult {
-            result: "success".to_owned(),
-        }),
-        Err(e) => Json(OperationResult {
-            result: format!("{e}"),
-        }),
-    }
+    let result = match storage.upsert_post(post) {
+        Ok(_) => "success".to_owned(),
+        Err(e) => format!("{e}"),
+    };
+    Json(OperationResult { result })
 }
 
 pub async fn redirect_to_real_document(
