@@ -38,5 +38,3 @@ jobs:
         working-directory: ./ui
         run: |
           npm run build
-      - name: Test
-        run: go test ./...
