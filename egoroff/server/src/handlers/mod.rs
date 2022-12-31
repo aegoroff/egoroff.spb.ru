@@ -21,15 +21,17 @@ use kernel::{
     converter::{markdown2html, xml2html},
     domain::{PostsRequest, Storage, User},
     graph::SiteSection,
+    resource::Resource,
     sqlite::{Mode, Sqlite},
 };
 
+use reqwest::Client;
 use rust_embed::RustEmbed;
 use tera::{Context, Tera};
 
 use crate::{
     atom,
-    body::{Binary, Html, Xml},
+    body::{Binary, FileReply, Html, Xml},
     domain::{BlogRequest, Error, Navigation, PageContext, Poster, Uri},
     sitemap,
 };
@@ -186,6 +188,55 @@ pub async fn serve_apache_images(extract::Path(path): extract::Path<String>) -> 
     let relative_path = relative_path.as_os_str().to_str().unwrap_or_default();
     let asset = Apache::get(relative_path);
     get_embed(path, asset)
+}
+
+pub async fn serve_storage(
+    extract::Path((bucket, path)): extract::Path<(String, String)>,
+    Extension(page_context): Extension<Arc<PageContext>>,
+) -> impl IntoResponse {
+    let mut resource = Resource::new(&page_context.store_uri).unwrap();
+    resource
+        .append_path("api")
+        .append_path(&bucket)
+        .append_path(&path);
+
+    let client = Client::new();
+
+    match client.get(resource.to_string()).send().await {
+        Ok(response) => match response.error_for_status() {
+            Ok(r) => {
+                let len = get_content_length(r.headers());
+                (
+                    StatusCode::OK,
+                    FileReply::new(r.bytes_stream(), path, len).into_response(),
+                )
+            }
+            Err(e) => {
+                tracing::error!("{e:#?}");
+                (StatusCode::NOT_FOUND, Empty::new().into_response())
+            }
+        },
+        Err(e) => {
+            tracing::error!("{e:#?}");
+            (StatusCode::NOT_FOUND, Empty::new().into_response())
+        }
+    }
+}
+
+fn get_content_length(headers: &axum::http::HeaderMap) -> Option<i64> {
+    if let Some(len_header) = headers.get("content-length") {
+        if let Ok(val) = len_header.to_str() {
+            if let Ok(v) = val.parse() {
+                Some(v)
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    } else {
+        None
+    }
 }
 
 // this handler gets called if the query deserializes into `Info` successfully

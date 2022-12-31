@@ -29,7 +29,7 @@ anyhow = "1.0"
 chrono = {version="0.4.23", default-features = false, features = ["serde", "clock", "std"]}
 oauth2 = {version= "4.3.0", features = ["reqwest"] }
 async-trait = "0.1"
-reqwest = { version = "0.11", features = ["json"] }
+reqwest = { version = "0.11", features = ["json", "multipart", "stream"] }
 eyre = "0.6.8"
 lazy_static = "1.4.0"
 
@@ -39,3 +39,6 @@ features = ["min_const_gen"]
 
 [features]
 prometheus = ["axum-prometheus"]
+
+[dev-dependencies]
+rstest = "0.16.0"

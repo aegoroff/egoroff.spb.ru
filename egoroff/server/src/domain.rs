@@ -45,6 +45,7 @@ pub struct PageContext {
     pub tera: Tera,
     pub site_graph: SiteGraph,
     pub site_config: Config,
+    pub store_uri: String,
 }
 
 #[derive(Serialize, Deserialize, Default, Clone)]

@@ -68,6 +68,7 @@ pub async fn run() {
 
     let http_port = env::var("EGOROFF_HTTP_PORT").unwrap_or_else(|_| String::from("4200"));
     let https_port = env::var("EGOROFF_HTTPS_PORT").unwrap_or_else(|_| String::from("4201"));
+    let store_uri = env::var("EGOROFF_STORE_URI").unwrap();
 
     let base_path = if let Ok(d) = env::var("EGOROFF_HOME_DIR") {
         PathBuf::from(d)
@@ -122,7 +123,14 @@ pub async fn run() {
 
     tera.register_filter("typograph", typograph);
 
-    let app = create_routes(base_path, site_graph_clone, site_config, tera, data_path);
+    let app = create_routes(
+        base_path,
+        site_graph_clone,
+        site_config,
+        tera,
+        data_path,
+        store_uri,
+    );
 
     let ports = Ports {
         http: http_port.parse().unwrap(),
@@ -182,6 +190,7 @@ pub fn create_routes(
     site_config: Config,
     tera: Tera,
     data_path: PathBuf,
+    store_uri: String,
 ) -> Router {
     #[cfg(feature = "prometheus")]
     let (prometheus_layer, metric_handle) = PrometheusMetricLayer::pair();
@@ -204,6 +213,7 @@ pub fn create_routes(
         tera,
         site_graph,
         site_config,
+        store_uri,
     });
 
     let secret = rand::thread_rng().gen::<[u8; 64]>();
@@ -224,10 +234,7 @@ pub fn create_routes(
             "/api/v2/admin/posts/",
             get(handlers::blog::serve_posts_admin_api),
         )
-        .route(
-            "/api/v2/admin/post",
-            put(handlers::blog::serve_post_update),
-        )
+        .route("/api/v2/admin/post", put(handlers::blog::serve_post_update))
         // Important all admin protected routes must be the first in the list
         .route_layer(RequireAuth::login_with_role(Role::Admin..))
         .route("/profile", get(handlers::auth::serve_profile))
@@ -299,10 +306,7 @@ pub fn create_routes(
             "/api/v2/blog/archive/",
             get(handlers::blog::serve_archive_api),
         )
-        .route(
-            "/api/v2/blog/posts/",
-            get(handlers::blog::serve_posts_api),
-        )
+        .route("/api/v2/blog/posts/", get(handlers::blog::serve_posts_api))
         .route(
             "/api/v2/auth/user/",
             get(handlers::auth::serve_user_api_call),
@@ -310,6 +314,10 @@ pub fn create_routes(
         .route(
             "/api/v2/auth/user",
             get(handlers::auth::serve_user_api_call),
+        )
+        .route(
+            "/storage/:bucket/:path",
+            get(handlers::serve_storage),
         )
         .route(
             "/metrics",
