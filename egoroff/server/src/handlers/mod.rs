@@ -344,3 +344,69 @@ where
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rstest::*;
+
+    #[rstest]
+    #[case("123", 123)]
+    #[case("0", 0)]
+    #[case("-1", -1)]
+    #[case("8000000000", 8_000_000_000)]
+    #[trace]
+    fn get_content_length_positive_tests(#[case] test_data: &str, #[case] expected: i64) {
+        // arrange
+        let mut headers = axum::http::HeaderMap::new();
+        headers.insert("host", "example.com".parse().unwrap());
+        headers.insert("content-length", test_data.parse().unwrap());
+
+        // act
+        let actual = get_content_length(&headers);
+
+        // assert
+        assert_eq!(Some(expected), actual);
+    }
+
+    #[test]
+    fn get_content_length_no_header() {
+        // arrange
+        let mut headers = axum::http::HeaderMap::new();
+        headers.insert("host", "example.com".parse().unwrap());
+
+        // act
+        let actual = get_content_length(&headers);
+
+        // assert
+        assert!(actual.is_none());
+    }
+
+    #[test]
+    fn get_content_length_incorrect_header() {
+        // arrange
+        let mut headers = axum::http::HeaderMap::new();
+        headers.insert("host", "example.com".parse().unwrap());
+        headers.insert("content-length", "www".parse().unwrap());
+
+        // act
+        let actual = get_content_length(&headers);
+
+        // assert
+        assert!(actual.is_none());
+    }
+
+    #[test]
+    fn get_content_length_header_in_other_case() {
+        // arrange
+        let mut headers = axum::http::HeaderMap::new();
+        headers.insert("host", "example.com".parse().unwrap());
+        headers.insert("Content-Length", "123".parse().unwrap());
+
+        // act
+        let actual = get_content_length(&headers);
+
+        // assert
+        assert_eq!(Some(123), actual);
+    }
+}
