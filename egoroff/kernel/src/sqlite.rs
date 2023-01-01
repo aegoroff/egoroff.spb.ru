@@ -60,8 +60,8 @@ impl Storage for Sqlite {
             "CREATE TABLE post_tag (
                   post_id              INTEGER NOT NULL,
                   tag                  TEXT NOT NULL,
-                  PRIMARY KEY (post_id, tag)
-                  FOREIGN KEY(post_id) REFERENCES post(id)
+                  PRIMARY KEY (post_id, tag),
+                  FOREIGN KEY(post_id) REFERENCES post(id) ON UPDATE CASCADE ON DELETE CASCADE,
                   FOREIGN KEY(tag) REFERENCES tag(tag)
                   )",
             [],
