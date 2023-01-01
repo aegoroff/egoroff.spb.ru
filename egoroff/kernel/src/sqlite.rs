@@ -160,32 +160,27 @@ impl Storage for Sqlite {
     }
 
     fn count_posts(&self, request: PostsRequest) -> Result<i32, Self::Err> {
-        let include_private = request.include_private.unwrap_or(false);
-        let private_filter = if include_private {
-            "(is_public = 1 OR is_public = 0)"
-        } else {
-            "is_public = 1"
-        };
+        let is_public = i32::from(!request.include_private.unwrap_or(false));
+
         match request.tag {
             Some(tag) => {
-                let query = format!(
-                    "SELECT COUNT(1) FROM post INNER JOIN post_tag ON post_tag.post_id = post.id 
-                WHERE {private_filter} AND post_tag.tag = ?1"
-                );
-                let mut stmt = self.conn.prepare(&query)?;
-                stmt.query_row([tag], |row| row.get(0))
+                let mut stmt = self.conn.prepare(
+                    "SELECT COUNT(1) FROM post INNER JOIN post_tag ON post_tag.post_id = post.id \
+                          WHERE (is_public = 1 OR is_public = ?2) AND post_tag.tag = ?1",
+                )?;
+                let params = params![tag, is_public];
+                stmt.query_row(params, |row| row.get(0))
             }
             None => {
                 if let Some(period) = request.as_query_period() {
-                    let query = format!("SELECT COUNT(1) FROM post WHERE {private_filter} AND created > ?1 AND created < ?2");
-                    let mut stmt = self.conn.prepare(&query)?;
-                    stmt.query_row([period.from.timestamp(), period.to.timestamp()], |row| {
-                        row.get(0)
-                    })
+                    let mut stmt = self.conn.prepare("SELECT COUNT(1) FROM post WHERE (is_public = 1 OR is_public = ?3) AND created > ?1 AND created < ?2")?;
+                    let params = params![period.from.timestamp(), period.to.timestamp(), is_public];
+                    stmt.query_row(params, |row| row.get(0))
                 } else {
-                    let query = format!("SELECT COUNT(1) FROM post WHERE {private_filter}");
-                    let mut stmt = self.conn.prepare(&query)?;
-                    stmt.query_row([], |row| row.get(0))
+                    let mut stmt = self.conn.prepare(
+                        "SELECT COUNT(1) FROM post WHERE is_public = 1 OR is_public = ?1",
+                    )?;
+                    stmt.query_row([is_public], |row| row.get(0))
                 }
             }
         }
