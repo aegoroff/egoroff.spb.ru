@@ -35,7 +35,7 @@ pub fn typograph(str: String) -> Result<String> {
         result.extend(c);
     };
 
-    let stack = Rc::new(RefCell::new(Vec::<String>::new()));
+    let stack = Rc::new(RefCell::new(Vec::<String>::with_capacity(64)));
 
     let text_handler = |t: &mut TextChunk| {
         if t.text_type() != TextType::Data {
