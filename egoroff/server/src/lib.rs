@@ -1,6 +1,6 @@
 use auth::{GithubAuthorizer, GoogleAuthorizer, Role, UserStorage};
 use axum::extract::DefaultBodyLimit;
-use axum::routing::put;
+use axum::routing::{put, delete};
 use axum::Extension;
 use axum::{routing::get, Router};
 
@@ -235,6 +235,7 @@ pub fn create_routes(
             get(handlers::blog::serve_posts_admin_api),
         )
         .route("/api/v2/admin/post", put(handlers::blog::serve_post_update))
+        .route("/api/v2/admin/post/:id", delete(handlers::blog::serve_post_delete))
         // Important all admin protected routes must be the first in the list
         .route_layer(RequireAuth::login_with_role(Role::Admin..))
         .route("/profile", get(handlers::auth::serve_profile))

@@ -155,8 +155,23 @@ impl Storage for Sqlite {
         Ok(())
     }
 
-    fn delete_post(&mut self, _id: i64) -> Result<(), Self::Err> {
-        todo!()
+    fn delete_post(&mut self, id: i64) -> Result<usize, Self::Err> {
+        self.enable_foreign_keys()?;
+        Sqlite::execute_with_retry(|| {
+            let tx = self.conn.transaction()?;
+
+            let mut stmt = tx.prepare("DELETE FROM post_tag WHERE post_id = ?1")?;
+            stmt.execute(params![id])?;
+            stmt.finalize()?;
+
+            let mut stmt = tx.prepare("DELETE FROM post WHERE id = ?1")?;
+            let deleted_count = stmt.execute(params![id])?;
+            stmt.finalize()?;
+
+            tx.commit()?;
+
+            Ok(deleted_count)
+        })
     }
 
     fn count_posts(&self, request: PostsRequest) -> Result<i32, Self::Err> {

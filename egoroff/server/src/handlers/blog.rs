@@ -204,24 +204,50 @@ pub async fn serve_posts_admin_api(
     make_json_response(result)
 }
 
+macro_rules! execute_update {
+    ($page_context:ident, $method:ident, $arg:expr) => {{
+        let mut storage = match Sqlite::open(&$page_context.storage_path, Mode::ReadWrite) {
+            Ok(s) => s,
+            Err(e) => {
+                return (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    Json(OperationResult {
+                        result: format!("{e}"),
+                    }),
+                )
+            }
+        };
+
+        if let Err(e) = storage.$method($arg) {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(OperationResult {
+                    result: format!("{e}"),
+                }),
+            )
+        } else {
+            (
+                StatusCode::OK,
+                Json(OperationResult {
+                    result: "success".to_owned(),
+                }),
+            )
+        }
+    }};
+}
+
 pub async fn serve_post_update(
     Extension(page_context): Extension<Arc<PageContext>>,
     Json(post): Json<Post>,
 ) -> impl IntoResponse {
-    let mut storage = match Sqlite::open(&page_context.storage_path, Mode::ReadWrite) {
-        Ok(s) => s,
-        Err(e) => {
-            return Json(OperationResult {
-                result: format!("{e}"),
-            })
-        }
-    };
+    execute_update!(page_context, upsert_post, post)
+}
 
-    let result = match storage.upsert_post(post) {
-        Ok(_) => "success".to_owned(),
-        Err(e) => format!("{e}"),
-    };
-    Json(OperationResult { result })
+pub async fn serve_post_delete(
+    extract::Path(id): extract::Path<i64>,
+    Extension(page_context): Extension<Arc<PageContext>>,
+) -> impl IntoResponse {
+    execute_update!(page_context, delete_post, id)
 }
 
 pub async fn redirect_to_real_document(
