@@ -28,13 +28,7 @@ lazy_static::lazy_static! {
     static ref ALLOWED_SET: HashSet<&'static &'static str> = ALLOWED_TAGS.iter().collect();
 }
 
-pub fn typograph(str: String) -> Result<String> {
-    let mut result = Vec::with_capacity(str.len());
-
-    let output_sink = |c: &[u8]| {
-        result.extend(c);
-    };
-
+pub fn typograph(html: String) -> Result<String> {
     let stack = Rc::new(RefCell::new(Vec::<String>::with_capacity(64)));
 
     let text_handler = |t: &mut TextChunk| {
@@ -84,15 +78,17 @@ pub fn typograph(str: String) -> Result<String> {
         .chain(iter::once(element_handler))
         .collect();
 
+    let mut result = Vec::with_capacity(html.len());
+
     let mut rewriter = HtmlRewriter::new(
         Settings {
             element_content_handlers: handlers,
             ..Settings::default()
         },
-        output_sink,
+        |c: &[u8]| result.extend(c),
     );
 
-    rewriter.write(str.as_bytes())?;
+    rewriter.write(html.as_bytes())?;
     rewriter.end()?;
 
     Ok(String::from_utf8(result)?)
