@@ -61,7 +61,8 @@ macro_rules! login_user_using_token {
                 match user {
                     Ok(u) => {
                         drop($session);
-                        let login_result = login(u, $page_context, $auth).await;
+                        let login_result =
+                            login(u, $page_context.storage_path.as_path(), $auth).await;
                         match login_result {
                             Ok(_) => tracing::info!("login success"),
                             Err(e) => {
@@ -140,13 +141,13 @@ pub async fn github_oauth_callback(
     Redirect::to("/profile/")
 }
 
-async fn login<U: ToUser>(
+async fn login<U: ToUser, P: AsRef<Path>>(
     u: U,
-    page_context: Arc<PageContext>,
+    storage_path: P,
     mut auth: AuthContext,
 ) -> Result<()> {
     let user = u.to_user();
-    let mut storage = Sqlite::open(&page_context.storage_path, Mode::ReadWrite)?;
+    let mut storage = Sqlite::open(storage_path, Mode::ReadWrite)?;
     storage.upsert_user(&user).unwrap_or(());
     tracing::info!("User updated");
 
