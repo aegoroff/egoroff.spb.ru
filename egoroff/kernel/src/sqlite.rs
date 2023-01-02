@@ -162,10 +162,6 @@ impl Storage for Sqlite {
         Sqlite::execute_with_retry(|| {
             let tx = self.conn.transaction()?;
 
-            let mut stmt = tx.prepare("DELETE FROM post_tag WHERE post_id = ?1")?;
-            stmt.execute(params![id])?;
-            stmt.finalize()?;
-
             let mut stmt = tx.prepare("DELETE FROM post WHERE id = ?1")?;
             let deleted_count = stmt.execute(params![id])?;
             stmt.finalize()?;
