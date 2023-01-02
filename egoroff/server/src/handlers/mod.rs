@@ -93,15 +93,14 @@ pub async fn serve_index(
             return make_500_page(&mut context, &page_context.tera);
         }
     };
-
-    let section = page_context.site_graph.get_section("/").unwrap();
-    context.insert(TITLE_KEY, "egoroff.spb.ru");
-    context.insert(KEYWORDS_KEY, &section.keywords);
-    context.insert(META_KEY, &section.descr);
-    context.insert("posts", &blog_posts.result);
-
+    
     match portfolio::read_apache_documents(&page_context.base_path) {
         Ok(docs) => {
+            let section = page_context.site_graph.get_section("/").unwrap();
+            context.insert(TITLE_KEY, kernel::graph::BRAND);
+            context.insert(KEYWORDS_KEY, &section.keywords);
+            context.insert(META_KEY, &section.descr);
+            context.insert("posts", &blog_posts.result);
             context.insert(APACHE_DOCS_KEY, &docs);
             serve_page(&context, "welcome.html", &page_context.tera)
         }

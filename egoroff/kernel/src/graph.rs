@@ -5,7 +5,7 @@ use petgraph::prelude::*;
 
 const SEP: &str = "/";
 
-const BRAND: &str = "egoroff.spb.ru";
+pub const BRAND: &str = "egoroff.spb.ru";
 
 #[derive(Debug, Default, Clone, Deserialize, Serialize)]
 pub struct SiteSection {
