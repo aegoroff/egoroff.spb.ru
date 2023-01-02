@@ -94,7 +94,7 @@ pub async fn run() {
     let reader = BufReader::new(file);
 
     let root: SiteSection = serde_json::from_reader(reader).unwrap();
-    let site_graph = SiteGraph::new(root);
+    let site_graph = Arc::new(SiteGraph::new(root));
     let site_graph_clone = site_graph.clone();
 
     let templates_path = base_path.join("static/dist/**/*.html");
@@ -186,7 +186,7 @@ async fn https_server(ports: Ports, handle: Handle, app: Router) {
 
 pub fn create_routes(
     base_path: PathBuf,
-    site_graph: SiteGraph,
+    site_graph: Arc<SiteGraph>,
     site_config: Config,
     tera: Tera,
     data_path: PathBuf,
@@ -382,7 +382,7 @@ async fn shutdown_signal(handle: Handle) {
 
 fn typograph(value: &Value, _: &HashMap<String, Value>) -> tera::Result<Value> {
     let s = try_get_value!("typograph", "value", String, value);
-    let result = typograph::typograph(s);
+    let result = typograph::typograph(&s);
     match result {
         Ok(s) => Ok(Value::String(s)),
         Err(e) => Err(tera::Error::from(e.to_string())),

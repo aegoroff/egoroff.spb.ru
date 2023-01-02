@@ -28,7 +28,7 @@ lazy_static::lazy_static! {
     static ref ALLOWED_SET: HashSet<&'static &'static str> = ALLOWED_TAGS.iter().collect();
 }
 
-pub fn typograph(html: String) -> Result<String> {
+pub fn typograph(html: &str) -> Result<String> {
     let stack = Rc::new(RefCell::new(Vec::<String>::with_capacity(64)));
 
     let text_handler = |t: &mut TextChunk| {
@@ -159,7 +159,7 @@ mod tests {
         // arrange
 
         // act
-        let actual = typograph(str.to_string()).unwrap();
+        let actual = typograph(str).unwrap();
 
         // assert
         assert_eq!(expected, actual);

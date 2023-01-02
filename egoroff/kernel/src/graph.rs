@@ -21,7 +21,7 @@ pub struct SiteSection {
     pub children: Option<Vec<SiteSection>>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct SiteGraph {
     g: DiGraphMap<i32, i32>,
     next_id: i32,

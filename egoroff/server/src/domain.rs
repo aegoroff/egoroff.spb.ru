@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, sync::Arc};
 
 use kernel::{
     domain::ApiResult,
@@ -43,7 +43,7 @@ pub struct PageContext {
     pub base_path: PathBuf,
     pub storage_path: PathBuf,
     pub tera: Tera,
-    pub site_graph: SiteGraph,
+    pub site_graph: Arc<SiteGraph>,
     pub site_config: Config,
     pub store_uri: String,
 }
