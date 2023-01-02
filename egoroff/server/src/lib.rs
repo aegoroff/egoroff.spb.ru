@@ -123,6 +123,8 @@ pub async fn run() {
 
     tera.register_filter("typograph", typograph);
 
+    let tera = Arc::new(tera);
+
     let app = create_routes(
         base_path,
         site_graph_clone,
@@ -188,7 +190,7 @@ pub fn create_routes(
     base_path: PathBuf,
     site_graph: Arc<SiteGraph>,
     site_config: Config,
-    tera: Tera,
+    tera: Arc<Tera>,
     data_path: PathBuf,
     store_uri: String,
 ) -> Router {

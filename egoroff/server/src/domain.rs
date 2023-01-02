@@ -32,7 +32,7 @@ pub struct Navigation {
     pub breadcrumbs: Option<Vec<SiteSection>>,
 }
 
-#[derive(Serialize, Deserialize, Default, Clone)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct Config {
     pub search_api_key: String,
     pub google_site_id: String,
@@ -42,13 +42,13 @@ pub struct Config {
 pub struct PageContext {
     pub base_path: PathBuf,
     pub storage_path: PathBuf,
-    pub tera: Tera,
+    pub tera: Arc<Tera>,
     pub site_graph: Arc<SiteGraph>,
     pub site_config: Config,
     pub store_uri: String,
 }
 
-#[derive(Serialize, Deserialize, Default, Clone)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct Apache {
     pub id: String,
     pub stylesheet: String,
