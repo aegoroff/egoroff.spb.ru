@@ -148,7 +148,7 @@ async fn login<U: ToUser, P: AsRef<Path>>(
 ) -> Result<()> {
     let user = u.to_user();
     let mut storage = Sqlite::open(storage_path, Mode::ReadWrite)?;
-    storage.upsert_user(&user).unwrap_or(());
+    storage.upsert_user(&user)?;
     tracing::info!("User updated");
 
     let login = auth.login(&user).await;
