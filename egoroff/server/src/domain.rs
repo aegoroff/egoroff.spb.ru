@@ -1,12 +1,19 @@
 use std::{path::PathBuf, sync::Arc};
 
+use axum_login::RequireAuthorizationLayer;
+use futures::lock::Mutex;
 use kernel::{
-    domain::ApiResult,
-    graph::{SiteGraph, SiteSection},
+    domain::{ApiResult, User},
+    graph::{SiteGraph, SiteSection}, sqlite::Sqlite,
 };
 use oauth2::CsrfToken;
 use serde::{Deserialize, Serialize};
 use tera::Tera;
+
+use crate::auth::Role;
+
+pub type RequireAuth = RequireAuthorizationLayer<User, Role>;
+pub type Database = Arc<Mutex<Sqlite>>;
 
 #[derive(Deserialize)]
 pub struct Uri {
@@ -41,7 +48,7 @@ pub struct Config {
 
 pub struct PageContext {
     pub base_path: PathBuf,
-    pub storage_path: PathBuf,
+    pub storage: Database,
     pub tera: Arc<Tera>,
     pub site_graph: Arc<SiteGraph>,
     pub site_config: Config,

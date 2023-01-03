@@ -3,12 +3,12 @@ use crate::{
     domain::{
         ApiResult, Archive, Month, Post, PostsRequest, SmallPost, Storage, Tag, TagAggregate, Year,
     },
-    sqlite::{Mode, Sqlite},
+    sqlite::Sqlite,
 };
 use anyhow::Result;
 use chrono::{DateTime, Datelike, Utc};
+use futures::lock::MutexGuard;
 use itertools::Itertools;
-use std::path::Path;
 
 const RANKS: &[&str] = &[
     "tagRank10",
@@ -38,8 +38,7 @@ const MONTHS: &[&str] = &[
     "Декабрь",
 ];
 
-pub fn archive<P: AsRef<Path>>(storage_path: P) -> Result<Archive> {
-    let storage = Sqlite::open(storage_path, Mode::ReadOnly)?;
+pub fn archive(storage: MutexGuard<Sqlite>) -> Result<Archive> {
     let aggregated_tags: Vec<TagAggregate> = storage.get_aggregate_tags()?;
     let req = PostsRequest {
         ..Default::default()
@@ -94,13 +93,11 @@ fn group_by_years(dates: Vec<DateTime<Utc>>) -> Vec<Year> {
     result
 }
 
-pub fn get_small_posts<P: AsRef<Path>>(
-    storage_path: P,
+pub fn get_small_posts(
+    storage: MutexGuard<Sqlite>,
     page_size: i32,
     request: Option<PostsRequest>,
 ) -> Result<ApiResult<SmallPost>> {
-    let storage = Sqlite::open(storage_path, Mode::ReadOnly)?;
-
     let request = request.unwrap_or_default();
     let page = request.page.unwrap_or(1);
 
@@ -118,13 +115,11 @@ pub fn get_small_posts<P: AsRef<Path>>(
     })
 }
 
-pub fn get_posts<P: AsRef<Path>>(
-    storage_path: P,
+pub fn get_posts(
+    storage: MutexGuard<Sqlite>,
     page_size: i32,
     request: PostsRequest,
 ) -> Result<ApiResult<Post>> {
-    let storage = Sqlite::open(storage_path, Mode::ReadOnly)?;
-
     let page = request.page.unwrap_or(1);
 
     let mut req = request;
@@ -132,8 +127,7 @@ pub fn get_posts<P: AsRef<Path>>(
     let total_posts_count = storage.count_posts(req)?;
     let pages_count = count_pages(total_posts_count, page_size);
 
-    let posts = storage
-        .get_posts(page_size, page_size * (page - 1))?;
+    let posts = storage.get_posts(page_size, page_size * (page - 1))?;
 
     Ok(ApiResult {
         result: posts,

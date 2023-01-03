@@ -22,7 +22,6 @@ use kernel::{
     domain::{PostsRequest, Storage, User},
     graph::SiteSection,
     resource::Resource,
-    sqlite::{Mode, Sqlite},
 };
 
 use reqwest::Client;
@@ -84,7 +83,8 @@ pub async fn serve_index(
     context.insert(HTML_CLASS_KEY, "welcome");
     context.insert(CONFIG_KEY, &page_context.site_config);
 
-    let result = archive::get_small_posts(page_context.storage_path.as_path(), 5, None);
+    let storage = page_context.storage.lock().await;
+    let result = archive::get_small_posts(storage, 5, None);
 
     let blog_posts = match result {
         Ok(r) => r,
@@ -140,7 +140,7 @@ pub async fn serve_sitemap(
         }
     };
 
-    let storage = Sqlite::open(&page_context.storage_path, Mode::ReadOnly).unwrap();
+    let storage = page_context.storage.lock().await;
     let post_ids = storage.get_posts_ids().unwrap();
     let xml = sitemap::make_site_map(apache_documents, post_ids).unwrap();
     (StatusCode::OK, Xml(xml))

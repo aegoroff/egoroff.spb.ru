@@ -54,15 +54,21 @@ pub async fn serve_profile(
 }
 
 macro_rules! login_user_using_token {
-    ($token:expr, $session:ident, $page_context:ident, $auth:ident, $type:tt) => {{
+    ($token:expr, $session:ident, $storage:ident, $auth:ident, $type:tt) => {{
         match $token {
             Ok(token) => {
                 let user = $type::get_user(token.access_token()).await;
                 match user {
                     Ok(u) => {
                         drop($session);
-                        let login_result =
-                            login(u, $page_context.storage_path.as_path(), $auth).await;
+                        let user = u.to_user();
+                        if let Err(e) = $storage.upsert_user(&user) {
+                            tracing::error!("login error: {e:#?}");
+                            return Redirect::to("/login");
+                        }
+                        tracing::info!("User updated");
+
+                        let login_result = login(&user, $auth).await;
                         match login_result {
                             Ok(_) => tracing::info!("login success"),
                             Err(e) => {
@@ -117,7 +123,8 @@ pub async fn google_oauth_callback(
             let token = google_authorizer
                 .exchange_code(query.code, Some(pkce_code_verifier))
                 .await;
-            login_user_using_token!(token, session, page_context, auth, GoogleAuthorizer);
+            let mut storage = page_context.storage.lock().await;
+            login_user_using_token!(token, session, storage, auth, GoogleAuthorizer);
         }
         None => {
             tracing::error!("No code verifier from session");
@@ -137,21 +144,13 @@ pub async fn github_oauth_callback(
 ) -> impl IntoResponse {
     validate_csrf!("github_csrf_state", session, query);
     let token = github_authorizer.exchange_code(query.code, None).await;
-    login_user_using_token!(token, session, page_context, auth, GithubAuthorizer);
+    let mut storage = page_context.storage.lock().await;
+    login_user_using_token!(token, session, storage, auth, GithubAuthorizer);
     Redirect::to("/profile/")
 }
 
-async fn login<U: ToUser, P: AsRef<Path>>(
-    u: U,
-    storage_path: P,
-    mut auth: AuthContext,
-) -> Result<()> {
-    let user = u.to_user();
-    let mut storage = Sqlite::open(storage_path, Mode::ReadWrite)?;
-    storage.upsert_user(&user)?;
-    tracing::info!("User updated");
-
-    let login = auth.login(&user).await;
+async fn login(user: &User, mut auth: AuthContext) -> Result<()> {
+    let login = auth.login(user).await;
     match login {
         Ok(_) => tracing::info!("Login success"),
         Err(e) => tracing::error!("login failed: {e:#?}"),

@@ -4,17 +4,18 @@ use axum::routing::{put, delete};
 use axum::Extension;
 use axum::{routing::get, Router};
 
-use axum_login::{AuthLayer, RequireAuthorizationLayer};
+use axum_login::AuthLayer;
 #[cfg(feature = "prometheus")]
 use axum_prometheus::PrometheusMetricLayer;
 
 use axum_server::tls_rustls::RustlsConfig;
 use axum_server::Handle;
 use axum_sessions::{SameSite, SessionLayer};
-use domain::PageContext;
-use kernel::domain::User;
+use domain::{PageContext, RequireAuth};
+use futures::lock::Mutex;
 use kernel::graph::{SiteGraph, SiteSection};
 use kernel::session::SqliteSessionStore;
+use kernel::sqlite::{Sqlite, Mode};
 use kernel::typograph;
 use rand::Rng;
 use serde_json::Value;
@@ -54,8 +55,6 @@ mod handlers;
 mod sitemap;
 
 pub const SESSIONS_DATABASE: &str = "egoroff_sessions.db";
-
-type RequireAuth = RequireAuthorizationLayer<User, Role>;
 
 pub async fn run() {
     tracing_subscriber::registry()
@@ -209,9 +208,12 @@ pub fn create_routes(
     let storage_path_clone = storage_path.clone();
     let user_store = UserStorage::from(Arc::new(storage_path_clone));
 
+    let storage = Sqlite::open(storage_path, Mode::ReadWrite).unwrap();
+    let storage = Arc::new(Mutex::new(storage));
+
     let page_context = Arc::new(PageContext {
         base_path,
-        storage_path,
+        storage,
         tera,
         site_graph,
         site_config,

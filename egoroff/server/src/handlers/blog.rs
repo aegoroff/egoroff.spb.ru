@@ -32,7 +32,7 @@ pub async fn serve_index_default(
     Query(request): Query<BlogRequest>,
     Extension(page_context): Extension<Arc<PageContext>>,
 ) -> impl IntoResponse {
-    serve_index(request, page_context, None)
+    serve_index(request, page_context, None).await
 }
 
 pub async fn serve_index_not_default(
@@ -40,10 +40,10 @@ pub async fn serve_index_not_default(
     Extension(page_context): Extension<Arc<PageContext>>,
     extract::Path(page): extract::Path<String>,
 ) -> impl IntoResponse {
-    serve_index(request, page_context, Some(page))
+    serve_index(request, page_context, Some(page)).await
 }
 
-fn serve_index(
+async fn serve_index(
     request: BlogRequest,
     page_context: Arc<PageContext>,
     page: Option<String>,
@@ -70,8 +70,9 @@ fn serve_index(
         ..Default::default()
     };
 
+    let storage = page_context.storage.lock().await;
     let result =
-        archive::get_small_posts(page_context.storage_path.as_path(), PAGE_SIZE, Some(req));
+        archive::get_small_posts(storage, PAGE_SIZE, Some(req));
 
     let posts = match result {
         Ok(ar) => ar,
@@ -120,7 +121,7 @@ pub async fn serve_document(
         }
     };
 
-    let storage = Sqlite::open(&page_context.storage_path, Mode::ReadOnly).unwrap();
+    let storage = page_context.storage.lock().await;
 
     let post = match storage.get_post(id) {
         Ok(item) => item,
@@ -162,7 +163,8 @@ pub async fn serve_document(
 }
 
 pub async fn serve_atom(Extension(page_context): Extension<Arc<PageContext>>) -> impl IntoResponse {
-    let result = archive::get_small_posts(page_context.storage_path.as_path(), 20, None);
+    let storage = page_context.storage.lock().await;
+    let result = archive::get_small_posts(storage, 20, None);
 
     match result {
         Ok(r) => {
@@ -185,7 +187,8 @@ pub async fn serve_atom(Extension(page_context): Extension<Arc<PageContext>>) ->
 pub async fn serve_archive_api(
     Extension(page_context): Extension<Arc<PageContext>>,
 ) -> impl IntoResponse {
-    let result = archive::archive(page_context.storage_path.as_path());
+    let storage = page_context.storage.lock().await;
+    let result = archive::archive(storage);
     make_json_response(result)
 }
 
@@ -193,8 +196,9 @@ pub async fn serve_posts_api(
     Extension(page_context): Extension<Arc<PageContext>>,
     Query(request): Query<PostsRequest>,
 ) -> impl IntoResponse {
+    let storage = page_context.storage.lock().await;
     let result = archive::get_small_posts(
-        page_context.storage_path.as_path(),
+        storage,
         PAGE_SIZE,
         Some(request),
     );
@@ -205,25 +209,14 @@ pub async fn serve_posts_admin_api(
     Extension(page_context): Extension<Arc<PageContext>>,
     Query(request): Query<PostsRequest>,
 ) -> impl IntoResponse {
-    let result = archive::get_posts(page_context.storage_path.as_path(), 10, request);
+    let storage = page_context.storage.lock().await;
+    let result = archive::get_posts(storage, 10, request);
     make_json_response(result)
 }
 
 macro_rules! execute_update {
-    ($page_context:ident, $method:ident, $arg:expr) => {{
-        let mut storage = match Sqlite::open(&$page_context.storage_path, Mode::ReadWrite) {
-            Ok(s) => s,
-            Err(e) => {
-                return (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    Json(OperationResult {
-                        result: format!("{e}"),
-                    }),
-                )
-            }
-        };
-
-        if let Err(e) = storage.$method($arg) {
+    ($storage:ident, $method:ident, $arg:expr) => {{
+        if let Err(e) = $storage.$method($arg) {
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 Json(OperationResult {
@@ -245,14 +238,16 @@ pub async fn serve_post_update(
     Extension(page_context): Extension<Arc<PageContext>>,
     Json(post): Json<Post>,
 ) -> impl IntoResponse {
-    execute_update!(page_context, upsert_post, post)
+    let mut storage = page_context.storage.lock().await;
+    execute_update!(storage, upsert_post, post)
 }
 
 pub async fn serve_post_delete(
     extract::Path(id): extract::Path<i64>,
     Extension(page_context): Extension<Arc<PageContext>>,
 ) -> impl IntoResponse {
-    execute_update!(page_context, delete_post, id)
+    let mut storage = page_context.storage.lock().await;
+    execute_update!(storage, delete_post, id)
 }
 
 pub async fn redirect_to_real_document(
