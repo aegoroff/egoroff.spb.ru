@@ -240,7 +240,7 @@ fn get_content_length(headers: &axum::http::HeaderMap) -> Option<i64> {
 
 // this handler gets called if the query deserializes into `Info` successfully
 // otherwise a 400 Bad Request error response is returned
-pub async fn navigation(
+pub async fn serve_navigation(
     Query(query): Query<Uri>,
     Extension(page_context): Extension<Arc<PageContext>>,
 ) -> impl IntoResponse {

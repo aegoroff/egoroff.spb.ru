@@ -304,7 +304,7 @@ pub fn create_routes(
             "/_s/callback/github/authorized/",
             get(handlers::auth::github_oauth_callback),
         )
-        .route("/api/v2/navigation/", get(handlers::navigation))
+        .route("/api/v2/navigation/", get(handlers::serve_navigation))
         .route(
             "/api/v2/blog/archive/",
             get(handlers::blog::serve_archive_api),
