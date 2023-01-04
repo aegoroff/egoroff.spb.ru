@@ -12,7 +12,7 @@ use axum::{
     body::Empty,
     extract::{self, Query},
     http::StatusCode,
-    response::{IntoResponse, Redirect},
+    response::{IntoResponse, Redirect, Response},
     Extension, Json,
 };
 use axum_sessions::extractors::{ReadableSession, WritableSession};
@@ -205,21 +205,28 @@ pub async fn serve_storage(
         Ok(response) => match response.error_for_status() {
             Ok(r) => {
                 let len = get_content_length(r.headers());
-                (
-                    StatusCode::OK,
-                    FileReply::new(r.bytes_stream(), path, len).into_response(),
-                )
+                success_response(FileReply::new(r.bytes_stream(), path, len))
             }
             Err(e) => {
                 tracing::error!("{e:#?}");
-                (StatusCode::NOT_FOUND, Empty::new().into_response())
+                not_found_response(Empty::new())
             }
         },
         Err(e) => {
             tracing::error!("{e:#?}");
-            (StatusCode::NOT_FOUND, Empty::new().into_response())
+            not_found_response(Empty::new())
         }
     }
+}
+
+// makes HTTP (OK) response code 200
+fn success_response<R: IntoResponse>(r: R) -> (StatusCode, Response) {
+    (StatusCode::OK, r.into_response())
+}
+
+// makes HTTP (NOT FOUND) response code 404
+fn not_found_response<R: IntoResponse>(r: R) -> (StatusCode, Response) {
+    (StatusCode::NOT_FOUND, r.into_response())
 }
 
 fn get_content_length(headers: &axum::http::HeaderMap) -> Option<i64> {
@@ -308,9 +315,9 @@ fn serve_page(context: &Context, template_name: &str, tera: &Tera) -> (StatusCod
 
 fn get_embed(path: &str, asset: Option<rust_embed::EmbeddedFile>) -> impl IntoResponse {
     if let Some(file) = asset {
-        (StatusCode::OK, Binary::new(file.data, path).into_response())
+        success_response(Binary::new(file.data, path))
     } else {
-        (StatusCode::NOT_FOUND, Empty::new().into_response())
+        not_found_response(Empty::new())
     }
 }
 
