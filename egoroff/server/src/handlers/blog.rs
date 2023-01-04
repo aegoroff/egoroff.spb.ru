@@ -130,6 +130,7 @@ pub async fn serve_document(
             return make_404_page(&mut context, &page_context.tera);
         }
     };
+    drop(storage);
     let uri = page_context.site_graph.full_path("blog");
     let uri = format!("{uri}/{path}");
     let title_path = page_context.site_graph.make_title_path(&uri);

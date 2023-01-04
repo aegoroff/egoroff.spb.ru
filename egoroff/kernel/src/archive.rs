@@ -45,6 +45,7 @@ pub fn archive(storage: MutexGuard<Sqlite>) -> Result<Archive> {
     };
     let total_posts = storage.count_posts(req)?;
     let dates: Vec<DateTime<Utc>> = storage.get_posts_create_dates()?;
+    drop(storage);
 
     let years = group_by_years(dates);
 
