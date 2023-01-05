@@ -268,18 +268,18 @@ pub async fn serve_navigation(
     }
 }
 
-fn make_404_page(context: &mut Context, tera: &Tera) -> (StatusCode, Html<String>) {
-    (StatusCode::NOT_FOUND, make_error_page(context, "404", tera))
+fn make_404_page(context: &mut Context, tera: &Tera) -> (StatusCode, Response) {
+    not_found_response(make_error_page(context, "404", tera))
 }
 
-fn make_500_page(context: &mut Context, tera: &Tera) -> (StatusCode, Html<String>) {
+fn make_500_page(context: &mut Context, tera: &Tera) -> (StatusCode, Response) {
     (
         StatusCode::INTERNAL_SERVER_ERROR,
         make_error_page(context, "500", tera),
     )
 }
 
-fn make_error_page(context: &mut Context, code: &str, tera: &Tera) -> Html<String> {
+fn make_error_page(context: &mut Context, code: &str, tera: &Tera) -> Response {
     let error = Error {
         code: code.to_string(),
         ..Default::default()
@@ -291,23 +291,23 @@ fn make_error_page(context: &mut Context, code: &str, tera: &Tera) -> Html<Strin
     context.insert("error", &error);
     let index = tera.render("error.html", context);
     match index {
-        Ok(content) => Html(content),
+        Ok(content) => Html(content).into_response(),
         Err(err) => {
             tracing::error!("Server error: {err}");
-            Html(format!("{:#?}", err))
+            Html(format!("{:#?}", err)).into_response()
         }
     }
 }
 
-fn serve_page(context: &Context, template_name: &str, tera: &Tera) -> (StatusCode, Html<String>) {
+fn serve_page(context: &Context, template_name: &str, tera: &Tera) -> (StatusCode, Response) {
     let index = tera.render(template_name, context);
     match index {
-        Ok(content) => (StatusCode::OK, Html(content)),
+        Ok(content) => (StatusCode::OK, Html(content).into_response()),
         Err(err) => {
             tracing::error!("Server error: {err}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Html(format!("{:#?}", err)),
+                Html(format!("{:#?}", err)).into_response(),
             )
         }
     }

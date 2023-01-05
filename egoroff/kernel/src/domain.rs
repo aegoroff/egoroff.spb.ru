@@ -164,6 +164,7 @@ pub trait Storage {
     ) -> Result<Vec<SmallPost>, Self::Err>;
     fn get_posts(&self, limit: i32, offset: i32) -> Result<Vec<Post>, Self::Err>;
     fn get_post(&self, id: i64) -> Result<Post, Self::Err>;
+    fn get_new_post_id(&self, id: i64) -> Result<i64, Self::Err>;
     fn upsert_post(&mut self, post: Post) -> Result<(), Self::Err>;
     fn delete_post(&mut self, id: i64) -> Result<usize, Self::Err>;
     fn count_posts(&self, request: PostsRequest) -> Result<i32, Self::Err>;

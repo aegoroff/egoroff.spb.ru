@@ -122,6 +122,14 @@ pub async fn serve_document(
 
     let storage = page_context.storage.lock().await;
 
+    if let Ok(id) = storage.get_new_post_id(id) {
+        let new_path = format!("/blog/{id}.html");
+        return (
+            StatusCode::PERMANENT_REDIRECT,
+            Redirect::permanent(&new_path).into_response(),
+        );
+    }
+
     let post = match storage.get_post(id) {
         Ok(item) => item,
         Err(e) => {

@@ -121,7 +121,7 @@ impl Storage for Sqlite {
     fn get_post(&self, id: i64) -> Result<crate::domain::Post, Self::Err> {
         let mut stmt = self
             .conn
-            .prepare("SELECT tag FROM post_tag INNER JOIN post_remap ON post_tag.post_id = post_remap.post_id WHERE post_tag.post_id = ?1 OR post_remap.old_id=?1")?;
+            .prepare("SELECT tag FROM post_tag WHERE post_tag.post_id = ?1")?;
         let tags = stmt.query_map([id], |row| {
             let tag = row.get(0)?;
             Ok(tag)
@@ -130,8 +130,8 @@ impl Storage for Sqlite {
         let mut stmt = self
             .conn
             .prepare("SELECT title, created, short_text, markdown, text, is_public, modified \
-                           FROM post INNER JOIN post_remap ON post.id = post_remap.post_id \
-                           WHERE is_public = 1 AND (id=?1 OR post_remap.old_id=?1)")?;
+                           FROM post \
+                           WHERE is_public = 1 AND id=?1")?;
         let post: Post = stmt.query_row([id], |row| {
             let post = Post {
                 created: datetime_from_row!(row, 1),
@@ -345,6 +345,13 @@ impl Storage for Sqlite {
             .collect();
 
         Ok(posts)
+    }
+
+    fn get_new_post_id(&self, id: i64) -> Result<i64, Self::Err> {
+        let mut stmt = self.conn.prepare("SELECT post_id FROM post_remap WHERE old_id = ?1")?;
+        let params = params![id];
+        let post_id = stmt.query_row(params, |row| row.get(0))?;
+        Ok(post_id)
     }
 }
 
