@@ -1,11 +1,11 @@
-{% extends '../index.html' %}
+{% extends 'index.html' %}
 
 {% block content %}
 <div class="container">
-    {% include '../bit/notifications.html' %}
+    {% include 'bit/notifications.html' %}
     <div class="row">
         <div class="col-lg-12">
-            {{ content | safe | typograph }}
+            {{ content | typograph | safe }}
         </div>
     </div>
 </div>

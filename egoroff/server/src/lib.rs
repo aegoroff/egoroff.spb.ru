@@ -96,7 +96,7 @@ pub async fn run() {
     let site_graph = Arc::new(SiteGraph::new(root));
     let site_graph_clone = site_graph.clone();
 
-    let templates_path = base_path.join("static/dist/**/*.html");
+    let templates_path = base_path.join("static/dist/**/*[a-zA-Z0-9][a-zA-Z0-9_].html");
     let templates_path = templates_path.to_str().unwrap();
 
     let mut tera = match Tera::new(templates_path) {

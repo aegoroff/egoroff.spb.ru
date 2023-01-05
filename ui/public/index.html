@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="{{html_class}}" lang="ru">
+<html {% if html_class %}class="{{html_class}}"{% endif %} lang="ru">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -20,11 +20,11 @@
     <link rel="micropub" href="https://www.egoroff.spb.ru/micropub/">
     <link href='https://fonts.googleapis.com/css?family=Noto+Serif:400,700,400italic,700italic|Open+Sans:700,400&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
     <title>{{title}}{% if title_path %}{{" | "}}{{title_path}}{% endif %}</title>
-    <link href="{{ctx.PathFor('blog')}}recent.atom"
+    <link href="{{path_for(id='blog') | safe}}recent.atom"
           rel="alternate"
           title="Recent Posts"
           type="application/atom+xml">
-    {% if gin_mode == 'release' %}
+    <!-- Google Analytics -->
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-HRFZ3XCBK8"></script>
 <script>
@@ -34,7 +34,6 @@
 
   gtag('config', 'G-HRFZ3XCBK8');
 </script>
-    {% endif %}
 </head>
 <body>
 <noscript>
@@ -46,10 +45,6 @@
 {% block content %}{% endblock %}
 <footer class="footer" role="contentinfo">
     <div class="container">
-        <div class="social github mt-2" data-repo="egoroff">
-            <iframe src="https://ghbtns.com/github-btn.html?user=aegoroff&repo=egoroff.spb.ru&type=follow&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="150" height="20"></iframe>
-            <iframe src="https://ghbtns.com/github-btn.html?user=aegoroff&repo=egoroff.spb.ru&type=watch&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="80" height="20"></iframe>
-        </div>
         <p class="muted">&copy; 2002-2022 - Александр Егоров</p>
     </div>
 </footer>

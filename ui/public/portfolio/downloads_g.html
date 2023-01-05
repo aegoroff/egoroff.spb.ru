@@ -1,13 +1,11 @@
-{% if downloads %}
 {% for folder in downloads %}
     <h3> {{ folder.Title }}</h3>
     <ul class="list-unstyled">
     {% for f in folder.Files %}
         <li itemscope itemtype="http://schema.org/SoftwareApplication">
             <a itemprop="downloadUrl" href="/f/{{ f.Uid }}" title="Размер:&nbsp;{{ f.HumanReadableSize }}" onclick="_gaq.push(['_trackPageview', '{{ f.TitleFilename }}']);"><i class="icon" data-label="download"></i>&nbsp;<span itemprop="name">{{ f.Description }}</span></a>&nbsp;
-            <small><i class="icon" data-label="calendar-alt"></i>&nbsp;<span itemprop="datePublished" class="date" data-label="LL">{{ f.Created }}</span></small>
+            <small><i class="icon" data-label="calendar-alt"></i>&nbsp;<span itemprop="datePublished" class="date" data-label="LL">{{ f.Created.Format("2006-01-02 15:04:05") }}</span></small>
         </li>
     {% endfor %}
     </ul>
 {% endfor %}
-{% endif %}

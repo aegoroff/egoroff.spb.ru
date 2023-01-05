@@ -1,35 +1,35 @@
-{% if poster.HasPages() %}
+{% if poster.has_pages %}
 <!--noindex-->
-    {% if "tag" in request.args %}
-        {% set tag_query = "?tag=" + request.args.tag %}
+    {% if request.tag %}
+        {% set tag_query = "?tag=" %}
     {% else %}
         {% set tag_query = "" %}
     {% endif %}
     {% set older = "старее &rarr;" %}
     {% set newer = "&larr; новее" %}
     <ul class="pagination justify-content-center" id="blogPager">
-        {% if poster.HasPrev() %}
+        {% if poster.has_prev %}
             {% set li_class = "" %}
 
-            {% if poster.PrevPage() == 1 %}
+            {% if poster.prev_page == 1 %}
                 {% set href = tag_query %}
             {% else %}
-                {% set href = "page/" + poster.PrevPage() + "/" + tag_query %}
+            {% set href = poster.prev_page ~ "/" ~ tag_query %}
             {% endif %}
         {% else %}
             {% set li_class = "disabled" %}
             {% set href = "#" %}
         {% endif %}
         <li class="{{ li_class }} page-item">
-            <a href="{{ctx.PathFor('blog')}}{% if poster.PrevPage() > 1 %}page/{% endif %}{{ href }}" class="page-link">{{ newer | safe }}</a>
+            <a href="{{path_for(id='blog') | safe}}{% if poster.prev_page > 1 %}page/{% endif %}{{ href }}" class="page-link">{{ newer | safe }}</a>
         </li>
-        {% for page in poster.Pages() %}
+        {% for page in poster.pages %}
             {% if page %}
-                <li {% if page == poster.Page() %} class="active page-item" {% else %} class="page-item" {% endif %}>
+                <li {% if page == poster.page %} class="active page-item" {% else %} class="page-item" {% endif %}>
                     {% if page == 1 %}
-                    <a href="{{ ctx.PathFor('blog') }}{{ tag_query }}" class="page-link">{{ page }}</a>
+                    <a href="{{ path_for(id='blog') | safe}}{{ tag_query }}" class="page-link">{{ page }}</a>
                     {% else %}
-                    <a href="{{ ctx.PathFor('blog') }}page/{{ page }}/{{ tag_query }}"
+                    <a href="{{ path_for(id='blog') | safe}}page/{{ page }}/{{ tag_query }}"
                        class="page-link">{{ page }}</a>
                     {% endif %}
                 </li>
@@ -38,15 +38,15 @@
             {% endif %}
         {% endfor %}
 
-        {% if poster.HasNext() %}
+        {% if poster.has_next %}
             {% set li_class = "" %}
-            {% set href = poster.NextPage() + "/" + tag_query %}
+            {% set href = poster.next_page ~ "/" ~ tag_query %}
         {% else %}
             {% set li_class = "disabled" %}
             {% set href = "#" %}
         {% endif %}
         <li class="{{ li_class }} page-item">
-            <a href="{{ctx.PathFor('blog')}}page/{{ href }}" class="page-link">{{ older | safe }}</a>
+            <a href="{{path_for(id='blog') | safe}}page/{{ href }}" class="page-link">{{ older | safe }}</a>
         </li>
     </ul>
 <!--/noindex-->
