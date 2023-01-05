@@ -26,6 +26,7 @@ use kernel::{
 
 use reqwest::Client;
 use rust_embed::RustEmbed;
+use serde::Serialize;
 use tera::{Context, Tera};
 
 use crate::{
@@ -136,14 +137,14 @@ pub async fn serve_sitemap(
         Err(e) => {
             tracing::error!("{e:#?}");
             let content = format!("<?xml version=\"1.0\"?><error>{}</error>", e);
-            return (StatusCode::INTERNAL_SERVER_ERROR, Xml(content));
+            return internal_server_error_response(Xml(content));
         }
     };
 
     let storage = page_context.storage.lock().await;
     let post_ids = storage.get_posts_ids().unwrap();
     let xml = sitemap::make_site_map(apache_documents, post_ids).unwrap();
-    (StatusCode::OK, Xml(xml))
+    success_response(Xml(xml))
 }
 
 pub async fn serve_js(extract::Path(path): extract::Path<String>) -> impl IntoResponse {
@@ -219,14 +220,19 @@ pub async fn serve_storage(
     }
 }
 
-// makes HTTP (OK) response code 200
+/// makes HTTP (OK) response code 200
 fn success_response<R: IntoResponse>(r: R) -> (StatusCode, Response) {
     (StatusCode::OK, r.into_response())
 }
 
-// makes HTTP (NOT FOUND) response code 404
+/// makes HTTP (NOT FOUND) response code 404
 fn not_found_response<R: IntoResponse>(r: R) -> (StatusCode, Response) {
     (StatusCode::NOT_FOUND, r.into_response())
+}
+
+/// makes HTTP (INTERNAL SERVER ERROR) response code 500
+fn internal_server_error_response<R: IntoResponse>(r: R) -> (StatusCode, Response) {
+    (StatusCode::INTERNAL_SERVER_ERROR, r.into_response())
 }
 
 fn get_content_length(headers: &axum::http::HeaderMap) -> Option<i64> {
@@ -273,13 +279,10 @@ fn make_404_page(context: &mut Context, tera: &Tera) -> (StatusCode, Response) {
 }
 
 fn make_500_page(context: &mut Context, tera: &Tera) -> (StatusCode, Response) {
-    (
-        StatusCode::INTERNAL_SERVER_ERROR,
-        make_error_page(context, "500", tera),
-    )
+    internal_server_error_response(make_error_page(context, "500", tera))
 }
 
-fn make_error_page(context: &mut Context, code: &str, tera: &Tera) -> Response {
+fn make_error_page(context: &mut Context, code: &str, tera: &Tera) -> Html<String> {
     let error = Error {
         code: code.to_string(),
         ..Default::default()
@@ -291,10 +294,10 @@ fn make_error_page(context: &mut Context, code: &str, tera: &Tera) -> Response {
     context.insert("error", &error);
     let index = tera.render("error.html", context);
     match index {
-        Ok(content) => Html(content).into_response(),
+        Ok(content) => Html(content),
         Err(err) => {
             tracing::error!("Server error: {err}");
-            Html(format!("{:#?}", err)).into_response()
+            Html(format!("{:#?}", err))
         }
     }
 }
@@ -302,13 +305,10 @@ fn make_error_page(context: &mut Context, code: &str, tera: &Tera) -> Response {
 fn serve_page(context: &Context, template_name: &str, tera: &Tera) -> (StatusCode, Response) {
     let index = tera.render(template_name, context);
     match index {
-        Ok(content) => (StatusCode::OK, Html(content).into_response()),
+        Ok(content) => success_response(Html(content)),
         Err(err) => {
             tracing::error!("Server error: {err}");
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                Html(format!("{:#?}", err)).into_response(),
-            )
+            internal_server_error_response(Html(format!("{:#?}", err)))
         }
     }
 }
@@ -337,16 +337,13 @@ fn activate_section(sections: Option<Vec<SiteSection>>, current: &str) -> Option
     }
 }
 
-fn make_json_response<T: Default>(result: Result<T>) -> impl IntoResponse
-where
-    (StatusCode, Json<T>): IntoResponse,
-{
+fn make_json_response<T: Default + Serialize>(result: Result<T>) -> impl IntoResponse {
     match result {
-        Ok(ar) => (StatusCode::OK, Json(ar)),
+        Ok(ar) => success_response(Json(ar)),
         Err(e) => {
             tracing::error!("Get posts error: {e:#?}");
             let r: T = Default::default();
-            (StatusCode::INTERNAL_SERVER_ERROR, Json(r))
+            internal_server_error_response(Json(r))
         }
     }
 }

@@ -177,17 +177,11 @@ pub async fn serve_atom(Extension(page_context): Extension<Arc<PageContext>>) ->
     match result {
         Ok(r) => {
             let xml = atom::from_small_posts(r.result).unwrap();
-            (
-                StatusCode::OK,
-                Content(xml, "application/atom+xml; charset=utf-8"),
-            )
+            success_response(Content(xml, "application/atom+xml; charset=utf-8"))
         }
         Err(e) => {
             tracing::error!("Get posts error: {e:#?}");
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                Content(e.to_string(), "text/plain; charset=utf-8"),
-            )
+            internal_server_error_response(Content(e.to_string(), "text/plain; charset=utf-8"))
         }
     }
 }
@@ -221,19 +215,13 @@ pub async fn serve_posts_admin_api(
 macro_rules! execute_update {
     ($storage:ident, $method:ident, $arg:expr) => {{
         if let Err(e) = $storage.$method($arg) {
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                Json(OperationResult {
-                    result: format!("{e}"),
-                }),
-            )
+            internal_server_error_response(Json(OperationResult {
+                result: format!("{e}"),
+            }))
         } else {
-            (
-                StatusCode::OK,
-                Json(OperationResult {
-                    result: "success".to_owned(),
-                }),
-            )
+            success_response(Json(OperationResult {
+                result: "success".to_owned(),
+            }))
         }
     }};
 }
