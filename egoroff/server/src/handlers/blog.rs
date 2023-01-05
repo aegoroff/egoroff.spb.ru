@@ -7,21 +7,21 @@ use super::*;
 const PAGE_SIZE: i32 = 20;
 
 const OPINIONS_REMAP: &[(&str, &str)] = &[
-    ("1", "25002"),
-    ("4", "31001"),
-    ("8", "6003"),
-    ("11", "30001"),
-    ("13", "3006"),
-    ("18", "29001"),
-    ("21", "9002"),
-    ("22", "2004"),
-    ("24", "25003"),
-    ("25", "22002"),
-    ("26", "27002"),
-    ("27", "27001"),
-    ("28", "14004"),
-    ("29", "8003"),
-    ("30", "6004"),
+    ("1", "1"),
+    ("4", "6"),
+    ("8", "11"),
+    ("11", "14"),
+    ("13", "18"),
+    ("18", "27"),
+    ("21", "28"),
+    ("22", "29"),
+    ("24", "33"),
+    ("25", "35"),
+    ("26", "37"),
+    ("27", "36"),
+    ("28", "42"),
+    ("29", "43"),
+    ("30", "44"),
 ];
 
 lazy_static::lazy_static! {
@@ -71,8 +71,7 @@ async fn serve_index(
     };
 
     let storage = page_context.storage.lock().await;
-    let result =
-        archive::get_small_posts(storage, PAGE_SIZE, Some(req));
+    let result = archive::get_small_posts(storage, PAGE_SIZE, Some(req));
 
     let posts = match result {
         Ok(ar) => ar,
@@ -111,7 +110,7 @@ pub async fn serve_document(
     context.insert(HTML_CLASS_KEY, "blog");
     context.insert(CONFIG_KEY, &page_context.site_config);
 
-    let doc = path.trim_end_matches(".html");
+    let doc = strip_extension(&path);
 
     let id: i64 = match doc.parse() {
         Ok(item) => item,
@@ -198,11 +197,7 @@ pub async fn serve_posts_api(
     Query(request): Query<PostsRequest>,
 ) -> impl IntoResponse {
     let storage = page_context.storage.lock().await;
-    let result = archive::get_small_posts(
-        storage,
-        PAGE_SIZE,
-        Some(request),
-    );
+    let result = archive::get_small_posts(storage, PAGE_SIZE, Some(request));
     make_json_response(result)
 }
 
@@ -254,17 +249,44 @@ pub async fn serve_post_delete(
 pub async fn redirect_to_real_document(
     extract::Path(path): extract::Path<String>,
 ) -> impl IntoResponse {
-    let id = path
-        .strip_suffix(".html")
-        .unwrap_or_else(|| path.strip_suffix(".htm").unwrap_or_default());
+    let id = strip_extension(&path);
 
-    if id.is_empty() {
-        Redirect::permanent("/blog/")
-    } else if REPLACES_MAP.contains_key(id) {
+    if REPLACES_MAP.contains_key(id) {
         let new_page = REPLACES_MAP.get(id).unwrap();
         let new_path = format!("/blog/{new_page}.html");
         Redirect::permanent(&new_path)
     } else {
         Redirect::permanent("/blog/")
+    }
+}
+
+fn strip_extension(path: &str) -> &str {
+    let without_ext = path
+        .strip_suffix(".html")
+        .unwrap_or_else(|| path.strip_suffix(".htm").unwrap_or(path));
+    without_ext
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rstest::*;
+
+    #[rstest]
+    #[case("1.html", "1")]
+    #[case("1.htm", "1")]
+    #[case("100000.html", "100000")]
+    #[case("100000", "100000")]
+    #[case("", "")]
+    #[case("a", "a")]
+    #[trace]
+    fn strip_extension_tests(#[case] test_data: &str, #[case] expected: &str) {
+        // arrange
+
+        // act
+        let actual = strip_extension(test_data);
+
+        // assert
+        assert_eq!(expected, actual)
     }
 }
