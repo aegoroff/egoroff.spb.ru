@@ -1,8 +1,8 @@
 User-agent: *
-Disallow: /signout/
 Disallow: /_s/
 Disallow: /_ah/
-Disallow: /api/v2/
-Disallow: /signin/
+Disallow: /login
 Disallow: /search/
-Disallow: /*?
+
+
+Sitemap: https://www.egoroff.spb.ru/sitemap.xml
