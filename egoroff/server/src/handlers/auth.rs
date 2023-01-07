@@ -15,6 +15,9 @@ type AuthContext = axum_login::extractors::AuthContext<User, UserStorage, Role>;
 const GOOGLE_CSRF_KEY: &str = "google_csrf_state";
 const GITHUB_CSRF_KEY: &str = "github_csrf_state";
 const YANDEX_CSRF_KEY: &str = "yandex_csrf_state";
+const PKCE_CODE_VERIFIER_KEY: &str = "pkce_code_verifier";
+const PROFILE_URI: &str = "/profile/";
+const LOGIN_URI: &str = "/login";
 
 pub async fn serve_login(
     Extension(page_context): Extension<Arc<PageContext>>,
@@ -40,7 +43,7 @@ pub async fn serve_login(
         .insert(YANDEX_CSRF_KEY, yandex_url.csrf_state)
         .unwrap();
     session
-        .insert("pkce_code_verifier", google_url.verifier.unwrap())
+        .insert(PKCE_CODE_VERIFIER_KEY, google_url.verifier.unwrap())
         .unwrap();
 
     context.insert(TITLE_KEY, "Авторизация");
@@ -77,7 +80,7 @@ macro_rules! login_user_using_token {
                         let user = u.to_user();
                         if let Err(e) = $storage.upsert_user(&user) {
                             tracing::error!("login error: {e:#?}");
-                            return Redirect::to("/login");
+                            return Redirect::to(LOGIN_URI);
                         }
                         tracing::info!("User updated");
 
@@ -86,19 +89,19 @@ macro_rules! login_user_using_token {
                             Ok(_) => tracing::info!("login success"),
                             Err(e) => {
                                 tracing::error!("login error: {e:#?}");
-                                return Redirect::to("/login");
+                                return Redirect::to(LOGIN_URI);
                             }
                         }
                     }
                     Err(e) => {
                         tracing::error!("get user error: {e:#?}");
-                        return Redirect::to("/login");
+                        return Redirect::to(LOGIN_URI);
                     }
                 }
             }
             Err(e) => {
                 tracing::error!("token error: {e:#?}");
-                return Redirect::to("/login");
+                return Redirect::to(LOGIN_URI);
             }
         }
     }};
@@ -112,12 +115,12 @@ macro_rules! validate_csrf {
                     tracing::info!("authorized");
                 } else {
                     tracing::error!("unauthorized");
-                    return Redirect::to("/login");
+                    return Redirect::to(LOGIN_URI);
                 }
             }
             None => {
                 tracing::error!("No state from session");
-                return Redirect::to("/login");
+                return Redirect::to(LOGIN_URI);
             }
         }
     }};
@@ -131,7 +134,7 @@ pub async fn google_oauth_callback(
     auth: AuthContext,
 ) -> impl IntoResponse {
     validate_csrf!(GOOGLE_CSRF_KEY, session, query);
-    match session.get::<PkceCodeVerifier>("pkce_code_verifier") {
+    match session.get::<PkceCodeVerifier>(PKCE_CODE_VERIFIER_KEY) {
         Some(pkce_code_verifier) => {
             let token = google_authorizer
                 .exchange_code(query.code, Some(pkce_code_verifier))
@@ -141,11 +144,11 @@ pub async fn google_oauth_callback(
         }
         None => {
             tracing::error!("No code verifier from session");
-            return Redirect::to("/login");
+            return Redirect::to(LOGIN_URI);
         }
     }
 
-    Redirect::to("/profile/")
+    Redirect::to(PROFILE_URI)
 }
 
 pub async fn github_oauth_callback(
@@ -159,7 +162,7 @@ pub async fn github_oauth_callback(
     let token = github_authorizer.exchange_code(query.code, None).await;
     let mut storage = page_context.storage.lock().await;
     login_user_using_token!(token, session, storage, auth, GithubAuthorizer);
-    Redirect::to("/profile/")
+    Redirect::to(PROFILE_URI)
 }
 
 pub async fn yandex_oauth_callback(
@@ -173,7 +176,7 @@ pub async fn yandex_oauth_callback(
     let token = yandex_authorizer.exchange_code(query.code, None).await;
     let mut storage = page_context.storage.lock().await;
     login_user_using_token!(token, session, storage, auth, YandexAuthorizer);
-    Redirect::to("/profile/")
+    Redirect::to(PROFILE_URI)
 }
 
 async fn login(user: &User, mut auth: AuthContext) -> Result<()> {
