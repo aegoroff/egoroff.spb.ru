@@ -351,6 +351,10 @@ pub fn create_routes(
             post(handlers::indie::serve_token_generate).get(handlers::indie::serve_token_validate),
         )
         .route(
+            "/token/",
+            post(handlers::indie::serve_token_generate).get(handlers::indie::serve_token_validate),
+        )
+        .route(
             "/metrics",
             get(|| async move {
                 #[cfg(feature = "prometheus")]
