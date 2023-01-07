@@ -1,5 +1,8 @@
 use super::*;
-use crate::{auth::ToUser, domain::AuthorizedUser};
+use crate::{
+    auth::{ToUser, YandexAuthorizer},
+    domain::AuthorizedUser,
+};
 use oauth2::{CsrfToken, PkceCodeVerifier, TokenResponse};
 
 use crate::{
@@ -9,10 +12,15 @@ use crate::{
 
 type AuthContext = axum_login::extractors::AuthContext<User, UserStorage, Role>;
 
+const GOOGLE_CSRF_KEY: &str = "google_csrf_state";
+const GITHUB_CSRF_KEY: &str = "github_csrf_state";
+const YANDEX_CSRF_KEY: &str = "yandex_csrf_state";
+
 pub async fn serve_login(
     Extension(page_context): Extension<Arc<PageContext>>,
     Extension(google_authorizer): Extension<Arc<GoogleAuthorizer>>,
     Extension(gitgub_authorizer): Extension<Arc<GithubAuthorizer>>,
+    Extension(yandex_authorizer): Extension<Arc<YandexAuthorizer>>,
     mut session: WritableSession,
 ) -> impl IntoResponse {
     let mut context = Context::new();
@@ -20,12 +28,16 @@ pub async fn serve_login(
 
     let google_url = google_authorizer.generate_authorize_url();
     let github_url = gitgub_authorizer.generate_authorize_url();
+    let yandex_url = yandex_authorizer.generate_authorize_url();
 
     session
-        .insert("google_csrf_state", google_url.csrf_state)
+        .insert(GOOGLE_CSRF_KEY, google_url.csrf_state)
         .unwrap();
     session
-        .insert("github_csrf_state", github_url.csrf_state)
+        .insert(GITHUB_CSRF_KEY, github_url.csrf_state)
+        .unwrap();
+    session
+        .insert(YANDEX_CSRF_KEY, yandex_url.csrf_state)
         .unwrap();
     session
         .insert("pkce_code_verifier", google_url.verifier.unwrap())
@@ -34,6 +46,7 @@ pub async fn serve_login(
     context.insert(TITLE_KEY, "Авторизация");
     context.insert("google_signin_url", google_url.url.as_str());
     context.insert("github_signin_url", github_url.url.as_str());
+    context.insert("yandex_signin_url", yandex_url.url.as_str());
 
     serve_page(&context, "signin.html", &page_context.tera)
 }
@@ -117,7 +130,7 @@ pub async fn google_oauth_callback(
     session: ReadableSession,
     auth: AuthContext,
 ) -> impl IntoResponse {
-    validate_csrf!("google_csrf_state", session, query);
+    validate_csrf!(GOOGLE_CSRF_KEY, session, query);
     match session.get::<PkceCodeVerifier>("pkce_code_verifier") {
         Some(pkce_code_verifier) => {
             let token = google_authorizer
@@ -142,10 +155,24 @@ pub async fn github_oauth_callback(
     session: ReadableSession,
     auth: AuthContext,
 ) -> impl IntoResponse {
-    validate_csrf!("github_csrf_state", session, query);
+    validate_csrf!(GITHUB_CSRF_KEY, session, query);
     let token = github_authorizer.exchange_code(query.code, None).await;
     let mut storage = page_context.storage.lock().await;
     login_user_using_token!(token, session, storage, auth, GithubAuthorizer);
+    Redirect::to("/profile/")
+}
+
+pub async fn yandex_oauth_callback(
+    Query(query): Query<AuthRequest>,
+    Extension(yandex_authorizer): Extension<Arc<YandexAuthorizer>>,
+    Extension(page_context): Extension<Arc<PageContext>>,
+    session: ReadableSession,
+    auth: AuthContext,
+) -> impl IntoResponse {
+    validate_csrf!(YANDEX_CSRF_KEY, session, query);
+    let token = yandex_authorizer.exchange_code(query.code, None).await;
+    let mut storage = page_context.storage.lock().await;
+    login_user_using_token!(token, session, storage, auth, YandexAuthorizer);
     Redirect::to("/profile/")
 }
 

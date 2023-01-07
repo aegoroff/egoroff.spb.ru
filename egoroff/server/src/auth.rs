@@ -72,6 +72,18 @@ pub struct GithubUser {
     pub avatar_url: Option<String>,
 }
 
+// https://yandex.ru/dev/id/doc/dg/api-id/reference/response.html
+#[derive(Deserialize, Default, Debug)]
+pub struct YandexUser {
+    pub login: String,
+    pub id: String,
+    pub real_name: Option<String>,
+    pub display_name: Option<String>,
+    pub default_email: Option<String>,
+    pub is_avatar_empty: Option<bool>,
+    pub default_avatar_id: Option<String>,
+}
+
 impl ToUser for GoogleUser {
     fn to_user(&self) -> User {
         let created = Utc::now();
@@ -106,6 +118,23 @@ impl ToUser for GithubUser {
     }
 }
 
+impl ToUser for YandexUser {
+    fn to_user(&self) -> User {
+        let created = Utc::now();
+        User {
+            created,
+            email: self.default_email.clone().unwrap_or_default(),
+            name: self.display_name.clone().unwrap_or_default(),
+            login: self.login.clone(),
+            avatar_url: self.default_avatar_id.clone().unwrap_or_default(),
+            federated_id: self.id.clone(),
+            admin: false,
+            verified: true,
+            provider: "yandex".to_owned(),
+        }
+    }
+}
+
 #[async_trait]
 pub trait Authorizer {
     fn generate_authorize_url(&self) -> GeneratedUrl;
@@ -122,6 +151,11 @@ pub struct GoogleAuthorizer {
 }
 
 pub struct GithubAuthorizer {
+    client: BasicClient,
+    provider: OAuthProvider,
+}
+
+pub struct YandexAuthorizer {
     client: BasicClient,
     provider: OAuthProvider,
 }
@@ -191,6 +225,42 @@ impl GithubAuthorizer {
     }
 }
 
+impl YandexAuthorizer {
+    pub fn new<P: AsRef<Path>>(db_path: P) -> Result<YandexAuthorizer> {
+        let (client, provider) = create_client_and_provider(
+            db_path,
+            "yandex",
+            "https://oauth.yandex.ru/authorize",
+            "https://oauth.yandex.ru/token",
+        )?;
+        Ok(Self { client, provider })
+    }
+
+    pub async fn get_user(token: &AccessToken) -> Result<YandexUser> {
+        let uri = "https://login.yandex.ru/info?format=json";
+
+        let auth_value = format!("OAuth {}", token.secret());
+
+        let client = Client::builder().build()?;
+
+        let response = client
+            .get(uri)
+            .header("Authorization", auth_value)
+            .header("User-Agent", "egoroff.spb.ru API auth request")
+            .send()
+            .await?;
+        tracing::debug!("Get user status: {}", response.status());
+        if response.status() != StatusCode::OK {
+            let error = response.text().await.unwrap_or_default();
+            let err = anyhow::Error::msg(error);
+            Err(err)
+        } else {
+            let user = response.json::<YandexUser>().await?;
+            Ok(user)
+        }
+    }
+}
+
 #[async_trait]
 impl Authorizer for GoogleAuthorizer {
     fn generate_authorize_url(&self) -> GeneratedUrl {
@@ -234,6 +304,35 @@ impl Authorizer for GoogleAuthorizer {
 
 #[async_trait]
 impl Authorizer for GithubAuthorizer {
+    fn generate_authorize_url(&self) -> GeneratedUrl {
+        let mut request = self.client.authorize_url(CsrfToken::new_random);
+        for scope in self.provider.scopes.iter() {
+            request = request.add_scope(Scope::new(scope.clone()));
+        }
+        let (authorize_url, csrf_state) = request.url();
+        GeneratedUrl {
+            url: authorize_url,
+            csrf_state,
+            verifier: None,
+        }
+    }
+
+    async fn exchange_code(
+        &self,
+        code: String,
+        _pkce_code_verifier: Option<PkceCodeVerifier>,
+    ) -> Result<StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>> {
+        let result = self
+            .client
+            .exchange_code(AuthorizationCode::new(code))
+            .request_async(async_http_client)
+            .await?;
+        Ok(result)
+    }
+}
+
+#[async_trait]
+impl Authorizer for YandexAuthorizer {
     fn generate_authorize_url(&self) -> GeneratedUrl {
         let mut request = self.client.authorize_url(CsrfToken::new_random);
         for scope in self.provider.scopes.iter() {
@@ -313,7 +412,7 @@ fn create_client_and_provider<P: AsRef<Path>>(
 ) -> Result<(BasicClient, OAuthProvider)> {
     let storage = Sqlite::open(db_path, Mode::ReadOnly)?;
 
-    let provider = storage.get_oauth_provider(provider).unwrap();
+    let provider = storage.get_oauth_provider(provider)?;
 
     let auth_url = AuthUrl::new(auth_uri.to_string())?;
     let token_url = TokenUrl::new(token_uri.to_string())?;

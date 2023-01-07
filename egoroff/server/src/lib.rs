@@ -1,4 +1,4 @@
-use auth::{GithubAuthorizer, GoogleAuthorizer, Role, UserStorage};
+use auth::{GithubAuthorizer, GoogleAuthorizer, Role, UserStorage, YandexAuthorizer};
 use axum::extract::DefaultBodyLimit;
 use axum::routing::{put, delete};
 use axum::Extension;
@@ -201,9 +201,11 @@ pub fn create_routes(
 
     let google_authorizer = GoogleAuthorizer::new(storage_path.as_path()).unwrap();
     let github_authorizer = GithubAuthorizer::new(storage_path.as_path()).unwrap();
+    let yandex_authorizer = YandexAuthorizer::new(storage_path.as_path()).unwrap();
 
     let google_authorizer = Arc::new(google_authorizer);
     let github_authorizer = Arc::new(github_authorizer);
+    let yandex_authorizer = Arc::new(yandex_authorizer);
 
     let storage_path_clone = storage_path.clone();
     let user_store = UserStorage::from(Arc::new(storage_path_clone));
@@ -306,6 +308,10 @@ pub fn create_routes(
             "/_s/callback/github/authorized/",
             get(handlers::auth::github_oauth_callback),
         )
+        .route(
+            "/_s/callback/yandex/authorized/",
+            get(handlers::auth::yandex_oauth_callback),
+        )
         .route("/api/v2/navigation/", get(handlers::serve_navigation))
         .route(
             "/api/v2/blog/archive/",
@@ -346,6 +352,7 @@ pub fn create_routes(
         .layer(Extension(page_context))
         .layer(Extension(google_authorizer))
         .layer(Extension(github_authorizer))
+        .layer(Extension(yandex_authorizer))
         .layer(auth_layer)
         .layer(session_layer)
         .layer(CompressionLayer::new());

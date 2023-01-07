@@ -221,11 +221,11 @@ $bs-height-xs: floor($btn-line-height + $btn-padding-x-sm * 2);
   @include button-variant($color-bg, $color-bg);
 }
 
-.btn-facebook {
-  @include btn-social(#3b5998);
+.btn-google {
+  @include btn-social(#dd4b39);
 }
 
-.btn-google {
+.btn-yandex {
   @include btn-social(#dd4b39);
 }
 
