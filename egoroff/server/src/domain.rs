@@ -1,4 +1,4 @@
-use std::{path::PathBuf, sync::Arc};
+use std::{path::PathBuf, sync::Arc, collections::HashSet};
 
 use axum_login::RequireAuthorizationLayer;
 use futures::lock::Mutex;
@@ -14,6 +14,7 @@ use crate::auth::Role;
 
 pub type RequireAuth = RequireAuthorizationLayer<User, Role>;
 pub type Database = Arc<Mutex<Sqlite>>;
+pub type Cache = Arc<Mutex<HashSet<String>>>;
 
 #[derive(Deserialize)]
 pub struct Uri {
@@ -54,6 +55,7 @@ pub struct PageContext {
     pub site_config: Config,
     pub store_uri: String,
     pub certs_path: String,
+    pub cache: Cache,
 }
 
 #[derive(Serialize, Deserialize, Default)]

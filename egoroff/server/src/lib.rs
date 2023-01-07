@@ -1,6 +1,6 @@
 use auth::{GithubAuthorizer, GoogleAuthorizer, Role, UserStorage, YandexAuthorizer};
 use axum::extract::DefaultBodyLimit;
-use axum::routing::{put, delete};
+use axum::routing::{delete, post, put};
 use axum::Extension;
 use axum::{routing::get, Router};
 
@@ -15,11 +15,11 @@ use domain::{PageContext, RequireAuth};
 use futures::lock::Mutex;
 use kernel::graph::{SiteGraph, SiteSection};
 use kernel::session::SqliteSessionStore;
-use kernel::sqlite::{Sqlite, Mode};
+use kernel::sqlite::{Mode, Sqlite};
 use kernel::typograph;
 use rand::Rng;
 use serde_json::Value;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::env;
 use std::sync::Arc;
 use std::time::Duration;
@@ -52,8 +52,8 @@ mod auth;
 mod body;
 mod domain;
 mod handlers;
-mod sitemap;
 mod indie;
+mod sitemap;
 
 pub const SESSIONS_DATABASE: &str = "egoroff_sessions.db";
 
@@ -214,6 +214,7 @@ pub fn create_routes(
 
     let storage = Sqlite::open(storage_path, Mode::ReadWrite).unwrap();
     let storage = Arc::new(Mutex::new(storage));
+    let cache = Arc::new(Mutex::new(HashSet::new()));
 
     let page_context = Arc::new(PageContext {
         base_path,
@@ -223,6 +224,7 @@ pub fn create_routes(
         site_config,
         store_uri,
         certs_path,
+        cache,
     });
 
     let secret = rand::thread_rng().gen::<[u8; 64]>();
@@ -245,7 +247,10 @@ pub fn create_routes(
             get(handlers::blog::serve_posts_admin_api),
         )
         .route("/api/v2/admin/post", put(handlers::blog::serve_post_update))
-        .route("/api/v2/admin/post/:id", delete(handlers::blog::serve_post_delete))
+        .route(
+            "/api/v2/admin/post/:id",
+            delete(handlers::blog::serve_post_delete),
+        )
         // Important all admin protected routes must be the first in the list
         .route_layer(RequireAuth::login_with_role(Role::Admin..))
         .route("/profile", get(handlers::auth::serve_profile))
@@ -330,9 +335,10 @@ pub fn create_routes(
             "/api/v2/auth/user",
             get(handlers::auth::serve_user_api_call),
         )
+        .route("/storage/:bucket/:path", get(handlers::serve_storage))
         .route(
-            "/storage/:bucket/:path",
-            get(handlers::serve_storage),
+            "/token",
+            post(handlers::indie::serve_token_generate).get(handlers::indie::serve_token_validate),
         )
         .route(
             "/metrics",
