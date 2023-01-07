@@ -4,7 +4,7 @@ use axum::{
     extract::Form,
     http::HeaderMap,
 };
-use chrono::{Duration, Months, Utc};
+use chrono::{Duration, Utc};
 
 use crate::{
     body::Redirect,
@@ -31,9 +31,9 @@ pub async fn serve_auth(
         let expired = expired.timestamp() as usize;
         let claims = Claims {
             client_id,
-            redirect_uri: redirect.clone(),
+            redirect_uri: Some(redirect.clone()),
             aud: None,
-            exp: expired,
+            exp: Some(expired),
             iat: Some(issued),
             iss: Some(ME.to_string()),
             nbf: None,
@@ -102,13 +102,11 @@ pub async fn serve_token_generate(
     let redirect_uri = req.redirect_uri;
     let now = Utc::now();
     let issued = now.timestamp() as usize;
-    let expired = now.checked_add_months(Months::new(12)).unwrap();
-    let expired = expired.timestamp() as usize;
     let claims = Claims {
         client_id,
-        redirect_uri,
+        redirect_uri: Some(redirect_uri),
         aud: None,
-        exp: expired,
+        exp: None,
         iat: Some(issued),
         iss: Some(ME.to_string()),
         nbf: None,

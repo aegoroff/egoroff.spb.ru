@@ -1,4 +1,4 @@
-use std::{fs, marker::PhantomData, path::Path};
+use std::{fs, marker::PhantomData, path::Path, collections::HashSet};
 
 use anyhow::Result;
 use axum::{
@@ -17,9 +17,9 @@ pub const SCOPES: &str = "create media delete";
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
     pub client_id: String,
-    pub redirect_uri: String,
+    pub redirect_uri: Option<String>,
     pub aud: Option<String>, // Optional. Audience
-    pub exp: usize, // Required (validate_exp defaults to true in validation). Expiration time (as UTC timestamp)
+    pub exp: Option<usize>,  // Required (validate_exp defaults to true in validation). Expiration time (as UTC timestamp)
     pub iat: Option<usize>, // Optional. Issued at (as UTC timestamp)
     pub iss: Option<String>, // Optional. Issuer
     pub nbf: Option<usize>, // Optional. Not Before (as UTC timestamp)
@@ -72,6 +72,12 @@ pub fn validate_jwt<P: AsRef<Path>>(token: &str, public_key_path: P) -> Result<C
     let data = fs::read(public_key_path)?;
     let mut validation = Validation::new(Algorithm::RS256);
     validation.set_issuer(&[ME]);
+    let mut required_claims = HashSet::new();
+    required_claims.insert("iss".to_string());
+    required_claims.insert("iat".to_string());
+    required_claims.insert("redirect_uri".to_string());
+    required_claims.insert("client_id".to_string());
+    validation.required_spec_claims = required_claims;
     let claims = decode::<Claims>(token, &DecodingKey::from_rsa_pem(&data)?, &validation)?;
 
     Ok(claims.claims)
@@ -137,7 +143,7 @@ where
         match validate_jwt(token, &self.public_key_path) {
             Ok(_claims) => Ok(()),
             Err(e) => {
-                tracing::error!("Token validation error: {e:#?}");
+                tracing::error!("Token {token} validation error: {e:#?}");
                 Err(unauthorized_response)
             },
         }
