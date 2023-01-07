@@ -31,7 +31,7 @@ impl Resource {
             if path.chars().rev().next().unwrap_or_default() == SEP {
                 self.url.set_path(&p);
             } else {
-                self.url.set_path(&p[..p.len()-1]);
+                self.url.set_path(&p[..p.len() - 1]);
             }
         } else {
             let r = self.url.join(path);
@@ -39,6 +39,11 @@ impl Resource {
                 self.url = u
             }
         }
+        self
+    }
+
+    pub fn append_query(&mut self, q: &str) -> &mut Self {
+        self.url.set_query(Some(q));
         self
     }
 }
@@ -122,5 +127,17 @@ mod tests {
 
         // Assert
         assert_eq!(r.to_string().as_str(), "http://localhost/x/y");
+    }
+    
+    #[test]
+    fn append_query() {
+        // Arrange
+        let mut r = Resource::new("http://localhost").unwrap();
+
+        // Act
+        r.append_path("x").append_path("y").append_query("page=2");
+
+        // Assert
+        assert_eq!(r.to_string().as_str(), "http://localhost/x/y?page=2");
     }
 }

@@ -1,6 +1,6 @@
 use kernel::domain::Post;
 
-use crate::{body::Content, domain::OperationResult};
+use crate::{body::{Content, Redirect}, domain::OperationResult};
 
 use super::*;
 

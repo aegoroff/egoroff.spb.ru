@@ -1,3 +1,5 @@
+use crate::body::Redirect;
+
 use super::*;
 
 #[derive(RustEmbed)]

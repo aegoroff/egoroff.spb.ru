@@ -12,7 +12,7 @@ use axum::{
     body::Empty,
     extract::{self, Query},
     http::StatusCode,
-    response::{IntoResponse, Redirect, Response},
+    response::{IntoResponse, Response},
     Extension, Json,
 };
 use axum_sessions::extractors::{ReadableSession, WritableSession};
@@ -40,6 +40,7 @@ pub mod admin;
 pub mod auth;
 pub mod blog;
 pub mod portfolio;
+pub mod indie;
 
 const TITLE_KEY: &str = "title";
 const TITLE_PATH_KEY: &str = "title_path";

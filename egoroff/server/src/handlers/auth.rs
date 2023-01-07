@@ -1,7 +1,7 @@
 use super::*;
 use crate::{
     auth::{ToUser, YandexAuthorizer},
-    domain::AuthorizedUser,
+    domain::AuthorizedUser, body::Redirect,
 };
 use oauth2::{CsrfToken, PkceCodeVerifier, TokenResponse};
 

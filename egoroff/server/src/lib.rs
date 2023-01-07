@@ -53,6 +53,7 @@ mod body;
 mod domain;
 mod handlers;
 mod sitemap;
+mod indie;
 
 pub const SESSIONS_DATABASE: &str = "egoroff_sessions.db";
 
@@ -68,6 +69,7 @@ pub async fn run() {
     let http_port = env::var("EGOROFF_HTTP_PORT").unwrap_or_else(|_| String::from("4200"));
     let https_port = env::var("EGOROFF_HTTPS_PORT").unwrap_or_else(|_| String::from("4201"));
     let store_uri = env::var("EGOROFF_STORE_URI").unwrap();
+    let certs_path = env::var("EGOROFF_CERT_DIR").unwrap();
 
     let base_path = if let Ok(d) = env::var("EGOROFF_HOME_DIR") {
         PathBuf::from(d)
@@ -131,6 +133,7 @@ pub async fn run() {
         tera,
         data_path,
         store_uri,
+        certs_path.clone(),
     );
 
     let ports = Ports {
@@ -140,7 +143,7 @@ pub async fn run() {
 
     let handle = Handle::new();
 
-    let https = tokio::spawn(https_server(ports, handle.clone(), app.clone()));
+    let https = tokio::spawn(https_server(ports, handle.clone(), app.clone(), certs_path));
     let http = tokio::spawn(http_server(ports, handle, app));
 
     // Ignore errors.
@@ -161,16 +164,14 @@ async fn http_server(ports: Ports, handle: Handle, app: Router) {
         .unwrap();
 }
 
-async fn https_server(ports: Ports, handle: Handle, app: Router) {
+async fn https_server(ports: Ports, handle: Handle, app: Router, certs_path: String) {
     let addr: SocketAddr = format!("0.0.0.0:{}", ports.https).parse().unwrap();
     tracing::debug!("HTTPS listening on {addr}");
 
-    // configure certificate and private key used by https
-    let cert_dir = env::var("EGOROFF_CERT_DIR").unwrap_or_else(|_| String::from("."));
-    tracing::debug!("Certs path {cert_dir}");
+    tracing::debug!("Certs path {certs_path}");
     let config = RustlsConfig::from_pem_file(
-        PathBuf::from(&cert_dir).join("egoroff_spb_ru.crt"),
-        PathBuf::from(&cert_dir).join("egoroff_spb_ru.key.pem"),
+        PathBuf::from(&certs_path).join("egoroff_spb_ru.crt"),
+        PathBuf::from(&certs_path).join("egoroff_spb_ru.key.pem"),
     )
     .await
     .expect("Certificate cannot be loaded");
@@ -192,6 +193,7 @@ pub fn create_routes(
     tera: Arc<Tera>,
     data_path: PathBuf,
     store_uri: String,
+    certs_path: String,
 ) -> Router {
     #[cfg(feature = "prometheus")]
     let (prometheus_layer, metric_handle) = PrometheusMetricLayer::pair();
@@ -220,6 +222,7 @@ pub fn create_routes(
         site_graph,
         site_config,
         store_uri,
+        certs_path,
     });
 
     let secret = rand::thread_rng().gen::<[u8; 64]>();
@@ -235,6 +238,7 @@ pub fn create_routes(
     let auth_layer = AuthLayer::new(user_store, &secret);
 
     let router = Router::new()
+        .route("/auth", get(handlers::indie::serve_auth))
         .route("/admin", get(handlers::admin::serve_admin))
         .route(
             "/api/v2/admin/posts/",

@@ -53,6 +53,7 @@ pub struct PageContext {
     pub site_graph: Arc<SiteGraph>,
     pub site_config: Config,
     pub store_uri: String,
+    pub certs_path: String,
 }
 
 #[derive(Serialize, Deserialize, Default)]
