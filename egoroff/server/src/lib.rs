@@ -13,6 +13,7 @@ use axum_server::Handle;
 use axum_sessions::{SameSite, SessionLayer};
 use domain::{PageContext, RequireAuth};
 use futures::lock::Mutex;
+use indie::RequireIndieAuthorizationLayer;
 use kernel::graph::{SiteGraph, SiteSection};
 use kernel::session::SqliteSessionStore;
 use kernel::sqlite::{Mode, Sqlite};
@@ -216,6 +217,12 @@ pub fn create_routes(
     let storage = Arc::new(Mutex::new(storage));
     let cache = Arc::new(Mutex::new(HashSet::new()));
 
+    let public_key_path = PathBuf::from(&certs_path)
+        .join("egoroffspbrupub.pem")
+        .to_str()
+        .unwrap()
+        .to_string();
+
     let page_context = Arc::new(PageContext {
         base_path,
         storage,
@@ -267,6 +274,9 @@ pub fn create_routes(
         )
         // Important all protected routes must be the first in the list
         .route_layer(RequireAuth::login())
+        .route("/micropub/", get(handlers::micropub::serve_index))
+        // Important all protected routes must be the first in the list
+        .route_layer(RequireIndieAuthorizationLayer::auth(public_key_path))
         .route("/", get(handlers::serve_index))
         .route("/recent.atom", get(handlers::blog::serve_atom))
         .route("/sitemap.xml", get(handlers::serve_sitemap))

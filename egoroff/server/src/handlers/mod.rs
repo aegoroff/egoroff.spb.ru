@@ -41,6 +41,7 @@ pub mod auth;
 pub mod blog;
 pub mod portfolio;
 pub mod indie;
+pub mod micropub;
 
 const TITLE_KEY: &str = "title";
 const TITLE_PATH_KEY: &str = "title_path";

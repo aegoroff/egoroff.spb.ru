@@ -1,9 +1,14 @@
-use std::{fs, path::Path};
+use std::{fs, marker::PhantomData, path::Path};
 
 use anyhow::Result;
+use axum::{
+    body::HttpBody,
+    http::{self, Request, Response},
+};
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
+use tower_http::auth::AuthorizeRequest;
 
 pub const ME: &str = "https://www.egoroff.spb.ru/";
 pub const SCOPES: &str = "create media delete";
@@ -78,4 +83,83 @@ pub async fn read_from_client(uri: &str) -> Result<String> {
     let response = client.get(uri).send().await?.text().await?;
 
     Ok(response)
+}
+
+pub struct Indie<ResBody> {
+    public_key_path: String,
+    _body_type: PhantomData<fn() -> ResBody>,
+}
+
+impl<ResBody> Clone for Indie<ResBody> {
+    fn clone(&self) -> Self {
+        Self {
+            public_key_path: self.public_key_path.clone(),
+            _body_type: PhantomData,
+        }
+    }
+}
+
+impl<ReqBody, ResBody> AuthorizeRequest<ReqBody> for Indie<ResBody>
+where
+    ResBody: HttpBody + Default,
+{
+    type ResponseBody = ResBody;
+
+    fn authorize(
+        &mut self,
+        request: &mut Request<ReqBody>,
+    ) -> Result<(), Response<Self::ResponseBody>> {
+        let unauthorized_response = Response::builder()
+            .status(http::StatusCode::UNAUTHORIZED)
+            .body(Default::default())
+            .unwrap();
+
+        let value = if let Some(h) = request.headers().get("authorization") {
+            h
+        } else {
+            tracing::error!("No authorization header extracted from request");
+            return Err(unauthorized_response);
+        };
+        let auth_header = if let Ok(val) = value.to_str() {
+            val
+        } else {
+            tracing::error!("No authorization header value extracted from request");
+            return Err(unauthorized_response);
+        };
+
+        let token = if let Some(val) = auth_header.strip_prefix("Bearer ") {
+            val
+        } else {
+            tracing::error!("Authorization header not started from Bearer");
+            return Err(unauthorized_response);
+        };
+
+        match validate_jwt(token, &self.public_key_path) {
+            Ok(_claims) => Ok(()),
+            Err(e) => {
+                tracing::error!("Token validation error: {e:#?}");
+                Err(unauthorized_response)
+            },
+        }
+    }
+}
+
+/// A wrapper around [`tower_http::auth::RequireAuthorizationLayer`] which
+/// provides login authorization.
+pub struct RequireIndieAuthorizationLayer;
+
+impl RequireIndieAuthorizationLayer {
+    /// Authorizes requests by requiring valid Indie auth token in authorization header, otherwise it rejects
+    /// with [`http::StatusCode::UNAUTHORIZED`].
+    pub fn auth<ResBody>(
+        public_key_path: String,
+    ) -> tower_http::auth::RequireAuthorizationLayer<Indie<ResBody>>
+    where
+        ResBody: HttpBody + Default,
+    {
+        tower_http::auth::RequireAuthorizationLayer::custom(Indie::<_> {
+            public_key_path,
+            _body_type: PhantomData,
+        })
+    }
 }
