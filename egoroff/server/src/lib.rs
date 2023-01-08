@@ -223,6 +223,7 @@ pub fn create_routes(
         .to_str()
         .unwrap()
         .to_string();
+    let public_key_path = Arc::new(public_key_path);
 
     let page_context = Arc::new(PageContext {
         base_path,
@@ -277,10 +278,24 @@ pub fn create_routes(
         .route_layer(RequireAuth::login())
         .route(
             "/micropub/",
-            get(handlers::micropub::serve_index_get).post(handlers::micropub::serve_index_post),
+            get(handlers::micropub::serve_index_get)
+                .layer(RequireIndieAuthorizationLayer::auth(
+                    public_key_path.clone(),
+                ))
+                .post(handlers::micropub::serve_index_post)
+                .layer(RequireIndieAuthorizationLayer::auth(
+                    public_key_path.clone(),
+                )),
         )
-        // Important all protected routes must be the first in the list
-        .route_layer(RequireIndieAuthorizationLayer::auth(public_key_path))
+        .route(
+            "/micropub",
+            get(handlers::micropub::serve_index_get)
+                .layer(RequireIndieAuthorizationLayer::auth(
+                    public_key_path.clone(),
+                ))
+                .post(handlers::micropub::serve_index_post)
+                .layer(RequireIndieAuthorizationLayer::auth(public_key_path)),
+        )
         .route("/", get(handlers::serve_index))
         .route("/recent.atom", get(handlers::blog::serve_atom))
         .route("/sitemap.xml", get(handlers::serve_sitemap))

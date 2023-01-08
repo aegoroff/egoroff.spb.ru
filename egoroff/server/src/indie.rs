@@ -1,4 +1,4 @@
-use std::{fs, marker::PhantomData, path::Path, collections::HashSet};
+use std::{collections::HashSet, fs, marker::PhantomData, path::Path, sync::Arc};
 
 use anyhow::Result;
 use axum::{
@@ -19,7 +19,7 @@ pub struct Claims {
     pub client_id: String,
     pub redirect_uri: Option<String>,
     pub aud: Option<String>, // Optional. Audience
-    pub exp: Option<usize>,  // Required (validate_exp defaults to true in validation). Expiration time (as UTC timestamp)
+    pub exp: Option<usize>, // Required (validate_exp defaults to true in validation). Expiration time (as UTC timestamp)
     pub iat: Option<usize>, // Optional. Issued at (as UTC timestamp)
     pub iss: Option<String>, // Optional. Issuer
     pub nbf: Option<usize>, // Optional. Not Before (as UTC timestamp)
@@ -92,7 +92,7 @@ pub async fn read_from_client(uri: &str) -> Result<String> {
 }
 
 pub struct Indie<ResBody> {
-    public_key_path: String,
+    public_key_path: Arc<String>,
     _body_type: PhantomData<fn() -> ResBody>,
 }
 
@@ -140,12 +140,12 @@ where
             return Err(unauthorized_response);
         };
 
-        match validate_jwt(token, &self.public_key_path) {
+        match validate_jwt(token, self.public_key_path.as_str()) {
             Ok(_claims) => Ok(()),
             Err(e) => {
                 tracing::error!("Token {token} validation error: {e:#?}");
                 Err(unauthorized_response)
-            },
+            }
         }
     }
 }
@@ -158,7 +158,7 @@ impl RequireIndieAuthorizationLayer {
     /// Authorizes requests by requiring valid Indie auth token in authorization header, otherwise it rejects
     /// with [`http::StatusCode::UNAUTHORIZED`].
     pub fn auth<ResBody>(
-        public_key_path: String,
+        public_key_path: Arc<String>,
     ) -> tower_http::auth::RequireAuthorizationLayer<Indie<ResBody>>
     where
         ResBody: HttpBody + Default,

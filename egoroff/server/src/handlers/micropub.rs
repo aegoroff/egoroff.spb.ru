@@ -83,6 +83,9 @@ pub async fn serve_index_post(
         Ok(id) => id,
         Err(e) => return internal_server_error_response(e.to_string()),
     };
+    let content_type = form.content_type.unwrap_or_default();
+    tracing::info!("content type: {content_type}");
+    let markdown = content_type == "markdown" || content_type.is_empty();
     let post = Post {
         created,
         modified: created,
@@ -90,7 +93,7 @@ pub async fn serve_index_post(
         title: form.name.unwrap_or_default(),
         short_text: String::new(),
         text: form.content,
-        markdown: true,
+        markdown,
         is_public: false,
         tags: vec![],
     };
