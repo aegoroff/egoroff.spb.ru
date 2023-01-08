@@ -127,14 +127,8 @@ pub fn markdown2html(input: &str) -> Result<String> {
             | Options::ENABLE_TASKLISTS,
     );
     let parser = Parser::new_ext(input, options);
-    let mut html = String::new();
+    let mut html = String::with_capacity(input.len() * 2);
     html::push_html(&mut html, parser);
-
-    let mut result = Vec::with_capacity(input.len());
-
-    let output_sink = |c: &[u8]| {
-        result.extend(c);
-    };
 
     let table_handler: (Cow<Selector>, ElementContentHandlers) = element!("table", |e| {
         e.set_attribute("class", "table table-condensed table-striped")
@@ -142,12 +136,15 @@ pub fn markdown2html(input: &str) -> Result<String> {
         Ok(())
     });
 
+    let mut result = Vec::with_capacity(html.len());
     let mut rewriter = HtmlRewriter::new(
         Settings {
             element_content_handlers: vec![table_handler],
             ..Settings::default()
         },
-        output_sink,
+        |c: &[u8]| {
+            result.extend(c);
+        },
     );
 
     rewriter.write(html.as_bytes())?;
@@ -157,7 +154,7 @@ pub fn markdown2html(input: &str) -> Result<String> {
 }
 
 pub fn html2text(html: &str) -> Result<String> {
-    let mut text = Vec::new();
+    let mut text = Vec::with_capacity(64);
 
     let mut rewriter = HtmlRewriter::new(
         Settings {
