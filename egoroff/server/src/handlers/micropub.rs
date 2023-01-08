@@ -1,6 +1,12 @@
+use axum::{body::Bytes, http};
+use chrono::Utc;
+use kernel::domain::Post;
 use serde::Deserialize;
 
-use crate::indie::ME;
+use crate::{
+    indie::ME,
+    micropub::{MicropubConfig, MicropubForm},
+};
 
 use super::*;
 
@@ -10,31 +16,9 @@ pub struct MicropubRequest {
     pub url: Option<String>,
 }
 
-#[derive(Serialize, Default)]
-pub struct MicropubConfig {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub q: Option<Vec<String>>,
-    #[serde(
-        rename(serialize = "media-endpoint"),
-        skip_serializing_if = "Option::is_none"
-    )]
-    pub media_endpoint: Option<String>,
-    #[serde(
-        rename(serialize = "syndicate-to"),
-        skip_serializing_if = "Option::is_none"
-    )]
-    pub syndicate_to: Option<Vec<SyndicateTo>>,
-}
-
-#[derive(Serialize)]
-pub struct SyndicateTo {
-    pub uid: String,
-    pub name: String,
-}
-
-pub async fn serve_index(Query(query): Query<MicropubRequest>) -> impl IntoResponse {
+pub async fn serve_index_get(Query(query): Query<MicropubRequest>) -> impl IntoResponse {
     if let Some(q) = query.q {
-        let media_endpoint = Some(ME.to_string() + "micropub/media");
+        let media_endpoint = Some(format!("{ME}micropub/media"));
         match q.as_str() {
             "config" => {
                 let config = MicropubConfig {
@@ -68,4 +52,57 @@ pub async fn serve_index(Query(query): Query<MicropubRequest>) -> impl IntoRespo
     } else {
         (StatusCode::OK, Empty::new().into_response())
     }
+}
+
+pub async fn serve_index_post(
+    headers: http::header::HeaderMap,
+    Extension(page_context): Extension<Arc<PageContext>>,
+    body: Bytes,
+) -> impl IntoResponse {
+    let content_type = headers.get("Content-Type");
+    let ct: String = content_type
+        .map(move |c| c.to_str().unwrap_or("x-www-form-url-encoded").into())
+        .unwrap_or_else(|| "x-www-form-url-encoded".into());
+
+    let form = if let "application/json" = ct.to_lowercase().as_str() {
+        MicropubForm::from_json_bytes(&body.slice(..))
+    } else {
+        // x-www-form-urlencoded
+        MicropubForm::from_form_bytes(&body.slice(..))
+    };
+    let form = match form {
+        Ok(f) => f,
+        Err(e) => {
+            return internal_server_error_response(e.to_string());
+        }
+    };
+    let created = Utc::now();
+
+    let mut storage = page_context.storage.lock().await;
+    let post_id = match storage.next_post_id() {
+        Ok(id) => id,
+        Err(e) => return internal_server_error_response(e.to_string()),
+    };
+    let post = Post {
+        created,
+        modified: created,
+        id: post_id,
+        title: form.name.unwrap_or_default(),
+        short_text: String::new(),
+        text: form.content,
+        markdown: true,
+        is_public: false,
+        tags: vec![],
+    };
+    if let Err(e) = storage.upsert_post(post) {
+        return internal_server_error_response(e.to_string());
+    }
+    (
+        StatusCode::CREATED,
+        [(
+            http::header::LOCATION,
+            format!("{}blog/{}.html", ME, post_id),
+        )]
+        .into_response(),
+    )
 }

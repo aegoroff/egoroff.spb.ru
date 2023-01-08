@@ -353,6 +353,12 @@ impl Storage for Sqlite {
         let post_id = stmt.query_row(params, |row| row.get(0))?;
         Ok(post_id)
     }
+
+    fn next_post_id(&mut self) -> Result<i64, Self::Err> {
+        let mut stmt = self.conn.prepare("SELECT MAX(id) + 1 FROM post")?;
+        let post_id = stmt.query_row([], |row| row.get(0))?;
+        Ok(post_id)
+    }
 }
 
 impl Sqlite {

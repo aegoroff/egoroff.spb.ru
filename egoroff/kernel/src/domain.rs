@@ -166,6 +166,7 @@ pub trait Storage {
     fn get_post(&self, id: i64) -> Result<Post, Self::Err>;
     fn get_new_post_id(&self, id: i64) -> Result<i64, Self::Err>;
     fn upsert_post(&mut self, post: Post) -> Result<(), Self::Err>;
+    fn next_post_id(&mut self) -> Result<i64, Self::Err>;
     fn delete_post(&mut self, id: i64) -> Result<usize, Self::Err>;
     fn count_posts(&self, request: PostsRequest) -> Result<i32, Self::Err>;
     fn get_aggregate_tags(&self) -> Result<Vec<TagAggregate>, Self::Err>;

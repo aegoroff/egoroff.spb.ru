@@ -33,6 +33,8 @@ reqwest = { version = "0.11", features = ["json", "multipart", "stream"] }
 eyre = "0.6.8"
 lazy_static = "1.4.0"
 jsonwebtoken = "8.2.0"
+url = "2.3.1"
+thiserror = "1.0.38"
 
 [dependencies.rand]
 version = "0.8.5"

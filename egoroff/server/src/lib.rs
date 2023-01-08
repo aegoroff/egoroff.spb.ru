@@ -54,6 +54,7 @@ mod body;
 mod domain;
 mod handlers;
 mod indie;
+mod micropub;
 mod sitemap;
 
 pub const SESSIONS_DATABASE: &str = "egoroff_sessions.db";
@@ -274,7 +275,10 @@ pub fn create_routes(
         )
         // Important all protected routes must be the first in the list
         .route_layer(RequireAuth::login())
-        .route("/micropub/", get(handlers::micropub::serve_index))
+        .route(
+            "/micropub/",
+            get(handlers::micropub::serve_index_get).post(handlers::micropub::serve_index_post),
+        )
         // Important all protected routes must be the first in the list
         .route_layer(RequireIndieAuthorizationLayer::auth(public_key_path))
         .route("/", get(handlers::serve_index))
