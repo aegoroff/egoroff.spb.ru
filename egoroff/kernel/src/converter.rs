@@ -157,7 +157,6 @@ pub fn markdown2html(input: &str) -> Result<String> {
 }
 
 pub fn html2text(html: &str) -> Result<String> {
-    let mut result: Vec<u8> = Vec::with_capacity(html.len());
     let mut text = Vec::new();
 
     let mut rewriter = HtmlRewriter::new(
@@ -172,7 +171,7 @@ pub fn html2text(html: &str) -> Result<String> {
             })],
             ..Settings::default()
         },
-        |c: &[u8]| result.extend(c),
+        |_: &[u8]| {},
     );
 
     rewriter.write(html.as_bytes())?;
