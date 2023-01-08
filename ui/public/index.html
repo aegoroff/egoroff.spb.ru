@@ -1,29 +1,29 @@
 <!DOCTYPE html>
 <html {% if html_class %}class="{{html_class}}"{% endif %} lang="ru">
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta name="author" content="Александр Егоров">
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+    <meta name="author" content="Александр Егоров"/>
     {% if meta_description %}
-    <meta name="description" content="{{ meta_description }}">
+    <meta name="description" content="{{ meta_description }}"/>
     {% endif %}
     {% if keywords %}
-    <meta name="keywords" content="{{ keywords }}">
+    <meta name="keywords" content="{{ keywords }}"/>
     {% endif %}
     {% block meta %}
     {% endblock %}
 
-    <link rel="icon" href="<%= BASE_URL %>favicon.ico">
-    <link rel="authorization_endpoint" href="https://www.egoroff.spb.ru/auth">
-    <link rel="authorization_token" href="https://www.egoroff.spb.ru/token">
-    <link rel="micropub" href="https://www.egoroff.spb.ru/micropub/">
-    <link href='https://fonts.googleapis.com/css?family=Noto+Serif:400,700,400italic,700italic|Open+Sans:700,400&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
+    <link href="<%= BASE_URL %>favicon.ico" rel="icon"/>
+    <link href="https://www.egoroff.spb.ru/auth" rel="authorization_endpoint"/>
+    <link href="https://www.egoroff.spb.ru/token" rel="token_endpoint"/>
+    <link href="https://www.egoroff.spb.ru/micropub/" rel="micropub"/>
+    <link href='https://fonts.googleapis.com/css?family=Noto+Serif:400,700,400italic,700italic|Open+Sans:700,400&subset=latin,cyrillic' rel='stylesheet' type='text/css'/>
     <title>{{title}}{% if title_path %}{{" | "}}{{title_path}}{% endif %}</title>
     <link href="{{path_for(id='blog') | safe}}recent.atom"
           rel="alternate"
           title="Recent Posts"
-          type="application/atom+xml">
+          type="application/atom+xml"/>
     <!-- Google Analytics -->
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-HRFZ3XCBK8"></script>
