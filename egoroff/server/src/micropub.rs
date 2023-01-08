@@ -5,6 +5,8 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use url::form_urlencoded::parse;
 
+type PropertyExtractor = dyn Fn(&mut MicropubFormBuilder, MicropubPropertyValue);
+
 #[derive(Serialize, Default)]
 pub struct MicropubConfig {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -151,10 +153,7 @@ impl MicropubFormBuilder {
             builder.set_h(entry_type.strip_prefix("h-").unwrap_or(entry_type).into())
         }
 
-        let prop_setter_pairs: Vec<(
-            &[&str],
-            Box<dyn Fn(&mut MicropubFormBuilder, MicropubPropertyValue)>,
-        )> = vec![
+        let prop_setter_pairs: Vec<(&[&str], Box<PropertyExtractor>)> = vec![
             (
                 &["content", "content[html]"][..],
                 Box::new(
