@@ -39,15 +39,15 @@ use crate::{
 pub mod admin;
 pub mod auth;
 pub mod blog;
-pub mod portfolio;
 pub mod indie;
 pub mod micropub;
+pub mod portfolio;
 
 const TITLE_KEY: &str = "title";
 const TITLE_PATH_KEY: &str = "title_path";
 const HTML_CLASS_KEY: &str = "html_class";
 const KEYWORDS_KEY: &str = "keywords";
-const META_KEY: &str = "meta_description";
+const META_DESCR_KEY: &str = "meta_description";
 const CONFIG_KEY: &str = "config";
 const APACHE_DOCS_KEY: &str = "apache_docs";
 
@@ -102,7 +102,7 @@ pub async fn serve_index(
             let section = page_context.site_graph.get_section("/").unwrap();
             context.insert(TITLE_KEY, kernel::graph::BRAND);
             context.insert(KEYWORDS_KEY, &section.keywords);
-            context.insert(META_KEY, &section.descr);
+            context.insert(META_DESCR_KEY, &section.descr);
             context.insert("posts", &blog_posts.result);
             context.insert(APACHE_DOCS_KEY, &docs);
             serve_page(&context, "welcome.html", &page_context.tera)
@@ -123,7 +123,7 @@ pub async fn serve_search(
     context.insert(HTML_CLASS_KEY, "search");
     context.insert(TITLE_KEY, &section.title);
     context.insert(KEYWORDS_KEY, &section.keywords);
-    context.insert(META_KEY, &section.descr);
+    context.insert(META_DESCR_KEY, &section.descr);
     context.insert(CONFIG_KEY, &page_context.site_config);
 
     serve_page(&context, "search.html", &page_context.tera)

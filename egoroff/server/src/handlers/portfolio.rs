@@ -19,7 +19,7 @@ pub async fn serve_index(
     context.insert(TITLE_KEY, &section.title);
     context.insert(TITLE_PATH_KEY, &title_path);
     context.insert(KEYWORDS_KEY, &section.keywords);
-    context.insert(META_KEY, &section.descr);
+    context.insert(META_DESCR_KEY, &section.descr);
     context.insert(CONFIG_KEY, &page_context.site_config);
 
     match read_apache_documents(&page_context.base_path) {
@@ -70,7 +70,7 @@ pub async fn serve_apache_document(
     context.insert(TITLE_KEY, &doc.title);
     context.insert(TITLE_PATH_KEY, &title_path);
     context.insert(KEYWORDS_KEY, &doc.keywords);
-    context.insert(META_KEY, &doc.description);
+    context.insert(META_DESCR_KEY, &doc.description);
 
     let asset = ApacheTemplates::get(&path);
     if let Some(file) = asset {

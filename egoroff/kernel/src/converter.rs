@@ -6,7 +6,7 @@ use std::{
 };
 
 use anyhow::Result;
-use lol_html::{element, ElementContentHandlers, HtmlRewriter, Selector, Settings};
+use lol_html::{element, text, ElementContentHandlers, HtmlRewriter, Selector, Settings};
 use pulldown_cmark::{html, Options, Parser};
 use quick_xml::{
     events::{BytesEnd, BytesStart, Event},
@@ -156,6 +156,31 @@ pub fn markdown2html(input: &str) -> Result<String> {
     Ok(result)
 }
 
+pub fn html2text(html: &str) -> Result<String> {
+    let mut result: Vec<u8> = Vec::with_capacity(html.len());
+    let mut text = Vec::new();
+
+    let mut rewriter = HtmlRewriter::new(
+        Settings {
+            element_content_handlers: vec![text!("*", |t| {
+                let original = t.as_str().to_string();
+                if !original.is_empty() {
+                    text.push(original);
+                }
+
+                Ok(())
+            })],
+            ..Settings::default()
+        },
+        |c: &[u8]| result.extend(c),
+    );
+
+    rewriter.write(html.as_bytes())?;
+    rewriter.end()?;
+
+    Ok(text.join(" "))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -257,7 +282,7 @@ mod tests {
         // assert
         assert_eq!(expected, actual);
     }
-    
+
     #[rstest]
     #[case("# a\nb", "<h1>a</h1>\n<p>b</p>\n")]
     #[case("## a\nb", "<h2>a</h2>\n<p>b</p>\n")]
@@ -268,6 +293,19 @@ mod tests {
 
         // act
         let actual = markdown2html(test_data).unwrap();
+
+        // assert
+        assert_eq!(expected, actual);
+    }
+
+    #[rstest]
+    #[case("<h1>a</h1>\n<p>b</p>\n", "a b")]
+    #[case("a<h1>b</h1>\n<p>c</p>d\n", "b c")]
+    fn html2text_tests(#[case] test_data: &str, #[case] expected: &str) {
+        // arrange
+
+        // act
+        let actual = html2text(test_data).unwrap();
 
         // assert
         assert_eq!(expected, actual);

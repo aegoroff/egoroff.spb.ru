@@ -1,6 +1,9 @@
-use kernel::domain::Post;
+use kernel::{converter::html2text, domain::Post};
 
-use crate::{body::{Content, Redirect}, domain::OperationResult};
+use crate::{
+    body::{Content, Redirect},
+    domain::OperationResult,
+};
 
 use super::*;
 
@@ -94,7 +97,7 @@ async fn serve_index(
 
     context.insert(TITLE_KEY, &title);
     context.insert(KEYWORDS_KEY, &section.keywords);
-    context.insert(META_KEY, &section.descr);
+    context.insert(META_DESCR_KEY, &section.descr);
     context.insert("request", &request);
     context.insert(TITLE_PATH_KEY, &title_path);
     context.insert("poster", &poster);
@@ -160,6 +163,19 @@ pub async fn serve_document(
 
     match content {
         Ok(c) => {
+            if !c.is_empty() {
+                let descr = if post.markdown {
+                    markdown2html(&post.short_text).unwrap_or_default()
+                } else {
+                    post.short_text
+                };
+                if !descr.is_empty() {
+                    if let Ok(txt) = html2text(&descr) {
+                        context.insert(META_DESCR_KEY, &txt);
+                    }
+                }
+            }
+
             context.insert("content", &c);
             serve_page(&context, "blog/post.html", &page_context.tera)
         }
