@@ -5,8 +5,6 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use url::form_urlencoded::parse;
 
-type PropertyExtractor = dyn Fn(&mut MicropubFormBuilder, MicropubPropertyValue);
-
 #[derive(Serialize, Default)]
 pub struct MicropubConfig {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -48,12 +46,6 @@ pub enum MicropubPropertyValue {
 #[derive(Clone, Debug, Deserialize)]
 pub struct MicropubProperties(HashMap<String, MicropubPropertyValue>);
 
-impl MicropubProperties {
-    pub fn get(&self, prop: &str) -> Option<&MicropubPropertyValue> {
-        self.0.get(prop)
-    }
-}
-
 #[derive(Debug, Deserialize)]
 pub struct MicropubJSONCreate {
     #[serde(rename = "type")]
@@ -94,39 +86,6 @@ pub struct MicropubFormBuilder {
     photos: Option<Vec<Photo>>,
 }
 
-pub fn set_from_prop<F>(
-    builder: &mut MicropubFormBuilder,
-    setter: &mut F,
-    props: &MicropubProperties,
-    prop: &str,
-) -> bool
-where
-    F: Fn(&mut MicropubFormBuilder, MicropubPropertyValue),
-{
-    props
-        .get(prop)
-        .map(|prop| setter(builder, (*prop).clone()))
-        .is_some()
-}
-
-pub fn set_from_props<F>(
-    builder: &mut MicropubFormBuilder,
-    mut setter: F,
-    props: &MicropubProperties,
-    props_to_check: &[&str],
-) -> bool
-where
-    F: Fn(&mut MicropubFormBuilder, MicropubPropertyValue),
-{
-    for prop in props_to_check {
-        if set_from_prop(builder, &mut setter, props, prop) {
-            return true;
-        }
-    }
-
-    false
-}
-
 impl MicropubFormBuilder {
     pub fn new() -> Self {
         Self {
@@ -153,140 +112,17 @@ impl MicropubFormBuilder {
             builder.set_h(entry_type.strip_prefix("h-").unwrap_or(entry_type).into())
         }
 
-        let prop_setter_pairs: Vec<(&[&str], Box<PropertyExtractor>)> = vec![
-            (
-                &["content", "content[html]"][..],
-                Box::new(
-                    |builder: &mut MicropubFormBuilder, val: MicropubPropertyValue| {
-                        match val {
-                            MicropubPropertyValue::Values(vals) => {
-                                vals.first()
-                                    .iter()
-                                    .for_each(|s| builder.set_content((**s).clone()));
-                            }
-                            MicropubPropertyValue::VecMap(vecmap) => {
-                                // we may get {"content": [{"html": "blah"}]}
-                                // see test case
-                                vecmap.first().iter().for_each(|map| {
-                                    if let Some(MicropubPropertyValue::Value(content)) =
-                                        map.get("html")
-                                    {
-                                        builder.set_content_type("html".into());
-                                        builder.set_content(content.clone());
-                                    } else if let Some(MicropubPropertyValue::Value(content)) =
-                                        map.get("markdown")
-                                    {
-                                        builder.set_content_type("markdown".into());
-                                        builder.set_content(content.clone());
-                                    }
-                                });
-                            }
-                            MicropubPropertyValue::Value(val) => {
-                                builder.set_content(val);
-                            }
-                            _ => tracing::error!("unexpected content type"),
-                        };
-                    },
-                ),
-            ),
-            (
-                &["name"][..],
-                Box::new(
-                    |builder: &mut MicropubFormBuilder, val: MicropubPropertyValue| {
-                        match val {
-                            MicropubPropertyValue::Values(vals) => {
-                                vals.first()
-                                    .iter()
-                                    .for_each(|s| builder.set_name((**s).clone()));
-                            }
-                            _ => tracing::error!("unexpected name type"),
-                        };
-                    },
-                ),
-            ),
-            (
-                &["category"][..],
-                Box::new(
-                    |builder: &mut MicropubFormBuilder, props: MicropubPropertyValue| {
-                        match props {
-                            MicropubPropertyValue::Value(c) => {
-                                builder.add_category(c);
-                            }
-                            MicropubPropertyValue::Values(cs) => {
-                                cs.iter().for_each(|c| builder.add_category(c.clone()));
-                            }
-                            _ => tracing::error!("unexpected category type"),
-                        };
-                    },
-                ),
-            ),
-            (
-                &["published"][..],
-                Box::new(
-                    |builder: &mut MicropubFormBuilder, props: MicropubPropertyValue| match props {
-                        MicropubPropertyValue::Values(dates) => {
-                            if dates.len() != 1 {
-                                tracing::error!("unexpected published dates length");
-                                return;
-                            }
-                            builder.set_created_at(dates[0].clone())
-                        }
-                        _ => tracing::error!("unexpected published type"),
-                    },
-                ),
-            ),
-            (
-                &["mp-slug"][..],
-                Box::new(
-                    |builder: &mut MicropubFormBuilder, props: MicropubPropertyValue| match props {
-                        MicropubPropertyValue::Values(slugs) => {
-                            if slugs.len() != 1 {
-                                tracing::error!("unexpected slugs length");
-                                return;
-                            }
-                            builder.set_slug(slugs[0].clone())
-                        }
-                        MicropubPropertyValue::Value(slug) => builder.set_slug(slug),
-                        _ => tracing::error!("unexpected slug type"),
-                    },
-                ),
-            ),
-            (
-                &["bookmark-of"][..],
-                Box::new(
-                    |builder: &mut MicropubFormBuilder, props: MicropubPropertyValue| {
-                        match props {
-                            MicropubPropertyValue::Values(mut bookmark_urls) => {
-                                if bookmark_urls.len() != 1 {
-                                    // TODO log
-                                    return;
-                                }
-                                // TODO is there a different entry type we should set here? Should an extra
-                                // post type column be added? Seems others (and clients) still set
-                                // entry_type as h-entry so maybe the latter?
-                                builder.set_bookmark_of(
-                                    bookmark_urls
-                                        .pop()
-                                        .expect("bookmark_urls len was checked as 1"),
-                                );
-                            }
-                            _ => eprintln!("unexpected bookmark_of property type"),
-                        }
-                    },
-                ),
-            ),
-            (
-                &["photo"][..],
-                Box::new(
-                    |builder: &mut MicropubFormBuilder, props: MicropubPropertyValue| {
-                        builder.on_photo_props(props);
-                    },
-                ),
-            ),
-        ];
-
-        for (props, setter) in prop_setter_pairs {
-            set_from_props(&mut builder, setter, &json_create.properties, props);
+        for (p, v) in json_create.properties.0 {
+            match p.as_str() {
+                "content" | "content[html]" => builder.handle_content(v),
+                "name" => builder.handle_name(v),
+                "category" => builder.handle_category(v),
+                "published" => builder.handle_published(v),
+                "mp-slug" => builder.handle_slug(v),
+                "bookmark-of" => builder.handle_bookmark(v),
+                "photo" => builder.handle_photo(v),
+                _ => {}
+            }
         }
 
         Ok(builder)
@@ -310,6 +146,104 @@ impl MicropubFormBuilder {
             bookmark_of: self.bookmark_of,
             photos: self.photos,
         })
+    }
+
+    fn handle_content(&mut self, val: MicropubPropertyValue) {
+        match val {
+            MicropubPropertyValue::Values(vals) => {
+                vals.first()
+                    .iter()
+                    .for_each(|s| self.set_content((**s).clone()));
+            }
+            MicropubPropertyValue::VecMap(vecmap) => {
+                // we may get {"content": [{"html": "blah"}]}
+                // see test case
+                vecmap.first().iter().for_each(|map| {
+                    if let Some(MicropubPropertyValue::Value(content)) = map.get("html") {
+                        self.set_content_type("html".into());
+                        self.set_content(content.clone());
+                    } else if let Some(MicropubPropertyValue::Value(content)) = map.get("markdown")
+                    {
+                        self.set_content_type("markdown".into());
+                        self.set_content(content.clone());
+                    }
+                });
+            }
+            MicropubPropertyValue::Value(val) => {
+                self.set_content(val);
+            }
+            _ => tracing::error!("unexpected content type"),
+        }
+    }
+
+    fn handle_name(&mut self, val: MicropubPropertyValue) {
+        match val {
+            MicropubPropertyValue::Values(vals) => {
+                vals.first()
+                    .iter()
+                    .for_each(|s| self.set_name((**s).clone()));
+            }
+            _ => tracing::error!("unexpected name type"),
+        };
+    }
+
+    fn handle_category(&mut self, val: MicropubPropertyValue) {
+        match val {
+            MicropubPropertyValue::Value(c) => {
+                self.add_category(c);
+            }
+            MicropubPropertyValue::Values(cs) => {
+                cs.iter().for_each(|c| self.add_category(c.clone()));
+            }
+            _ => tracing::error!("unexpected category type"),
+        }
+    }
+
+    fn handle_published(&mut self, val: MicropubPropertyValue) {
+        match val {
+            MicropubPropertyValue::Values(dates) => {
+                if dates.len() != 1 {
+                    tracing::error!("unexpected published dates length");
+                    return;
+                }
+                self.set_created_at(dates[0].clone())
+            }
+            _ => tracing::error!("unexpected published type"),
+        }
+    }
+
+    fn handle_slug(&mut self, val: MicropubPropertyValue) {
+        match val {
+            MicropubPropertyValue::Values(slugs) => {
+                if slugs.len() != 1 {
+                    tracing::error!("unexpected slugs length");
+                    return;
+                }
+                self.set_slug(slugs[0].clone())
+            }
+            MicropubPropertyValue::Value(slug) => self.set_slug(slug),
+            _ => tracing::error!("unexpected slug type"),
+        }
+    }
+
+    fn handle_bookmark(&mut self, val: MicropubPropertyValue) {
+        match val {
+            MicropubPropertyValue::Values(mut bookmark_urls) => {
+                if bookmark_urls.len() != 1 {
+                    // TODO log
+                    return;
+                }
+                // TODO is there a different entry type we should set here? Should an extra
+                // post type column be added? Seems others (and clients) still set
+                // entry_type as h-entry so maybe the latter?
+                self.set_bookmark_of(
+                    bookmark_urls
+                        .pop()
+                        .expect("bookmark_urls len was checked as 1"),
+                );
+            }
+            _ => eprintln!("unexpected bookmark_of property type"),
+        }
     }
 
     fn set_access_token(&mut self, val: String) {
@@ -364,7 +298,7 @@ impl MicropubFormBuilder {
         }
     }
 
-    fn on_photo_props(&mut self, props: MicropubPropertyValue) {
+    fn handle_photo(&mut self, props: MicropubPropertyValue) {
         match props {
             MicropubPropertyValue::Value(photo_url) => {
                 self.add_photo(Photo {
@@ -404,7 +338,7 @@ impl MicropubFormBuilder {
             }
             MicropubPropertyValue::ValueVec(photos) => {
                 for photo in photos {
-                    self.on_photo_props(photo)
+                    self.handle_photo(photo)
                 }
             }
         }
