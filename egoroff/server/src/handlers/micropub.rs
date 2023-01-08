@@ -10,7 +10,7 @@ pub struct MicropubRequest {
     pub url: Option<String>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Default)]
 pub struct MicropubConfig {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub q: Option<Vec<String>>,
@@ -34,6 +34,7 @@ pub struct SyndicateTo {
 
 pub async fn serve_index(Query(query): Query<MicropubRequest>) -> impl IntoResponse {
     if let Some(q) = query.q {
+        let media_endpoint = Some(ME.to_string() + "micropub/media");
         match q.as_str() {
             "config" => {
                 let config = MicropubConfig {
@@ -43,24 +44,22 @@ pub async fn serve_index(Query(query): Query<MicropubRequest>) -> impl IntoRespo
                         "source".to_string(),
                         "syndicate-to".to_string(),
                     ]),
-                    media_endpoint: Some(ME.to_string() + "micropub/media"),
+                    media_endpoint,
                     syndicate_to: Some(vec![]),
                 };
                 (StatusCode::OK, Json(config).into_response())
             }
             "media-endpoint" => {
                 let config = MicropubConfig {
-                    q: None,
-                    media_endpoint: Some(ME.to_string() + "micropub/media"),
-                    syndicate_to: None,
+                    media_endpoint,
+                    ..Default::default()
                 };
                 (StatusCode::OK, Json(config).into_response())
             }
             "syndicate-to" => {
                 let config = MicropubConfig {
-                    q: None,
-                    media_endpoint: None,
                     syndicate_to: Some(vec![]),
+                    ..Default::default()
                 };
                 (StatusCode::OK, Json(config).into_response())
             }
