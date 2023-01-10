@@ -4,6 +4,7 @@ use std::{
 };
 
 use async_session::{async_trait, serde_json, Result, Session, SessionStore};
+use base64::{Engine as _, engine::general_purpose};
 use chrono::Utc;
 use rusqlite::{params, Connection};
 
@@ -44,7 +45,7 @@ impl SqliteSessionStore {
                   (secret) VALUES (?1)
                 "#,
             )?;
-            let secret = base64::encode(secret);
+            let secret = general_purpose::STANDARD.encode(secret);
             let parameters = params![secret];
             stmt.execute(parameters)?;
         }
@@ -75,7 +76,7 @@ impl SqliteSessionStore {
             Ok(s)
         })?;
 
-        let result = base64::decode(encoded)?;
+        let result = general_purpose::STANDARD.decode(encoded)?;
 
         Ok(result)
     }
