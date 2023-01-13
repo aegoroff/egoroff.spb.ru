@@ -127,11 +127,11 @@ impl Storage for Sqlite {
             Ok(tag)
         })?;
 
-        let mut stmt = self
-            .conn
-            .prepare("SELECT title, created, short_text, markdown, text, is_public, modified \
+        let mut stmt = self.conn.prepare(
+            "SELECT title, created, short_text, markdown, text, is_public, modified \
                            FROM post \
-                           WHERE is_public = 1 AND id=?1")?;
+                           WHERE is_public = 1 AND id=?1",
+        )?;
         let post: Post = stmt.query_row([id], |row| {
             let post = Post {
                 created: datetime_from_row!(row, 1),
@@ -291,7 +291,7 @@ impl Storage for Sqlite {
     fn upsert_user(&mut self, user: &crate::domain::User) -> Result<(), Self::Err> {
         Sqlite::execute_with_retry(|| {
             let tx = self.conn.transaction()?;
-            Sqlite::upsert_user(&tx, user);
+            Sqlite::upsert_user(&tx, user)?;
             tx.commit()?;
 
             Ok(())
@@ -348,7 +348,9 @@ impl Storage for Sqlite {
     }
 
     fn get_new_post_id(&self, id: i64) -> Result<i64, Self::Err> {
-        let mut stmt = self.conn.prepare("SELECT post_id FROM post_remap WHERE old_id = ?1")?;
+        let mut stmt = self
+            .conn
+            .prepare("SELECT post_id FROM post_remap WHERE old_id = ?1")?;
         let params = params![id];
         let post_id = stmt.query_row(params, |row| row.get(0))?;
         Ok(post_id)
@@ -381,68 +383,55 @@ impl Sqlite {
         Ok(post)
     }
 
-    fn upsert_post(tx: &Transaction, p: &Post) -> usize {
+    fn upsert_post(tx: &Transaction, p: &Post) -> Result<usize, Error> {
         let result = tx.prepare_cached(
             "INSERT INTO post (id, title, short_text, text, created, modified, is_public, markdown) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
                 ON CONFLICT(id) DO UPDATE SET title=?2, short_text=?3, text=?4, created=?5, modified=?6, is_public=?7, markdown=?8",
-        )
-        .unwrap()
-        .execute(params![p.id, p.title, p.short_text, p.text, p.created.timestamp(), p.modified.timestamp(), p.is_public, p.markdown])
-        .unwrap_or_default();
+        )?
+        .execute(params![p.id, p.title, p.short_text, p.text, p.created.timestamp(), p.modified.timestamp(), p.is_public, p.markdown])?;
 
-        let mut tag_statement = tx
-            .prepare_cached(
-                "INSERT INTO tag (tag) VALUES (?1)
+        let mut tag_statement = tx.prepare_cached(
+            "INSERT INTO tag (tag) VALUES (?1)
                 ON CONFLICT(tag) DO UPDATE SET tag=?1",
-            )
-            .unwrap();
+        )?;
 
-        let mut delete_post_tags_statement = tx
-            .prepare_cached("DELETE FROM post_tag WHERE post_id=?1")
-            .unwrap();
-        delete_post_tags_statement
-            .execute(params![p.id])
-            .unwrap_or_default();
+        let mut delete_post_tags_statement =
+            tx.prepare_cached("DELETE FROM post_tag WHERE post_id=?1")?;
+        delete_post_tags_statement.execute(params![p.id])?;
 
-        let mut post_tag_statement = tx
-            .prepare_cached(
-                "INSERT INTO post_tag (post_id, tag) VALUES (?1, ?2)
+        let mut post_tag_statement = tx.prepare_cached(
+            "INSERT INTO post_tag (post_id, tag) VALUES (?1, ?2)
                 ON CONFLICT(post_id, tag) DO UPDATE SET post_id=?1, tag=?2",
-            )
-            .unwrap();
+        )?;
 
         for t in p.tags.iter() {
-            tag_statement.execute(params![t]).unwrap_or_default();
-            post_tag_statement
-                .execute(params![p.id, t])
-                .unwrap_or_default();
+            tag_statement.execute(params![t])?;
+            post_tag_statement.execute(params![p.id, t])?;
         }
 
-        result
+        Ok(result)
     }
 
-    fn upsert_user(tx: &Transaction, u: &User) -> usize {
+    fn upsert_user(tx: &Transaction, u: &User) -> Result<usize, Error> {
         let result = tx.prepare_cached(
             "INSERT INTO user (created, email, name, login, avatar_url, federated_id, admin, verified, provider) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
                 ON CONFLICT(federated_id, provider) DO UPDATE SET email=?2, name=?3, login=?4, avatar_url=?5",
-        )
-        .unwrap()
-        .execute(params![u.created.timestamp(), u.email, u.name, u.login, u.avatar_url, u.federated_id, u.admin, u.verified, u.provider])
-        .unwrap_or_default();
+        )?
+        .execute(params![u.created.timestamp(), u.email, u.name, u.login, u.avatar_url, u.federated_id, u.admin, u.verified, u.provider])?;
 
-        result
+        Ok(result)
     }
 
     fn upsert<T>(
         &mut self,
         items: Vec<T>,
-        fn_execute: fn(&Transaction, &T) -> usize,
+        fn_execute: fn(&Transaction, &T) -> Result<usize, Error>,
     ) -> Result<usize, Error> {
         Sqlite::execute_with_retry(|| {
             let mut result: usize = 0;
             let tx = self.conn.transaction()?;
             for item in &items {
-                let res = fn_execute(&tx, item);
+                let res = fn_execute(&tx, item)?;
                 result += res;
             }
             tx.commit()?;
