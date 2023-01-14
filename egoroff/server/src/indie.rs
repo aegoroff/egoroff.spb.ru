@@ -9,6 +9,7 @@ use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, 
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use tower_http::auth::AuthorizeRequest;
+use utoipa::ToSchema;
 
 pub const ME: &str = "https://www.egoroff.spb.ru/";
 pub const SCOPES: &str = "create media delete";
@@ -34,7 +35,7 @@ pub struct IndieQuery {
     pub state: Option<String>,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, ToSchema)]
 pub struct TokenRequest {
     pub grant_type: String,
     pub code: String,
@@ -43,7 +44,7 @@ pub struct TokenRequest {
     pub me: String,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, ToSchema)]
 pub struct Token {
     pub access_token: String,
     pub token_type: String,
@@ -51,7 +52,7 @@ pub struct Token {
     pub me: String,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, ToSchema)]
 pub struct TokenValidationResult {
     pub me: String,
     pub client_id: String,

@@ -4,8 +4,9 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use url::form_urlencoded::parse;
+use utoipa::ToSchema;
 
-#[derive(Serialize, Default)]
+#[derive(Serialize, Default, ToSchema)]
 pub struct MicropubConfig {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub q: Option<Vec<String>>,
@@ -21,13 +22,13 @@ pub struct MicropubConfig {
     pub syndicate_to: Option<Vec<SyndicateTo>>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 pub struct SyndicateTo {
     pub uid: String,
     pub name: String,
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug, Error, ToSchema)]
 pub enum MicropubFormError {
     #[error("Required field '{0}' is missing.")]
     MissingField(String),

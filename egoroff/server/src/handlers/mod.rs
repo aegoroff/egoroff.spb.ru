@@ -237,6 +237,11 @@ fn internal_server_error_response<R: IntoResponse>(r: R) -> (StatusCode, Respons
     (StatusCode::INTERNAL_SERVER_ERROR, r.into_response())
 }
 
+/// makes HTTP (BAD REQUEST) response code 400
+fn bad_request_error_response<R: IntoResponse>(r: R) -> (StatusCode, Response) {
+    (StatusCode::BAD_REQUEST, r.into_response())
+}
+
 fn get_content_length(headers: &axum::http::HeaderMap) -> Option<i64> {
     if let Some(len_header) = headers.get("content-length") {
         if let Ok(val) = len_header.to_str() {

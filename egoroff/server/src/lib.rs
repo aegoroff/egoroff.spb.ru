@@ -38,8 +38,9 @@ use tower_http::trace::TraceLayer;
 use tracing::Span;
 use tracing_subscriber::prelude::__tracing_subscriber_SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
+use utoipa::openapi::security::{ApiKey, ApiKeyValue, SecurityScheme};
 
-use utoipa::OpenApi;
+use utoipa::{Modify, OpenApi};
 use utoipa_swagger_ui::SwaggerUi;
 
 use crate::domain::Config;
@@ -256,15 +257,33 @@ pub fn create_routes(
     #[openapi(
         paths(
             handlers::blog::serve_posts_api,
+            handlers::micropub::serve_index_get,
+            handlers::micropub::serve_index_post,
+            handlers::indie::serve_token_generate,
+            handlers::indie::serve_token_validate,
         ),
         components(
-            schemas(SmallPost, kernel::domain::SmallPosts),
+            schemas(SmallPost, kernel::domain::SmallPosts, micropub::MicropubConfig, micropub::SyndicateTo, micropub::MicropubFormError, indie::TokenValidationResult, indie::Token, indie::TokenRequest),
         ),
+        modifiers(&SecurityAddon),
         tags(
             (name = "egoroff.spb.ru", description = "egoroff.spb.ru API")
-        )
+        ),
     )]
     struct ApiDoc;
+
+    struct SecurityAddon;
+
+    impl Modify for SecurityAddon {
+        fn modify(&self, openapi: &mut utoipa::openapi::OpenApi) {
+            if let Some(components) = openapi.components.as_mut() {
+                components.add_security_scheme(
+                    "authorization",
+                    SecurityScheme::ApiKey(ApiKey::Header(ApiKeyValue::new("authorization"))),
+                )
+            }
+        }
+    }
 
     let router = Router::new()
         .route("/auth", get(handlers::indie::serve_auth))

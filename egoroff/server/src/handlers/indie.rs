@@ -1,9 +1,6 @@
 use super::*;
 
-use axum::{
-    extract::Form,
-    http::HeaderMap,
-};
+use axum::{extract::Form, http::HeaderMap};
 use chrono::{Duration, Utc};
 
 use crate::{
@@ -45,7 +42,7 @@ pub async fn serve_auth(
             state
         } else {
             tracing::error!("No state extracted from query");
-            return (StatusCode::BAD_REQUEST, Empty::new().into_response());
+            return bad_request_error_response(Empty::new());
         };
 
         match generate_jwt(claims, private_key_path) {
@@ -61,7 +58,7 @@ pub async fn serve_auth(
             }
             Err(e) => {
                 tracing::error!("generate jwt token error: {e:#?}");
-                (StatusCode::BAD_REQUEST, e.to_string().into_response())
+                bad_request_error_response(e.to_string())
             }
         }
     } else if let Some(u) = Resource::new(&client_id) {
@@ -72,7 +69,7 @@ pub async fn serve_auth(
             }
             Err(e) => {
                 tracing::error!("Error reading data from client: {e:#?}");
-                (StatusCode::BAD_REQUEST, Empty::new().into_response())
+                bad_request_error_response(Empty::new())
             }
         }
     } else {
@@ -81,6 +78,19 @@ pub async fn serve_auth(
     }
 }
 
+/// Generate Indie auth token
+///
+/// Generates Indie authorization JWT token
+#[utoipa::path(
+    post,
+    path = "/token",
+    request_body(content = TokenRequest, content_type = "application/x-www-form-urlencoded"),
+    responses(
+        (status = 200, description = "Configuration read successfully", body = Token),
+        (status = 400, description = "Claims validation failed", body = String),
+    ),
+    tag = "indie",
+)]
 pub async fn serve_token_generate(
     Extension(page_context): Extension<Arc<PageContext>>,
     Form(req): Form<TokenRequest>,
@@ -94,7 +104,7 @@ pub async fn serve_token_generate(
         }
         Err(e) => {
             tracing::error!("validate jwt token error: {e:#?}");
-            return (StatusCode::BAD_REQUEST, e.to_string().into_response());
+            return bad_request_error_response(e.to_string());
         }
     }
 
@@ -127,11 +137,27 @@ pub async fn serve_token_generate(
         }
         Err(e) => {
             tracing::error!("generate jwt token error: {e:#?}");
-            (StatusCode::BAD_REQUEST, e.to_string().into_response())
+            bad_request_error_response(e.to_string())
         }
     }
 }
 
+/// Validate Indie auth token
+///
+/// Validates Indie authorization JWT token that passed in Authorization header
+#[utoipa::path(
+    get,
+    path = "/token",
+    responses(
+        (status = 200, description = "Configuration read successfully", body = TokenValidationResult),
+        (status = 400, description = "No authorization headed provided or it's invalid"),
+    ),
+    tag = "indie",
+    security(
+        (),
+        ("authorization" = [])
+    )
+)]
 pub async fn serve_token_validate(
     Extension(page_context): Extension<Arc<PageContext>>,
     headers: HeaderMap,
@@ -142,20 +168,20 @@ pub async fn serve_token_validate(
         h
     } else {
         tracing::error!("No authorization header extracted from request");
-        return (StatusCode::BAD_REQUEST, Empty::new().into_response());
+        return bad_request_error_response(Empty::new());
     };
     let auth_header = if let Ok(val) = value.to_str() {
         val
     } else {
         tracing::error!("No authorization header value extracted from request");
-        return (StatusCode::BAD_REQUEST, Empty::new().into_response());
+        return bad_request_error_response(Empty::new());
     };
 
     let token = if let Some(val) = auth_header.strip_prefix("Bearer ") {
         val
     } else {
         tracing::error!("Authorization header not started from Bearer");
-        return (StatusCode::BAD_REQUEST, Empty::new().into_response());
+        return bad_request_error_response(Empty::new());
     };
     match validate_jwt(token, public_key_path) {
         Ok(claims) => {

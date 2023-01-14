@@ -2,6 +2,7 @@ use axum::{body::Bytes, http};
 use chrono::Utc;
 use kernel::domain::Post;
 use serde::Deserialize;
+use utoipa::IntoParams;
 
 use crate::{
     indie::ME,
@@ -10,12 +11,30 @@ use crate::{
 
 use super::*;
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, IntoParams)]
 pub struct MicropubRequest {
     pub q: Option<String>,
     pub url: Option<String>,
 }
 
+/// Get micropub endpoint configuration
+///
+/// Gets micropub endpoint configuration to find out it's capabilities
+#[utoipa::path(
+    get,
+    path = "/micropub/",
+    responses(
+        (status = 200, description = "Configuration read successfully", body = MicropubConfig),
+        (status = 401, description = "Unauthorized to read configuration"),
+    ),
+    params(
+        MicropubRequest
+    ),
+    tag = "micropub",
+    security(
+        ("authorization" = [])
+    )
+)]
 pub async fn serve_index_get(Query(query): Query<MicropubRequest>) -> impl IntoResponse {
     if let Some(q) = query.q {
         let media_endpoint = Some(format!("{ME}micropub/media"));
@@ -54,6 +73,24 @@ pub async fn serve_index_get(Query(query): Query<MicropubRequest>) -> impl IntoR
     }
 }
 
+/// Create new Post
+///
+/// Tries to create a new Postor fails with 400 error in case of invalid request.
+#[utoipa::path(
+    post,
+    path = "/micropub/",
+    request_body(content = String, description = "Post content", content_type = "application/json"),
+    responses(
+        (status = 201, description = "Post created successfully"),
+        (status = 400, description = "Invalid request syntax", body = MicropubFormError),
+        (status = 401, description = "Unauthorized to create post"),
+        (status = 500, description = "Server error", body = String),
+    ),
+    tag = "micropub",
+    security(
+        ("authorization" = []),
+    )
+)]
 pub async fn serve_index_post(
     headers: http::header::HeaderMap,
     Extension(page_context): Extension<Arc<PageContext>>,
@@ -73,7 +110,7 @@ pub async fn serve_index_post(
     let form = match form {
         Ok(f) => f,
         Err(e) => {
-            return internal_server_error_response(e.to_string());
+            return bad_request_error_response(e.to_string());
         }
     };
     let created = Utc::now();
