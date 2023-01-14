@@ -14,6 +14,7 @@ use axum_sessions::{SameSite, SessionLayer};
 use domain::{PageContext, RequireAuth};
 use futures::lock::Mutex;
 use indie::RequireIndieAuthorizationLayer;
+use kernel::domain::{ApiResult, SmallPost};
 use kernel::graph::{SiteGraph, SiteSection};
 use kernel::session::SqliteSessionStore;
 use kernel::sqlite::{Mode, Sqlite};
@@ -37,6 +38,9 @@ use tower_http::trace::TraceLayer;
 use tracing::Span;
 use tracing_subscriber::prelude::__tracing_subscriber_SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
+
+use utoipa::OpenApi;
+use utoipa_swagger_ui::SwaggerUi;
 
 use crate::domain::Config;
 #[macro_use]
@@ -248,6 +252,20 @@ pub fn create_routes(
 
     let auth_layer = AuthLayer::new(user_store, &secret);
 
+    #[derive(OpenApi)]
+    #[openapi(
+        paths(
+            handlers::blog::serve_posts_api,
+        ),
+        components(
+            schemas(SmallPost, ApiResult<SmallPost>),
+        ),
+        tags(
+            (name = "egoroff.spb.ru", description = "egoroff.spb.ru API")
+        )
+    )]
+    struct ApiDoc;
+
     let router = Router::new()
         .route("/auth", get(handlers::indie::serve_auth))
         .route("/admin", get(handlers::admin::serve_admin))
@@ -276,6 +294,7 @@ pub fn create_routes(
         )
         // Important all protected routes must be the first in the list
         .route_layer(RequireAuth::login())
+        .merge(SwaggerUi::new("/api/v2").url("/api/v2/openapi.json", ApiDoc::openapi()))
         .route(
             "/micropub/",
             get(handlers::micropub::serve_index_get)

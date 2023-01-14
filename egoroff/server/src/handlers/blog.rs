@@ -210,6 +210,16 @@ pub async fn serve_archive_api(
     make_json_response(result)
 }
 
+#[utoipa::path(
+    get,
+    path = "/api/v2/blog/posts/",
+    params(
+        PostsRequest
+    ),
+    responses(
+        (status = 200, description = "Get posts successfully", body = ApiResult<SmallPost>),
+    ),
+)]
 pub async fn serve_posts_api(
     Extension(page_context): Extension<Arc<PageContext>>,
     Query(request): Query<PostsRequest>,

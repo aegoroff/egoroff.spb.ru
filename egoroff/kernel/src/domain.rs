@@ -1,5 +1,6 @@
 use chrono::{DateTime, Datelike, NaiveDate, Utc};
 use std::{error::Error, fmt::Debug};
+use utoipa::{IntoParams, ToSchema};
 
 #[derive(Debug, Default, Clone, Deserialize, Serialize)]
 pub struct User {
@@ -16,7 +17,7 @@ pub struct User {
     pub provider: String,
 }
 
-#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Deserialize, Serialize, ToSchema)]
 pub struct SmallPost {
     #[serde(rename(serialize = "Created"))]
     pub created: DateTime<Utc>,
@@ -56,7 +57,7 @@ impl Post {
     }
 }
 
-#[derive(Deserialize, Serialize, Default, Clone)]
+#[derive(Deserialize, Serialize, Default, Clone, IntoParams)]
 pub struct PostsRequest {
     pub tag: Option<String>,
     pub page: Option<i32>,
@@ -175,6 +176,47 @@ pub trait Storage {
     fn get_oauth_provider(&self, name: &str) -> Result<OAuthProvider, Self::Err>;
     fn get_user(&self, federated_id: &str, provider: &str) -> Result<User, Self::Err>;
     fn upsert_user(&mut self, user: &User) -> Result<(), Self::Err>;
+}
+
+impl utoipa::ToSchema for ApiResult<SmallPost> {
+    fn schema() -> utoipa::openapi::schema::Schema {
+        use utoipa::openapi::ToArray;
+        utoipa::openapi::ObjectBuilder::new()
+            .property(
+                "count",
+                utoipa::openapi::ObjectBuilder::new()
+                    .schema_type(utoipa::openapi::SchemaType::Integer)
+                    .format(Some(utoipa::openapi::SchemaFormat::KnownFormat(utoipa::openapi::KnownFormat::Int32))),
+            )
+            .required("count")
+            .property(
+                "page",
+                utoipa::openapi::ObjectBuilder::new()
+                    .schema_type(utoipa::openapi::SchemaType::Integer)
+                    .format(Some(utoipa::openapi::SchemaFormat::KnownFormat(utoipa::openapi::KnownFormat::Int32))),
+            )
+            .property(
+                "pages",
+                utoipa::openapi::ObjectBuilder::new()
+                    .schema_type(utoipa::openapi::SchemaType::Integer)
+                    .format(Some(utoipa::openapi::SchemaFormat::KnownFormat(utoipa::openapi::KnownFormat::Int32))),
+            )
+            .required("pages")
+            .property(
+                "status",
+                utoipa::openapi::Object::with_type(utoipa::openapi::SchemaType::String),
+            )
+            .required("status")
+            .property(
+                "result",
+                utoipa::openapi::Object::with_type(utoipa::openapi::SchemaType::Object).to_array(),
+            )
+            .required("result")
+            .example(Some(serde_json::json!({
+              "count": 10, "page": 1, "pages": 7, "status": "success", "result":[{"Created":"2022-06-02T04:18:00Z","id":66,"Title":"Blake3","ShortText":"text","Markdown":true}],
+            })))
+            .into()
+    }
 }
 
 #[cfg(test)]
