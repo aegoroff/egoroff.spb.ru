@@ -217,7 +217,7 @@ pub async fn serve_archive_api(
         PostsRequest
     ),
     responses(
-        (status = 200, description = "Get posts successfully", body = ApiResult<SmallPost>),
+        (status = 200, description = "Get posts successfully", body = SmallPosts),
     ),
 )]
 pub async fn serve_posts_api(

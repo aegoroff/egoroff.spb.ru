@@ -14,7 +14,7 @@ use axum_sessions::{SameSite, SessionLayer};
 use domain::{PageContext, RequireAuth};
 use futures::lock::Mutex;
 use indie::RequireIndieAuthorizationLayer;
-use kernel::domain::{ApiResult, SmallPost};
+use kernel::domain::SmallPost;
 use kernel::graph::{SiteGraph, SiteSection};
 use kernel::session::SqliteSessionStore;
 use kernel::sqlite::{Mode, Sqlite};
@@ -258,7 +258,7 @@ pub fn create_routes(
             handlers::blog::serve_posts_api,
         ),
         components(
-            schemas(SmallPost, ApiResult<SmallPost>),
+            schemas(SmallPost, kernel::domain::SmallPosts),
         ),
         tags(
             (name = "egoroff.spb.ru", description = "egoroff.spb.ru API")
