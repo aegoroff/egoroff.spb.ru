@@ -8,6 +8,7 @@ use axum::{
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
+use thiserror::Error;
 use tower_http::auth::AuthorizeRequest;
 use utoipa::ToSchema;
 
@@ -57,6 +58,16 @@ pub struct TokenValidationResult {
     pub me: String,
     pub client_id: String,
     pub scope: String,
+}
+
+#[derive(Debug, Error)]
+pub enum IndieAuthError {
+    #[error("No authorization header extracted from request")]
+    MissingAuthorizationHeader,
+    #[error("No authorization header value extracted from request")]
+    MissingAuthorizationHeaderValue,
+    #[error("Authorization header not started from Bearer")]
+    NotStarterFromBearer,
 }
 
 pub fn generate_jwt<P: AsRef<Path>>(claims: Claims, private_key_path: P) -> Result<String> {
@@ -124,20 +135,23 @@ where
         let value = if let Some(h) = request.headers().get("authorization") {
             h
         } else {
-            tracing::error!("No authorization header extracted from request");
+            tracing::error!("{}", IndieAuthError::MissingAuthorizationHeader.to_string());
             return Err(unauthorized_response);
         };
         let auth_header = if let Ok(val) = value.to_str() {
             val
         } else {
-            tracing::error!("No authorization header value extracted from request");
+            tracing::error!(
+                "{}",
+                IndieAuthError::MissingAuthorizationHeaderValue.to_string()
+            );
             return Err(unauthorized_response);
         };
 
         let token = if let Some(val) = auth_header.strip_prefix("Bearer ") {
             val
         } else {
-            tracing::error!("Authorization header not started from Bearer");
+            tracing::error!("{}", IndieAuthError::NotStarterFromBearer.to_string());
             return Err(unauthorized_response);
         };
 

@@ -7,8 +7,8 @@ use crate::{
     body::Redirect,
     domain::PageContext,
     indie::{
-        generate_jwt, read_from_client, validate_jwt, Claims, IndieQuery, Token, TokenRequest,
-        TokenValidationResult, ME, SCOPES,
+        generate_jwt, read_from_client, validate_jwt, Claims, IndieAuthError, IndieQuery, Token,
+        TokenRequest, TokenValidationResult, ME, SCOPES,
     },
 };
 
@@ -74,7 +74,7 @@ pub async fn serve_auth(
         }
     } else {
         tracing::error!("invalid client ID: {client_id}");
-        (StatusCode::BAD_REQUEST, Empty::new().into_response())
+        bad_request_error_response(Empty::new())
     }
 }
 
@@ -167,21 +167,20 @@ pub async fn serve_token_validate(
     let value = if let Some(h) = headers.get("authorization") {
         h
     } else {
-        tracing::error!("No authorization header extracted from request");
-        return bad_request_error_response(Empty::new());
+        return bad_request_from_indie_error_response(IndieAuthError::MissingAuthorizationHeader);
     };
     let auth_header = if let Ok(val) = value.to_str() {
         val
     } else {
-        tracing::error!("No authorization header value extracted from request");
-        return bad_request_error_response(Empty::new());
+        return bad_request_from_indie_error_response(
+            IndieAuthError::MissingAuthorizationHeaderValue,
+        );
     };
 
     let token = if let Some(val) = auth_header.strip_prefix("Bearer ") {
         val
     } else {
-        tracing::error!("Authorization header not started from Bearer");
-        return bad_request_error_response(Empty::new());
+        return bad_request_from_indie_error_response(IndieAuthError::NotStarterFromBearer);
     };
     match validate_jwt(token, public_key_path) {
         Ok(claims) => {
@@ -194,7 +193,14 @@ pub async fn serve_token_validate(
         }
         Err(e) => {
             tracing::error!("validate jwt token error: {e:#?}");
-            (StatusCode::BAD_REQUEST, e.to_string().into_response())
+            bad_request_error_response(e.to_string())
         }
     }
+}
+
+/// makes HTTP (BAD REQUEST) response code 400
+pub fn bad_request_from_indie_error_response(e: IndieAuthError) -> (StatusCode, Response) {
+    let msg = e.to_string();
+    tracing::error!("{msg}");
+    bad_request_error_response(msg)
 }
