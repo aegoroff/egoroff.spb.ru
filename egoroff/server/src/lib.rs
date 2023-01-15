@@ -1,5 +1,6 @@
 use auth::{GithubAuthorizer, GoogleAuthorizer, Role, UserStorage, YandexAuthorizer};
 use axum::extract::DefaultBodyLimit;
+use axum::handler::Handler;
 use axum::routing::{delete, post, put};
 use axum::Extension;
 use axum::{routing::get, Router};
@@ -285,6 +286,11 @@ pub fn create_routes(
         }
     }
 
+    let login_handler = handlers::auth::serve_login
+        .layer(Extension(google_authorizer.clone()))
+        .layer(Extension(github_authorizer.clone()))
+        .layer(Extension(yandex_authorizer.clone()));
+
     let router = Router::new()
         .route("/auth", get(handlers::indie::serve_auth))
         .route("/admin", get(handlers::admin::serve_admin))
@@ -375,19 +381,18 @@ pub fn create_routes(
         .route("/img/:path", get(handlers::serve_img))
         .route("/apache/:path", get(handlers::serve_apache))
         .route("/apache/images/:path", get(handlers::serve_apache_images))
-        .route("/login", get(handlers::auth::serve_login))
-        .route("/login/", get(handlers::auth::serve_login))
+        .route("/login", get(login_handler))
         .route(
             "/_s/callback/google/authorized/",
-            get(handlers::auth::google_oauth_callback),
+            get(handlers::auth::google_oauth_callback).layer(Extension(google_authorizer)),
         )
         .route(
             "/_s/callback/github/authorized/",
-            get(handlers::auth::github_oauth_callback),
+            get(handlers::auth::github_oauth_callback).layer(Extension(github_authorizer)),
         )
         .route(
             "/_s/callback/yandex/authorized/",
-            get(handlers::auth::yandex_oauth_callback),
+            get(handlers::auth::yandex_oauth_callback).layer(Extension(yandex_authorizer)),
         )
         .route("/api/v2/navigation/", get(handlers::serve_navigation))
         .route(
@@ -419,7 +424,6 @@ pub fn create_routes(
                 metric_handle.render()
             }),
         )
-        .layer(RequestBodyLimitLayer::new(20 * 1024 * 1024))
         .layer(
             ServiceBuilder::new()
                 .layer(TraceLayer::new_for_http().on_failure(
@@ -428,15 +432,13 @@ pub fn create_routes(
                     },
                 ))
                 .layer(CorsLayer::new().allow_origin(Any).allow_methods(Any))
-                .layer(DefaultBodyLimit::disable())
-                .layer(Extension(google_authorizer))
-                .layer(Extension(github_authorizer))
-                .layer(Extension(yandex_authorizer))
                 .layer(session_layer)
                 .layer(auth_layer)
                 .into_inner(),
         )
         .layer(CompressionLayer::new())
+        .layer(RequestBodyLimitLayer::new(20 * 1024 * 1024))
+        .layer(DefaultBodyLimit::disable())
         .with_state(page_context);
 
     #[cfg(feature = "prometheus")]
