@@ -68,7 +68,7 @@ pub async fn run() {
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::new(
             std::env::var("RUST_LOG")
-                .unwrap_or_else(|_| "server=debug,axum=debug,hyper=debug,tower=debug".into()),
+                .unwrap_or_else(|_| "server=debug,axum=debug,hyper=info,tower=debug".into()),
         ))
         .with(tracing_subscriber::fmt::layer())
         .init();
@@ -352,6 +352,7 @@ pub fn create_routes(
             get(handlers::portfolio::redirect_to_real_document),
         )
         .route("/blog/", get(handlers::blog::serve_index_default))
+        .route("/news/", get(handlers::blog::redirect_to_blog))
         .route("/opinions/", get(handlers::blog::serve_index_default))
         .route(
             "/blog/page/:page",

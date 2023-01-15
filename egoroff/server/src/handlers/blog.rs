@@ -188,6 +188,13 @@ pub async fn serve_document(
     }
 }
 
+pub async fn redirect_to_blog() -> impl IntoResponse {
+    (
+        StatusCode::PERMANENT_REDIRECT,
+        Redirect::permanent("/blog/"),
+    )
+}
+
 pub async fn serve_atom(Extension(page_context): Extension<Arc<PageContext>>) -> impl IntoResponse {
     let storage = page_context.storage.lock().await;
     let result = archive::get_small_posts(storage, 20, None);
