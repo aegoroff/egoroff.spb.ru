@@ -1,4 +1,4 @@
-use axum::{body::Bytes, http};
+use axum::{body::Bytes, headers::ContentType, http, TypedHeader};
 use chrono::Utc;
 use kernel::domain::Post;
 use serde::Deserialize;
@@ -88,16 +88,12 @@ pub async fn serve_index_get(Query(query): Query<MicropubRequest>) -> impl IntoR
     )
 )]
 pub async fn serve_index_post(
-    headers: http::header::HeaderMap,
+    TypedHeader(content_type): TypedHeader<ContentType>,
     State(page_context): State<Arc<PageContext>>,
     body: Bytes,
 ) -> impl IntoResponse {
-    let content_type = headers.get("Content-Type");
-    let ct: String = content_type
-        .map(move |c| c.to_str().unwrap_or("x-www-form-url-encoded").into())
-        .unwrap_or_else(|| "x-www-form-url-encoded".into());
-
-    let form = if let "application/json" = ct.to_lowercase().as_str() {
+    tracing::info!("content type header: {content_type}");
+    let form = if let "application/json" = content_type.to_string().to_lowercase().as_str() {
         MicropubForm::from_json_bytes(&body.slice(..))
     } else {
         // x-www-form-urlencoded

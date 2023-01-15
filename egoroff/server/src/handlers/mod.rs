@@ -236,6 +236,11 @@ fn bad_request_error_response<R: IntoResponse>(r: R) -> (StatusCode, Response) {
     (StatusCode::BAD_REQUEST, r.into_response())
 }
 
+/// makes HTTP (UNAUTHORIZED) response code 401
+fn unauthorized_response<R: IntoResponse>(r: R) -> (StatusCode, Response) {
+    (StatusCode::UNAUTHORIZED, r.into_response())
+}
+
 fn get_content_length(headers: &axum::http::HeaderMap) -> Option<i64> {
     if let Some(len_header) = headers.get("content-length") {
         if let Ok(val) = len_header.to_str() {

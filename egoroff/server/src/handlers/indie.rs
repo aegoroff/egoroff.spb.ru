@@ -1,14 +1,18 @@
 use super::*;
 
-use axum::{extract::Form, http::HeaderMap};
+use axum::{
+    extract::Form,
+    headers::{authorization::Bearer, Authorization},
+    TypedHeader,
+};
 use chrono::{Duration, Utc};
 
 use crate::{
     body::Redirect,
     domain::PageContext,
     indie::{
-        generate_jwt, read_from_client, validate_jwt, Claims, IndieAuthError, IndieQuery, Token,
-        TokenRequest, TokenValidationResult, ME, SCOPES,
+        generate_jwt, read_from_client, validate_jwt, Claims, IndieQuery, Token, TokenRequest,
+        TokenValidationResult, ME, SCOPES,
     },
 };
 
@@ -146,7 +150,8 @@ pub async fn serve_token_generate(
     path = "/token",
     responses(
         (status = 200, description = "Configuration read successfully", body = TokenValidationResult),
-        (status = 400, description = "No authorization headed provided or it's invalid"),
+        (status = 400, description = "No authorization headed provided"),
+        (status = 401, description = "Token validation failed"),
     ),
     tag = "indie",
     security(
@@ -156,29 +161,11 @@ pub async fn serve_token_generate(
 )]
 pub async fn serve_token_validate(
     State(page_context): State<Arc<PageContext>>,
-    headers: HeaderMap,
+    TypedHeader(authorization): TypedHeader<Authorization<Bearer>>,
 ) -> impl IntoResponse {
     let public_key_path = PathBuf::from(&page_context.certs_path).join("egoroffspbrupub.pem");
 
-    let value = if let Some(h) = headers.get("authorization") {
-        h
-    } else {
-        return bad_request_from_indie_error_response(IndieAuthError::MissingAuthorizationHeader);
-    };
-    let auth_header = if let Ok(val) = value.to_str() {
-        val
-    } else {
-        return bad_request_from_indie_error_response(
-            IndieAuthError::MissingAuthorizationHeaderValue,
-        );
-    };
-
-    let token = if let Some(val) = auth_header.strip_prefix("Bearer ") {
-        val
-    } else {
-        return bad_request_from_indie_error_response(IndieAuthError::NotStarterFromBearer);
-    };
-    match validate_jwt(token, public_key_path) {
+    match validate_jwt(authorization.token(), public_key_path) {
         Ok(claims) => {
             let response = TokenValidationResult {
                 me: claims.iss.unwrap(),
@@ -189,14 +176,7 @@ pub async fn serve_token_validate(
         }
         Err(e) => {
             tracing::error!("validate jwt token error: {e:#?}");
-            bad_request_error_response(e.to_string())
+            unauthorized_response(e.to_string())
         }
     }
-}
-
-/// makes HTTP (BAD REQUEST) response code 400
-pub fn bad_request_from_indie_error_response(e: IndieAuthError) -> (StatusCode, Response) {
-    let msg = e.to_string();
-    tracing::error!("{msg}");
-    bad_request_error_response(msg)
 }
