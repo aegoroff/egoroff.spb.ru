@@ -10,7 +10,7 @@ use anyhow::Result;
 
 use axum::{
     body::Empty,
-    extract::{self, Query},
+    extract::{self, Query, State},
     http::StatusCode,
     response::{IntoResponse, Response},
     Extension, Json,
@@ -79,9 +79,7 @@ struct Static;
 #[exclude = "*.dtd"]
 struct Apache;
 
-pub async fn serve_index(
-    Extension(page_context): Extension<Arc<PageContext>>,
-) -> impl IntoResponse {
+pub async fn serve_index(State(page_context): State<Arc<PageContext>>) -> impl IntoResponse {
     let mut context = Context::new();
     context.insert(HTML_CLASS_KEY, "welcome");
     context.insert(CONFIG_KEY, &page_context.site_config);
@@ -114,9 +112,7 @@ pub async fn serve_index(
     }
 }
 
-pub async fn serve_search(
-    Extension(page_context): Extension<Arc<PageContext>>,
-) -> impl IntoResponse {
+pub async fn serve_search(State(page_context): State<Arc<PageContext>>) -> impl IntoResponse {
     let section = page_context.site_graph.get_section("search").unwrap();
 
     let mut context = Context::new();
@@ -129,9 +125,7 @@ pub async fn serve_search(
     serve_page(&context, "search.html", &page_context.tera)
 }
 
-pub async fn serve_sitemap(
-    Extension(page_context): Extension<Arc<PageContext>>,
-) -> impl IntoResponse {
+pub async fn serve_sitemap(State(page_context): State<Arc<PageContext>>) -> impl IntoResponse {
     let apache_documents = portfolio::read_apache_documents(&page_context.base_path);
 
     let apache_documents = match apache_documents {
@@ -194,7 +188,7 @@ pub async fn serve_apache_images(extract::Path(path): extract::Path<String>) -> 
 
 pub async fn serve_storage(
     extract::Path((bucket, path)): extract::Path<(String, String)>,
-    Extension(page_context): Extension<Arc<PageContext>>,
+    State(page_context): State<Arc<PageContext>>,
 ) -> impl IntoResponse {
     let mut resource = Resource::new(&page_context.store_uri).unwrap();
     resource
@@ -262,7 +256,7 @@ fn get_content_length(headers: &axum::http::HeaderMap) -> Option<i64> {
 // otherwise a 400 Bad Request error response is returned
 pub async fn serve_navigation(
     Query(query): Query<Uri>,
-    Extension(page_context): Extension<Arc<PageContext>>,
+    State(page_context): State<Arc<PageContext>>,
 ) -> impl IntoResponse {
     let q = query.uri;
 

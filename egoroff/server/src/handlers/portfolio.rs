@@ -6,9 +6,7 @@ use super::*;
 #[folder = "../../templates/apache"]
 struct ApacheTemplates;
 
-pub async fn serve_index(
-    Extension(page_context): Extension<Arc<PageContext>>,
-) -> impl IntoResponse {
+pub async fn serve_index(State(page_context): State<Arc<PageContext>>) -> impl IntoResponse {
     let section = page_context.site_graph.get_section("portfolio").unwrap();
 
     let uri = page_context.site_graph.full_path("portfolio");
@@ -35,7 +33,7 @@ pub async fn serve_index(
 }
 
 pub async fn serve_apache_document(
-    Extension(page_context): Extension<Arc<PageContext>>,
+    State(page_context): State<Arc<PageContext>>,
     extract::Path(path): extract::Path<String>,
 ) -> impl IntoResponse {
     let mut context = Context::new();

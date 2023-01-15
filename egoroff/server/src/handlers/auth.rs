@@ -1,7 +1,8 @@
 use super::*;
 use crate::{
     auth::{ToUser, YandexAuthorizer},
-    domain::AuthorizedUser, body::Redirect,
+    body::Redirect,
+    domain::AuthorizedUser,
 };
 use oauth2::{CsrfToken, PkceCodeVerifier, TokenResponse};
 
@@ -20,7 +21,7 @@ const PROFILE_URI: &str = "/profile/";
 const LOGIN_URI: &str = "/login";
 
 pub async fn serve_login(
-    Extension(page_context): Extension<Arc<PageContext>>,
+    State(page_context): State<Arc<PageContext>>,
     Extension(google_authorizer): Extension<Arc<GoogleAuthorizer>>,
     Extension(gitgub_authorizer): Extension<Arc<GithubAuthorizer>>,
     Extension(yandex_authorizer): Extension<Arc<YandexAuthorizer>>,
@@ -59,9 +60,7 @@ pub async fn serve_logout(mut auth: AuthContext) -> impl IntoResponse {
     Redirect::to("/login")
 }
 
-pub async fn serve_profile(
-    Extension(page_context): Extension<Arc<PageContext>>,
-) -> impl IntoResponse {
+pub async fn serve_profile(State(page_context): State<Arc<PageContext>>) -> impl IntoResponse {
     let mut context = Context::new();
     context.insert(CONFIG_KEY, &page_context.site_config);
     context.insert(TITLE_KEY, "Редактирование профиля");
@@ -129,7 +128,7 @@ macro_rules! validate_csrf {
 pub async fn google_oauth_callback(
     Query(query): Query<AuthRequest>,
     Extension(google_authorizer): Extension<Arc<GoogleAuthorizer>>,
-    Extension(page_context): Extension<Arc<PageContext>>,
+    State(page_context): State<Arc<PageContext>>,
     session: ReadableSession,
     auth: AuthContext,
 ) -> impl IntoResponse {
@@ -154,7 +153,7 @@ pub async fn google_oauth_callback(
 pub async fn github_oauth_callback(
     Query(query): Query<AuthRequest>,
     Extension(github_authorizer): Extension<Arc<GithubAuthorizer>>,
-    Extension(page_context): Extension<Arc<PageContext>>,
+    State(page_context): State<Arc<PageContext>>,
     session: ReadableSession,
     auth: AuthContext,
 ) -> impl IntoResponse {
@@ -168,7 +167,7 @@ pub async fn github_oauth_callback(
 pub async fn yandex_oauth_callback(
     Query(query): Query<AuthRequest>,
     Extension(yandex_authorizer): Extension<Arc<YandexAuthorizer>>,
-    Extension(page_context): Extension<Arc<PageContext>>,
+    State(page_context): State<Arc<PageContext>>,
     session: ReadableSession,
     auth: AuthContext,
 ) -> impl IntoResponse {

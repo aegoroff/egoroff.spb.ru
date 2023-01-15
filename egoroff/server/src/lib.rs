@@ -419,6 +419,7 @@ pub fn create_routes(
                 metric_handle.render()
             }),
         )
+        .layer(RequestBodyLimitLayer::new(20 * 1024 * 1024))
         .layer(
             ServiceBuilder::new()
                 .layer(TraceLayer::new_for_http().on_failure(
@@ -427,17 +428,16 @@ pub fn create_routes(
                     },
                 ))
                 .layer(CorsLayer::new().allow_origin(Any).allow_methods(Any))
+                .layer(DefaultBodyLimit::disable())
+                .layer(Extension(google_authorizer))
+                .layer(Extension(github_authorizer))
+                .layer(Extension(yandex_authorizer))
+                .layer(session_layer)
+                .layer(auth_layer)
                 .into_inner(),
         )
-        .layer(DefaultBodyLimit::disable())
-        .layer(RequestBodyLimitLayer::new(20 * 1024 * 1024))
-        .layer(Extension(page_context))
-        .layer(Extension(google_authorizer))
-        .layer(Extension(github_authorizer))
-        .layer(Extension(yandex_authorizer))
-        .layer(auth_layer)
-        .layer(session_layer)
-        .layer(CompressionLayer::new());
+        .layer(CompressionLayer::new())
+        .with_state(page_context);
 
     #[cfg(feature = "prometheus")]
     return router.layer(prometheus_layer);

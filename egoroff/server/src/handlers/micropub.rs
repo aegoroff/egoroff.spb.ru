@@ -89,7 +89,7 @@ pub async fn serve_index_get(Query(query): Query<MicropubRequest>) -> impl IntoR
 )]
 pub async fn serve_index_post(
     headers: http::header::HeaderMap,
-    Extension(page_context): Extension<Arc<PageContext>>,
+    State(page_context): State<Arc<PageContext>>,
     body: Bytes,
 ) -> impl IntoResponse {
     let content_type = headers.get("Content-Type");

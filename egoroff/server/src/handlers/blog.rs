@@ -35,14 +35,14 @@ lazy_static::lazy_static! {
 
 pub async fn serve_index_default(
     Query(request): Query<BlogRequest>,
-    Extension(page_context): Extension<Arc<PageContext>>,
+    State(page_context): State<Arc<PageContext>>,
 ) -> impl IntoResponse {
     serve_index(request, page_context, None).await
 }
 
 pub async fn serve_index_not_default(
     Query(request): Query<BlogRequest>,
-    Extension(page_context): Extension<Arc<PageContext>>,
+    State(page_context): State<Arc<PageContext>>,
     extract::Path(page): extract::Path<String>,
 ) -> impl IntoResponse {
     serve_index(request, page_context, Some(page)).await
@@ -108,7 +108,7 @@ async fn serve_index(
 }
 
 pub async fn serve_document(
-    Extension(page_context): Extension<Arc<PageContext>>,
+    State(page_context): State<Arc<PageContext>>,
     extract::Path(path): extract::Path<String>,
 ) -> impl IntoResponse {
     let mut context = Context::new();
@@ -195,7 +195,7 @@ pub async fn redirect_to_blog() -> impl IntoResponse {
     )
 }
 
-pub async fn serve_atom(Extension(page_context): Extension<Arc<PageContext>>) -> impl IntoResponse {
+pub async fn serve_atom(State(page_context): State<Arc<PageContext>>) -> impl IntoResponse {
     let storage = page_context.storage.lock().await;
     let result = archive::get_small_posts(storage, 20, None);
 
@@ -211,9 +211,7 @@ pub async fn serve_atom(Extension(page_context): Extension<Arc<PageContext>>) ->
     }
 }
 
-pub async fn serve_archive_api(
-    Extension(page_context): Extension<Arc<PageContext>>,
-) -> impl IntoResponse {
+pub async fn serve_archive_api(State(page_context): State<Arc<PageContext>>) -> impl IntoResponse {
     let storage = page_context.storage.lock().await;
     let result = archive::archive(storage);
     make_json_response(result)
@@ -232,7 +230,7 @@ pub async fn serve_archive_api(
     ),
 )]
 pub async fn serve_posts_api(
-    Extension(page_context): Extension<Arc<PageContext>>,
+    State(page_context): State<Arc<PageContext>>,
     Query(request): Query<PostsRequest>,
 ) -> impl IntoResponse {
     let storage = page_context.storage.lock().await;
@@ -241,7 +239,7 @@ pub async fn serve_posts_api(
 }
 
 pub async fn serve_posts_admin_api(
-    Extension(page_context): Extension<Arc<PageContext>>,
+    State(page_context): State<Arc<PageContext>>,
     Query(request): Query<PostsRequest>,
 ) -> impl IntoResponse {
     let storage = page_context.storage.lock().await;
@@ -250,7 +248,7 @@ pub async fn serve_posts_admin_api(
 }
 
 pub async fn serve_post_update(
-    Extension(page_context): Extension<Arc<PageContext>>,
+    State(page_context): State<Arc<PageContext>>,
     Json(post): Json<Post>,
 ) -> impl IntoResponse {
     let mut storage = page_context.storage.lock().await;
@@ -260,7 +258,7 @@ pub async fn serve_post_update(
 
 pub async fn serve_post_delete(
     extract::Path(id): extract::Path<i64>,
-    Extension(page_context): Extension<Arc<PageContext>>,
+    State(page_context): State<Arc<PageContext>>,
 ) -> impl IntoResponse {
     let mut storage = page_context.storage.lock().await;
     let result = storage.delete_post(id);
