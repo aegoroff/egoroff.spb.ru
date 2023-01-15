@@ -410,6 +410,11 @@ impl Sqlite {
             post_tag_statement.execute(params![p.id, t])?;
         }
 
+        let mut cleanup_tags_statement = tx.prepare_cached(
+            "DELETE FROM tag WHERE tag NOT IN (SELECT DISTINCT tag FROM post_tag)",
+        )?;
+        cleanup_tags_statement.execute([])?;
+
         Ok(result)
     }
 
