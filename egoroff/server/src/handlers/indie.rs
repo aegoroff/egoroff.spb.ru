@@ -78,8 +78,6 @@ pub async fn serve_auth(
     }
 }
 
-/// Generate Indie auth token
-///
 /// Generates Indie authorization JWT token
 #[utoipa::path(
     post,
@@ -142,8 +140,6 @@ pub async fn serve_token_generate(
     }
 }
 
-/// Validate Indie auth token
-///
 /// Validates Indie authorization JWT token that passed in Authorization header
 #[utoipa::path(
     get,

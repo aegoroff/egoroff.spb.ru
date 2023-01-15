@@ -17,8 +17,6 @@ pub struct MicropubRequest {
     pub url: Option<String>,
 }
 
-/// Get micropub endpoint configuration
-///
 /// Gets micropub endpoint configuration to find out it's capabilities
 #[utoipa::path(
     get,
@@ -73,9 +71,7 @@ pub async fn serve_index_get(Query(query): Query<MicropubRequest>) -> impl IntoR
     }
 }
 
-/// Create new Post
-///
-/// Tries to create a new Postor fails with 400 error in case of invalid request.
+/// Tries to create a new Post or fails with 400 error in case of invalid request.
 #[utoipa::path(
     post,
     path = "/micropub/",

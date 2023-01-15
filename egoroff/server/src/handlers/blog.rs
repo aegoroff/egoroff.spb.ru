@@ -210,8 +210,6 @@ pub async fn serve_archive_api(
     make_json_response(result)
 }
 
-/// Get blog posts
-///
 /// Gets small blog posts without full test (only short description and metadata) using various queries.
 #[utoipa::path(
     get,
