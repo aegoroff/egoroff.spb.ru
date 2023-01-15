@@ -384,11 +384,12 @@ impl Sqlite {
     }
 
     fn upsert_post(tx: &Transaction, p: &Post) -> Result<usize, Error> {
+        let now = Utc::now();
         let result = tx.prepare_cached(
             "INSERT INTO post (id, title, short_text, text, created, modified, is_public, markdown) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
                 ON CONFLICT(id) DO UPDATE SET title=?2, short_text=?3, text=?4, created=?5, modified=?6, is_public=?7, markdown=?8",
         )?
-        .execute(params![p.id, p.title, p.short_text, p.text, p.created.timestamp(), p.modified.timestamp(), p.is_public, p.markdown])?;
+        .execute(params![p.id, p.title, p.short_text, p.text, p.created.timestamp(), now.timestamp(), p.is_public, p.markdown])?;
 
         let mut tag_statement = tx.prepare_cached(
             "INSERT INTO tag (tag) VALUES (?1)
