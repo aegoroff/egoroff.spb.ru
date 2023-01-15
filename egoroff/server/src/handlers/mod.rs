@@ -348,7 +348,7 @@ fn make_json_response<T: Default + Serialize>(result: Result<T>) -> impl IntoRes
     match result {
         Ok(ar) => success_response(Json(ar)),
         Err(e) => {
-            tracing::error!("Get posts error: {e:#?}");
+            tracing::error!("Execution error: {e:#?}");
             let r: T = Default::default();
             internal_server_error_response(Json(r))
         }

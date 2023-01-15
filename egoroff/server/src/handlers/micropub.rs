@@ -48,26 +48,26 @@ pub async fn serve_index_get(Query(query): Query<MicropubRequest>) -> impl IntoR
                     media_endpoint,
                     syndicate_to: Some(vec![]),
                 };
-                (StatusCode::OK, Json(config).into_response())
+                success_response(Json(config))
             }
             "media-endpoint" => {
                 let config = MicropubConfig {
                     media_endpoint,
                     ..Default::default()
                 };
-                (StatusCode::OK, Json(config).into_response())
+                success_response(Json(config))
             }
             "syndicate-to" => {
                 let config = MicropubConfig {
                     syndicate_to: Some(vec![]),
                     ..Default::default()
                 };
-                (StatusCode::OK, Json(config).into_response())
+                success_response(Json(config))
             }
-            _ => (StatusCode::OK, Empty::new().into_response()),
+            _ => success_response(Empty::new()),
         }
     } else {
-        (StatusCode::OK, Empty::new().into_response())
+        success_response(Empty::new())
     }
 }
 

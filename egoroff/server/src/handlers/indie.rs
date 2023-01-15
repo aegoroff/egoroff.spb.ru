@@ -131,7 +131,7 @@ pub async fn serve_token_generate(
                 scope: SCOPES.to_string(),
                 me: ME.to_string(),
             };
-            (StatusCode::OK, Json(t).into_response())
+            success_response(Json(t))
         }
         Err(e) => {
             tracing::error!("generate jwt token error: {e:#?}");
@@ -185,7 +185,7 @@ pub async fn serve_token_validate(
                 client_id: claims.client_id,
                 scope: SCOPES.to_string(),
             };
-            (StatusCode::OK, Json(response).into_response())
+            success_response(Json(response))
         }
         Err(e) => {
             tracing::error!("validate jwt token error: {e:#?}");

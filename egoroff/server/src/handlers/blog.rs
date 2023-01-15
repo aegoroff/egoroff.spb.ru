@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use kernel::{converter::html2text, domain::Post};
 
 use crate::{
@@ -240,26 +242,13 @@ pub async fn serve_posts_admin_api(
     make_json_response(result)
 }
 
-macro_rules! execute_update {
-    ($storage:ident, $method:ident, $arg:expr) => {{
-        if let Err(e) = $storage.$method($arg) {
-            internal_server_error_response(Json(OperationResult {
-                result: format!("{e}"),
-            }))
-        } else {
-            success_response(Json(OperationResult {
-                result: "success".to_owned(),
-            }))
-        }
-    }};
-}
-
 pub async fn serve_post_update(
     Extension(page_context): Extension<Arc<PageContext>>,
     Json(post): Json<Post>,
 ) -> impl IntoResponse {
     let mut storage = page_context.storage.lock().await;
-    execute_update!(storage, upsert_post, post)
+    let result = storage.upsert_post(post);
+    updated_response(result)
 }
 
 pub async fn serve_post_delete(
@@ -267,7 +256,8 @@ pub async fn serve_post_delete(
     Extension(page_context): Extension<Arc<PageContext>>,
 ) -> impl IntoResponse {
     let mut storage = page_context.storage.lock().await;
-    execute_update!(storage, delete_post, id)
+    let result = storage.delete_post(id);
+    updated_response(result)
 }
 
 pub async fn redirect_to_real_document(
@@ -281,6 +271,18 @@ pub async fn redirect_to_real_document(
         Redirect::permanent(&new_path)
     } else {
         Redirect::permanent("/blog/")
+    }
+}
+
+fn updated_response<T, E: Display>(result: Result<T, E>) -> impl IntoResponse {
+    if let Err(e) = result {
+        internal_server_error_response(Json(OperationResult {
+            result: format!("{e}"),
+        }))
+    } else {
+        success_response(Json(OperationResult {
+            result: "success".to_owned(),
+        }))
     }
 }
 
