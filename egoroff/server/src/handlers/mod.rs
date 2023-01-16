@@ -271,7 +271,7 @@ pub async fn serve_navigation(
 
     match page_context.site_graph.get_section("/") {
         Some(r) => Json(Navigation {
-            sections: activate_section(r.children, &current),
+            sections: activate_section(r.children.clone(), &current),
             breadcrumbs,
         }),
         None => Json(Navigation {

@@ -88,16 +88,17 @@ async fn serve_index(
 
     let poster = Poster::new(posts, page);
 
-    let mut title = section.title;
     let mut uri = page_context.site_graph.full_path("blog");
-    if page != 1 {
-        title = format!("{page}-я страница");
+    if page == 1 {
+        context.insert(TITLE_KEY, &section.title);
+    } else {
+        let title = format!("{page}-я страница");
+        context.insert(TITLE_KEY, &title);
         uri = format!("{uri}{page}")
     }
 
     let title_path = page_context.site_graph.make_title_path(&uri);
 
-    context.insert(TITLE_KEY, &title);
     context.insert(KEYWORDS_KEY, &section.keywords);
     context.insert(META_DESCR_KEY, &section.descr);
     context.insert("request", &request);

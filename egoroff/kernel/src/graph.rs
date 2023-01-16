@@ -75,13 +75,13 @@ impl SiteGraph {
         }
     }
 
-    pub fn get_section(&self, id: &str) -> Option<SiteSection> {
+    pub fn get_section(&self, id: &str) -> Option<&SiteSection> {
         let node_id = match self.search.get(id) {
             Some(x) => *x,
             None => return None,
         };
 
-        self.map.get(&node_id).cloned()
+        self.map.get(&node_id)
     }
 
     pub fn full_path(&self, id: &str) -> String {
@@ -129,6 +129,7 @@ impl SiteGraph {
                         }
                     }),
             )
+            .cloned()
             .collect();
         (parent_sections, current)
     }
