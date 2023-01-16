@@ -103,8 +103,8 @@ impl SiteGraph {
             let path = way
                 .iter()
                 .filter_map(|s| self.map.get(s))
-                .map(|x| x.id.clone())
-                .filter(|x| x != SEP)
+                .map(|x| x.id.as_str())
+                .filter(|x| *x != SEP)
                 .join(SEP);
             format!("{SEP}{path}{SEP}")
         }
@@ -142,8 +142,8 @@ impl SiteGraph {
         path.iter()
             .skip(1)
             .rev()
-            .map(|s| s.title.clone())
-            .chain(once(BRAND.to_string()))
+            .map(|s| s.title.as_str())
+            .chain(once(BRAND))
             .join(" | ")
     }
 }
