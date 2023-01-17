@@ -143,18 +143,14 @@ fn count_pages(count: i32, page_size: i32) -> i32 {
     count / page_size + i32::from(count % page_size > 0)
 }
 
-fn update_short_text(posts: Vec<SmallPost>) -> Vec<SmallPost> {
-    let posts: Vec<SmallPost> = posts
-        .into_iter()
-        .map(|mut post| {
-            if post.markdown {
-                if let Ok(text) = markdown2html(&post.short_text) {
-                    post.short_text = text
-                }
+fn update_short_text(mut posts: Vec<SmallPost>) -> Vec<SmallPost> {
+    for mut post in posts.iter_mut() {
+        if post.markdown {
+            if let Ok(text) = markdown2html(&post.short_text) {
+                post.short_text = text
             }
-            post
-        })
-        .collect();
+        }
+    }
     posts
 }
 
