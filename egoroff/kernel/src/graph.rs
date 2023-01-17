@@ -139,7 +139,7 @@ impl SiteGraph {
         }
         let (path, _) = self.breadcrumbs(uri);
 
-        path.iter()
+        path.into_iter()
             .skip(1)
             .rev()
             .map(|s| s.title.as_str())
