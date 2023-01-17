@@ -109,7 +109,8 @@ impl PostsRequest {
 #[derive(Deserialize, Serialize, Default)]
 pub struct Archive {
     pub tags: Vec<Tag>,
-    pub years: Vec<Year>,
+    #[serde(borrow = "'static")]
+    pub years: Vec<Year<'static>>,
 }
 
 #[derive(Deserialize, Serialize, Default)]
@@ -125,17 +126,18 @@ pub struct TagAggregate {
 }
 
 #[derive(Deserialize, Serialize, Default)]
-pub struct Year {
+pub struct Year<'a> {
     pub year: i32,
     pub posts: i32,
-    pub months: Vec<Month>,
+    #[serde(borrow = "'a")]
+    pub months: Vec<Month<'a>>,
 }
 
 #[derive(Deserialize, Serialize, Default)]
-pub struct Month {
+pub struct Month<'a> {
     pub month: i32,
     pub posts: i32,
-    pub name: String,
+    pub name: &'a str,
 }
 
 #[derive(Serialize, Default, ToSchema)]

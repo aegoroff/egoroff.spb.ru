@@ -63,7 +63,7 @@ pub fn archive(storage: MutexGuard<Sqlite>) -> Result<Archive> {
     Ok(Archive { tags, years })
 }
 
-fn group_by_years(dates: Vec<DateTime<Utc>>) -> Vec<Year> {
+fn group_by_years<'a>(dates: Vec<DateTime<Utc>>) -> Vec<Year<'a>> {
     let ygrp = dates
         .iter()
         .map(|dt| (dt.year(), dt.month()))
@@ -78,7 +78,7 @@ fn group_by_years(dates: Vec<DateTime<Utc>>) -> Vec<Year> {
             let m = Month {
                 month: k as i32,
                 posts: mg.count() as i32,
-                name: MONTHS[k as usize - 1].to_string(),
+                name: MONTHS[k as usize - 1],
             };
             posts_in_year += m.posts;
             months.push(m)
