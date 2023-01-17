@@ -116,7 +116,7 @@ pub struct Archive {
 #[derive(Deserialize, Serialize, Default)]
 pub struct Tag {
     pub title: String,
-    pub level: String,
+    pub level: &'static str,
 }
 
 #[derive(Deserialize, Serialize, Default)]

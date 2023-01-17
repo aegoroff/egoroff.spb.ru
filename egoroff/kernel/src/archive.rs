@@ -55,7 +55,7 @@ pub fn archive(storage: MutexGuard<Sqlite>) -> Result<Archive> {
             let ix = (tag.count as f32 / total_posts as f32 * 10.0) as usize;
             Tag {
                 title: tag.title.clone(),
-                level: RANKS[ix].to_string(),
+                level: RANKS[ix],
             }
         })
         .collect();
