@@ -110,7 +110,7 @@ impl SiteGraph {
         }
     }
 
-    pub fn breadcrumbs(&self, uri: &str) -> (Vec<SiteSection>, String) {
+    pub fn breadcrumbs(&self, uri: &str) -> (Vec<&SiteSection>, String) {
         let root = self.get_section("/").unwrap();
         let mut current = String::from(uri);
 
@@ -129,7 +129,6 @@ impl SiteGraph {
                         }
                     }),
             )
-            .cloned()
             .collect();
         (parent_sections, current)
     }

@@ -267,6 +267,8 @@ pub async fn serve_navigation(
 
     let (breadcrumbs, current) = page_context.site_graph.breadcrumbs(&q);
 
+    let breadcrumbs = breadcrumbs.into_iter().cloned().collect();
+
     let breadcrumbs = if q != "/" { Some(breadcrumbs) } else { None };
 
     match page_context.site_graph.get_section("/") {
