@@ -257,8 +257,6 @@ fn get_content_length(headers: &axum::http::HeaderMap) -> Option<i64> {
     }
 }
 
-// this handler gets called if the query deserializes into `Info` successfully
-// otherwise a 400 Bad Request error response is returned
 pub async fn serve_navigation(
     Query(query): Query<Uri>,
     State(page_context): State<Arc<PageContext>>,
@@ -273,7 +271,7 @@ pub async fn serve_navigation(
 
     match page_context.site_graph.get_section("/") {
         Some(r) => Json(Navigation {
-            sections: activate_section(r.children.clone(), &current),
+            sections: activate_section(&r.children, &current),
             breadcrumbs,
         }),
         None => Json(Navigation {
@@ -329,11 +327,15 @@ fn get_embed(path: &str, asset: Option<rust_embed::EmbeddedFile>) -> impl IntoRe
     }
 }
 
-fn activate_section(sections: Option<Vec<SiteSection>>, current: &str) -> Option<Vec<SiteSection>> {
+fn activate_section(
+    sections: &Option<Vec<SiteSection>>,
+    current: &str,
+) -> Option<Vec<SiteSection>> {
     if let Some(sections) = sections {
         Some(
             sections
-                .into_iter()
+                .iter()
+                .cloned()
                 .map(|mut s| {
                     s.active = Some(s.id == current);
                     s
@@ -341,7 +343,7 @@ fn activate_section(sections: Option<Vec<SiteSection>>, current: &str) -> Option
                 .collect(),
         )
     } else {
-        sections
+        None
     }
 }
 
