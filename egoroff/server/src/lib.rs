@@ -6,8 +6,6 @@ use axum::Extension;
 use axum::{routing::get, Router};
 
 use axum_login::AuthLayer;
-#[cfg(feature = "prometheus")]
-use axum_prometheus::PrometheusMetricLayer;
 
 use axum_server::tls_rustls::RustlsConfig;
 use axum_server::Handle;
@@ -203,9 +201,6 @@ pub fn create_routes(
     store_uri: String,
     certs_path: String,
 ) -> Router {
-    #[cfg(feature = "prometheus")]
-    let (prometheus_layer, metric_handle) = PrometheusMetricLayer::pair();
-
     let storage_path = data_path.join(kernel::sqlite::DATABASE);
     let sessions_path = data_path.join(SESSIONS_DATABASE);
 
@@ -416,13 +411,6 @@ pub fn create_routes(
         .route(
             "/token/",
             post(handlers::indie::serve_token_generate).get(handlers::indie::serve_token_validate),
-        )
-        .route(
-            "/metrics",
-            get(|| async move {
-                #[cfg(feature = "prometheus")]
-                metric_handle.render()
-            }),
         )
         .layer(
             ServiceBuilder::new()

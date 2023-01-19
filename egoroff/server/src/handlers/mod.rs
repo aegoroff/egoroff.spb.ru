@@ -331,20 +331,16 @@ fn activate_section(
     sections: &Option<Vec<SiteSection>>,
     current: &str,
 ) -> Option<Vec<SiteSection>> {
-    if let Some(sections) = sections {
-        Some(
-            sections
-                .iter()
-                .cloned()
-                .map(|mut s| {
-                    s.active = Some(s.id == current);
-                    s
-                })
-                .collect(),
-        )
-    } else {
-        None
-    }
+    sections.as_ref().map(|sections| {
+        sections
+            .iter()
+            .cloned()
+            .map(|mut s| {
+                s.active = Some(s.id == current);
+                s
+            })
+            .collect()
+    })
 }
 
 fn make_json_response<T: Default + Serialize>(result: Result<T>) -> impl IntoResponse {
