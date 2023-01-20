@@ -21,6 +21,21 @@ pub struct SiteSection {
     pub children: Option<Vec<SiteSection>>,
 }
 
+impl SiteSection {
+    pub fn clone_children(&self, active: &str) -> Option<Vec<SiteSection>> {
+        self.children.as_ref().map(|sections| {
+            sections
+                .iter()
+                .cloned()
+                .map(|mut s| {
+                    s.active = Some(s.id == active);
+                    s
+                })
+                .collect()
+        })
+    }
+}
+
 #[derive(Debug)]
 pub struct SiteGraph {
     g: DiGraphMap<i32, i32>,

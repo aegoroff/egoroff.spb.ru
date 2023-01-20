@@ -20,7 +20,6 @@ use kernel::{
     archive,
     converter::{markdown2html, xml2html},
     domain::{PostsRequest, Storage, User},
-    graph::SiteSection,
     resource::Resource,
 };
 
@@ -271,7 +270,7 @@ pub async fn serve_navigation(
 
     match page_context.site_graph.get_section("/") {
         Some(r) => Json(Navigation {
-            sections: activate_section(&r.children, &current),
+            sections: r.clone_children(&current),
             breadcrumbs,
         }),
         None => Json(Navigation {
@@ -325,22 +324,6 @@ fn get_embed(path: &str, asset: Option<rust_embed::EmbeddedFile>) -> impl IntoRe
     } else {
         not_found_response(Empty::new())
     }
-}
-
-fn activate_section(
-    sections: &Option<Vec<SiteSection>>,
-    current: &str,
-) -> Option<Vec<SiteSection>> {
-    sections.as_ref().map(|sections| {
-        sections
-            .iter()
-            .cloned()
-            .map(|mut s| {
-                s.active = Some(s.id == current);
-                s
-            })
-            .collect()
-    })
 }
 
 fn make_json_response<T: Default + Serialize>(result: Result<T>) -> impl IntoResponse {
