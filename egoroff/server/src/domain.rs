@@ -137,7 +137,7 @@ mod tests {
             pages: 2,
             page: 1,
             count: 40,
-            status: String::new(),
+            status: "",
         };
         let page = 1;
 
@@ -161,7 +161,7 @@ mod tests {
             pages: 2,
             page: 1,
             count: 40,
-            status: String::new(),
+            status: "",
         };
         let page = 2;
 
@@ -185,7 +185,7 @@ mod tests {
             pages: 3,
             page: 1,
             count: 60,
-            status: String::new(),
+            status: "",
         };
         let page = 2;
 
@@ -209,7 +209,7 @@ mod tests {
             pages: 1,
             page: 1,
             count: 20,
-            status: String::new(),
+            status: "",
         };
         let page = 1;
 

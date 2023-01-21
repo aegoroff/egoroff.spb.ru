@@ -151,7 +151,7 @@ pub struct ApiResult<T> {
     #[schema(example = 68)]
     pub count: i32,
     #[schema(example = "success")]
-    pub status: String,
+    pub status: &'static str,
 }
 
 #[derive(Serialize, Default)]

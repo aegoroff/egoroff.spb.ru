@@ -112,7 +112,7 @@ pub fn get_small_posts(
         pages: pages_count,
         page,
         count: total_posts_count,
-        status: "success".to_string(),
+        status: "success",
     })
 }
 
@@ -135,7 +135,7 @@ pub fn get_posts(
         pages: pages_count,
         page,
         count: total_posts_count,
-        status: "success".to_string(),
+        status: "success",
     })
 }
 
