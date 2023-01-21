@@ -22,8 +22,8 @@ pub struct Uri {
 }
 
 #[derive(Deserialize, Serialize, Default)]
-pub struct OperationResult {
-    pub result: String,
+pub struct OperationResult<'a> {
+    pub result: &'a str,
 }
 
 #[derive(Deserialize, Serialize, Default)]
