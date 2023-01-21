@@ -20,6 +20,13 @@ const PKCE_CODE_VERIFIER_KEY: &str = "pkce_code_verifier";
 const PROFILE_URI: &str = "/profile/";
 const LOGIN_URI: &str = "/login";
 
+macro_rules! register_url {
+    ($context:ident, $session:ident, $url:ident, $key:ident, $context_param:expr) => {{
+        $session.insert($key, $url.csrf_state).unwrap();
+        $context.insert($context_param, $url.url.as_str());
+    }};
+}
+
 pub async fn serve_login(
     State(page_context): State<Arc<PageContext>>,
     Extension(google_authorizer): Extension<Arc<GoogleAuthorizer>>,
@@ -34,23 +41,34 @@ pub async fn serve_login(
     let github_url = gitgub_authorizer.generate_authorize_url();
     let yandex_url = yandex_authorizer.generate_authorize_url();
 
-    session
-        .insert(GOOGLE_CSRF_KEY, google_url.csrf_state)
-        .unwrap();
-    session
-        .insert(GITHUB_CSRF_KEY, github_url.csrf_state)
-        .unwrap();
-    session
-        .insert(YANDEX_CSRF_KEY, yandex_url.csrf_state)
-        .unwrap();
+    register_url!(
+        context,
+        session,
+        google_url,
+        GOOGLE_CSRF_KEY,
+        "google_signin_url"
+    );
+
     session
         .insert(PKCE_CODE_VERIFIER_KEY, google_url.verifier.unwrap())
         .unwrap();
 
+    register_url!(
+        context,
+        session,
+        github_url,
+        GITHUB_CSRF_KEY,
+        "github_signin_url"
+    );
+    register_url!(
+        context,
+        session,
+        yandex_url,
+        YANDEX_CSRF_KEY,
+        "yandex_signin_url"
+    );
+
     context.insert(TITLE_KEY, "Авторизация");
-    context.insert("google_signin_url", google_url.url.as_str());
-    context.insert("github_signin_url", github_url.url.as_str());
-    context.insert("yandex_signin_url", yandex_url.url.as_str());
 
     serve_page(&context, "signin.html", &page_context.tera)
 }
