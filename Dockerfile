@@ -47,7 +47,6 @@ ENV EGOROFF_HOME_DIR=/
 COPY --from=rust-build /apache/config.json /apache/
 COPY --from=rust-build /static /static
 COPY --from=rust-build /egoroff/target/release/egoroff /usr/local/bin/egoroff
-USER root
 ENTRYPOINT [ "/usr/local/bin/egoroff" ]
 CMD [ "server" ]
 EXPOSE 4200
