@@ -91,12 +91,8 @@ impl SiteGraph {
     }
 
     pub fn get_section(&self, id: &str) -> Option<&SiteSection> {
-        let node_id = match self.search.get(id) {
-            Some(x) => *x,
-            None => return None,
-        };
-
-        self.map.get(&node_id)
+        let ix = self.search.get(id)?;
+        self.map.get(ix)
     }
 
     pub fn full_path(&self, id: &str) -> String {
@@ -138,10 +134,8 @@ impl SiteGraph {
                         if i == 1 {
                             current = String::from(part);
                         }
-                        match self.get_section(part) {
-                            Some(s) => (self.full_path(&s.id) != uri).then_some(s),
-                            None => None,
-                        }
+                        let section = self.get_section(part)?;
+                        (self.full_path(&section.id) != uri).then_some(section)
                     }),
             )
             .collect();
