@@ -9,7 +9,10 @@ workspace = ".."
 [dependencies]
 kernel = { path = "../kernel" }
 server = { path = "../server" }
-migrate = { path = "../migrate" }
+migrate = { path = "../migrate", optional = true }
 clap = { version = "4.1.4", features = ["std", "color", "suggestions", "cargo"] }
 serde = { version = "1.0", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
+
+[features]
+migrating = ["migrate"]
