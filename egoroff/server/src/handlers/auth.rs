@@ -101,8 +101,7 @@ macro_rules! login_user_using_token {
                         }
                         tracing::info!("User updated");
 
-                        let login_result = login(&user, $auth).await;
-                        match login_result {
+                        match login(&user, $auth).await {
                             Ok(_) => tracing::info!("login success"),
                             Err(e) => {
                                 tracing::error!("login error: {e:#?}");
@@ -197,12 +196,11 @@ pub async fn yandex_oauth_callback(
 }
 
 async fn login(user: &User, mut auth: AuthContext) -> Result<()> {
-    let login = auth.login(user).await;
-    match login {
-        Ok(_) => tracing::info!("Login success"),
-        Err(e) => tracing::error!("login failed: {e:#?}"),
+    if let Err(e) = auth.login(user).await {
+        Err(anyhow::Error::msg(e.to_string()))
+    } else {
+        Ok(())
     }
-    Ok(())
 }
 
 pub async fn serve_user_api_call(auth: AuthContext) -> impl IntoResponse {
