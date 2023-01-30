@@ -66,7 +66,7 @@ pub fn xml2html(input: &str) -> Result<String> {
                                 "2" => "/blog/".to_string(),
                                 _ => "/".to_string(),
                             },
-                            "hame" => format!("/blog/{}.html", val),
+                            "hame" => format!("/blog/{val}.html"),
                             _ => "".to_string(),
                         };
                     });

@@ -54,7 +54,7 @@ pub fn make_site_map(apache_docs: Vec<crate::domain::Apache>, post_ids: Vec<i64>
     
     for id in post_ids {
         let d = Url {
-            location: &format!("{SITE}blog/{}.html", id),
+            location: &format!("{SITE}blog/{id}.html"),
             changefreq: "yearly",
             priority: "1.0",
         };

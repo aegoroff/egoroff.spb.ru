@@ -131,7 +131,7 @@ pub async fn serve_sitemap(State(page_context): State<Arc<PageContext>>) -> impl
         Ok(docs) => docs,
         Err(e) => {
             tracing::error!("{e:#?}");
-            let content = format!("<?xml version=\"1.0\"?><error>{}</error>", e);
+            let content = format!("<?xml version=\"1.0\"?><error>{e}</error>");
             return internal_server_error_response(Xml(content));
         }
     };
@@ -302,7 +302,7 @@ fn make_error_page(context: &mut Context, code: &str, tera: &Tera) -> Html<Strin
         Ok(content) => Html(content),
         Err(err) => {
             tracing::error!("Server error: {err}");
-            Html(format!("{:#?}", err))
+            Html(format!("{err:#?}"))
         }
     }
 }
@@ -313,7 +313,7 @@ fn serve_page(context: &Context, template_name: &str, tera: &Tera) -> (StatusCod
         Ok(content) => success_response(Html(content)),
         Err(err) => {
             tracing::error!("Server error: {err}");
-            internal_server_error_response(Html(format!("{:#?}", err)))
+            internal_server_error_response(Html(format!("{err:#?}")))
         }
     }
 }
