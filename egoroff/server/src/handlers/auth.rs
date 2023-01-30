@@ -101,7 +101,7 @@ macro_rules! login_user_using_token {
                         }
                         tracing::info!("User updated");
 
-                        match login(&user, $auth).await {
+                        match $auth.login(&user).await {
                             Ok(_) => tracing::info!("login success"),
                             Err(e) => {
                                 tracing::error!("login error: {e:#?}");
@@ -147,7 +147,7 @@ pub async fn google_oauth_callback(
     Extension(google_authorizer): Extension<Arc<GoogleAuthorizer>>,
     State(page_context): State<Arc<PageContext>>,
     session: ReadableSession,
-    auth: AuthContext,
+    mut auth: AuthContext,
 ) -> impl IntoResponse {
     validate_csrf!(GOOGLE_CSRF_KEY, session, query);
     match session.get::<PkceCodeVerifier>(PKCE_CODE_VERIFIER_KEY) {
@@ -172,7 +172,7 @@ pub async fn github_oauth_callback(
     Extension(github_authorizer): Extension<Arc<GithubAuthorizer>>,
     State(page_context): State<Arc<PageContext>>,
     session: ReadableSession,
-    auth: AuthContext,
+    mut auth: AuthContext,
 ) -> impl IntoResponse {
     validate_csrf!(GITHUB_CSRF_KEY, session, query);
     let token = github_authorizer.exchange_code(query.code, None).await;
@@ -186,21 +186,13 @@ pub async fn yandex_oauth_callback(
     Extension(yandex_authorizer): Extension<Arc<YandexAuthorizer>>,
     State(page_context): State<Arc<PageContext>>,
     session: ReadableSession,
-    auth: AuthContext,
+    mut auth: AuthContext,
 ) -> impl IntoResponse {
     validate_csrf!(YANDEX_CSRF_KEY, session, query);
     let token = yandex_authorizer.exchange_code(query.code, None).await;
     let mut storage = page_context.storage.lock().await;
     login_user_using_token!(token, session, storage, auth, YandexAuthorizer);
     Redirect::to(PROFILE_URI)
-}
-
-async fn login(user: &User, mut auth: AuthContext) -> Result<()> {
-    if let Err(e) = auth.login(user).await {
-        Err(anyhow::Error::msg(e.to_string()))
-    } else {
-        Ok(())
-    }
 }
 
 pub async fn serve_user_api_call(auth: AuthContext) -> impl IntoResponse {
