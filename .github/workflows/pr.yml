@@ -33,7 +33,7 @@ jobs:
       - name: Install Dependencies
         working-directory: ./ui
         run: |
-          npm ci
+          npm i -f
       - name: Node Build
         working-directory: ./ui
         run: |
