@@ -14,8 +14,8 @@ use oauth2::{
     basic::{BasicClient, BasicTokenType},
     reqwest::async_http_client,
     url::Url,
-    AccessToken, AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken,
-    EmptyExtraTokenFields, PkceCodeChallenge, PkceCodeVerifier, RedirectUrl, Scope,
+    AccessToken, AuthUrl, AuthorizationCode, AuthorizationRequest, ClientId, ClientSecret,
+    CsrfToken, EmptyExtraTokenFields, PkceCodeChallenge, PkceCodeVerifier, RedirectUrl, Scope,
     StandardTokenResponse, TokenUrl,
 };
 use reqwest::{Client, StatusCode};
@@ -160,6 +160,42 @@ pub struct YandexAuthorizer {
     provider: OAuthProvider,
 }
 
+fn make_auth_request<'a>(
+    client: &'a BasicClient,
+    provider: &OAuthProvider,
+) -> AuthorizationRequest<'a> {
+    let request = client.authorize_url(CsrfToken::new_random);
+    request.add_scopes(
+        provider
+            .scopes
+            .iter()
+            .map(|scope| Scope::new(scope.clone())),
+    )
+}
+
+async fn exchange_code(
+    client: &BasicClient,
+    code: String,
+    pkce_code_verifier: Option<PkceCodeVerifier>,
+) -> Result<StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>> {
+    let result = match pkce_code_verifier {
+        Some(verifier) => {
+            client
+                .exchange_code(AuthorizationCode::new(code))
+                .set_pkce_verifier(verifier)
+                .request_async(async_http_client)
+                .await?
+        }
+        None => {
+            client
+                .exchange_code(AuthorizationCode::new(code))
+                .request_async(async_http_client)
+                .await?
+        }
+    };
+    Ok(result)
+}
+
 impl GoogleAuthorizer {
     pub fn new<P: AsRef<Path>>(db_path: P) -> Result<GoogleAuthorizer> {
         let (client, provider) = create_client_and_provider(
@@ -264,12 +300,8 @@ impl YandexAuthorizer {
 #[async_trait]
 impl Authorizer for GoogleAuthorizer {
     fn generate_authorize_url(&self) -> GeneratedUrl {
+        let request = make_auth_request(&self.client, &self.provider);
         let (pkce_code_challenge, pkce_code_verifier) = PkceCodeChallenge::new_random_sha256();
-
-        let mut request = self.client.authorize_url(CsrfToken::new_random);
-        for scope in self.provider.scopes.iter() {
-            request = request.add_scope(Scope::new(scope.clone()));
-        }
         let (authorize_url, csrf_state) = request.set_pkce_challenge(pkce_code_challenge).url();
         GeneratedUrl {
             url: authorize_url,
@@ -283,32 +315,14 @@ impl Authorizer for GoogleAuthorizer {
         code: String,
         pkce_code_verifier: Option<PkceCodeVerifier>,
     ) -> Result<StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>> {
-        let result = match pkce_code_verifier {
-            Some(verifier) => {
-                self.client
-                    .exchange_code(AuthorizationCode::new(code))
-                    .set_pkce_verifier(verifier)
-                    .request_async(async_http_client)
-                    .await?
-            }
-            None => {
-                self.client
-                    .exchange_code(AuthorizationCode::new(code))
-                    .request_async(async_http_client)
-                    .await?
-            }
-        };
-        Ok(result)
+        exchange_code(&self.client, code, pkce_code_verifier).await
     }
 }
 
 #[async_trait]
 impl Authorizer for GithubAuthorizer {
     fn generate_authorize_url(&self) -> GeneratedUrl {
-        let mut request = self.client.authorize_url(CsrfToken::new_random);
-        for scope in self.provider.scopes.iter() {
-            request = request.add_scope(Scope::new(scope.clone()));
-        }
+        let request = make_auth_request(&self.client, &self.provider);
         let (authorize_url, csrf_state) = request.url();
         GeneratedUrl {
             url: authorize_url,
@@ -320,24 +334,16 @@ impl Authorizer for GithubAuthorizer {
     async fn exchange_code(
         &self,
         code: String,
-        _pkce_code_verifier: Option<PkceCodeVerifier>,
+        pkce_code_verifier: Option<PkceCodeVerifier>,
     ) -> Result<StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>> {
-        let result = self
-            .client
-            .exchange_code(AuthorizationCode::new(code))
-            .request_async(async_http_client)
-            .await?;
-        Ok(result)
+        exchange_code(&self.client, code, pkce_code_verifier).await
     }
 }
 
 #[async_trait]
 impl Authorizer for YandexAuthorizer {
     fn generate_authorize_url(&self) -> GeneratedUrl {
-        let mut request = self.client.authorize_url(CsrfToken::new_random);
-        for scope in self.provider.scopes.iter() {
-            request = request.add_scope(Scope::new(scope.clone()));
-        }
+        let request = make_auth_request(&self.client, &self.provider);
         let (authorize_url, csrf_state) = request.url();
         GeneratedUrl {
             url: authorize_url,
@@ -349,14 +355,9 @@ impl Authorizer for YandexAuthorizer {
     async fn exchange_code(
         &self,
         code: String,
-        _pkce_code_verifier: Option<PkceCodeVerifier>,
+        pkce_code_verifier: Option<PkceCodeVerifier>,
     ) -> Result<StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>> {
-        let result = self
-            .client
-            .exchange_code(AuthorizationCode::new(code))
-            .request_async(async_http_client)
-            .await?;
-        Ok(result)
+        exchange_code(&self.client, code, pkce_code_verifier).await
     }
 }
 
