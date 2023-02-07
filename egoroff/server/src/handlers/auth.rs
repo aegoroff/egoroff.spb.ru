@@ -87,10 +87,10 @@ pub async fn serve_profile(State(page_context): State<Arc<PageContext>>) -> impl
 }
 
 macro_rules! login_user_using_token {
-    ($token:expr, $session:ident, $storage:ident, $auth:ident, $type:tt) => {{
+    ($token:expr, $session:ident, $storage:ident, $auth:ident, $authorizer:ident) => {{
         match $token {
             Ok(token) => {
-                let user = $type::get_user(token.access_token()).await;
+                let user = $authorizer.get_user(token.access_token()).await;
                 match user {
                     Ok(u) => {
                         drop($session);
@@ -156,7 +156,7 @@ pub async fn google_oauth_callback(
                 .exchange_code(query.code, Some(pkce_code_verifier))
                 .await;
             let mut storage = page_context.storage.lock().await;
-            login_user_using_token!(token, session, storage, auth, GoogleAuthorizer);
+            login_user_using_token!(token, session, storage, auth, google_authorizer);
         }
         None => {
             tracing::error!("No code verifier from session");
@@ -177,7 +177,7 @@ pub async fn github_oauth_callback(
     validate_csrf!(GITHUB_CSRF_KEY, session, query);
     let token = github_authorizer.exchange_code(query.code, None).await;
     let mut storage = page_context.storage.lock().await;
-    login_user_using_token!(token, session, storage, auth, GithubAuthorizer);
+    login_user_using_token!(token, session, storage, auth, github_authorizer);
     Redirect::to(PROFILE_URI)
 }
 
@@ -191,7 +191,7 @@ pub async fn yandex_oauth_callback(
     validate_csrf!(YANDEX_CSRF_KEY, session, query);
     let token = yandex_authorizer.exchange_code(query.code, None).await;
     let mut storage = page_context.storage.lock().await;
-    login_user_using_token!(token, session, storage, auth, YandexAuthorizer);
+    login_user_using_token!(token, session, storage, auth, yandex_authorizer);
     Redirect::to(PROFILE_URI)
 }
 

@@ -136,13 +136,14 @@ impl ToUser for YandexUser {
 }
 
 #[async_trait]
-pub trait Authorizer {
+pub trait Authorizer<T> {
     fn generate_authorize_url(&self) -> GeneratedUrl;
     async fn exchange_code(
         &self,
         code: String,
         pkce_code_verifier: Option<PkceCodeVerifier>,
     ) -> Result<StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>>;
+    async fn get_user(&self, token: &AccessToken) -> Result<T>;
 }
 
 pub struct GoogleAuthorizer {
@@ -206,8 +207,54 @@ impl GoogleAuthorizer {
         )?;
         Ok(Self { client, provider })
     }
+}
 
-    pub async fn get_user(token: &AccessToken) -> Result<GoogleUser> {
+impl GithubAuthorizer {
+    pub fn new<P: AsRef<Path>>(db_path: P) -> Result<GithubAuthorizer> {
+        let (client, provider) = create_client_and_provider(
+            db_path,
+            "github",
+            "https://github.com/login/oauth/authorize",
+            "https://github.com/login/oauth/access_token",
+        )?;
+        Ok(Self { client, provider })
+    }
+}
+
+impl YandexAuthorizer {
+    pub fn new<P: AsRef<Path>>(db_path: P) -> Result<YandexAuthorizer> {
+        let (client, provider) = create_client_and_provider(
+            db_path,
+            "yandex",
+            "https://oauth.yandex.ru/authorize",
+            "https://oauth.yandex.ru/token",
+        )?;
+        Ok(Self { client, provider })
+    }
+}
+
+#[async_trait]
+impl Authorizer<GoogleUser> for GoogleAuthorizer {
+    fn generate_authorize_url(&self) -> GeneratedUrl {
+        let request = make_auth_request(&self.client, &self.provider);
+        let (pkce_code_challenge, pkce_code_verifier) = PkceCodeChallenge::new_random_sha256();
+        let (authorize_url, csrf_state) = request.set_pkce_challenge(pkce_code_challenge).url();
+        GeneratedUrl {
+            url: authorize_url,
+            csrf_state,
+            verifier: Some(pkce_code_verifier),
+        }
+    }
+
+    async fn exchange_code(
+        &self,
+        code: String,
+        pkce_code_verifier: Option<PkceCodeVerifier>,
+    ) -> Result<StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>> {
+        exchange_code(&self.client, code, pkce_code_verifier).await
+    }
+
+    async fn get_user(&self, token: &AccessToken) -> Result<GoogleUser> {
         let uri = "https://www.googleapis.com/oauth2/v3/userinfo";
 
         let auth_value = format!("Bearer {}", token.secret());
@@ -225,18 +272,27 @@ impl GoogleAuthorizer {
     }
 }
 
-impl GithubAuthorizer {
-    pub fn new<P: AsRef<Path>>(db_path: P) -> Result<GithubAuthorizer> {
-        let (client, provider) = create_client_and_provider(
-            db_path,
-            "github",
-            "https://github.com/login/oauth/authorize",
-            "https://github.com/login/oauth/access_token",
-        )?;
-        Ok(Self { client, provider })
+#[async_trait]
+impl Authorizer<GithubUser> for GithubAuthorizer {
+    fn generate_authorize_url(&self) -> GeneratedUrl {
+        let request = make_auth_request(&self.client, &self.provider);
+        let (authorize_url, csrf_state) = request.url();
+        GeneratedUrl {
+            url: authorize_url,
+            csrf_state,
+            verifier: None,
+        }
     }
 
-    pub async fn get_user(token: &AccessToken) -> Result<GithubUser> {
+    async fn exchange_code(
+        &self,
+        code: String,
+        pkce_code_verifier: Option<PkceCodeVerifier>,
+    ) -> Result<StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>> {
+        exchange_code(&self.client, code, pkce_code_verifier).await
+    }
+
+    async fn get_user(&self, token: &AccessToken) -> Result<GithubUser> {
         let uri = "https://api.github.com/user";
 
         let auth_value = format!("Bearer {}", token.secret());
@@ -261,18 +317,27 @@ impl GithubAuthorizer {
     }
 }
 
-impl YandexAuthorizer {
-    pub fn new<P: AsRef<Path>>(db_path: P) -> Result<YandexAuthorizer> {
-        let (client, provider) = create_client_and_provider(
-            db_path,
-            "yandex",
-            "https://oauth.yandex.ru/authorize",
-            "https://oauth.yandex.ru/token",
-        )?;
-        Ok(Self { client, provider })
+#[async_trait]
+impl Authorizer<YandexUser> for YandexAuthorizer {
+    fn generate_authorize_url(&self) -> GeneratedUrl {
+        let request = make_auth_request(&self.client, &self.provider);
+        let (authorize_url, csrf_state) = request.url();
+        GeneratedUrl {
+            url: authorize_url,
+            csrf_state,
+            verifier: None,
+        }
     }
 
-    pub async fn get_user(token: &AccessToken) -> Result<YandexUser> {
+    async fn exchange_code(
+        &self,
+        code: String,
+        pkce_code_verifier: Option<PkceCodeVerifier>,
+    ) -> Result<StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>> {
+        exchange_code(&self.client, code, pkce_code_verifier).await
+    }
+
+    async fn get_user(&self, token: &AccessToken) -> Result<YandexUser> {
         let uri = "https://login.yandex.ru/info?format=json";
 
         let auth_value = format!("OAuth {}", token.secret());
@@ -294,70 +359,6 @@ impl YandexAuthorizer {
             let user = response.json::<YandexUser>().await?;
             Ok(user)
         }
-    }
-}
-
-#[async_trait]
-impl Authorizer for GoogleAuthorizer {
-    fn generate_authorize_url(&self) -> GeneratedUrl {
-        let request = make_auth_request(&self.client, &self.provider);
-        let (pkce_code_challenge, pkce_code_verifier) = PkceCodeChallenge::new_random_sha256();
-        let (authorize_url, csrf_state) = request.set_pkce_challenge(pkce_code_challenge).url();
-        GeneratedUrl {
-            url: authorize_url,
-            csrf_state,
-            verifier: Some(pkce_code_verifier),
-        }
-    }
-
-    async fn exchange_code(
-        &self,
-        code: String,
-        pkce_code_verifier: Option<PkceCodeVerifier>,
-    ) -> Result<StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>> {
-        exchange_code(&self.client, code, pkce_code_verifier).await
-    }
-}
-
-#[async_trait]
-impl Authorizer for GithubAuthorizer {
-    fn generate_authorize_url(&self) -> GeneratedUrl {
-        let request = make_auth_request(&self.client, &self.provider);
-        let (authorize_url, csrf_state) = request.url();
-        GeneratedUrl {
-            url: authorize_url,
-            csrf_state,
-            verifier: None,
-        }
-    }
-
-    async fn exchange_code(
-        &self,
-        code: String,
-        pkce_code_verifier: Option<PkceCodeVerifier>,
-    ) -> Result<StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>> {
-        exchange_code(&self.client, code, pkce_code_verifier).await
-    }
-}
-
-#[async_trait]
-impl Authorizer for YandexAuthorizer {
-    fn generate_authorize_url(&self) -> GeneratedUrl {
-        let request = make_auth_request(&self.client, &self.provider);
-        let (authorize_url, csrf_state) = request.url();
-        GeneratedUrl {
-            url: authorize_url,
-            csrf_state,
-            verifier: None,
-        }
-    }
-
-    async fn exchange_code(
-        &self,
-        code: String,
-        pkce_code_verifier: Option<PkceCodeVerifier>,
-    ) -> Result<StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>> {
-        exchange_code(&self.client, code, pkce_code_verifier).await
     }
 }
 
