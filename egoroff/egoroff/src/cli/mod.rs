@@ -1,7 +1,6 @@
-
+pub mod migrate;
 pub mod server;
 pub mod version;
-pub mod migrate;
 
 pub const SERVER_SUBCOMMAND: &str = "server";
 pub const SERVER_DESCRIPTION: &str = "Run the server";

@@ -7,7 +7,6 @@ const LINK_ELT: &str = "link";
 const ENTRY_ELT: &str = "entry";
 const AUTHOR_ELT: &str = "author";
 
-
 pub fn from_small_posts(posts: Vec<SmallPost>) -> Result<String> {
     let mut builder = Builder::new();
 

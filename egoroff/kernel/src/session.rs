@@ -4,7 +4,7 @@ use std::{
 };
 
 use async_session::{async_trait, serde_json, Result, Session, SessionStore};
-use base64::{Engine as _, engine::general_purpose};
+use base64::{engine::general_purpose, Engine as _};
 use chrono::Utc;
 use rusqlite::{params, Connection};
 
@@ -137,11 +137,7 @@ impl SessionStore for SqliteSessionStore {
     async fn destroy_session(&self, session: Session) -> Result {
         let id = session.id();
         let conn = SqliteSessionStore::create_connection(&self.path)?;
-        let mut stmt = conn.prepare(
-            r#"
-            DELETE FROM session WHERE id = ?
-            "#,
-        )?;
+        let mut stmt = conn.prepare("DELETE FROM session WHERE id = ?")?;
 
         stmt.execute(params![id])?;
 
@@ -150,11 +146,7 @@ impl SessionStore for SqliteSessionStore {
 
     async fn clear_store(&self) -> Result {
         let conn = SqliteSessionStore::create_connection(&self.path)?;
-        let mut stmt = conn.prepare(
-            r#"
-            DELETE FROM session
-            "#,
-        )?;
+        let mut stmt = conn.prepare("DELETE FROM session")?;
 
         stmt.execute([])?;
 

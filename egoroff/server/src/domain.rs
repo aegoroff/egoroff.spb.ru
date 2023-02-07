@@ -1,10 +1,11 @@
-use std::{path::PathBuf, sync::Arc, collections::HashSet};
+use std::{collections::HashSet, path::PathBuf, sync::Arc};
 
 use axum_login::RequireAuthorizationLayer;
 use futures::lock::Mutex;
 use kernel::{
     domain::{ApiResult, User},
-    graph::{SiteGraph, SiteSection}, sqlite::Sqlite,
+    graph::{SiteGraph, SiteSection},
+    sqlite::Sqlite,
 };
 use oauth2::CsrfToken;
 use serde::{Deserialize, Serialize};

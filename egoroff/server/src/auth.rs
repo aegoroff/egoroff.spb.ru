@@ -391,8 +391,12 @@ where
     ) -> std::result::Result<Option<Self::User>, eyre::Error> {
         let storage = Sqlite::open(self.db_path.as_path(), Mode::ReadOnly)?;
         let mut id_parts = user_id.split('_');
-        let provider = id_parts.next().ok_or_else(|| eyre::Error::msg("invalid id"))?;
-        let federated_id = id_parts.next().ok_or_else(|| eyre::Error::msg("invalid id"))?;
+        let provider = id_parts
+            .next()
+            .ok_or_else(|| eyre::Error::msg("invalid id"))?;
+        let federated_id = id_parts
+            .next()
+            .ok_or_else(|| eyre::Error::msg("invalid id"))?;
         let user = storage.get_user(federated_id, provider);
         match user {
             Ok(user) => Ok(Some(user)),

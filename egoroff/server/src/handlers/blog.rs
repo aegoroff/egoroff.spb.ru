@@ -283,13 +283,9 @@ pub async fn redirect_to_real_document(
 fn updated_response<T, E: Display>(result: Result<T, E>) -> impl IntoResponse {
     if let Err(e) = result {
         let error = format!("{e}");
-        internal_server_error_response(Json(OperationResult {
-            result: &error,
-        }))
+        internal_server_error_response(Json(OperationResult { result: &error }))
     } else {
-        success_response(Json(OperationResult {
-            result: "success",
-        }))
+        success_response(Json(OperationResult { result: "success" }))
     }
 }
 

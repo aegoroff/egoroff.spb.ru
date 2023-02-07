@@ -2,7 +2,7 @@ use std::path::Path;
 
 use axum::{
     body::{Bytes, Full, StreamBody},
-    http::{header, HeaderValue, self},
+    http::{self, header, HeaderValue},
     response::{IntoResponse, Response},
     BoxError,
 };
@@ -224,7 +224,7 @@ impl Redirect {
     pub fn permanent(uri: &str) -> Self {
         Self::with_status_code(StatusCode::PERMANENT_REDIRECT, uri)
     }
-    
+
     /// Create a new [`Redirect`] that uses a [`308 Permanent Redirect`][mdn] status code.
     ///
     /// # Panics

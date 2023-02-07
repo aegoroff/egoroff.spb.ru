@@ -1,4 +1,4 @@
-use clap::{command, crate_name, Command, arg, ArgAction};
+use clap::{arg, command, crate_name, ArgAction, Command};
 
 mod cli;
 
@@ -11,11 +11,7 @@ async fn main() {
         .subcommand(
             Command::new(cli::MIGRATE_SUBCOMMAND)
                 .about(cli::MIGRATE_DESCRIPTION)
-                .arg(
-                    arg!(-u --uri <URI>)
-                        .required(true)
-                        .help("All posts URI"),
-                )
+                .arg(arg!(-u --uri <URI>).required(true).help("All posts URI"))
                 .arg(
                     arg!(-d --dbpath <DBPATH>)
                         .required(true)

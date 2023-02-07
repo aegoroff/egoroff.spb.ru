@@ -128,7 +128,7 @@ mod tests {
         // Assert
         assert_eq!(r.to_string().as_str(), "http://localhost/x/y");
     }
-    
+
     #[test]
     fn append_query() {
         // Arrange

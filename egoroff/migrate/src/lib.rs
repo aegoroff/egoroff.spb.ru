@@ -92,8 +92,6 @@ async fn from_files(files_path: &str, db_path: &str) {
             continue;
         }
     }
-
-    
 }
 
 async fn from_uri(uri: &str, db_path: &str) {

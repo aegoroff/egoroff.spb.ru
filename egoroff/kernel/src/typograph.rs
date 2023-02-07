@@ -1,8 +1,8 @@
+use anyhow::Result;
 use std::cell::RefCell;
 use std::collections::HashSet;
 use std::rc::Rc;
 use std::{borrow::Cow, iter};
-use anyhow::Result;
 
 use lol_html::{
     element,

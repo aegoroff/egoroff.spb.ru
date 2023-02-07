@@ -131,10 +131,6 @@ pub async fn serve_index_post(
     }
     (
         StatusCode::CREATED,
-        [(
-            http::header::LOCATION,
-            format!("{ME}blog/{post_id}.html"),
-        )]
-        .into_response(),
+        [(http::header::LOCATION, format!("{ME}blog/{post_id}.html"))].into_response(),
     )
 }

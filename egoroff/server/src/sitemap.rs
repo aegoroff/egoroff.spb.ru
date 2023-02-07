@@ -14,7 +14,10 @@ struct Url<'a> {
     pub priority: &'a str,
 }
 
-pub fn make_site_map(apache_docs: Vec<crate::domain::Apache>, post_ids: Vec<i64>) -> Result<String> {
+pub fn make_site_map(
+    apache_docs: Vec<crate::domain::Apache>,
+    post_ids: Vec<i64>,
+) -> Result<String> {
     let mut builder = Builder::new();
 
     builder.write_attributed_start_tag(
@@ -51,7 +54,7 @@ pub fn make_site_map(apache_docs: Vec<crate::domain::Apache>, post_ids: Vec<i64>
         };
         write_url(&mut builder, d)?;
     }
-    
+
     for id in post_ids {
         let d = Url {
             location: &format!("{SITE}blog/{id}.html"),
