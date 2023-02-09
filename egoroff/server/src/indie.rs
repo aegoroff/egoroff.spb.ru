@@ -117,15 +117,15 @@ impl<ResBody> Clone for Indie<ResBody> {
     }
 }
 
-impl<ReqBody, ResBody> AuthorizeRequest<ReqBody> for Indie<ResBody>
+impl<Req, Resp> AuthorizeRequest<Req> for Indie<Resp>
 where
-    ResBody: HttpBody + Default,
+    Resp: HttpBody + Default,
 {
-    type ResponseBody = ResBody;
+    type ResponseBody = Resp;
 
     fn authorize(
         &mut self,
-        request: &mut Request<ReqBody>,
+        request: &mut Request<Req>,
     ) -> Result<(), Response<Self::ResponseBody>> {
         let unauthorized_response = Response::builder()
             .status(http::StatusCode::UNAUTHORIZED)
@@ -172,12 +172,9 @@ pub struct RequireIndieAuthorizationLayer;
 impl RequireIndieAuthorizationLayer {
     /// Authorizes requests by requiring valid Indie auth token in authorization header, otherwise it rejects
     /// with [`http::StatusCode::UNAUTHORIZED`].
-    pub fn auth<ResBody>(
+    pub fn auth<Resp: HttpBody + Default>(
         public_key_path: Arc<String>,
-    ) -> tower_http::auth::RequireAuthorizationLayer<Indie<ResBody>>
-    where
-        ResBody: HttpBody + Default,
-    {
+    ) -> tower_http::auth::RequireAuthorizationLayer<Indie<Resp>> {
         tower_http::auth::RequireAuthorizationLayer::custom(Indie::<_> {
             public_key_path,
             _body_type: PhantomData,
