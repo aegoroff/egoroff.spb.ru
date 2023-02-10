@@ -88,8 +88,6 @@ async fn from_files(files_path: &str, db_path: &str) {
                 };
                 storage.upsert_post(post).unwrap();
             }
-        } else {
-            continue;
         }
     }
 }

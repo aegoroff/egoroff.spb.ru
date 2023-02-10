@@ -110,7 +110,7 @@ impl MicropubFormBuilder {
 
         if let Some(entry_type) = json_create.entry_type.first() {
             // Normalizes h-entry or h-food into entry and food
-            builder.set_h(entry_type.strip_prefix("h-").unwrap_or(entry_type).into())
+            builder.set_h(entry_type.strip_prefix("h-").unwrap_or(entry_type).into());
         }
 
         for (p, v) in json_create.properties.0 {
