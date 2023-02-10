@@ -22,7 +22,8 @@ pub struct SiteSection {
 }
 
 impl SiteSection {
-    #[must_use] pub fn clone_children(&self, active: &str) -> Option<Vec<SiteSection>> {
+    #[must_use]
+    pub fn clone_children(&self, active: &str) -> Option<Vec<SiteSection>> {
         self.children.as_ref().map(|sections| {
             sections
                 .iter()
@@ -45,7 +46,8 @@ pub struct SiteGraph {
 }
 
 impl SiteGraph {
-    #[must_use] pub fn new(root: SiteSection) -> Self {
+    #[must_use]
+    pub fn new(root: SiteSection) -> Self {
         let mut g = SiteGraph {
             g: DiGraphMap::new(),
             next_id: 1,
@@ -67,17 +69,9 @@ impl SiteGraph {
     }
 
     fn new_edges(&mut self, root_id: i32) {
-        let root = match self.map.get(&root_id) {
-            Some(x) => x,
-            None => return,
-        };
+        let Some(root) = self.map.get(&root_id) else { return };
 
-        let root_clone = root.clone();
-
-        let children = match root_clone.children {
-            Some(x) => x,
-            None => return,
-        };
+        let Some(children) = root.clone().children else { return };
 
         if children.is_empty() {
             return;
@@ -90,12 +84,14 @@ impl SiteGraph {
         }
     }
 
-    #[must_use] pub fn get_section(&self, id: &str) -> Option<&SiteSection> {
+    #[must_use]
+    pub fn get_section(&self, id: &str) -> Option<&SiteSection> {
         let ix = self.search.get(id)?;
         self.map.get(ix)
     }
 
-    #[must_use] pub fn full_path(&self, id: &str) -> String {
+    #[must_use]
+    pub fn full_path(&self, id: &str) -> String {
         let node_id = match self.search.get(id) {
             Some(x) => *x,
             None => return String::new(),
@@ -121,7 +117,8 @@ impl SiteGraph {
         }
     }
 
-    #[must_use] pub fn breadcrumbs(&self, uri: &str) -> (Vec<&SiteSection>, String) {
+    #[must_use]
+    pub fn breadcrumbs(&self, uri: &str) -> (Vec<&SiteSection>, String) {
         let root = self.get_section("/").unwrap();
         let mut current = String::from(uri);
 
@@ -142,7 +139,8 @@ impl SiteGraph {
         (parent_sections, current)
     }
 
-    #[must_use] pub fn make_title_path(&self, uri: &str) -> String {
+    #[must_use]
+    pub fn make_title_path(&self, uri: &str) -> String {
         if uri == SEP || uri.is_empty() {
             return String::new();
         }

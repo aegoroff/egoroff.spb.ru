@@ -132,15 +132,11 @@ where
             .body(Default::default())
             .unwrap();
 
-        let value = if let Some(h) = request.headers().get("authorization") {
-            h
-        } else {
+        let Some(value) = request.headers().get("authorization") else {
             tracing::error!("{}", IndieAuthError::MissingAuthorizationHeader.to_string());
             return Err(unauthorized_response);
         };
-        let auth_header = if let Ok(val) = value.to_str() {
-            val
-        } else {
+        let Ok(auth_header) = value.to_str() else {
             tracing::error!(
                 "{}",
                 IndieAuthError::MissingAuthorizationHeaderValue.to_string()
@@ -148,9 +144,7 @@ where
             return Err(unauthorized_response);
         };
 
-        let token = if let Some(val) = auth_header.strip_prefix("Bearer ") {
-            val
-        } else {
+        let Some(token) = auth_header.strip_prefix("Bearer ") else {
             tracing::error!("{}", IndieAuthError::NotStarterFromBearer.to_string());
             return Err(unauthorized_response);
         };

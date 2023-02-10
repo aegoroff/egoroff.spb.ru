@@ -42,9 +42,7 @@ pub async fn serve_auth(
             jti: None,
         };
 
-        let state = if let Some(state) = query.state {
-            state
-        } else {
+        let Some(state) = query.state else {
             tracing::error!("No state extracted from query");
             return bad_request_error_response(Empty::new());
         };

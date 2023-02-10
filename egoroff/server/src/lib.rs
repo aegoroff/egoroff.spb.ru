@@ -276,7 +276,7 @@ pub fn create_routes(
                 components.add_security_scheme(
                     "authorization",
                     SecurityScheme::ApiKey(ApiKey::Header(ApiKeyValue::new("authorization"))),
-                )
+                );
             }
         }
     }

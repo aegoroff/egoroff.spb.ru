@@ -178,13 +178,12 @@ impl MicropubFormBuilder {
     }
 
     fn handle_name(&mut self, val: MicropubPropertyValue) {
-        match val {
-            MicropubPropertyValue::Values(vals) => {
-                vals.first()
-                    .iter()
-                    .for_each(|s| self.set_name((**s).clone()));
-            }
-            _ => tracing::error!("unexpected name type"),
+        if let MicropubPropertyValue::Values(vals) = val {
+            vals.first()
+                .iter()
+                .for_each(|s| self.set_name((**s).clone()));
+        } else {
+            tracing::error!("unexpected name type");
         };
     }
 
@@ -201,15 +200,14 @@ impl MicropubFormBuilder {
     }
 
     fn handle_published(&mut self, val: MicropubPropertyValue) {
-        match val {
-            MicropubPropertyValue::Values(dates) => {
-                if dates.len() != 1 {
-                    tracing::error!("unexpected published dates length");
-                    return;
-                }
-                self.set_created_at(dates[0].clone())
+        if let MicropubPropertyValue::Values(dates) = val {
+            if dates.len() != 1 {
+                tracing::error!("unexpected published dates length");
+                return;
             }
-            _ => tracing::error!("unexpected published type"),
+            self.set_created_at(dates[0].clone());
+        } else {
+            tracing::error!("unexpected published type");
         }
     }
 
@@ -220,7 +218,7 @@ impl MicropubFormBuilder {
                     tracing::error!("unexpected slugs length");
                     return;
                 }
-                self.set_slug(slugs[0].clone())
+                self.set_slug(slugs[0].clone());
             }
             MicropubPropertyValue::Value(slug) => self.set_slug(slug),
             _ => tracing::error!("unexpected slug type"),
@@ -260,16 +258,16 @@ impl MicropubFormBuilder {
     }
 
     fn set_content_type(&mut self, val: String) {
-        self.content_type = Some(val)
+        self.content_type = Some(val);
     }
 
     fn add_category(&mut self, val: String) {
         if self.category.is_none() {
-            self.category = Some(vec![])
+            self.category = Some(vec![]);
         }
 
         if let Some(categories) = self.category.as_mut() {
-            categories.push(val)
+            categories.push(val);
         }
     }
 
@@ -278,15 +276,15 @@ impl MicropubFormBuilder {
     }
 
     fn set_created_at(&mut self, val: String) {
-        self.created_at = Some(val)
+        self.created_at = Some(val);
     }
 
     fn set_slug(&mut self, val: String) {
-        self.slug = Some(val)
+        self.slug = Some(val);
     }
 
     fn set_bookmark_of(&mut self, val: String) {
-        self.bookmark_of = Some(val)
+        self.bookmark_of = Some(val);
     }
 
     fn add_photo(&mut self, val: Photo) {
@@ -295,7 +293,7 @@ impl MicropubFormBuilder {
         }
 
         if let Some(photos) = self.photos.as_mut() {
-            photos.push(val)
+            photos.push(val);
         }
     }
 
@@ -339,7 +337,7 @@ impl MicropubFormBuilder {
             }
             MicropubPropertyValue::ValueVec(photos) => {
                 for photo in photos {
-                    self.handle_photo(photo)
+                    self.handle_photo(photo);
                 }
             }
         }
@@ -398,7 +396,7 @@ impl MicropubForm {
                 content_key @ ("content" | "content[html]") => {
                     builder.set_content(v.into_owned());
                     if content_key == "content[html]" {
-                        builder.set_content_type("html".into())
+                        builder.set_content_type("html".into());
                     }
                 }
                 "category" | "category[]" => builder.add_category(v.into_owned()),

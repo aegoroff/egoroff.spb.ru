@@ -306,13 +306,13 @@ impl Authorizer<GithubUser> for GithubAuthorizer {
             .send()
             .await?;
         tracing::debug!("Get user status: {}", response.status());
-        if response.status() != StatusCode::OK {
+        if response.status() == StatusCode::OK {
+            let user = response.json::<GithubUser>().await?;
+            Ok(user)
+        } else {
             let error = response.text().await.unwrap_or_default();
             let err = anyhow::Error::msg(error);
             Err(err)
-        } else {
-            let user = response.json::<GithubUser>().await?;
-            Ok(user)
         }
     }
 }
@@ -351,13 +351,13 @@ impl Authorizer<YandexUser> for YandexAuthorizer {
             .send()
             .await?;
         tracing::debug!("Get user status: {}", response.status());
-        if response.status() != StatusCode::OK {
+        if response.status() == StatusCode::OK {
+            let user = response.json::<YandexUser>().await?;
+            Ok(user)
+        } else {
             let error = response.text().await.unwrap_or_default();
             let err = anyhow::Error::msg(error);
             Err(err)
-        } else {
-            let user = response.json::<YandexUser>().await?;
-            Ok(user)
         }
     }
 }

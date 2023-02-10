@@ -94,7 +94,7 @@ async fn serve_index(
     } else {
         let title = format!("{page}-я страница");
         context.insert(TITLE_KEY, &title);
-        uri = format!("{uri}{page}")
+        uri = format!("{uri}{page}");
     }
 
     let title_path = page_context.site_graph.make_title_path(&uri);

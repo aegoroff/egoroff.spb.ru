@@ -150,18 +150,15 @@ pub async fn google_oauth_callback(
     mut auth: AuthContext,
 ) -> impl IntoResponse {
     validate_csrf!(GOOGLE_CSRF_KEY, session, query);
-    match session.get::<PkceCodeVerifier>(PKCE_CODE_VERIFIER_KEY) {
-        Some(pkce_code_verifier) => {
-            let token = google_authorizer
-                .exchange_code(query.code, Some(pkce_code_verifier))
-                .await;
-            let mut storage = page_context.storage.lock().await;
-            login_user_using_token!(token, session, storage, auth, google_authorizer);
-        }
-        None => {
-            tracing::error!("No code verifier from session");
-            return Redirect::to(LOGIN_URI);
-        }
+    if let Some(pkce_code_verifier) = session.get::<PkceCodeVerifier>(PKCE_CODE_VERIFIER_KEY) {
+        let token = google_authorizer
+            .exchange_code(query.code, Some(pkce_code_verifier))
+            .await;
+        let mut storage = page_context.storage.lock().await;
+        login_user_using_token!(token, session, storage, auth, google_authorizer);
+    } else {
+        tracing::error!("No code verifier from session");
+        return Redirect::to(LOGIN_URI);
     }
 
     Redirect::to(PROFILE_URI)

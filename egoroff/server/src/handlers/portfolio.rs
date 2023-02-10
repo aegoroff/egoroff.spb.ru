@@ -54,11 +54,8 @@ pub async fn serve_apache_document(
 
     let doc = path.trim_end_matches(".html");
 
-    let doc = match map.get(doc) {
-        Some(item) => item,
-        None => {
-            return make_404_page(&mut context, &page_context.tera);
-        }
+    let Some(doc) = map.get(doc) else {
+        return make_404_page(&mut context, &page_context.tera);
     };
 
     let uri = page_context.site_graph.full_path("portfolio");
