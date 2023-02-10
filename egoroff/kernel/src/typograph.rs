@@ -97,7 +97,7 @@ pub fn typograph(html: &str) -> Result<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rstest::*;
+    use rstest::rstest;
 
     #[rstest]
     #[case("<p>a - b</p>", "<p>a&nbsp;&mdash; b</p>")]

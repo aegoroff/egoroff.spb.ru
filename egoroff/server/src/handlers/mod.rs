@@ -340,7 +340,7 @@ fn make_json_response<T: Default + Serialize>(result: Result<T>) -> impl IntoRes
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rstest::*;
+    use rstest::rstest;
 
     #[rstest]
     #[case("123", 123)]

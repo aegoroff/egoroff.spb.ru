@@ -395,7 +395,7 @@ impl MicropubForm {
             match &*k {
                 "access_token" => builder.set_access_token(v.into_owned()),
                 "h" => builder.set_h(v.into_owned()),
-                content_key @ "content" | content_key @ "content[html]" => {
+                content_key @ ("content" | "content[html]") => {
                     builder.set_content(v.into_owned());
                     if content_key == "content[html]" {
                         builder.set_content_type("html".into())

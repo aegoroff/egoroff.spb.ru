@@ -128,7 +128,7 @@ impl SessionStore for SqliteSessionStore {
               session = excluded.session
             "#,
         )?;
-        let expiry = &session.expiry().map(|expiry| expiry.timestamp());
+        let expiry = &session.expiry().map(chrono::DateTime::timestamp);
         let parameters = params![id, string, expiry];
         stmt.execute(parameters)?;
         Ok(session.into_cookie_value())

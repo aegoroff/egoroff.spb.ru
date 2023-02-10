@@ -16,7 +16,7 @@ impl Default for Builder {
 }
 
 impl Builder {
-    pub fn new() -> Self {
+    #[must_use] pub fn new() -> Self {
         Self {
             writer: Writer::new(Cursor::new(Vec::new())),
         }

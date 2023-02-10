@@ -260,7 +260,7 @@ impl IntoResponse for Redirect {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rstest::*;
+    use rstest::rstest;
 
     #[rstest]
     #[case("", "")]

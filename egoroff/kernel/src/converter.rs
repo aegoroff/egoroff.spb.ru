@@ -53,7 +53,7 @@ pub fn xml2html(input: &str) -> Result<String> {
                     BytesStart::new(*replace)
                 };
 
-                let original_attributes = e.attributes().filter_map(|attr| attr.ok());
+                let original_attributes = e.attributes().filter_map(std::result::Result::ok);
                 if *replace == "a" {
                     let mut href = String::new();
                     original_attributes.for_each(|a| {
@@ -67,7 +67,7 @@ pub fn xml2html(input: &str) -> Result<String> {
                                 _ => "/".to_string(),
                             },
                             "hame" => format!("/blog/{val}.html"),
-                            _ => "".to_string(),
+                            _ => String::new(),
                         };
                     });
                     if !href.is_empty() {
@@ -180,7 +180,7 @@ pub fn html2text(html: &str) -> Result<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rstest::*;
+    use rstest::rstest;
 
     #[rstest]
     #[case("<p>test \"a - b\"cd</p>", "<p>test \"a - b\"cd</p>")]

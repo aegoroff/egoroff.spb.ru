@@ -299,7 +299,7 @@ fn strip_extension(path: &str) -> &str {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rstest::*;
+    use rstest::rstest;
 
     #[rstest]
     #[case("1.html", "1")]

@@ -83,7 +83,7 @@ impl SiteGraph {
             return;
         }
 
-        for child in children.into_iter() {
+        for child in children {
             let child_id = self.new_node(child);
             self.new_edges(child_id);
             self.g.add_edge(root_id, child_id, 0);
@@ -160,7 +160,7 @@ impl SiteGraph {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rstest::*;
+    use rstest::rstest;
 
     #[rstest]
     #[case("aa", "/a/aa/")]

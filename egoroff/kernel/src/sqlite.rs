@@ -87,7 +87,7 @@ impl Storage for Sqlite {
                     [limit.to_string(), offset.to_string(), tag],
                     Sqlite::map_small_post_row,
                 )?;
-                files.filter_map(|r| r.ok()).collect()
+                files.filter_map(std::result::Result::ok).collect()
             }
             None => {
                 if let Some(period) = request.as_query_period() {
@@ -99,19 +99,19 @@ impl Storage for Sqlite {
                         [
                             period.from.timestamp(),
                             period.to.timestamp(),
-                            limit as i64,
-                            offset as i64,
+                            i64::from(limit),
+                            i64::from(offset),
                         ],
                         Sqlite::map_small_post_row,
                     )?;
-                    files.filter_map(|r| r.ok()).collect()
+                    files.filter_map(std::result::Result::ok).collect()
                 } else {
                     let mut stmt = self.conn.prepare(
                         "SELECT id, title, created, short_text, markdown \
                     FROM post WHERE is_public = 1 ORDER BY created DESC LIMIT ?1 OFFSET ?2",
                     )?;
                     let files = stmt.query_map([limit, offset], Sqlite::map_small_post_row)?;
-                    files.filter_map(|r| r.ok()).collect()
+                    files.filter_map(std::result::Result::ok).collect()
                 }
             }
         };
@@ -142,7 +142,7 @@ impl Storage for Sqlite {
                 text: row.get(4)?,
                 markdown: row.get(3)?,
                 is_public: row.get(5)?,
-                tags: tags.filter_map(|r| r.ok()).collect(),
+                tags: tags.filter_map(std::result::Result::ok).collect(),
             };
 
             Ok(post)
@@ -212,7 +212,7 @@ impl Storage for Sqlite {
             Ok(tag)
         })?;
 
-        Ok(files.filter_map(|r| r.ok()).collect())
+        Ok(files.filter_map(std::result::Result::ok).collect())
     }
 
     fn get_posts_create_dates(&self) -> Result<Vec<DateTime<Utc>>, Self::Err> {
@@ -220,7 +220,7 @@ impl Storage for Sqlite {
             .conn
             .prepare("SELECT created FROM post WHERE is_public = 1 ORDER BY created DESC")?;
         let dates = stmt.query_map([], |row| Ok(datetime_from_row!(row, 0)))?;
-        Ok(dates.filter_map(|r| r.ok()).collect())
+        Ok(dates.filter_map(std::result::Result::ok).collect())
     }
 
     fn get_posts_ids(&self) -> Result<Vec<i64>, Self::Err> {
@@ -231,7 +231,7 @@ impl Storage for Sqlite {
             let id: i64 = row.get(0)?;
             Ok(id)
         })?;
-        Ok(ids.filter_map(|r| r.ok()).collect())
+        Ok(ids.filter_map(std::result::Result::ok).collect())
     }
 
     fn get_oauth_provider(&self, name: &str) -> Result<crate::domain::OAuthProvider, Self::Err> {
@@ -252,7 +252,7 @@ impl Storage for Sqlite {
                 client_id: row.get(1)?,
                 secret: row.get(2)?,
                 redirect_url: row.get(3)?,
-                scopes: scopes.filter_map(|r| r.ok()).collect(),
+                scopes: scopes.filter_map(std::result::Result::ok).collect(),
             };
 
             Ok(provider)
@@ -328,14 +328,14 @@ impl Storage for Sqlite {
         let tags_query = stmt.query_map([limit, offset], |row| Ok((row.get(0)?, row.get(1)?)))?;
 
         let mut post_tags: HashMap<i64, Vec<String>> = tags_query
-            .filter_map(|r: Result<(i64, String), Self::Err>| r.ok())
+            .filter_map(std::result::Result::ok)
             .group_by(|(id, _tag)| *id)
             .into_iter()
             .map(|(id, g)| (id, g.map(|(_, tag)| tag).collect()))
             .collect();
 
         let posts = posts_query
-            .filter_map(|r| r.ok())
+            .filter_map(std::result::Result::ok)
             .map(|mut post| {
                 if let Some(tags) = post_tags.get_mut(&post.id) {
                     post.tags.append(tags);
@@ -405,7 +405,7 @@ impl Sqlite {
                 ON CONFLICT(post_id, tag) DO UPDATE SET post_id=?1, tag=?2",
         )?;
 
-        for t in p.tags.iter() {
+        for t in &p.tags {
             tag_statement.execute(params![t])?;
             post_tag_statement.execute(params![p.id, t])?;
         }
