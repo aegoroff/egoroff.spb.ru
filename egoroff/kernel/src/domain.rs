@@ -55,7 +55,7 @@ pub struct Post {
 }
 
 impl Post {
-    pub fn keywords(&self) -> String {
+    #[must_use] pub fn keywords(&self) -> String {
         self.tags.join(",")
     }
 }
@@ -75,7 +75,7 @@ pub struct Period {
 }
 
 impl PostsRequest {
-    pub fn as_query_period(&self) -> Option<Period> {
+    #[must_use] pub fn as_query_period(&self) -> Option<Period> {
         let year = self.year.unwrap_or(0);
         let month = self.month.unwrap_or(0);
         if year > 0 {

@@ -12,7 +12,7 @@ pub struct Resource {
 }
 
 impl Resource {
-    pub fn new(uri: &str) -> Option<Resource> {
+    #[must_use] pub fn new(uri: &str) -> Option<Resource> {
         let url = Url::parse(uri).ok()?;
         Some(Resource { url })
     }
