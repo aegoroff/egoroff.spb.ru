@@ -244,7 +244,7 @@ pub async fn serve_posts_admin_api(
     Query(request): Query<PostsRequest>,
 ) -> impl IntoResponse {
     let storage = page_context.storage.lock().await;
-    let result = archive::get_posts(storage, 10, request);
+    let result = archive::get_posts(&storage, 10, request);
     make_json_response(result)
 }
 

@@ -47,7 +47,7 @@ pub fn archive(storage: MutexGuard<Sqlite>) -> Result<Archive> {
     let dates: Vec<DateTime<Utc>> = storage.get_posts_create_dates()?;
     drop(storage);
 
-    let years = group_by_years(dates);
+    let years = group_by_years(&dates);
 
     let tags = aggregated_tags
         .iter()
@@ -63,7 +63,7 @@ pub fn archive(storage: MutexGuard<Sqlite>) -> Result<Archive> {
     Ok(Archive { tags, years })
 }
 
-fn group_by_years<'a>(dates: Vec<DateTime<Utc>>) -> Vec<Year<'a>> {
+fn group_by_years<'a>(dates: &[DateTime<Utc>]) -> Vec<Year<'a>> {
     let ygrp = dates
         .iter()
         .map(|dt| (dt.year(), dt.month()))
@@ -81,7 +81,7 @@ fn group_by_years<'a>(dates: Vec<DateTime<Utc>>) -> Vec<Year<'a>> {
                 name: MONTHS[k as usize - 1],
             };
             posts_in_year += m.posts;
-            months.push(m)
+            months.push(m);
         }
 
         let year = Year {
@@ -117,7 +117,7 @@ pub fn get_small_posts(
 }
 
 pub fn get_posts(
-    storage: MutexGuard<Sqlite>,
+    storage: &MutexGuard<Sqlite>,
     page_size: i32,
     request: PostsRequest,
 ) -> Result<ApiResult<Post>> {
@@ -147,7 +147,7 @@ fn update_short_text(mut posts: Vec<SmallPost>) -> Vec<SmallPost> {
     for mut post in &mut posts {
         if post.markdown {
             if let Ok(text) = markdown2html(&post.short_text) {
-                post.short_text = text
+                post.short_text = text;
             }
         }
     }
@@ -209,7 +209,7 @@ mod tests {
         let dates = vec![dt1, dt2, dt3, dt4];
 
         // act
-        let actual = group_by_years(dates);
+        let actual = group_by_years(&dates);
 
         // assert
         assert_eq!(2, actual.len());

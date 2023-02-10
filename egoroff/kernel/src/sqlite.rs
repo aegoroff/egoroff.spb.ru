@@ -153,7 +153,7 @@ impl Storage for Sqlite {
 
     fn upsert_post(&mut self, post: crate::domain::Post) -> Result<(), Self::Err> {
         let items = vec![post];
-        self.upsert(items, Sqlite::upsert_post)?;
+        self.upsert(&items, Sqlite::upsert_post)?;
         Ok(())
     }
 
@@ -430,13 +430,13 @@ impl Sqlite {
 
     fn upsert<T>(
         &mut self,
-        items: Vec<T>,
+        items: &[T],
         fn_execute: fn(&Transaction, &T) -> Result<usize, Error>,
     ) -> Result<usize, Error> {
         Sqlite::execute_with_retry(|| {
             let mut result: usize = 0;
             let tx = self.conn.transaction()?;
-            for item in &items {
+            for item in items {
                 let res = fn_execute(&tx, item)?;
                 result += res;
             }

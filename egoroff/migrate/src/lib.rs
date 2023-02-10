@@ -28,7 +28,7 @@ pub async fn run(uri: &str, db_path: &str, from_file: bool) {
     if from_file {
         from_files(uri, db_path).await;
     } else {
-        from_uri(uri, db_path).await
+        from_uri(uri, db_path).await;
     }
 }
 
