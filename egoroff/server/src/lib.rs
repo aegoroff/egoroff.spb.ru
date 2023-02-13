@@ -30,7 +30,8 @@ use tera::{try_get_value, Tera};
 use tokio::signal;
 use tower::ServiceBuilder;
 use tower_http::classify::ServerErrorsFailureClass;
-use tower_http::compression::CompressionLayer;
+use tower_http::compression::predicate::NotForContentType;
+use tower_http::compression::{CompressionLayer, DefaultPredicate, Predicate};
 use tower_http::cors::{Any, CorsLayer};
 use tower_http::limit::RequestBodyLimitLayer;
 use tower_http::trace::TraceLayer;
@@ -286,6 +287,14 @@ pub fn create_routes(
         .layer(Extension(github_authorizer.clone()))
         .layer(Extension(yandex_authorizer.clone()));
 
+    // build our custom compression predicate
+    // its recommended to still include `DefaultPredicate` as part of
+    // custom predicates
+    let compress_predicate = DefaultPredicate::new()
+        .and(NotForContentType::new("text/html"))
+        .and(NotForContentType::new("application/octet-stream"))
+        .and(NotForContentType::new("application/json"));
+
     let router = Router::new()
         .route("/auth", get(handlers::indie::serve_auth))
         .route("/admin", get(handlers::admin::serve_admin))
@@ -424,7 +433,7 @@ pub fn create_routes(
                 .layer(auth_layer)
                 .into_inner(),
         )
-        .layer(CompressionLayer::new())
+        .layer(CompressionLayer::new().compress_when(compress_predicate))
         .layer(RequestBodyLimitLayer::new(20 * 1024 * 1024))
         .layer(DefaultBodyLimit::disable())
         .with_state(page_context);
