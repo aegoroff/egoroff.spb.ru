@@ -22,6 +22,7 @@ use rand::Rng;
 use serde_json::Value;
 use std::collections::{HashMap, HashSet};
 use std::env;
+use std::path::Path;
 use std::sync::Arc;
 use std::time::Duration;
 use std::{fs::File, io::BufReader};
@@ -138,7 +139,7 @@ pub async fn run() {
         site_graph_clone,
         site_config,
         tera,
-        data_path,
+        &data_path,
         store_uri,
         certs_path.clone(),
     );
@@ -198,7 +199,7 @@ pub fn create_routes(
     site_graph: Arc<SiteGraph>,
     site_config: Config,
     tera: Arc<Tera>,
-    data_path: PathBuf,
+    data_path: &Path,
     store_uri: String,
     certs_path: String,
 ) -> Router {
@@ -474,8 +475,7 @@ async fn shutdown_signal(handle: Handle) {
 
 fn typograph(value: &Value, _: &HashMap<String, Value>) -> tera::Result<Value> {
     let s = try_get_value!("typograph", "value", String, value);
-    let result = typograph::typograph(&s);
-    match result {
+    match typograph::typograph(&s) {
         Ok(s) => Ok(Value::String(s)),
         Err(e) => Err(tera::Error::from(e.to_string())),
     }
