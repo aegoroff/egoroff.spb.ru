@@ -20,16 +20,17 @@ pub struct User {
 #[derive(Debug, Default, Clone, Deserialize, Serialize, ToSchema)]
 pub struct SmallPost {
     #[serde(rename(serialize = "Created"))]
+    #[schema(rename = "Created")]
     pub created: DateTime<Utc>,
     #[schema(example = 66)]
     pub id: i64,
-    #[schema(example = "Blake3")]
+    #[schema(example = "Blake3", rename = "Title")]
     #[serde(rename(serialize = "Title"))]
     pub title: String,
-    #[schema(example = "# About Blake3")]
+    #[schema(example = "# About Blake3", rename = "ShortText")]
     #[serde(rename(serialize = "ShortText"))]
     pub short_text: String,
-    #[serde(rename(serialize = "Markdown"))]
+    #[serde(skip_serializing)]
     pub markdown: bool,
 }
 
@@ -55,7 +56,8 @@ pub struct Post {
 }
 
 impl Post {
-    #[must_use] pub fn keywords(&self) -> String {
+    #[must_use]
+    pub fn keywords(&self) -> String {
         self.tags.join(",")
     }
 }
@@ -75,7 +77,8 @@ pub struct Period {
 }
 
 impl PostsRequest {
-    #[must_use] pub fn as_query_period(&self) -> Option<Period> {
+    #[must_use]
+    pub fn as_query_period(&self) -> Option<Period> {
         let year = self.year.unwrap_or(0);
         let month = self.month.unwrap_or(0);
         if year > 0 {
