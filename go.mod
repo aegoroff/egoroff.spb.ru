@@ -24,6 +24,6 @@ require (
 	github.com/vcraescu/go-paginator/v2 v2.0.0
 	golang.org/x/exp v0.0.0-20220212023102-3e31098684e2 // indirect
 	golang.org/x/net v0.7.0
-	golang.org/x/oauth2 v0.0.0-20221014153046-6fdb5e3db783
+	golang.org/x/oauth2 v0.5.0
 	gonum.org/v1/gonum v0.12.0
 )
