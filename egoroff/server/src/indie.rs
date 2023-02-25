@@ -9,7 +9,7 @@ use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, 
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
-use tower_http::auth::AuthorizeRequest;
+use tower_http::validate_request::ValidateRequest;
 use utoipa::ToSchema;
 
 pub const ME: &str = "https://www.egoroff.spb.ru/";
@@ -117,13 +117,13 @@ impl<ResBody> Clone for Indie<ResBody> {
     }
 }
 
-impl<Req, Resp> AuthorizeRequest<Req> for Indie<Resp>
+impl<Req, Resp> ValidateRequest<Req> for Indie<Resp>
 where
     Resp: HttpBody + Default,
 {
     type ResponseBody = Resp;
 
-    fn authorize(
+    fn validate(
         &mut self,
         request: &mut Request<Req>,
     ) -> Result<(), Response<Self::ResponseBody>> {
@@ -159,7 +159,7 @@ where
     }
 }
 
-/// A wrapper around [`tower_http::auth::RequireAuthorizationLayer`] which
+/// A wrapper around [`tower_http::validate_request::ValidateRequestHeaderLayer`] which
 /// provides login authorization.
 pub struct RequireIndieAuthorizationLayer;
 
@@ -168,8 +168,8 @@ impl RequireIndieAuthorizationLayer {
     /// with [`http::StatusCode::UNAUTHORIZED`].
     pub fn auth<Resp: HttpBody + Default>(
         public_key_path: Arc<String>,
-    ) -> tower_http::auth::RequireAuthorizationLayer<Indie<Resp>> {
-        tower_http::auth::RequireAuthorizationLayer::custom(Indie::<_> {
+    ) -> tower_http::validate_request::ValidateRequestHeaderLayer<Indie<Resp>> {
+        tower_http::validate_request::ValidateRequestHeaderLayer::custom(Indie::<_> {
             public_key_path,
             _body_type: PhantomData,
         })
