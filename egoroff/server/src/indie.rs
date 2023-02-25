@@ -123,10 +123,7 @@ where
 {
     type ResponseBody = Resp;
 
-    fn validate(
-        &mut self,
-        request: &mut Request<Req>,
-    ) -> Result<(), Response<Self::ResponseBody>> {
+    fn validate(&mut self, request: &mut Request<Req>) -> Result<(), Response<Self::ResponseBody>> {
         let unauthorized_response = Response::builder()
             .status(http::StatusCode::UNAUTHORIZED)
             .body(Default::default())
