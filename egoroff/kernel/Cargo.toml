@@ -23,10 +23,7 @@ base64 = "0.21.0"
 url = "2.3.1"
 futures = "0.3"
 utoipa = { version = "3.0.3", features = ["chrono", "time"] }
-
-[dependencies.rusqlite]
-version = "0.28"
-features = ["bundled", "chrono"]
+rusqlite = { version = "0.28", features = ["bundled", "chrono"] }
 
 [dev-dependencies]
 rstest = "0.16.0"
