@@ -13,9 +13,7 @@ migrate = { path = "../migrate", optional = true }
 clap = { version = "4.1.8", features = ["std", "color", "suggestions", "cargo"] }
 serde = { version = "1.0", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
-
-[target.'cfg(not(target_env = "msvc"))'.dependencies]
-tikv-jemallocator = "0.5"
+mimalloc-rust = "0.2"
 
 [features]
 migrating = ["migrate"]
