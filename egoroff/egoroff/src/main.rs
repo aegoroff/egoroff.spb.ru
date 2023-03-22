@@ -3,10 +3,17 @@ use clap::{arg, ArgAction};
 
 use clap::{command, crate_name, Command};
 
-use mimalloc_rust::GlobalMiMalloc;
+#[cfg(all(not(feature = "mimalloc"), not(all(feature = "jemalloc", not(target_env = "msvc")))))]
+use std::alloc::System as Alloc;
+
+#[cfg(feature = "mimalloc")]
+use mimalloc_rust::GlobalMiMalloc as Alloc;
+
+#[cfg(all(feature = "jemalloc", not(target_env = "msvc")))]
+use tikv_jemallocator::Jemalloc as Alloc;
 
 #[global_allocator]
-static GLOBAL_MIMALLOC: GlobalMiMalloc = GlobalMiMalloc;
+static GLOBAL_MIMALLOC: Alloc = Alloc;
 
 mod cli;
 
