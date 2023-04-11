@@ -362,7 +362,7 @@ impl Authorizer<YandexUser> for YandexAuthorizer {
     }
 }
 
-impl AuthUser<Role> for User {
+impl AuthUser<String, Role> for User {
     fn get_id(&self) -> String {
         format!("{}_{}", self.provider, self.federated_id)
     }
@@ -381,7 +381,7 @@ impl AuthUser<Role> for User {
 }
 
 #[async_trait]
-impl UserStore<Role> for UserStorage
+impl UserStore<String, Role> for UserStorage
 where
     Role: PartialOrd + PartialEq + Clone + Send + Sync + 'static,
 {
@@ -389,7 +389,7 @@ where
 
     async fn load_user(
         &self,
-        user_id: &str,
+        user_id: &String,
     ) -> std::result::Result<Option<Self::User>, eyre::Error> {
         let storage = Sqlite::open(self.db_path.as_path(), Mode::ReadOnly)?;
         let mut id_parts = user_id.split('_');

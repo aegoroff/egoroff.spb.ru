@@ -13,7 +13,7 @@ use tera::Tera;
 
 use crate::auth::Role;
 
-pub type RequireAuth = RequireAuthorizationLayer<User, Role>;
+pub type RequireAuth = RequireAuthorizationLayer<String, User, Role>;
 pub type Database = Arc<Mutex<Sqlite>>;
 pub type Cache = Arc<Mutex<HashSet<String>>>;
 

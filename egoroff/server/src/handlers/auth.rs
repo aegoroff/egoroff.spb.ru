@@ -11,7 +11,7 @@ use crate::{
     domain::AuthRequest,
 };
 
-type AuthContext = axum_login::extractors::AuthContext<User, UserStorage, Role>;
+type AuthContext = axum_login::extractors::AuthContext<String, User, UserStorage, Role>;
 
 const GOOGLE_CSRF_KEY: &str = "google_csrf_state";
 const GITHUB_CSRF_KEY: &str = "github_csrf_state";
