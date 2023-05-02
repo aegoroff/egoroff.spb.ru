@@ -25,5 +25,5 @@ require (
 	github.com/vcraescu/go-paginator/v2 v2.0.0
 	golang.org/x/net v0.9.0
 	golang.org/x/oauth2 v0.7.0
-	gonum.org/v1/gonum v0.12.0
+	gonum.org/v1/gonum v0.13.0
 )
