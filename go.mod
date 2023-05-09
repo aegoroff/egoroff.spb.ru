@@ -24,6 +24,6 @@ require (
 	github.com/stretchr/testify v1.8.2
 	github.com/vcraescu/go-paginator/v2 v2.0.0
 	golang.org/x/net v0.10.0
-	golang.org/x/oauth2 v0.7.0
+	golang.org/x/oauth2 v0.8.0
 	gonum.org/v1/gonum v0.13.0
 )
