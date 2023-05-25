@@ -61,11 +61,13 @@ pub fn typograph(html: &str) -> Result<String> {
         stack.borrow_mut().push(e.tag_name());
         let to_use_if_err = stack.clone();
         let stack = stack.clone();
-        let end_tag_handler = e.on_end_tag(move |_end| {
-            stack.borrow_mut().pop();
-            Ok(())
-        });
-        if end_tag_handler.is_err() {
+
+        if let Some(handlers) = e.end_tag_handlers() {
+            handlers.push(Box::new(move |_end| {
+                stack.borrow_mut().pop();
+                Ok(())
+            }));
+        } else {
             to_use_if_err.borrow_mut().pop();
         }
 
