@@ -10,7 +10,7 @@ require (
 	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-contrib/gzip v0.0.6
 	github.com/gin-gonic/contrib v0.0.0-20201101042839-6a891bf89f19
-	github.com/gin-gonic/gin v1.9.0
+	github.com/gin-gonic/gin v1.9.1
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/golang/glog v1.1.1
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
@@ -18,7 +18,6 @@ require (
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/gorilla/sessions v1.2.1 // indirect
-	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/stnc/pongo2gin v0.0.0-20210806134514-6891bb428b1c
 	github.com/stretchr/testify v1.8.4
