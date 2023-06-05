@@ -28,13 +28,13 @@ tera = "1.19.0"
 rust-embed = { version = "6", features = ["include-exclude"] }
 anyhow = "1.0"
 chrono = {version="0.4.26", default-features = false, features = ["serde", "clock", "std"]}
-oauth2 = {version= "4.4.0", features = ["reqwest"] }
+oauth2 = {version= "4.4.1", features = ["reqwest"] }
 async-trait = "0.1"
 reqwest = { version = "0.11", features = ["json", "multipart", "stream"] }
 eyre = "0.6.8"
 lazy_static = "1.4.0"
 jsonwebtoken = "8.3.0"
-url = "2.3.1"
+url = "2.4.0"
 thiserror = "1.0.40"
 utoipa = { version = "3.3.0", features = ["chrono", "time", "axum_extras"] }
 utoipa-swagger-ui = { version = "3.1.3", features = ["axum"] }
