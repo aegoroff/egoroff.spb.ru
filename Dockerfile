@@ -36,7 +36,7 @@ COPY egoroff/server/ ./server/
 COPY egoroff/egoroff/ ./egoroff/
 COPY egoroff/Cargo.toml ./
 ENV JEMALLOC_SYS_WITH_MALLOC_CONF=narenas:1,tcache:false,dirty_decay_ms:0,muzzy_decay_ms:0
-RUN cargo test --workspace --release --features jemalloc
+RUN cargo test --workspace --features jemalloc
 RUN cargo build --workspace --release --features jemalloc
 
 FROM gcr.io/distroless/cc-debian11:latest
