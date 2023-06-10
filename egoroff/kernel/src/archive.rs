@@ -10,34 +10,6 @@ use chrono::{DateTime, Datelike, Utc};
 use futures::lock::MutexGuard;
 use itertools::Itertools;
 
-const RANKS: &[&str] = &[
-    "tagRank10",
-    "tagRank9",
-    "tagRank8",
-    "tagRank7",
-    "tagRank6",
-    "tagRank5",
-    "tagRank4",
-    "tagRank3",
-    "tagRank2",
-    "tagRank1",
-];
-
-const MONTHS: &[&str] = &[
-    "Январь",
-    "Февраль",
-    "Март",
-    "Апрель",
-    "Май",
-    "Июнь",
-    "Июль",
-    "Август",
-    "Сентябрь",
-    "Октябрь",
-    "Ноябрь",
-    "Декабрь",
-];
-
 pub fn archive(storage: MutexGuard<Sqlite>) -> Result<Archive> {
     let aggregated_tags: Vec<TagAggregate> = storage.get_aggregate_tags()?;
     let req = PostsRequest {
@@ -55,7 +27,7 @@ pub fn archive(storage: MutexGuard<Sqlite>) -> Result<Archive> {
             let ix = (tag.count as f32 / total_posts as f32 * 10.0) as usize;
             Tag {
                 title: tag.title.clone(),
-                level: RANKS[ix],
+                level: ix,
             }
         })
         .collect();
@@ -63,7 +35,7 @@ pub fn archive(storage: MutexGuard<Sqlite>) -> Result<Archive> {
     Ok(Archive { tags, years })
 }
 
-fn group_to_years<'a>(dates: &[DateTime<Utc>]) -> Vec<Year<'a>> {
+fn group_to_years(dates: &[DateTime<Utc>]) -> Vec<Year> {
     dates
         .iter()
         .map(|dt| (dt.year(), dt.month()))
@@ -76,7 +48,6 @@ fn group_to_years<'a>(dates: &[DateTime<Utc>]) -> Vec<Year<'a>> {
                 .map(|(month, mg)| Month {
                     month: month as i32,
                     posts: mg.count() as i32,
-                    name: MONTHS[month as usize - 1],
                 })
                 .fold(Year::new(y), |mut y, m| {
                     y.append_month(m);
