@@ -4,7 +4,7 @@
       <li class="list-inline-item" v-for="tag in tags" :key="tag.title">
         <a
           v-bind:href="`/blog/#tag=${tag.title}`"
-          v-bind:class="[currentTag === tag.title ? `btn btn-outline-dark ${tag.level}` : tag.level]"
+          v-bind:class="[currentTag === tag.title ? `btn btn-outline-dark ${tagClass(tag.level)}` : tagClass(tag.level)]"
           v-on:click="update(tag.title, 1)"
           v-bind:id="`t_${tag.title}`">{{ tag.title }}</a>
       </li>
@@ -20,13 +20,25 @@ import { bus } from '@/main'
 
 export class Tag {
   public title!: string
-  public level!: string
+  public level!: number
 }
 
 @Component
 export default class Tags extends Vue {
   @Prop() private tags!: Array<Tag>
   @Prop() private currentTag!: string
+  private tagsClasses: { [key: number]: string } = {
+    0: 'tagRank10',
+    1: 'tagRank9',
+    2: 'tagRank8',
+    3: 'tagRank7',
+    4: 'tagRank6',
+    5: 'tagRank5',
+    6: 'tagRank4',
+    7: 'tagRank3',
+    8: 'tagRank2',
+    10: 'tagRank1'
+  };
 
   created (): void {
     bus.$on('pageChanged', (data: number) => {
@@ -44,6 +56,10 @@ export default class Tags extends Vue {
     bus.$on('dateSelectionChanged', () => {
       this.currentTag = ''
     })
+  }
+
+  tagClass (ix: number): string {
+    return this.tagsClasses[ix]
   }
 
   update (tag: string, page: number): void {

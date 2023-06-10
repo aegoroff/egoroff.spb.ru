@@ -22,7 +22,7 @@
               v-on:click="updateYearMonth(y.year, m.month, 1)"
               v-bind:href="'#year=' +y.year + '&month=' + m.month"
               class="d-flex justify-content-between align-items-center">
-              {{ m.name }}
+              {{ monthName(m.month) }}
               <b-badge variant="secondary" pill>{{ m.posts }}</b-badge>
             </b-list-group-item>
           </b-list-group>
@@ -41,7 +41,6 @@ import { bus } from '@/main'
 
 export class Month {
   public month!: number
-  public name!: string
   public posts!: number
 }
 
@@ -54,6 +53,20 @@ export class Year {
 @Component
 export default class Chrono extends Vue {
   @Prop() private years!: Array<Year>
+  private months: { [key: number]: string } = {
+    1: 'Январь',
+    2: 'Февраль',
+    3: 'Март',
+    4: 'Апрель',
+    5: 'Май',
+    6: 'Июнь',
+    7: 'Июль',
+    8: 'Август',
+    9: 'Сентябрь',
+    10: 'Октябрь',
+    11: 'Ноябрь',
+    12: 'Декабрь'
+  };
 
   created (): void {
     bus.$on('pageChanged', (data: number) => {
@@ -81,6 +94,10 @@ export default class Chrono extends Vue {
         this.updateYearMonth(y, m, data)
       }
     })
+  }
+
+  monthName (month: number): string {
+    return this.months[month]
   }
 
   updateYear (year: number, page: number): void {
