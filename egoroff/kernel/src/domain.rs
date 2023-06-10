@@ -141,8 +141,13 @@ impl<'a> Year<'a> {
         Self {
             year,
             posts: 0,
-            months: vec![],
+            months: Vec::with_capacity(12),
         }
+    }
+
+    pub fn append_month(&mut self, m: Month<'a>) {
+        self.posts += m.posts;
+        self.months.push(m);
     }
 }
 

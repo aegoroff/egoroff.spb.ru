@@ -79,8 +79,7 @@ fn group_to_years<'a>(dates: &[DateTime<Utc>]) -> Vec<Year<'a>> {
                     name: MONTHS[month as usize - 1],
                 })
                 .fold(Year::new(y), |mut y, m| {
-                    y.posts += m.posts;
-                    y.months.push(m);
+                    y.append_month(m);
                     y
                 })
         })
@@ -206,7 +205,11 @@ mod tests {
 
         // assert
         assert_eq!(2, actual.len());
+        assert_eq!(2015, actual[0].year);
         assert_eq!(3, actual[0].posts);
+        assert_eq!(2, actual[0].months.len());
+        assert_eq!(2016, actual[1].year);
         assert_eq!(1, actual[1].posts);
+        assert_eq!(1, actual[1].months.len());
     }
 }
