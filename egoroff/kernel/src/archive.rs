@@ -47,7 +47,7 @@ pub fn archive(storage: MutexGuard<Sqlite>) -> Result<Archive> {
     let dates: Vec<DateTime<Utc>> = storage.get_posts_create_dates()?;
     drop(storage);
 
-    let years = group_by_years(&dates);
+    let years = group_to_years(&dates);
 
     let tags = aggregated_tags
         .iter()
@@ -63,7 +63,7 @@ pub fn archive(storage: MutexGuard<Sqlite>) -> Result<Archive> {
     Ok(Archive { tags, years })
 }
 
-fn group_by_years<'a>(dates: &[DateTime<Utc>]) -> Vec<Year<'a>> {
+fn group_to_years<'a>(dates: &[DateTime<Utc>]) -> Vec<Year<'a>> {
     dates
         .iter()
         .map(|dt| (dt.year(), dt.month()))
@@ -180,7 +180,7 @@ mod tests {
     }
 
     #[test]
-    fn group_by_years_tests() {
+    fn group_to_years_tests() {
         // arrange
         let dt1 = NaiveDate::from_ymd_opt(2015, 2, 2)
             .unwrap()
@@ -209,7 +209,7 @@ mod tests {
         let dates = vec![dt1, dt2, dt3, dt4];
 
         // act
-        let actual = group_by_years(&dates);
+        let actual = group_to_years(&dates);
 
         // assert
         assert_eq!(2, actual.len());
