@@ -64,34 +64,34 @@ pub fn archive(storage: MutexGuard<Sqlite>) -> Result<Archive> {
 }
 
 fn group_by_years<'a>(dates: &[DateTime<Utc>]) -> Vec<Year<'a>> {
-    let ygrp = dates
+    dates
         .iter()
         .map(|dt| (dt.year(), dt.month()))
-        .group_by(|(year, _month)| *year);
-    let mut result = vec![];
-    for (k, g) in &ygrp {
-        let mgrp = g.group_by(|(_y, m)| *m);
-
-        let mut months = vec![];
-        let mut posts_in_year = 0;
-        for (k, mg) in &mgrp {
-            let m = Month {
-                month: k as i32,
-                posts: mg.count() as i32,
-                name: MONTHS[k as usize - 1],
-            };
-            posts_in_year += m.posts;
-            months.push(m);
-        }
-
-        let year = Year {
-            year: k,
-            posts: posts_in_year,
-            months,
-        };
-        result.push(year);
-    }
-    result
+        .group_by(|(year, _month)| *year)
+        .into_iter()
+        .map(|(y, months)| {
+            months
+                .group_by(|(_y, m)| *m)
+                .into_iter()
+                .map(|(month, mg)| Month {
+                    month: month as i32,
+                    posts: mg.count() as i32,
+                    name: MONTHS[month as usize - 1],
+                })
+                .fold(
+                    Year {
+                        year: y,
+                        posts: 0,
+                        months: vec![],
+                    },
+                    |mut y, m| {
+                        y.posts += m.posts;
+                        y.months.push(m);
+                        y
+                    },
+                )
+        })
+        .collect()
 }
 
 pub fn get_small_posts(
