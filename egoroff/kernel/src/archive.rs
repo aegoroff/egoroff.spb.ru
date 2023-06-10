@@ -78,18 +78,11 @@ fn group_to_years<'a>(dates: &[DateTime<Utc>]) -> Vec<Year<'a>> {
                     posts: mg.count() as i32,
                     name: MONTHS[month as usize - 1],
                 })
-                .fold(
-                    Year {
-                        year: y,
-                        posts: 0,
-                        months: vec![],
-                    },
-                    |mut y, m| {
-                        y.posts += m.posts;
-                        y.months.push(m);
-                        y
-                    },
-                )
+                .fold(Year::new(y), |mut y, m| {
+                    y.posts += m.posts;
+                    y.months.push(m);
+                    y
+                })
         })
         .collect()
 }

@@ -136,6 +136,16 @@ pub struct Year<'a> {
     pub months: Vec<Month<'a>>,
 }
 
+impl<'a> Year<'a> {
+    pub fn new(year: i32) -> Self {
+        Self {
+            year,
+            posts: 0,
+            months: vec![],
+        }
+    }
+}
+
 #[derive(Deserialize, Serialize, Default)]
 pub struct Month<'a> {
     pub month: i32,
