@@ -290,10 +290,8 @@ fn updated_response<T, E: Display>(result: Result<T, E>) -> impl IntoResponse {
 }
 
 fn strip_extension(path: &str) -> &str {
-    let without_ext = path
-        .strip_suffix(".html")
-        .unwrap_or_else(|| path.strip_suffix(".htm").unwrap_or(path));
-    without_ext
+    path.strip_suffix(".html")
+        .unwrap_or_else(|| path.strip_suffix(".htm").unwrap_or(path))
 }
 
 #[cfg(test)]
