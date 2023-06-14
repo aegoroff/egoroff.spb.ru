@@ -59,7 +59,6 @@ pub fn typograph(html: &str) -> Result<String> {
 
     let element_handler: (Cow<Selector>, ElementContentHandlers) = element!("*", |e| {
         stack.borrow_mut().push(e.tag_name());
-        let to_use_if_err = stack.clone();
         let stack = stack.clone();
 
         if let Some(handlers) = e.end_tag_handlers() {
@@ -68,7 +67,7 @@ pub fn typograph(html: &str) -> Result<String> {
                 Ok(())
             }));
         } else {
-            to_use_if_err.borrow_mut().pop();
+            stack.borrow_mut().pop();
         }
 
         Ok(())
