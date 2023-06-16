@@ -19,7 +19,7 @@ import {
   faTools,
   faTrashAlt
 } from '@fortawesome/free-solid-svg-icons'
-import { faGoogle, faGithub, faVk, faTwitter, faYandex } from '@fortawesome/free-brands-svg-icons'
+import { faGoogle, faGithub, faVk, faYandex } from '@fortawesome/free-brands-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import VueProgressBar from 'vue-progressbar'
 import AppIcon from './components/AppIcon.vue'
@@ -56,7 +56,7 @@ Vue.use(VueSocialSharing)
 Vue.use(VueHighlightJS)
 
 library.add(faBook, faBriefcase, faSearch, faHome, faUser, faCalendarAlt, faDownload, faSignInAlt, faSignOutAlt, faTools, faTrashAlt)
-library.add(faGoogle, faGithub, faVk, faTwitter, faYandex)
+library.add(faGoogle, faGithub, faVk, faYandex)
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 
 export const bus = new Vue()

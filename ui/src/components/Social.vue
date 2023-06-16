@@ -18,7 +18,6 @@ export default class Social extends Vue {
 
   mounted (): void {
     this.networks = new Array<string>()
-    this.networks.push('twitter')
     this.networks.push('vk')
   }
 }
