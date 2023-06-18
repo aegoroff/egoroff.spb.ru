@@ -42,16 +42,14 @@ pub fn typograph(html: &str) -> Result<String> {
             }
         }
 
-        let original = t.as_str().to_string();
-
-        let replace = SPACES_RE.replace_all(&original, "$1 -$2");
+        let replace = SPACES_RE.replace_all(t.as_str(), "$1 -$2");
         let replace = PLUSMN_RE.replace_all(&replace, "&plusmn;");
         let replace = NBSP_RE.replace_all(&replace, "&nbsp;&mdash;$3");
         let replace = MDASH_RE.replace_all(&replace, "&mdash;$3");
         let replace = HELLIP_RE.replace_all(&replace, "&hellip;");
         let replace = MINUS_BEETWEEN_DIGITS_RE.replace_all(&replace, "$1&minus;$2");
         let replace = OPEN_QUOTE_RE.replace_all(&replace, "«$1");
-        let replace = CLOSE_QUOTE_RE.replace_all(&replace, "$1»");
+        let replace = CLOSE_QUOTE_RE.replace_all(&replace, "$1»").to_string();
         t.replace(&replace, ContentType::Html);
 
         Ok(())
