@@ -1,3 +1,5 @@
+#![warn(unused_extern_crates)]
+
 pub mod archive;
 pub mod converter;
 pub mod domain;

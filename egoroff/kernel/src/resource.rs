@@ -1,7 +1,5 @@
-extern crate url;
-
-use self::url::Url;
 use core::fmt;
+use url::Url;
 
 const SEP: char = '/';
 

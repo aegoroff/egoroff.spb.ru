@@ -1,3 +1,5 @@
+#![warn(unused_extern_crates)]
+
 use auth::{GithubAuthorizer, GoogleAuthorizer, Role, UserStorage, YandexAuthorizer};
 use axum::extract::DefaultBodyLimit;
 use axum::handler::Handler;
