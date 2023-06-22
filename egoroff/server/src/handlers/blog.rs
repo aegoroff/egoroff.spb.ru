@@ -69,7 +69,11 @@ async fn serve_index(
         1
     };
 
-    let section = page_context.site_graph.get_section("blog").unwrap();
+    let section = match page_context.site_graph.get_section("blog") {
+        Some(section) => section,
+        None => return make_500_page(&mut context, &page_context.tera),
+    };
+
     let req = PostsRequest {
         page: Some(page),
         ..Default::default()
@@ -201,10 +205,13 @@ pub async fn serve_atom(State(page_context): State<Arc<PageContext>>) -> impl In
     let result = archive::get_small_posts(storage, 20, None);
 
     match result {
-        Ok(r) => {
-            let xml = atom::from_small_posts(r.result).unwrap();
-            success_response(Content(xml, "application/atom+xml; charset=utf-8"))
-        }
+        Ok(r) => match atom::from_small_posts(r.result) {
+            Ok(xml) => success_response(Content(xml, "application/atom+xml; charset=utf-8")),
+            Err(e) => {
+                tracing::error!("Convert atom posts error: {e:#?}");
+                internal_server_error_response(Content(e.to_string(), "text/plain; charset=utf-8"))
+            }
+        },
         Err(e) => {
             tracing::error!("Get posts error: {e:#?}");
             internal_server_error_response(Content(e.to_string(), "text/plain; charset=utf-8"))
@@ -271,12 +278,12 @@ pub async fn redirect_to_real_document(
 ) -> impl IntoResponse {
     let id = strip_extension(&path);
 
-    if REPLACES_MAP.contains_key(id) {
-        let new_page = REPLACES_MAP.get(id).unwrap();
-        let new_path = format!("/blog/{new_page}.html");
-        Redirect::permanent(&new_path)
-    } else {
-        Redirect::permanent("/blog/")
+    match REPLACES_MAP.get(id) {
+        Some(new_page) => {
+            let new_path = format!("/blog/{new_page}.html");
+            Redirect::permanent(&new_path)
+        }
+        None => Redirect::permanent("/blog/"),
     }
 }
 

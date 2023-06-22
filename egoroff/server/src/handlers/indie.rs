@@ -28,7 +28,10 @@ pub async fn serve_auth(
     if !redirect.is_empty() && redirect.starts_with(&client_id) {
         let now = Utc::now();
         let issued = now.timestamp() as usize;
-        let expired = now.checked_add_signed(Duration::minutes(10)).unwrap();
+        let expired = match now.checked_add_signed(Duration::minutes(10)) {
+            Some(dt) => dt,
+            None => return bad_request_error_response(Empty::new()),
+        };
         let expired = expired.timestamp() as usize;
         let claims = Claims {
             client_id,
@@ -47,14 +50,18 @@ pub async fn serve_auth(
             return bad_request_error_response(Empty::new());
         };
 
+        let mut to = match Resource::new(&redirect) {
+            Some(r) => r,
+            None => return bad_request_error_response(Empty::new()),
+        };
+
         match generate_jwt(claims, private_key_path) {
             Ok(token) => {
                 let q = format!("state={state}&code={token}");
                 let mut c = page_context.cache.lock().await;
                 c.insert(token);
-                let mut resource = Resource::new(&redirect).unwrap();
-                resource.append_query(&q);
-                let to = resource.to_string();
+                to.append_query(&q);
+                let to = to.to_string();
                 let resp = Redirect::found(&to);
                 (StatusCode::FOUND, resp.into_response())
             }
@@ -165,8 +172,13 @@ pub async fn serve_token_validate(
 
     match validate_jwt(authorization.token(), public_key_path) {
         Ok(claims) => {
+            let me = match claims.iss {
+                Some(iss) => iss,
+                None => return unauthorized_response("no iss".to_string()),
+            };
+
             let response = TokenValidationResult {
-                me: claims.iss.unwrap(),
+                me,
                 client_id: claims.client_id,
                 scope: SCOPES.to_string(),
             };

@@ -1,4 +1,6 @@
 #![warn(unused_extern_crates)]
+#![warn(clippy::unwrap_in_result)]
+#![warn(clippy::unwrap_used)]
 
 use auth::{GithubAuthorizer, GoogleAuthorizer, Role, UserStorage, YandexAuthorizer};
 use axum::extract::DefaultBodyLimit;
@@ -78,22 +80,22 @@ pub async fn run() {
 
     let http_port = env::var("EGOROFF_HTTP_PORT").unwrap_or_else(|_| String::from("4200"));
     let https_port = env::var("EGOROFF_HTTPS_PORT").unwrap_or_else(|_| String::from("4201"));
-    let store_uri = env::var("EGOROFF_STORE_URI").unwrap();
-    let certs_path = env::var("EGOROFF_CERT_DIR").unwrap();
+    let store_uri = env::var("EGOROFF_STORE_URI").unwrap_or_default();
+    let certs_path = env::var("EGOROFF_CERT_DIR").unwrap_or_default();
 
     let base_path = if let Ok(d) = env::var("EGOROFF_HOME_DIR") {
         PathBuf::from(d)
     } else {
-        std::env::current_dir().unwrap()
+        std::env::current_dir().unwrap_or_default()
     };
-    tracing::debug!("Base path {}", base_path.to_str().unwrap());
+    tracing::debug!("Base path {}", base_path.to_str().unwrap_or_default());
 
     let data_path = if let Ok(d) = env::var("EGOROFF_DATA_DIR") {
         PathBuf::from(d)
     } else {
-        std::env::current_dir().unwrap()
+        std::env::current_dir().unwrap_or_default()
     };
-    tracing::debug!("Data path {}", data_path.to_str().unwrap());
+    tracing::debug!("Data path {}", data_path.to_str().unwrap_or_default());
 
     let config_path = base_path.join("static/config.json");
     let file = File::open(config_path).unwrap();
@@ -109,7 +111,7 @@ pub async fn run() {
     let site_graph_clone = site_graph.clone();
 
     let templates_path = base_path.join("static/dist/**/*[a-zA-Z0-9][a-zA-Z0-9_].html");
-    let templates_path = templates_path.to_str().unwrap();
+    let templates_path = templates_path.to_str().unwrap_or_default();
 
     let mut tera = match Tera::new(templates_path) {
         Ok(t) => t,
@@ -147,8 +149,8 @@ pub async fn run() {
     );
 
     let ports = Ports {
-        http: http_port.parse().unwrap(),
-        https: https_port.parse().unwrap(),
+        http: http_port.parse().unwrap_or_default(),
+        https: https_port.parse().unwrap_or_default(),
     };
 
     let handle = Handle::new();

@@ -66,6 +66,8 @@ pub fn from_small_posts(posts: Vec<SmallPost>) -> Result<String> {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::unwrap_in_result)]
+    #![allow(clippy::unwrap_used)]
     use chrono::{DateTime, NaiveDate, Utc};
 
     use super::*;

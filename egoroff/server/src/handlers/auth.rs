@@ -49,9 +49,11 @@ pub async fn serve_login(
         "google_signin_url"
     );
 
-    session
-        .insert(PKCE_CODE_VERIFIER_KEY, google_url.verifier.unwrap())
-        .unwrap();
+    if let Some(v) = google_url.verifier {
+        if let Err(e) = session.insert(PKCE_CODE_VERIFIER_KEY, v) {
+            tracing::error!("error inserting pkce_code_verifier: {e:#?}")
+        }
+    }
 
     register_url!(
         context,

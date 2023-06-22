@@ -416,6 +416,8 @@ impl MicropubForm {
 
 #[cfg(test)]
 mod test {
+    #![allow(clippy::unwrap_in_result)]
+    #![allow(clippy::unwrap_used)]
     use super::*;
 
     #[test]

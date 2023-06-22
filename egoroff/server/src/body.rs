@@ -111,7 +111,8 @@ where
             [
                 (
                     header::CONTENT_TYPE,
-                    HeaderValue::from_str(mime.as_ref()).unwrap(),
+                    HeaderValue::from_str(mime.as_ref())
+                        .unwrap_or_else(|_| HeaderValue::from_static("application/octet-stream")),
                 ),
                 (
                     header::CACHE_CONTROL,
@@ -169,20 +170,21 @@ where
             HeaderValue::from_static("application/octet-stream"),
         );
 
-        let content_disposition = (
-            header::CONTENT_DISPOSITION,
-            HeaderValue::from_str(attachment.as_str()).unwrap(),
-        );
-        if let Some(len) = self.length {
-            let content_length = (
-                header::CONTENT_LENGTH,
-                HeaderValue::from_str(&len.to_string()).unwrap(),
-            );
-            ([content_type, content_disposition, content_length], body).into_response()
+        if let Ok(val) = HeaderValue::from_str(attachment.as_str()) {
+            let content_disposition = (header::CONTENT_DISPOSITION, val);
+            if let Some(len) = self.length {
+                if let Ok(val) = HeaderValue::from_str(&len.to_string()) {
+                    let content_length = (header::CONTENT_LENGTH, val);
+                    ([content_type, content_disposition, content_length], body).into_response()
+                } else {
+                    ([content_type, content_disposition], body).into_response()
+                }
+            } else {
+                ([content_type, content_disposition], body).into_response()
+            }
         } else {
-            ([content_type, content_disposition], body).into_response()
+            ([content_type], body).into_response()
         }
-        .into_response()
     }
 }
 

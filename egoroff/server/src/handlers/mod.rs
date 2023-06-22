@@ -96,13 +96,16 @@ pub async fn serve_index(State(page_context): State<Arc<PageContext>>) -> impl I
 
     match portfolio::read_apache_documents(&page_context.base_path) {
         Ok(docs) => {
-            let section = page_context.site_graph.get_section("/").unwrap();
-            context.insert(TITLE_KEY, kernel::graph::BRAND);
-            context.insert(KEYWORDS_KEY, &section.keywords);
-            context.insert(META_DESCR_KEY, &section.descr);
-            context.insert("posts", &blog_posts.result);
-            context.insert(APACHE_DOCS_KEY, &docs);
-            serve_page(&context, "welcome.html", &page_context.tera)
+            if let Some(section) = page_context.site_graph.get_section("/") {
+                context.insert(TITLE_KEY, kernel::graph::BRAND);
+                context.insert(KEYWORDS_KEY, &section.keywords);
+                context.insert(META_DESCR_KEY, &section.descr);
+                context.insert("posts", &blog_posts.result);
+                context.insert(APACHE_DOCS_KEY, &docs);
+                serve_page(&context, "welcome.html", &page_context.tera)
+            } else {
+                make_500_page(&mut context, &page_context.tera)
+            }
         }
         Err(e) => {
             tracing::error!("{e:#?}");
@@ -112,16 +115,18 @@ pub async fn serve_index(State(page_context): State<Arc<PageContext>>) -> impl I
 }
 
 pub async fn serve_search(State(page_context): State<Arc<PageContext>>) -> impl IntoResponse {
-    let section = page_context.site_graph.get_section("search").unwrap();
-
     let mut context = Context::new();
-    context.insert(HTML_CLASS_KEY, "search");
-    context.insert(TITLE_KEY, &section.title);
-    context.insert(KEYWORDS_KEY, &section.keywords);
-    context.insert(META_DESCR_KEY, &section.descr);
     context.insert(CONFIG_KEY, &page_context.site_config);
-
-    serve_page(&context, "search.html", &page_context.tera)
+    if let Some(section) = page_context.site_graph.get_section("search") {
+        context.insert(HTML_CLASS_KEY, "search");
+        context.insert(TITLE_KEY, &section.title);
+        context.insert(KEYWORDS_KEY, &section.keywords);
+        context.insert(META_DESCR_KEY, &section.descr);
+        serve_page(&context, "search.html", &page_context.tera)
+    } else {
+        tracing::error!("no search section found in graph");
+        make_500_page(&mut context, &page_context.tera)
+    }
 }
 
 pub async fn serve_sitemap(State(page_context): State<Arc<PageContext>>) -> impl IntoResponse {
@@ -137,8 +142,18 @@ pub async fn serve_sitemap(State(page_context): State<Arc<PageContext>>) -> impl
     };
 
     let storage = page_context.storage.lock().await;
-    let post_ids = storage.get_posts_ids().unwrap();
-    let xml = sitemap::make_site_map(apache_documents, post_ids).unwrap();
+    let post_ids = match storage.get_posts_ids() {
+        Ok(ids) => ids,
+        Err(e) => {
+            return internal_server_error_response(format!(
+                "<?xml version=\"1.0\"?><error>{e}</error>"
+            ))
+        }
+    };
+    let xml = match sitemap::make_site_map(apache_documents, post_ids) {
+        Ok(xml) => xml,
+        Err(e) => return internal_server_error_response(format!("<?xml version=\"1.0\"?><error>{e}</error>")),
+    };
     success_response(Xml(xml))
 }
 
@@ -189,7 +204,11 @@ pub async fn serve_storage(
     extract::Path((bucket, path)): extract::Path<(String, String)>,
     State(page_context): State<Arc<PageContext>>,
 ) -> impl IntoResponse {
-    let mut resource = Resource::new(&page_context.store_uri).unwrap();
+    let mut resource = match Resource::new(&page_context.store_uri) {
+        Some(r) => r,
+        None => return not_found_response(Empty::new()),
+    };
+
     resource
         .append_path("api")
         .append_path(&bucket)
@@ -339,6 +358,8 @@ fn make_json_response<T: Default + Serialize>(result: Result<T>) -> impl IntoRes
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::unwrap_in_result)]
+    #![allow(clippy::unwrap_used)]
     use super::*;
     use rstest::rstest;
 
