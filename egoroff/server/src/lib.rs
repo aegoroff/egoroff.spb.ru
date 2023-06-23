@@ -196,14 +196,18 @@ async fn http_server(ports: Ports, handle: Handle, app: Router) {
     // Spawn a task to gracefully shutdown server.
     tokio::spawn(shutdown_signal(handle.clone()));
 
-    if let Ok(r) = axum_server::bind(addr)
+    match axum_server::bind(addr)
         .handle(handle)
         .serve(app.into_make_service())
         .await
     {
-        r
-    } else {
-        tracing::error!("Failed to start server at 0.0.0.0:{}", ports.http);
+        Ok(r) => r,
+        Err(e) => {
+            tracing::error!(
+                "Failed to start server at 0.0.0.0:{}. Error: {e}",
+                ports.http
+            );
+        }
     }
 }
 
@@ -222,14 +226,18 @@ async fn https_server(ports: Ports, handle: Handle, app: Router, certs_path: Str
     // Spawn a task to gracefully shutdown server.
     tokio::spawn(shutdown_signal(handle.clone()));
 
-    if let Ok(r) = axum_server::bind_rustls(addr, config)
+    match axum_server::bind_rustls(addr, config)
         .handle(handle)
         .serve(app.into_make_service())
         .await
     {
-        r
-    } else {
-        tracing::error!("Failed to start server at 0.0.0.0:{}", ports.https);
+        Ok(r) => r,
+        Err(e) => {
+            tracing::error!(
+                "Failed to start server at 0.0.0.0:{}. Error: {e}",
+                ports.https
+            );
+        }
     }
 }
 
