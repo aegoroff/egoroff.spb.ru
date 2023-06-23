@@ -208,7 +208,7 @@ async fn http_server(ports: Ports, handle: Handle, app: Router) {
 }
 
 async fn https_server(ports: Ports, handle: Handle, app: Router, certs_path: String) {
-    let addr = SocketAddr::from(([0, 0, 0, 0], ports.http));
+    let addr = SocketAddr::from(([0, 0, 0, 0], ports.https));
     tracing::debug!("HTTPS listening on {addr}");
 
     tracing::debug!("Certs path {certs_path}");
