@@ -98,15 +98,39 @@ pub async fn run() {
     tracing::debug!("Data path {}", data_path.to_str().unwrap_or_default());
 
     let config_path = base_path.join("static/config.json");
-    let file = File::open(config_path).unwrap();
+    let file = match File::open(config_path) {
+        Ok(f) => f,
+        Err(e) => {
+            tracing::error!("config.json open error: {e}");
+            return;
+        }
+    };
     let reader = BufReader::new(file);
-    let site_config: Config = serde_json::from_reader(reader).unwrap();
+    let site_config: Config = match serde_json::from_reader(reader) {
+        Ok(c) => c,
+        Err(e) => {
+            tracing::error!("config.json cannot be converted into object: {e}");
+            return;
+        }
+    };
 
     let site_map_path = base_path.join("static/map.json");
-    let file = File::open(site_map_path).unwrap();
+    let file = match File::open(site_map_path) {
+        Ok(f) => f,
+        Err(e) => {
+            tracing::error!("map.json open error: {e}");
+            return;
+        }
+    };
     let reader = BufReader::new(file);
 
-    let root: SiteSection = serde_json::from_reader(reader).unwrap();
+    let root: SiteSection = match serde_json::from_reader(reader) {
+        Ok(c) => c,
+        Err(e) => {
+            tracing::error!("map.json cannot be converted into object: {e}");
+            return;
+        }
+    };
     let site_graph = Arc::new(SiteGraph::new(root));
     let site_graph_clone = site_graph.clone();
 
@@ -126,7 +150,10 @@ pub async fn run() {
         move |args: &HashMap<String, Value>| -> tera::Result<Value> {
             match args.get("id") {
                 Some(val) => match tera::from_value::<String>(val.clone()) {
-                    Ok(v) => Ok(tera::to_value(site_graph.full_path(&v)).unwrap()),
+                    Ok(v) => match tera::to_value(site_graph.full_path(&v)) {
+                        Ok(v) => Ok(v),
+                        Err(_) => Err("oops".into()),
+                    },
                     Err(_) => Err("oops".into()),
                 },
                 None => Err("oops".into()),
@@ -169,15 +196,19 @@ async fn http_server(ports: Ports, handle: Handle, app: Router) {
     // Spawn a task to gracefully shutdown server.
     tokio::spawn(shutdown_signal(handle.clone()));
 
-    axum_server::bind(addr)
+    if let Ok(r) = axum_server::bind(addr)
         .handle(handle)
         .serve(app.into_make_service())
         .await
-        .unwrap();
+    {
+        r
+    } else {
+        tracing::error!("Failed to start server at 0.0.0.0:{}", ports.http);
+    }
 }
 
 async fn https_server(ports: Ports, handle: Handle, app: Router, certs_path: String) {
-    let addr: SocketAddr = format!("0.0.0.0:{}", ports.https).parse().unwrap();
+    let addr = SocketAddr::from(([0, 0, 0, 0], ports.http));
     tracing::debug!("HTTPS listening on {addr}");
 
     tracing::debug!("Certs path {certs_path}");
@@ -191,11 +222,15 @@ async fn https_server(ports: Ports, handle: Handle, app: Router, certs_path: Str
     // Spawn a task to gracefully shutdown server.
     tokio::spawn(shutdown_signal(handle.clone()));
 
-    axum_server::bind_rustls(addr, config)
+    if let Ok(r) = axum_server::bind_rustls(addr, config)
         .handle(handle)
         .serve(app.into_make_service())
         .await
-        .unwrap();
+    {
+        r
+    } else {
+        tracing::error!("Failed to start server at 0.0.0.0:{}", ports.https);
+    }
 }
 
 pub fn create_routes(
