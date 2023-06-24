@@ -135,6 +135,7 @@ pub struct Year {
 }
 
 impl Year {
+    #[must_use]
     pub fn new(year: i32) -> Self {
         Self {
             year,
