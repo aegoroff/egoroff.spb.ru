@@ -28,10 +28,7 @@ pub async fn serve_auth(
     if !redirect.is_empty() && redirect.starts_with(&client_id) {
         let now = Utc::now();
         let issued = now.timestamp() as usize;
-        let expired = match now.checked_add_signed(Duration::minutes(10)) {
-            Some(dt) => dt,
-            None => return bad_request_error_response(Empty::new()),
-        };
+        let Some(expired) = now.checked_add_signed(Duration::minutes(10)) else { return bad_request_error_response(Empty::new()) };
         let expired = expired.timestamp() as usize;
         let claims = Claims {
             client_id,
@@ -50,10 +47,7 @@ pub async fn serve_auth(
             return bad_request_error_response(Empty::new());
         };
 
-        let mut to = match Resource::new(&redirect) {
-            Some(r) => r,
-            None => return bad_request_error_response(Empty::new()),
-        };
+        let Some(mut to) = Resource::new(&redirect) else { return bad_request_error_response(Empty::new()) };
 
         match generate_jwt(claims, private_key_path) {
             Ok(token) => {
@@ -172,10 +166,7 @@ pub async fn serve_token_validate(
 
     match validate_jwt(authorization.token(), public_key_path) {
         Ok(claims) => {
-            let me = match claims.iss {
-                Some(iss) => iss,
-                None => return unauthorized_response("no iss".to_string()),
-            };
+            let Some(me) = claims.iss else { return unauthorized_response("no iss".to_string()) };
 
             let response = TokenValidationResult {
                 me,

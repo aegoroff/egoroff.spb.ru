@@ -152,7 +152,11 @@ pub async fn serve_sitemap(State(page_context): State<Arc<PageContext>>) -> impl
     };
     let xml = match sitemap::make_site_map(apache_documents, post_ids) {
         Ok(xml) => xml,
-        Err(e) => return internal_server_error_response(format!("<?xml version=\"1.0\"?><error>{e}</error>")),
+        Err(e) => {
+            return internal_server_error_response(format!(
+                "<?xml version=\"1.0\"?><error>{e}</error>"
+            ))
+        }
     };
     success_response(Xml(xml))
 }
@@ -204,10 +208,7 @@ pub async fn serve_storage(
     extract::Path((bucket, path)): extract::Path<(String, String)>,
     State(page_context): State<Arc<PageContext>>,
 ) -> impl IntoResponse {
-    let mut resource = match Resource::new(&page_context.store_uri) {
-        Some(r) => r,
-        None => return not_found_response(Empty::new()),
-    };
+    let Some(mut resource) = Resource::new(&page_context.store_uri) else { return not_found_response(Empty::new()) };
 
     resource
         .append_path("api")

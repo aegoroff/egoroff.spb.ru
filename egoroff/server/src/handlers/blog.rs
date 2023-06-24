@@ -69,10 +69,7 @@ async fn serve_index(
         1
     };
 
-    let section = match page_context.site_graph.get_section("blog") {
-        Some(section) => section,
-        None => return make_500_page(&mut context, &page_context.tera),
-    };
+    let Some(section) = page_context.site_graph.get_section("blog") else { return make_500_page(&mut context, &page_context.tera) };
 
     let req = PostsRequest {
         page: Some(page),

@@ -51,7 +51,7 @@ pub async fn serve_login(
 
     if let Some(v) = google_url.verifier {
         if let Err(e) = session.insert(PKCE_CODE_VERIFIER_KEY, v) {
-            tracing::error!("error inserting pkce_code_verifier: {e:#?}")
+            tracing::error!("error inserting pkce_code_verifier: {e:#?}");
         }
     }
 
