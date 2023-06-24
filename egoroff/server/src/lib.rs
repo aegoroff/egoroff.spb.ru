@@ -2,6 +2,7 @@
 #![warn(clippy::unwrap_in_result)]
 #![warn(clippy::unwrap_used)]
 
+use anyhow::Result;
 use auth::{GithubAuthorizer, GoogleAuthorizer, Role, UserStorage, YandexAuthorizer};
 use axum::extract::DefaultBodyLimit;
 use axum::handler::Handler;
@@ -165,7 +166,7 @@ pub async fn run() {
 
     let tera = Arc::new(tera);
 
-    let app = create_routes(
+    let app = match create_routes(
         base_path,
         site_graph_clone,
         site_config,
@@ -173,7 +174,13 @@ pub async fn run() {
         &data_path,
         store_uri,
         certs_path.clone(),
-    );
+    ) {
+        Ok(r) => r,
+        Err(e) => {
+            tracing::error!("Create app error: {e}");
+            return;
+        }
+    };
 
     let ports = Ports {
         http: http_port.parse().unwrap_or_default(),
@@ -249,13 +256,13 @@ pub fn create_routes(
     data_path: &Path,
     store_uri: String,
     certs_path: String,
-) -> Router {
+) -> Result<Router> {
     let storage_path = data_path.join(kernel::sqlite::DATABASE);
     let sessions_path = data_path.join(SESSIONS_DATABASE);
 
-    let google_authorizer = GoogleAuthorizer::new(storage_path.as_path()).unwrap();
-    let github_authorizer = GithubAuthorizer::new(storage_path.as_path()).unwrap();
-    let yandex_authorizer = YandexAuthorizer::new(storage_path.as_path()).unwrap();
+    let google_authorizer = GoogleAuthorizer::new(storage_path.as_path())?;
+    let github_authorizer = GithubAuthorizer::new(storage_path.as_path())?;
+    let yandex_authorizer = YandexAuthorizer::new(storage_path.as_path())?;
 
     let google_authorizer = Arc::new(google_authorizer);
     let github_authorizer = Arc::new(github_authorizer);
@@ -264,14 +271,14 @@ pub fn create_routes(
     let storage_path_clone = storage_path.clone();
     let user_store = UserStorage::from(Arc::new(storage_path_clone));
 
-    let storage = Sqlite::open(storage_path, Mode::ReadWrite).unwrap();
+    let storage = Sqlite::open(storage_path, Mode::ReadWrite)?;
     let storage = Arc::new(Mutex::new(storage));
     let cache = Arc::new(Mutex::new(HashSet::new()));
 
     let public_key_path = PathBuf::from(&certs_path)
         .join("egoroffspbrupub.pem")
         .to_str()
-        .unwrap()
+        .unwrap_or_default()
         .to_string();
     let public_key_path = Arc::new(public_key_path);
 
@@ -287,9 +294,9 @@ pub fn create_routes(
     });
 
     let secret = rand::thread_rng().gen::<[u8; 64]>();
-    let session_store = SqliteSessionStore::open(sessions_path, &secret).unwrap();
-    session_store.cleanup().unwrap();
-    let secret = session_store.get_secret().unwrap();
+    let session_store = SqliteSessionStore::open(sessions_path, &secret)?;
+    session_store.cleanup()?;
+    let secret = session_store.get_secret()?;
     let session_layer = SessionLayer::new(session_store, &secret)
         .with_secure(false)
         .with_session_ttl(Some(Duration::from_secs(86400 * 14)))
@@ -490,7 +497,7 @@ pub fn create_routes(
     return router.layer(prometheus_layer);
 
     #[cfg(not(feature = "prometheus"))]
-    return router;
+    return Ok(router);
 }
 
 async fn shutdown_signal(handle: Handle) {
