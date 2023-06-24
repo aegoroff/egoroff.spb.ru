@@ -124,15 +124,12 @@ where
     type ResponseBody = Resp;
 
     fn validate(&mut self, request: &mut Request<Req>) -> Result<(), Response<Self::ResponseBody>> {
-        let unauthorized_response = if let Ok(resp) = Response::builder()
-            .status(http::StatusCode::UNAUTHORIZED)
-            .body(Default::default())
-        {
-            resp
-        } else {
-            tracing::error!("Couldn't create unauthorized_response");
-            return Ok(());
-        };
+        let Ok(unauthorized_response) = Response::builder()
+              .status(http::StatusCode::UNAUTHORIZED)
+              .body(Default::default()) else {
+              tracing::error!("Couldn't create unauthorized_response");
+              return Ok(());
+          };
 
         let Some(value) = request.headers().get("authorization") else {
             tracing::error!("{}", IndieAuthError::MissingAuthorizationHeader.to_string());
