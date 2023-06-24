@@ -10,8 +10,8 @@ pub struct Resource {
 
 impl Resource {
     #[must_use]
-    pub fn new(uri: &str) -> Option<Resource> {
-        let url = Url::parse(uri).ok()?;
+    pub fn new(input: &str) -> Option<Resource> {
+        let url = Url::parse(input).ok()?;
         Some(Resource { url })
     }
 
@@ -55,6 +55,8 @@ impl fmt::Display for Resource {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::unwrap_in_result)]
+    #![allow(clippy::unwrap_used)]
     use super::*;
     use rstest::rstest;
 

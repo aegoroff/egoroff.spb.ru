@@ -119,6 +119,8 @@ fn update_short_text(mut posts: Vec<SmallPost>) -> Vec<SmallPost> {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::unwrap_in_result)]
+    #![allow(clippy::unwrap_used)]
     use super::*;
     use chrono::NaiveDate;
     use rstest::rstest;

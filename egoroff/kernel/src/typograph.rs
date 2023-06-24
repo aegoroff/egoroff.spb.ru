@@ -1,3 +1,6 @@
+#![allow(clippy::unwrap_in_result)]
+#![allow(clippy::unwrap_used)]
+
 use anyhow::Result;
 use std::cell::RefCell;
 use std::collections::HashSet;

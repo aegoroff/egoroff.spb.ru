@@ -119,7 +119,10 @@ impl SiteGraph {
 
     #[must_use]
     pub fn breadcrumbs(&self, uri: &str) -> (Vec<&SiteSection>, String) {
-        let root = self.get_section("/").unwrap();
+        let root = match self.get_section("/") {
+            Some(s) => s,
+            None => return (vec![], String::new()),
+        };
         let mut current = String::from(uri);
 
         let parent_sections = once(root)

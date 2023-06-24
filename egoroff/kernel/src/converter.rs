@@ -179,6 +179,8 @@ pub fn html2text(html: &str) -> Result<String> {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::unwrap_in_result)]
+    #![allow(clippy::unwrap_used)]
     use super::*;
     use rstest::rstest;
 

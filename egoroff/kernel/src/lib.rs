@@ -1,4 +1,6 @@
 #![warn(unused_extern_crates)]
+#![warn(clippy::unwrap_in_result)]
+#![warn(clippy::unwrap_used)]
 
 pub mod archive;
 pub mod converter;
