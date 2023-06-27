@@ -3,7 +3,7 @@ module egoroff.spb.ru
 go 1.16
 
 require (
-	cloud.google.com/go/datastore v1.11.0
+	cloud.google.com/go/datastore v1.12.0
 	cloud.google.com/go/storage v1.30.1
 	github.com/boj/redistore v0.0.0-20180917114910-cd5dcc76aeff // indirect
 	github.com/flosch/pongo2 v0.0.0-20200913210552-0d938eb266f3
@@ -13,7 +13,6 @@ require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/golang/glog v1.1.1
-	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/gomarkdown/markdown v0.0.0-20220114203417-14399d5448c4
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-querystring v1.1.0 // indirect
