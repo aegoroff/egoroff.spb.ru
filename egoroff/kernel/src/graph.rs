@@ -125,10 +125,10 @@ impl SiteGraph {
         let parent_sections = once(root)
             .chain(
                 uri.split('/')
+                    .filter(|part| !part.is_empty())
                     .enumerate()
-                    .filter(|(_, part)| !part.is_empty())
                     .filter_map(|(i, part)| {
-                        if i == 1 {
+                        if i == 0 {
                             current = String::from(part);
                         }
                         let section = self.get_section(part)?;
