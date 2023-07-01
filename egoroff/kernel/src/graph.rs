@@ -121,17 +121,20 @@ impl SiteGraph {
     pub fn breadcrumbs<'a>(&'a self, uri: &'a str) -> (Vec<&'a SiteSection>, String) {
         let Some(path) = self.to_sections(uri) else { return (vec![], String::new()) };
 
-        let parent_sections = path.collect_vec();
+        let mut parent_sections = path.collect_vec();
         let current = if parent_sections.len() == 1 {
             parent_sections[0].id.clone()
         } else {
             parent_sections[1].id.clone()
         };
+        if parent_sections.len() > 1 {
+            parent_sections.remove(parent_sections.len() - 1);
+        }
         (parent_sections, current)
     }
 
     fn to_sections<'a>(&'a self, uri: &'a str) -> Option<impl Iterator<Item = &'a SiteSection>> {
-        let root = self.get_section("/")?;
+        let root = self.get_section(SEP)?;
 
         let parent_sections = once(root).chain(
             uri.split('/')
@@ -148,11 +151,13 @@ impl SiteGraph {
         }
         let Some(path) = self.to_sections(uri) else { return String::new() };
 
+        let skip_count = usize::from(uri.ends_with(SEP));
+
         path.skip(1)
             .collect_vec()
             .into_iter()
             .rev()
-            .skip(1)
+            .skip(skip_count)
             .map(|s| s.title.as_str())
             .chain(once(BRAND))
             .join(" | ")
@@ -218,7 +223,7 @@ mod tests {
     #[case("/a/", "a", 1)]
     #[case("/b/", "b", 1)]
     #[case("/b/bb/", "b", 2)]
-    #[case("", "", 1)]
+    #[case("", "/", 1)]
     #[case("/", "/", 1)]
     fn breadcrumbs_test(
         #[case] path: &str,
