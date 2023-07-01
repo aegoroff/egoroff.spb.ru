@@ -127,7 +127,7 @@ impl SiteGraph {
         } else {
             parent_sections[1].id.clone()
         };
-        if parent_sections.len() > 1 {
+        if parent_sections.len() > 1 && uri.ends_with(SEP) {
             parent_sections.remove(parent_sections.len() - 1);
         }
         (parent_sections, current)
@@ -220,6 +220,7 @@ mod tests {
 
     #[rstest]
     #[case("/a/aa/", "a", 2)]
+    #[case("/a/aa/1.html", "a", 3)]
     #[case("/a/", "a", 1)]
     #[case("/b/", "b", 1)]
     #[case("/b/bb/", "b", 2)]
