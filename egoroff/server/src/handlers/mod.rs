@@ -20,6 +20,7 @@ use kernel::{
     archive,
     converter::{markdown2html, xml2html},
     domain::{PostsRequest, Storage, User},
+    graph,
     resource::Resource,
 };
 
@@ -284,11 +285,13 @@ pub async fn serve_navigation(
 
     let (breadcrumbs, current) = page_context.site_graph.breadcrumbs(&q);
 
-    let breadcrumbs = breadcrumbs.into_iter().cloned().collect();
+    let breadcrumbs = if q == graph::SEP {
+        None
+    } else {
+        Some(breadcrumbs.into_iter().cloned().collect())
+    };
 
-    let breadcrumbs = if q == "/" { None } else { Some(breadcrumbs) };
-
-    match page_context.site_graph.get_section("/") {
+    match page_context.site_graph.get_section(graph::SEP) {
         Some(r) => Json(Navigation {
             sections: r.clone_children(&current),
             breadcrumbs,

@@ -3,7 +3,7 @@ use std::{collections::HashMap, iter::once};
 use itertools::Itertools;
 use petgraph::prelude::*;
 
-const SEP: &str = "/";
+pub const SEP: &str = "/";
 
 pub const BRAND: &str = "egoroff.spb.ru";
 
@@ -128,6 +128,7 @@ impl SiteGraph {
             parent_sections[1].id.clone()
         };
         if parent_sections.len() > 1 && uri.ends_with(SEP) {
+            // dont add section root itself to breadcrumbs
             parent_sections.remove(parent_sections.len() - 1);
         }
         (parent_sections, current)
@@ -137,7 +138,7 @@ impl SiteGraph {
         let root = self.get_section(SEP)?;
 
         let parent_sections = once(root).chain(
-            uri.split('/')
+            uri.split(SEP)
                 .filter(|part| !part.is_empty())
                 .filter_map(move |part| self.get_section(part)),
         );
