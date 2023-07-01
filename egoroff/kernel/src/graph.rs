@@ -118,25 +118,27 @@ impl SiteGraph {
     }
 
     #[must_use]
-    pub fn breadcrumbs(&self, uri: &str) -> (Vec<&SiteSection>, String) {
-        let Some(root) = self.get_section("/") else { return (vec![], String::new()) };
-        let mut current = String::from(uri);
+    pub fn breadcrumbs<'a>(&'a self, uri: &'a str) -> (Vec<&'a SiteSection>, String) {
+        let Some(path) = self.to_sections(uri) else { return (vec![], String::new()) };
 
-        let parent_sections = once(root)
-            .chain(
-                uri.split('/')
-                    .filter(|part| !part.is_empty())
-                    .enumerate()
-                    .filter_map(|(i, part)| {
-                        if i == 0 {
-                            current = String::from(part);
-                        }
-                        let section = self.get_section(part)?;
-                        (self.full_path(&section.id) != uri).then_some(section)
-                    }),
-            )
-            .collect();
+        let parent_sections = path.collect_vec();
+        let current = if parent_sections.len() == 1 {
+            parent_sections[0].id.clone()
+        } else {
+            parent_sections[1].id.clone()
+        };
         (parent_sections, current)
+    }
+
+    fn to_sections<'a>(&'a self, uri: &'a str) -> Option<impl Iterator<Item = &'a SiteSection>> {
+        let root = self.get_section("/")?;
+
+        let parent_sections = once(root).chain(
+            uri.split('/')
+                .filter(|part| !part.is_empty())
+                .filter_map(move |part| self.get_section(part)),
+        );
+        Some(parent_sections)
     }
 
     #[must_use]
@@ -144,11 +146,13 @@ impl SiteGraph {
         if uri == SEP || uri.is_empty() {
             return String::new();
         }
-        let (path, _) = self.breadcrumbs(uri);
+        let Some(path) = self.to_sections(uri) else { return String::new() };
 
-        path.into_iter()
-            .skip(1)
+        path.skip(1)
+            .collect_vec()
+            .into_iter()
             .rev()
+            .skip(1)
             .map(|s| s.title.as_str())
             .chain(once(BRAND))
             .join(" | ")
