@@ -119,7 +119,7 @@ impl SiteGraph {
 
     #[must_use]
     pub fn breadcrumbs<'a>(&'a self, uri: &'a str) -> (Vec<&'a SiteSection>, String) {
-        let Some(path) = self.to_sections(uri) else { return (vec![], String::new()) };
+        let Some(path) = self.to_path(uri) else { return (vec![], String::new()) };
 
         let mut parent_sections = path.collect_vec();
         let current = if parent_sections.len() == 1 {
@@ -134,24 +134,14 @@ impl SiteGraph {
         (parent_sections, current)
     }
 
-    fn to_sections<'a>(&'a self, uri: &'a str) -> Option<impl Iterator<Item = &'a SiteSection>> {
-        let root = self.get_section(SEP)?;
-
-        let parent_sections = once(root).chain(
-            uri.split(SEP)
-                .filter(|part| !part.is_empty())
-                .filter_map(move |part| self.get_section(part)),
-        );
-        Some(parent_sections)
-    }
-
     #[must_use]
     pub fn make_title_path(&self, uri: &str) -> String {
         if uri == SEP || uri.is_empty() {
             return String::new();
         }
-        let Some(path) = self.to_sections(uri) else { return String::new() };
+        let Some(path) = self.to_path(uri) else { return String::new() };
 
+        // if section root - skip it in title
         let skip_count = usize::from(uri.ends_with(SEP));
 
         path.skip(1)
@@ -162,6 +152,17 @@ impl SiteGraph {
             .map(|s| s.title.as_str())
             .chain(once(BRAND))
             .join(" | ")
+    }
+
+    fn to_path<'a>(&'a self, uri: &'a str) -> Option<impl Iterator<Item = &'a SiteSection>> {
+        let root = self.get_section(SEP)?;
+
+        let path = uri
+            .split(SEP)
+            .filter(|part| !part.is_empty())
+            .filter_map(move |part| self.get_section(part));
+
+        Some(once(root).chain(path))
     }
 }
 
