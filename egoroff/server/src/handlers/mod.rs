@@ -292,21 +292,17 @@ pub async fn serve_navigation(
         }
     };
 
-    let breadcrumbs = if q == graph::SEP {
+    let root = breadcrumbs[0];
+    let optional_breadcrumbs = if q == graph::SEP {
         None
     } else {
         Some(breadcrumbs.into_iter().cloned().collect())
     };
 
-    match page_context.site_graph.get_section(graph::SEP) {
-        Some(r) => Json(Navigation {
-            sections: r.clone_children(&current),
-            breadcrumbs,
-        }),
-        None => Json(Navigation {
-            ..Default::default()
-        }),
-    }
+    Json(Navigation {
+        sections: root.clone_children(&current),
+        breadcrumbs: optional_breadcrumbs,
+    })
 }
 
 fn make_404_page(context: &mut Context, tera: &Tera) -> (StatusCode, Response) {
