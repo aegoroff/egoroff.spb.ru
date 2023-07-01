@@ -118,8 +118,8 @@ impl SiteGraph {
     }
 
     #[must_use]
-    pub fn breadcrumbs<'a>(&'a self, uri: &'a str) -> (Vec<&'a SiteSection>, String) {
-        let Some(path) = self.to_path(uri) else { return (vec![], String::new()) };
+    pub fn breadcrumbs<'a>(&'a self, uri: &'a str) -> Option<(Vec<&'a SiteSection>, String)> {
+        let path = self.to_path(uri)?;
 
         let mut parent_sections = path.collect_vec();
         let current = if parent_sections.len() == 1 {
@@ -131,7 +131,7 @@ impl SiteGraph {
             // dont add section root itself to breadcrumbs
             parent_sections.remove(parent_sections.len() - 1);
         }
-        (parent_sections, current)
+        Some((parent_sections, current))
     }
 
     #[must_use]
@@ -168,6 +168,8 @@ impl SiteGraph {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::unwrap_in_result)]
+    #![allow(clippy::unwrap_used)]
     use super::*;
     use rstest::rstest;
 
@@ -237,7 +239,7 @@ mod tests {
         let graph = SiteGraph::new(create_test_data());
 
         // act
-        let (nodes, current) = graph.breadcrumbs(path);
+        let (nodes, current) = graph.breadcrumbs(path).unwrap();
 
         // assert
         assert_eq!(current, expected_current);
