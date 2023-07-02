@@ -59,7 +59,7 @@ impl SiteGraph {
         g
     }
 
-    fn new_node(&mut self, s: SiteSection, root_id: Option<i32>) -> i32 {
+    fn new_node(&mut self, s: SiteSection, _root_id: Option<i32>) -> i32 {
         let id = self.next_id;
         self.next_id += 1;
         self.search.insert(s.id.clone(), id);
@@ -71,13 +71,13 @@ impl SiteGraph {
     fn new_edges(&mut self, root_id: i32) {
         let Some(root) = self.map.get(&root_id) else { return };
 
-        let Some(children) = root.clone().children else { return };
+        let Some(ref children) = root.children else { return };
 
         if children.is_empty() {
             return;
         }
 
-        for child in children {
+        for child in children.clone() {
             let child_id = self.new_node(child, Some(root_id));
             self.new_edges(child_id);
             self.g.add_edge(root_id, child_id, 0);
