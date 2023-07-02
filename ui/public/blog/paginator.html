@@ -1,5 +1,6 @@
 {% if poster.has_pages %}
 <!--noindex-->
+    {% set blog_path = "/blog/" %}
     {% if request.tag %}
         {% set tag_query = "?tag=" %}
     {% else %}
@@ -21,15 +22,15 @@
             {% set href = "#" %}
         {% endif %}
         <li class="{{ li_class }} page-item">
-            <a href="{{path_for(id='blog') | safe}}{% if poster.prev_page > 1 %}page/{% endif %}{{ href }}" class="page-link">{{ newer | safe }}</a>
+            <a href="{{ blog_path | safe }}{% if poster.prev_page > 1 %}page/{% endif %}{{ href | safe }}" class="page-link">{{ newer | safe }}</a>
         </li>
         {% for page in poster.pages %}
             {% if page %}
                 <li {% if page == poster.page %} class="active page-item" {% else %} class="page-item" {% endif %}>
                     {% if page == 1 %}
-                    <a href="{{ path_for(id='blog') | safe}}{{ tag_query }}" class="page-link">{{ page }}</a>
+                    <a href="{{ blog_path | safe }}{{ tag_query | safe }}" class="page-link">{{ page }}</a>
                     {% else %}
-                    <a href="{{ path_for(id='blog') | safe}}page/{{ page }}/{{ tag_query }}"
+                    <a href="{{ blog_path | safe }}page/{{ page }}/{{ tag_query }}"
                        class="page-link">{{ page }}</a>
                     {% endif %}
                 </li>
@@ -46,7 +47,7 @@
             {% set href = "#" %}
         {% endif %}
         <li class="{{ li_class }} page-item">
-            <a href="{{path_for(id='blog') | safe}}page/{{ href }}" class="page-link">{{ older | safe }}</a>
+            <a href="{{ blog_path | safe }}page/{{ href | safe }}" class="page-link">{{ older | safe }}</a>
         </li>
     </ul>
 <!--/noindex-->

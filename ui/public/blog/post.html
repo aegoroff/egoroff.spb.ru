@@ -17,7 +17,7 @@
                     <i class="icon" data-label="calendar-alt"></i> <span class="date" data-label="LL">{{ main_post.Created }}</span>&nbsp;
                     {% if main_post.Tags %}
                         {% for tag in main_post.Tags %}
-                           <a href="{{ path_for(id='blog') | safe}}#tag={{ tag }}" class="btn btn-outline-secondary btn-sm">{{ tag }}</a>
+                           <a href="/blog/#tag={{ tag }}" class="btn btn-outline-secondary btn-sm">{{ tag }}</a>
                         {% endfor %}
                     {% endif %}
                     </div>

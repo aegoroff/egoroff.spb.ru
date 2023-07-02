@@ -146,22 +146,6 @@ pub async fn run() {
         }
     };
 
-    tera.register_function(
-        "path_for",
-        move |args: &HashMap<String, Value>| -> tera::Result<Value> {
-            match args.get("id") {
-                Some(val) => match tera::from_value::<String>(val.clone()) {
-                    Ok(v) => match tera::to_value(site_graph.full_path(&v)) {
-                        Ok(v) => Ok(v),
-                        Err(_) => Err("oops".into()),
-                    },
-                    Err(_) => Err("oops".into()),
-                },
-                None => Err("oops".into()),
-            }
-        },
-    );
-
     tera.register_filter("typograph", typograph);
 
     let tera = Arc::new(tera);
