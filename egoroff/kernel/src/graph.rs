@@ -39,7 +39,7 @@ impl SiteSection {
 
 #[derive(Debug)]
 pub struct SiteGraph {
-    g: DiGraphMap<i32, i32>,
+    g: DiGraphMap<i32, ()>,
     next_id: i32,
     map: HashMap<i32, SiteSection>,
     search: HashMap<String, i32>,
@@ -59,12 +59,15 @@ impl SiteGraph {
         g
     }
 
-    fn new_node(&mut self, s: SiteSection, _root_id: Option<i32>) -> i32 {
+    fn new_node(&mut self, s: SiteSection, root_id: Option<i32>) -> i32 {
         let id = self.next_id;
         self.next_id += 1;
         self.search.insert(s.id.clone(), id);
         self.map.insert(id, s);
         self.g.add_node(id);
+        if let Some(root_id) = root_id {
+            self.g.add_edge(root_id, id, ());
+        }
         id
     }
 
@@ -80,7 +83,6 @@ impl SiteGraph {
         for child in children.clone() {
             let child_id = self.new_node(child, Some(root_id));
             self.new_edges(child_id);
-            self.g.add_edge(root_id, child_id, 0);
         }
     }
 
