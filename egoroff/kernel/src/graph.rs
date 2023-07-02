@@ -54,12 +54,12 @@ impl SiteGraph {
             map: HashMap::new(),
             search: HashMap::new(),
         };
-        let root_id = g.new_node(root);
+        let root_id = g.new_node(root, None);
         g.new_edges(root_id);
         g
     }
 
-    fn new_node(&mut self, s: SiteSection) -> i32 {
+    fn new_node(&mut self, s: SiteSection, root_id: Option<i32>) -> i32 {
         let id = self.next_id;
         self.next_id += 1;
         self.search.insert(s.id.clone(), id);
@@ -78,7 +78,7 @@ impl SiteGraph {
         }
 
         for child in children {
-            let child_id = self.new_node(child);
+            let child_id = self.new_node(child, Some(root_id));
             self.new_edges(child_id);
             self.g.add_edge(root_id, child_id, 0);
         }
