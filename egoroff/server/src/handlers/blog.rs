@@ -29,6 +29,8 @@ const OPINIONS_REMAP: &[(&str, &str)] = &[
     ("30", "44"),
 ];
 
+const BLOG_PATH: &str = "/blog/";
+
 lazy_static::lazy_static! {
     static ref REPLACES_MAP: HashMap<&'static str, &'static str> = OPINIONS_REMAP.iter().map(|(k, v)| (*k, *v)).collect();
 }
@@ -89,16 +91,16 @@ async fn serve_index(
 
     let poster = Poster::new(posts, page);
 
-    let mut uri = page_context.site_graph.full_path("blog");
-    if page == 1 {
+    let title_path = if page == 1 {
         context.insert(TITLE_KEY, &section.title);
+        page_context.site_graph.make_title_path(BLOG_PATH)
     } else {
         let title = format!("{page}-я страница");
         context.insert(TITLE_KEY, &title);
-        uri = format!("{uri}{page}");
-    }
-
-    let title_path = page_context.site_graph.make_title_path(&uri);
+        page_context
+            .site_graph
+            .make_title_path(&format!("{BLOG_PATH}{page}"))
+    };
 
     context.insert(KEYWORDS_KEY, &section.keywords);
     context.insert(META_DESCR_KEY, &section.descr);
@@ -145,8 +147,7 @@ pub async fn serve_document(
         }
     };
     drop(storage);
-    let uri = page_context.site_graph.full_path("blog");
-    let uri = format!("{uri}/{path}");
+    let uri = format!("{BLOG_PATH}{path}");
     let title_path = page_context.site_graph.make_title_path(&uri);
 
     context.insert(TITLE_KEY, &post.title);

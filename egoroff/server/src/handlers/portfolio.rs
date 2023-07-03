@@ -6,12 +6,13 @@ use super::*;
 #[folder = "../../templates/apache"]
 struct ApacheTemplates;
 
+const PORTFOLIO_PATH: &str = "/portfolio/";
+
 pub async fn serve_index(State(page_context): State<Arc<PageContext>>) -> impl IntoResponse {
     let mut context = Context::new();
     let Some(section) = page_context.site_graph.get_section("portfolio") else { return make_500_page(&mut context, &page_context.tera) };
 
-    let uri = page_context.site_graph.full_path("portfolio");
-    let title_path = page_context.site_graph.make_title_path(&uri);
+    let title_path = page_context.site_graph.make_title_path(PORTFOLIO_PATH);
 
     context.insert(HTML_CLASS_KEY, "portfolio");
     context.insert(TITLE_KEY, &section.title);
@@ -58,8 +59,7 @@ pub async fn serve_apache_document(
         return make_404_page(&mut context, &page_context.tera);
     };
 
-    let uri = page_context.site_graph.full_path("portfolio");
-    let uri = format!("{uri}/{path}");
+    let uri = format!("{PORTFOLIO_PATH}{path}");
     let title_path = page_context.site_graph.make_title_path(&uri);
 
     context.insert(TITLE_KEY, &doc.title);
