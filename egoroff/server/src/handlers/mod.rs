@@ -209,7 +209,11 @@ pub async fn serve_storage(
     extract::Path((bucket, path)): extract::Path<(String, String)>,
     State(page_context): State<Arc<PageContext>>,
 ) -> impl IntoResponse {
-    let Some(mut resource) = Resource::new(&page_context.store_uri) else { return internal_server_error_response(Empty::new()) };
+    let Some(mut resource) = Resource::new(&page_context.store_uri) else { 
+        let error = format!("Invalid storage uri {}", page_context.store_uri);
+        tracing::error!("{error}");
+        return internal_server_error_response(String::from("Invalid server settings that prevented to reach storage")) 
+    };
 
     resource
         .append_path("api")
