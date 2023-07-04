@@ -209,7 +209,7 @@ pub async fn serve_storage(
     extract::Path((bucket, path)): extract::Path<(String, String)>,
     State(page_context): State<Arc<PageContext>>,
 ) -> impl IntoResponse {
-    let Some(mut resource) = Resource::new(&page_context.store_uri) else { return not_found_response(Empty::new()) };
+    let Some(mut resource) = Resource::new(&page_context.store_uri) else { return internal_server_error_response(Empty::new()) };
 
     resource
         .append_path("api")
@@ -226,12 +226,12 @@ pub async fn serve_storage(
             }
             Err(e) => {
                 tracing::error!("{e:#?}");
-                not_found_response(Empty::new())
+                not_found_response(e.to_string())
             }
         },
         Err(e) => {
             tracing::error!("{e:#?}");
-            not_found_response(Empty::new())
+            bad_request_error_response(Empty::new())
         }
     }
 }
