@@ -212,8 +212,7 @@ pub async fn serve_storage(
     State(page_context): State<Arc<PageContext>>,
 ) -> impl IntoResponse {
     let Some(mut resource) = Resource::new(&page_context.store_uri) else { 
-        let error = format!("Invalid storage uri {}", page_context.store_uri);
-        tracing::error!("{error}");
+        tracing::error!("Invalid storage uri {}", page_context.store_uri);
         return internal_server_error_response(String::from("Invalid server settings that prevented to reach storage")) 
     };
 
