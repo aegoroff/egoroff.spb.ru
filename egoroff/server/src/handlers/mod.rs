@@ -1,3 +1,5 @@
+#![allow(clippy::unused_async)]
+
 use std::{
     collections::HashMap,
     fs::File,
