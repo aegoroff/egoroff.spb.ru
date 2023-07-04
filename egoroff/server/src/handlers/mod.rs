@@ -289,14 +289,11 @@ pub async fn serve_navigation(
 ) -> impl IntoResponse {
     let q = query.uri;
 
-    let (breadcrumbs, current) = match page_context.site_graph.breadcrumbs(&q) {
-        Some(r) => r,
-        None => {
+    let Some((breadcrumbs, current)) = page_context.site_graph.breadcrumbs(&q) else {
             return Json(Navigation {
                 ..Default::default()
             })
-        }
-    };
+        };
 
     let root = breadcrumbs[0];
     let optional_breadcrumbs = if q == graph::SEP {
