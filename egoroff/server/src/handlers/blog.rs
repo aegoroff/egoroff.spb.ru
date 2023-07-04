@@ -191,7 +191,8 @@ pub async fn serve_document(
     }
 }
 
-pub async fn redirect_to_blog() -> impl IntoResponse {
+/// Just redirects to /blog/ page using 308 code
+pub async fn redirect() -> impl IntoResponse {
     (
         StatusCode::PERMANENT_REDIRECT,
         Redirect::permanent("/blog/"),

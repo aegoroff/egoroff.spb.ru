@@ -337,7 +337,7 @@ pub fn create_routes(
 
     let router = Router::new()
         .route("/auth", get(handlers::indie::serve_auth))
-        .route("/admin", get(handlers::admin::serve_admin))
+        .route("/admin", get(handlers::admin::serve))
         .route(
             "/api/v2/admin/posts/",
             get(handlers::blog::serve_posts_admin_api),
@@ -402,7 +402,7 @@ pub fn create_routes(
             get(handlers::portfolio::redirect_to_real_document),
         )
         .route("/blog/", get(handlers::blog::serve_index_default))
-        .route("/news/", get(handlers::blog::redirect_to_blog))
+        .route("/news/", get(handlers::blog::redirect))
         .route("/opinions/", get(handlers::blog::serve_index_default))
         .route(
             "/blog/page/:page",
