@@ -49,7 +49,7 @@ pub async fn serve_auth(
 
         let Some(mut to) = Resource::new(&redirect) else { return bad_request_error_response(Empty::new()) };
 
-        match generate_jwt(claims, private_key_path) {
+        match generate_jwt(&claims, private_key_path) {
             Ok(token) => {
                 let q = format!("state={state}&code={token}");
                 let mut c = page_context.cache.lock().await;
@@ -126,7 +126,7 @@ pub async fn serve_token_generate(
     };
 
     let private_key_path = PathBuf::from(&page_context.certs_path).join("egoroffspbrupri.pem");
-    match generate_jwt(claims, private_key_path) {
+    match generate_jwt(&claims, private_key_path) {
         Ok(token) => {
             let t = Token {
                 access_token: token,

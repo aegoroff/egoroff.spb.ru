@@ -70,11 +70,11 @@ pub enum IndieAuthError {
     NotStarterFromBearer,
 }
 
-pub fn generate_jwt<P: AsRef<Path>>(claims: Claims, private_key_path: P) -> Result<String> {
+pub fn generate_jwt<P: AsRef<Path>>(claims: &Claims, private_key_path: P) -> Result<String> {
     let data = fs::read(private_key_path)?;
     let token = encode(
         &Header::new(Algorithm::RS256),
-        &claims,
+        claims,
         &EncodingKey::from_rsa_pem(&data)?,
     )?;
     Ok(token)

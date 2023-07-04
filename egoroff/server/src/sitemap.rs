@@ -30,21 +30,21 @@ pub fn make_site_map(
         changefreq: "weekly",
         priority: "1.0",
     };
-    write_url(&mut builder, root)?;
+    write_url(&mut builder, &root)?;
 
     let blog = Url {
         location: &format!("{SITE}blog/"),
         changefreq: "weekly",
         priority: "0.7",
     };
-    write_url(&mut builder, blog)?;
+    write_url(&mut builder, &blog)?;
 
     let porfolio = Url {
         location: &format!("{SITE}porfolio/"),
         changefreq: "weekly",
         priority: "0.7",
     };
-    write_url(&mut builder, porfolio)?;
+    write_url(&mut builder, &porfolio)?;
 
     for doc in apache_docs {
         let d = Url {
@@ -52,7 +52,7 @@ pub fn make_site_map(
             changefreq: "yearly",
             priority: "1.0",
         };
-        write_url(&mut builder, d)?;
+        write_url(&mut builder, &d)?;
     }
 
     for id in post_ids {
@@ -61,14 +61,14 @@ pub fn make_site_map(
             changefreq: "yearly",
             priority: "1.0",
         };
-        write_url(&mut builder, d)?;
+        write_url(&mut builder, &d)?;
     }
 
     builder.write_end_tag(URLSET_ELT)?;
     builder.to_string()
 }
 
-fn write_url(builder: &mut Builder, root: Url) -> Result<(), anyhow::Error> {
+fn write_url(builder: &mut Builder, root: &Url) -> Result<(), anyhow::Error> {
     builder.write_start_tag(URL_ELT)?;
     builder.write_element(LOC_ELT, root.location)?;
     builder.write_element(CHANGE_FREQ_ELT, root.changefreq)?;
