@@ -231,7 +231,7 @@ pub async fn serve_storage(
             }
             Err(e) => {
                 tracing::error!("{e:#?}");
-                not_found_response(e.to_string())
+                not_found_response(format!("{bucket}/{path} not found"))
             }
         },
         Err(e) => {
