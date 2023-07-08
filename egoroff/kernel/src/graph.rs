@@ -120,15 +120,13 @@ impl<'a> SiteGraph<'a> {
     }
 
     #[must_use]
-    pub fn breadcrumbs<'b>(&'b self, uri: &'b str) -> Option<(Vec<&'b SiteSection>, String)> {
+    pub fn breadcrumbs<'b>(&'b self, uri: &'b str) -> Option<(Vec<&'b SiteSection>, &'b String)> {
         let path = self.to_path(uri)?;
 
         let mut parent_sections = path.collect_vec();
-        let current = if parent_sections.len() == 1 {
-            parent_sections[0].id.clone()
-        } else {
-            parent_sections[1].id.clone()
-        };
+
+        let current_ix = usize::from(parent_sections.len() != 1);
+        let current = &parent_sections[current_ix].id;
         if parent_sections.len() > 1 && uri.ends_with(SEP) {
             // dont add section root itself to breadcrumbs
             parent_sections.remove(parent_sections.len() - 1);

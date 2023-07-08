@@ -302,7 +302,7 @@ pub async fn serve_navigation(
     };
 
     Json(Navigation {
-        sections: root.clone_children(&current),
+        sections: root.clone_children(current),
         breadcrumbs: optional_breadcrumbs,
     })
 }
