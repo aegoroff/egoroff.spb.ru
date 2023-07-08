@@ -18,7 +18,7 @@ use crate::{
 
 pub async fn serve_auth(
     Query(query): Query<IndieQuery>,
-    State(page_context): State<Arc<PageContext>>,
+    State(page_context): State<Arc<PageContext<'_>>>,
 ) -> impl IntoResponse {
     let private_key_path = PathBuf::from(&page_context.certs_path).join("egoroffspbrupri.pem");
 
@@ -93,7 +93,7 @@ pub async fn serve_auth(
     tag = "indie",
 )]
 pub async fn serve_token_generate(
-    State(page_context): State<Arc<PageContext>>,
+    State(page_context): State<Arc<PageContext<'_>>>,
     Form(req): Form<TokenRequest>,
 ) -> impl IntoResponse {
     let public_key_path = PathBuf::from(&page_context.certs_path).join("egoroffspbrupub.pem");
@@ -159,7 +159,7 @@ pub async fn serve_token_generate(
     )
 )]
 pub async fn serve_token_validate(
-    State(page_context): State<Arc<PageContext>>,
+    State(page_context): State<Arc<PageContext<'_>>>,
     TypedHeader(authorization): TypedHeader<Authorization<Bearer>>,
 ) -> impl IntoResponse {
     let public_key_path = PathBuf::from(&page_context.certs_path).join("egoroffspbrupub.pem");

@@ -38,16 +38,16 @@ impl SiteSection {
 }
 
 #[derive(Debug)]
-pub struct SiteGraph {
+pub struct SiteGraph<'a> {
     g: DiGraphMap<i32, ()>,
     next_id: i32,
-    map: HashMap<i32, SiteSection>,
+    map: HashMap<i32, &'a SiteSection>,
     search: HashMap<String, i32>,
 }
 
-impl SiteGraph {
+impl<'a> SiteGraph<'a> {
     #[must_use]
-    pub fn new(root: SiteSection) -> Self {
+    pub fn new(root: &'a SiteSection) -> Self {
         let mut g = SiteGraph {
             g: DiGraphMap::new(),
             next_id: 1,
@@ -59,7 +59,7 @@ impl SiteGraph {
         g
     }
 
-    fn new_node(&mut self, s: SiteSection, root_id: Option<i32>) -> i32 {
+    fn new_node(&mut self, s: &'a SiteSection, root_id: Option<i32>) -> i32 {
         let id = self.next_id;
         self.next_id += 1;
         self.search.insert(s.id.clone(), id);
@@ -80,7 +80,7 @@ impl SiteGraph {
             return;
         }
 
-        for child in children.clone() {
+        for child in children {
             let child_id = self.new_node(child, Some(root_id));
             self.new_edges(child_id);
         }
@@ -89,7 +89,7 @@ impl SiteGraph {
     #[must_use]
     pub fn get_section(&self, id: &str) -> Option<&SiteSection> {
         let ix = self.search.get(id)?;
-        self.map.get(ix)
+        self.map.get(ix).copied()
     }
 
     #[must_use]
@@ -120,7 +120,7 @@ impl SiteGraph {
     }
 
     #[must_use]
-    pub fn breadcrumbs<'a>(&'a self, uri: &'a str) -> Option<(Vec<&'a SiteSection>, String)> {
+    pub fn breadcrumbs<'b>(&'b self, uri: &'b str) -> Option<(Vec<&'b SiteSection>, String)> {
         let path = self.to_path(uri)?;
 
         let mut parent_sections = path.collect_vec();
@@ -156,7 +156,7 @@ impl SiteGraph {
             .join(" | ")
     }
 
-    fn to_path<'a>(&'a self, uri: &'a str) -> Option<impl Iterator<Item = &'a SiteSection>> {
+    fn to_path<'b>(&'b self, uri: &'b str) -> Option<impl Iterator<Item = &'b SiteSection>> {
         let root = self.get_section(SEP)?;
 
         let path = uri
@@ -185,7 +185,7 @@ mod tests {
     fn full_path_tests(#[case] id: &str, #[case] expected: &str) {
         // arrange
         let tg = create_test_data();
-        let g = SiteGraph::new(tg);
+        let g = SiteGraph::new(&tg);
 
         // act
         let actual = g.full_path(id);
@@ -200,7 +200,7 @@ mod tests {
     fn get_section_correct(#[case] id: &str) {
         // arrange
         let tg = create_test_data();
-        let g = SiteGraph::new(tg);
+        let g = SiteGraph::new(&tg);
 
         // act
         let actual = g.get_section(id);
@@ -215,7 +215,7 @@ mod tests {
     fn get_section_incorrect(#[case] id: &str) {
         // arrange
         let tg = create_test_data();
-        let g = SiteGraph::new(tg);
+        let g = SiteGraph::new(&tg);
 
         // act
         let actual = g.get_section(id);
@@ -238,7 +238,8 @@ mod tests {
         #[case] expected_nodes_count: usize,
     ) {
         // arrange
-        let graph = SiteGraph::new(create_test_data());
+        let root = create_test_data();
+        let graph = SiteGraph::new(&root);
 
         // act
         let (nodes, current) = graph.breadcrumbs(path).unwrap();
@@ -257,7 +258,8 @@ mod tests {
     #[case("/", "")]
     fn make_title_path_test(#[case] path: &str, #[case] expected: &str) {
         // arrange
-        let graph = SiteGraph::new(create_test_data());
+        let root = create_test_data();
+        let graph = SiteGraph::new(&root);
 
         // act
         let actual = graph.make_title_path(path);

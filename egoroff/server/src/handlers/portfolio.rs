@@ -8,7 +8,7 @@ struct ApacheTemplates;
 
 const PORTFOLIO_PATH: &str = "/portfolio/";
 
-pub async fn serve_index(State(page_context): State<Arc<PageContext>>) -> impl IntoResponse {
+pub async fn serve_index(State(page_context): State<Arc<PageContext<'_>>>) -> impl IntoResponse {
     let mut context = Context::new();
     let Some(section) = page_context.site_graph.get_section("portfolio") else { return make_500_page(&mut context, &page_context.tera) };
 
@@ -34,7 +34,7 @@ pub async fn serve_index(State(page_context): State<Arc<PageContext>>) -> impl I
 }
 
 pub async fn serve_apache_document(
-    State(page_context): State<Arc<PageContext>>,
+    State(page_context): State<Arc<PageContext<'_>>>,
     extract::Path(path): extract::Path<String>,
 ) -> impl IntoResponse {
     let mut context = Context::new();

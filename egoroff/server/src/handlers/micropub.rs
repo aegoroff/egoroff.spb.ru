@@ -89,7 +89,7 @@ pub async fn serve_index_get(Query(query): Query<MicropubRequest>) -> impl IntoR
 )]
 pub async fn serve_index_post(
     TypedHeader(content_type): TypedHeader<ContentType>,
-    State(page_context): State<Arc<PageContext>>,
+    State(page_context): State<Arc<PageContext<'_>>>,
     body: Bytes,
 ) -> impl IntoResponse {
     tracing::info!("content type header: {content_type}");

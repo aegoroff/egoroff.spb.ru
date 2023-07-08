@@ -81,7 +81,7 @@ struct Static;
 #[exclude = "*.dtd"]
 struct Apache;
 
-pub async fn serve_index(State(page_context): State<Arc<PageContext>>) -> impl IntoResponse {
+pub async fn serve_index(State(page_context): State<Arc<PageContext<'_>>>) -> impl IntoResponse {
     let mut context = Context::new();
     context.insert(HTML_CLASS_KEY, "welcome");
     context.insert(CONFIG_KEY, &page_context.site_config);
@@ -117,7 +117,7 @@ pub async fn serve_index(State(page_context): State<Arc<PageContext>>) -> impl I
     }
 }
 
-pub async fn serve_search(State(page_context): State<Arc<PageContext>>) -> impl IntoResponse {
+pub async fn serve_search(State(page_context): State<Arc<PageContext<'_>>>) -> impl IntoResponse {
     let mut context = Context::new();
     context.insert(CONFIG_KEY, &page_context.site_config);
     if let Some(section) = page_context.site_graph.get_section("search") {
@@ -132,7 +132,7 @@ pub async fn serve_search(State(page_context): State<Arc<PageContext>>) -> impl 
     }
 }
 
-pub async fn serve_sitemap(State(page_context): State<Arc<PageContext>>) -> impl IntoResponse {
+pub async fn serve_sitemap(State(page_context): State<Arc<PageContext<'_>>>) -> impl IntoResponse {
     let apache_documents = portfolio::read_apache_documents(&page_context.base_path);
 
     let apache_documents = match apache_documents {
@@ -209,7 +209,7 @@ pub async fn serve_apache_images(extract::Path(path): extract::Path<String>) -> 
 
 pub async fn serve_storage(
     extract::Path((bucket, path)): extract::Path<(String, String)>,
-    State(page_context): State<Arc<PageContext>>,
+    State(page_context): State<Arc<PageContext<'_>>>,
 ) -> impl IntoResponse {
     let Some(mut resource) = Resource::new(&page_context.store_uri) else { 
         tracing::error!("Invalid storage uri {}", page_context.store_uri);
@@ -284,7 +284,7 @@ fn get_content_length(headers: &axum::http::HeaderMap) -> Option<i64> {
 
 pub async fn serve_navigation(
     Query(query): Query<Uri>,
-    State(page_context): State<Arc<PageContext>>,
+    State(page_context): State<Arc<PageContext<'_>>>,
 ) -> impl IntoResponse {
     let q = query.uri;
 

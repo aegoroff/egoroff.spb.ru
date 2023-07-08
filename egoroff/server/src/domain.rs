@@ -48,11 +48,11 @@ pub struct Config {
     pub analytics_id: String,
 }
 
-pub struct PageContext {
+pub struct PageContext<'a> {
     pub base_path: PathBuf,
     pub storage: Database,
     pub tera: Arc<Tera>,
-    pub site_graph: Arc<SiteGraph>,
+    pub site_graph: Arc<SiteGraph<'a>>,
     pub site_config: Config,
     pub store_uri: String,
     pub certs_path: String,

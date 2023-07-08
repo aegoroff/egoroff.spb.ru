@@ -71,6 +71,39 @@ mod sitemap;
 
 pub const SESSIONS_DATABASE: &str = "egoroff_sessions.db";
 
+lazy_static::lazy_static! {
+    static ref BASE_PATH : PathBuf = base_path();
+    static ref SITE_MAP : Option<SiteSection> = make_site_map();
+}
+
+fn base_path() -> PathBuf {
+    if let Ok(d) = env::var("EGOROFF_HOME_DIR") {
+        PathBuf::from(d)
+    } else {
+        std::env::current_dir().unwrap_or_default()
+    }
+}
+
+fn make_site_map() -> Option<SiteSection> {
+    let site_map_path = BASE_PATH.join("static/map.json");
+    let file = match File::open(site_map_path) {
+        Ok(f) => f,
+        Err(e) => {
+            tracing::error!("map.json open error: {e}");
+            return None;
+        }
+    };
+    let reader = BufReader::new(file);
+
+    match serde_json::from_reader(reader) {
+        Ok(c) => c,
+        Err(e) => {
+            tracing::error!("map.json cannot be converted into object: {e}");
+            None
+        }
+    }
+}
+
 pub async fn run() {
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::new(
@@ -85,12 +118,7 @@ pub async fn run() {
     let store_uri = env::var("EGOROFF_STORE_URI").unwrap_or_default();
     let certs_path = env::var("EGOROFF_CERT_DIR").unwrap_or_default();
 
-    let base_path = if let Ok(d) = env::var("EGOROFF_HOME_DIR") {
-        PathBuf::from(d)
-    } else {
-        std::env::current_dir().unwrap_or_default()
-    };
-    tracing::debug!("Base path {}", base_path.to_str().unwrap_or_default());
+    tracing::debug!("Base path {}", BASE_PATH.to_str().unwrap_or_default());
 
     let data_path = if let Ok(d) = env::var("EGOROFF_DATA_DIR") {
         PathBuf::from(d)
@@ -99,7 +127,7 @@ pub async fn run() {
     };
     tracing::debug!("Data path {}", data_path.to_str().unwrap_or_default());
 
-    let config_path = base_path.join("static/config.json");
+    let config_path = BASE_PATH.join("static/config.json");
     let file = match File::open(config_path) {
         Ok(f) => f,
         Err(e) => {
@@ -116,27 +144,10 @@ pub async fn run() {
         }
     };
 
-    let site_map_path = base_path.join("static/map.json");
-    let file = match File::open(site_map_path) {
-        Ok(f) => f,
-        Err(e) => {
-            tracing::error!("map.json open error: {e}");
-            return;
-        }
-    };
-    let reader = BufReader::new(file);
-
-    let root: SiteSection = match serde_json::from_reader(reader) {
-        Ok(c) => c,
-        Err(e) => {
-            tracing::error!("map.json cannot be converted into object: {e}");
-            return;
-        }
-    };
+    let Some(root) = SITE_MAP.as_ref() else { return };
     let site_graph = Arc::new(SiteGraph::new(root));
-    let site_graph_clone = site_graph.clone();
 
-    let templates_path = base_path.join("static/dist/**/*[a-zA-Z0-9][a-zA-Z0-9_].html");
+    let templates_path = BASE_PATH.join("static/dist/**/*[a-zA-Z0-9][a-zA-Z0-9_].html");
     let templates_path = templates_path.to_str().unwrap_or_default();
 
     let mut tera = match Tera::new(templates_path) {
@@ -152,8 +163,8 @@ pub async fn run() {
     let tera = Arc::new(tera);
 
     let app = match create_routes(
-        base_path,
-        site_graph_clone,
+        BASE_PATH.to_path_buf(),
+        site_graph,
         site_config,
         tera,
         &data_path,
@@ -235,7 +246,7 @@ async fn https_server(ports: Ports, handle: Handle, app: Router, certs_path: Str
 
 pub fn create_routes(
     base_path: PathBuf,
-    site_graph: Arc<SiteGraph>,
+    site_graph: Arc<SiteGraph<'static>>,
     site_config: Config,
     tera: Arc<Tera>,
     data_path: &Path,
