@@ -159,9 +159,8 @@ pub fn html2text(html: &str) -> Result<String> {
     let mut rewriter = HtmlRewriter::new(
         Settings {
             element_content_handlers: vec![text!("*", |t| {
-                let original = t.as_str().to_string();
-                if !original.is_empty() {
-                    text.push(original);
+                if !t.as_str().is_empty() {
+                    text.push(t.as_str().to_string());
                 }
 
                 Ok(())
