@@ -93,17 +93,19 @@ async fn serve_index(
 
     let title_path = if page == 1 {
         context.insert(TITLE_KEY, &section.title);
+        context.insert(META_DESCR_KEY, &section.descr);
         page_context.site_graph.make_title_path(BLOG_PATH)
     } else {
         let title = format!("{page}-я страница");
+        let description = format!("{} {title}", section.descr);
         context.insert(TITLE_KEY, &title);
+        context.insert(META_DESCR_KEY, &description);
         page_context
             .site_graph
             .make_title_path(&format!("{BLOG_PATH}{page}"))
     };
 
     context.insert(KEYWORDS_KEY, &section.keywords);
-    context.insert(META_DESCR_KEY, &section.descr);
     context.insert("request", &request);
     context.insert(TITLE_PATH_KEY, &title_path);
     context.insert("poster", &poster);
