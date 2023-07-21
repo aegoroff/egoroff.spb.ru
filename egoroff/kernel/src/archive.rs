@@ -107,7 +107,7 @@ fn count_pages(count: i32, page_size: i32) -> i32 {
 }
 
 fn update_short_text(mut posts: Vec<SmallPost>) -> Vec<SmallPost> {
-    for mut post in &mut posts {
+    for post in &mut posts {
         if post.markdown {
             if let Ok(text) = markdown2html(&post.short_text) {
                 post.short_text = text;
