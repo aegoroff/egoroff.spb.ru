@@ -22,7 +22,7 @@ async-session = "3.0.0"
 base64 = "0.21.2"
 url = "2.4.0"
 futures = "0.3"
-utoipa = { version = "3.3.0", features = ["chrono", "time"] }
+utoipa = { version = "3.4.1", features = ["chrono", "time"] }
 rusqlite = { version = "0.29", features = ["bundled", "chrono"] }
 
 [dev-dependencies]
