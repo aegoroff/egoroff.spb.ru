@@ -3,7 +3,7 @@
 #![warn(clippy::unwrap_used)]
 #![allow(clippy::missing_errors_doc)]
 
-use anyhow::Result;
+use anyhow::{anyhow, Context, Result};
 use auth::{GithubAuthorizer, GoogleAuthorizer, Role, UserStorage, YandexAuthorizer};
 use axum::extract::DefaultBodyLimit;
 use axum::handler::Handler;
@@ -104,7 +104,7 @@ fn make_site_map() -> Option<SiteSection> {
     }
 }
 
-pub async fn run() {
+pub async fn run() -> Result<()> {
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::new(
             std::env::var("RUST_LOG")
@@ -128,41 +128,27 @@ pub async fn run() {
     tracing::debug!("Data path {}", data_path.to_str().unwrap_or_default());
 
     let config_path = BASE_PATH.join("static/config.json");
-    let file = match File::open(config_path) {
-        Ok(f) => f,
-        Err(e) => {
-            tracing::error!("config.json open error: {e}");
-            return;
-        }
-    };
+    let file = File::open(config_path).with_context(|| "config.json open error")?;
     let reader = BufReader::new(file);
-    let site_config: Config = match serde_json::from_reader(reader) {
-        Ok(c) => c,
-        Err(e) => {
-            tracing::error!("config.json cannot be converted into object: {e}");
-            return;
-        }
-    };
 
-    let Some(root) = SITE_MAP.as_ref() else { return };
+    let site_config: Config = serde_json::from_reader(reader)
+        .with_context(|| "config.json cannot be converted into object")?;
+
+    let root = SITE_MAP
+        .as_ref()
+        .ok_or(anyhow!("Site root cannot be created"))?;
     let site_graph = Arc::new(SiteGraph::new(root));
 
     let templates_path = BASE_PATH.join("static/dist/**/*[a-zA-Z0-9][a-zA-Z0-9_].html");
     let templates_path = templates_path.to_str().unwrap_or_default();
 
-    let mut tera = match Tera::new(templates_path) {
-        Ok(t) => t,
-        Err(e) => {
-            tracing::error!("Server error: {e}");
-            return;
-        }
-    };
+    let mut tera = Tera::new(templates_path).with_context(|| "Tera templates cannot be created")?;
 
     tera.register_filter("typograph", typograph);
 
     let tera = Arc::new(tera);
 
-    let app = match create_routes(
+    let app = create_routes(
         BASE_PATH.to_path_buf(),
         site_graph,
         site_config,
@@ -170,13 +156,8 @@ pub async fn run() {
         &data_path,
         store_uri,
         certs_path.clone(),
-    ) {
-        Ok(r) => r,
-        Err(e) => {
-            tracing::error!("Create app error: {e}");
-            return;
-        }
-    };
+    )
+    .with_context(|| "Routes creation error")?;
 
     let ports = Ports {
         http: http_port.parse().unwrap_or_default(),
@@ -189,7 +170,10 @@ pub async fn run() {
     let http = tokio::spawn(http_server(ports, handle, app));
 
     // Ignore errors.
-    let _ = tokio::join!(http, https);
+    let (http_r, https_r) = tokio::join!(http, https);
+    http_r.with_context(|| "Failed to start http server")?;
+    https_r.with_context(|| "Failed to start https server")?;
+    Ok(())
 }
 
 async fn http_server(ports: Ports, handle: Handle, app: Router) {
