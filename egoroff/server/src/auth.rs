@@ -3,7 +3,7 @@ use std::{
     sync::Arc,
 };
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use axum_login::{secrecy::SecretVec, AuthUser, UserStore};
 use chrono::Utc;
 use kernel::{
@@ -180,19 +180,17 @@ async fn exchange_code(
     pkce_code_verifier: Option<PkceCodeVerifier>,
 ) -> Result<StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>> {
     let result = match pkce_code_verifier {
-        Some(verifier) => {
-            client
-                .exchange_code(AuthorizationCode::new(code))
-                .set_pkce_verifier(verifier)
-                .request_async(async_http_client)
-                .await?
-        }
-        None => {
-            client
-                .exchange_code(AuthorizationCode::new(code))
-                .request_async(async_http_client)
-                .await?
-        }
+        Some(verifier) => client
+            .exchange_code(AuthorizationCode::new(code))
+            .set_pkce_verifier(verifier)
+            .request_async(async_http_client)
+            .await
+            .with_context(|| "Failed to exchange OAuth code with pkce verifier")?,
+        None => client
+            .exchange_code(AuthorizationCode::new(code))
+            .request_async(async_http_client)
+            .await
+            .with_context(|| "Failed to exchange OAuth code")?,
     };
     Ok(result)
 }
@@ -204,7 +202,8 @@ impl GoogleAuthorizer {
             "google",
             "https://accounts.google.com/o/oauth2/v2/auth",
             "https://www.googleapis.com/oauth2/v3/token",
-        )?;
+        )
+        .with_context(|| "Failed to create Google authorizer")?;
         Ok(Self { client, provider })
     }
 }
@@ -216,7 +215,8 @@ impl GithubAuthorizer {
             "github",
             "https://github.com/login/oauth/authorize",
             "https://github.com/login/oauth/access_token",
-        )?;
+        )
+        .with_context(|| "Failed to create GitHub authorizer")?;
         Ok(Self { client, provider })
     }
 }
@@ -228,7 +228,8 @@ impl YandexAuthorizer {
             "yandex",
             "https://oauth.yandex.ru/authorize",
             "https://oauth.yandex.ru/token",
-        )?;
+        )
+        .with_context(|| "Failed to create Yandex authorizer")?;
         Ok(Self { client, provider })
     }
 }

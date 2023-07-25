@@ -1,6 +1,6 @@
 use std::{collections::HashSet, fs, marker::PhantomData, path::Path, sync::Arc};
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use axum::{
     body::HttpBody,
     http::{self, Request, Response},
@@ -71,7 +71,8 @@ pub enum IndieAuthError {
 }
 
 pub fn generate_jwt<P: AsRef<Path>>(claims: &Claims, private_key_path: P) -> Result<String> {
-    let data = fs::read(private_key_path)?;
+    let data = fs::read(private_key_path)
+        .with_context(|| "Private key cannot be read using path specified")?;
     let token = encode(
         &Header::new(Algorithm::RS256),
         claims,
@@ -81,7 +82,8 @@ pub fn generate_jwt<P: AsRef<Path>>(claims: &Claims, private_key_path: P) -> Res
 }
 
 pub fn validate_jwt<P: AsRef<Path>>(token: &str, public_key_path: P) -> Result<Claims> {
-    let data = fs::read(public_key_path)?;
+    let data = fs::read(public_key_path)
+        .with_context(|| "Public key cannot be read using path specified")?;
     let mut validation = Validation::new(Algorithm::RS256);
     validation.set_issuer(&[ME]);
     let mut required_claims = HashSet::new();

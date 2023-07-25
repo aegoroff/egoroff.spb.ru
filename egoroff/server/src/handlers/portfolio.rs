@@ -1,3 +1,5 @@
+use anyhow::Context;
+
 use crate::body::Redirect;
 
 use super::*;
@@ -9,7 +11,7 @@ struct ApacheTemplates;
 const PORTFOLIO_PATH: &str = "/portfolio/";
 
 pub async fn serve_index(State(page_context): State<Arc<PageContext<'_>>>) -> impl IntoResponse {
-    let mut context = Context::new();
+    let mut context = tera::Context::new();
     let Some(section) = page_context.site_graph.get_section("portfolio") else { return make_500_page(&mut context, &page_context.tera) };
 
     let title_path = page_context.site_graph.make_title_path(PORTFOLIO_PATH);
@@ -37,7 +39,7 @@ pub async fn serve_apache_document(
     State(page_context): State<Arc<PageContext<'_>>>,
     extract::Path(path): extract::Path<String>,
 ) -> impl IntoResponse {
-    let mut context = Context::new();
+    let mut context = tera::Context::new();
     context.insert(CONFIG_KEY, &page_context.site_config);
 
     let apache_documents = match read_apache_documents(&page_context.base_path) {
@@ -79,9 +81,11 @@ pub async fn serve_apache_document(
 
 pub fn read_apache_documents(base_path: &Path) -> Result<Vec<crate::domain::Apache>> {
     let config_path = base_path.join("apache/config.json");
-    let file = File::open(config_path)?;
+    let file = File::open(config_path)
+        .with_context(|| "Failed to open file that contain Apache documents configuration")?;
     let reader = BufReader::new(file);
-    let result = serde_json::from_reader(reader)?;
+    let result = serde_json::from_reader(reader)
+        .with_context(|| "Failed to deserialize Apache documents configuration")?;
     Ok(result)
 }
 
