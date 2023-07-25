@@ -1,4 +1,4 @@
-use axum::{body::Bytes, headers::ContentType, http, TypedHeader};
+use axum::{body::Bytes, extract::Multipart, headers::ContentType, http, TypedHeader};
 use chrono::Utc;
 use kernel::domain::Post;
 use serde::Deserialize;
@@ -132,5 +132,53 @@ pub async fn serve_index_post(
     (
         StatusCode::CREATED,
         [(http::header::LOCATION, format!("{ME}blog/{post_id}.html"))].into_response(),
+    )
+}
+
+/// Tries to create a new media or fails with 400 error in case of invalid request.
+#[utoipa::path(
+    post,
+    path = "/micropub/media",
+    request_body(content = String, description = "File content", content_type = "multipart/form-data"),
+    responses(
+        (status = 201, description = "File created successfully"),
+        (status = 400, description = "Invalid request syntax", body = MicropubFormError),
+        (status = 401, description = "Unauthorized to create post"),
+        (status = 500, description = "Server error", body = String),
+    ),
+    tag = "micropub",
+    security(
+        ("authorization" = []),
+    )
+)]
+pub async fn serve_media_endpoint_post(
+    TypedHeader(content_type): TypedHeader<ContentType>,
+    State(_page_context): State<Arc<PageContext<'_>>>,
+    mut multipart: Multipart,
+) -> impl IntoResponse {
+    tracing::info!("content type header: {content_type}");
+
+    if let "multipart/form-data" = content_type.to_string().to_lowercase().as_str() {
+        if let Ok(Some(field)) = multipart.next_field().await {
+            let _file_name = field.file_name().unwrap_or_default().to_string();
+            match read_from_stream(field).await {
+                Ok((_result, _read_bytes)) => {
+                    // TODO:
+                }
+                Err(e) => {
+                    tracing::error!("{e}");
+                    return internal_server_error_response(e.to_string());
+                }
+            }
+        }
+    } else {
+        return bad_request_error_response(
+            "expected content-type of multipart/form-data".to_string(),
+        );
+    };
+
+    (
+        StatusCode::CREATED,
+        [(http::header::LOCATION, format!("{ME}blog/1.html"))].into_response(),
     )
 }

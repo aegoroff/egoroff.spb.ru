@@ -291,6 +291,7 @@ pub fn create_routes(
             handlers::blog::serve_posts_api,
             handlers::micropub::serve_index_get,
             handlers::micropub::serve_index_post,
+            handlers::micropub::serve_media_endpoint_post,
             handlers::indie::serve_token_generate,
             handlers::indie::serve_token_validate,
         ),
@@ -377,6 +378,13 @@ pub fn create_routes(
                     public_key_path.clone(),
                 ))
                 .post(handlers::micropub::serve_index_post)
+                .layer(RequireIndieAuthorizationLayer::auth(
+                    public_key_path.clone(),
+                )),
+        )
+        .route(
+            "/micropub/media",
+            post(handlers::micropub::serve_media_endpoint_post)
                 .layer(RequireIndieAuthorizationLayer::auth(public_key_path)),
         )
         .route("/", get(handlers::serve_index))

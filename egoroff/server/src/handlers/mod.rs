@@ -4,13 +4,13 @@
 use std::{
     collections::HashMap,
     fs::File,
-    io::BufReader,
+    io::{BufReader, self},
     path::{Path, PathBuf},
     sync::Arc,
 };
 
 use anyhow::Result;
-
+use axum::body::Bytes;
 use axum::{
     body::Empty,
     extract::{self, Query, State},
@@ -26,6 +26,9 @@ use kernel::{
     graph,
     resource::Resource,
 };
+use futures::{Stream, TryStreamExt};
+use futures_util::StreamExt;
+use tokio_util::io::StreamReader;
 
 use reqwest::Client;
 use rust_embed::RustEmbed;
@@ -365,6 +368,22 @@ fn make_json_response<T: Default + Serialize>(result: Result<T>) -> impl IntoRes
         }
     }
 }
+
+async fn read_from_stream<S, E>(stream: S) -> Result<(Vec<u8>, usize)>
+where
+    S: Stream<Item = Result<Bytes, E>> + StreamExt,
+    E: Sync + std::error::Error + Send + 'static,
+{
+    // Convert the stream into an `AsyncRead`.
+    let body_with_io_error = stream.map_err(|err| io::Error::new(io::ErrorKind::Other, err));
+    let body_reader = StreamReader::new(body_with_io_error);
+    futures::pin_mut!(body_reader);
+    let mut buffer = Vec::new();
+
+    let copied_bytes = tokio::io::copy(&mut body_reader, &mut buffer).await?;
+    Ok((buffer, copied_bytes as usize))
+}
+
 
 #[cfg(test)]
 mod tests {
