@@ -1,4 +1,5 @@
 #![allow(clippy::unused_async)]
+#![allow(non_upper_case_globals)]
 
 use std::{
     collections::HashMap,
