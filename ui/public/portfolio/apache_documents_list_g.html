@@ -1,9 +1,0 @@
-
-{% if apache_docs %}
-<dl>
-    {% for item in apache_docs %}
-        <dt><a href="{{ctx.PathFor('portfolio')}}{{ item.ID }}.html">{{ item.Title }}</a></dt>
-        <dd>{{ item.Description | safe | typograph }}</dd>
-    {% endfor %}
-</dl>
-{% endif %}
