@@ -160,7 +160,7 @@ pub async fn serve_index_post(
     responses(
         (status = 201, description = "File created successfully"),
         (status = 400, description = "Invalid request syntax", body = MicropubFormError),
-        (status = 401, description = "Unauthorized to create post"),
+        (status = 401, description = "Unauthorized to create media"),
         (status = 500, description = "Server error", body = String),
     ),
     tag = "micropub",
@@ -247,7 +247,8 @@ pub async fn serve_media_endpoint_post(
     responses(
         (status = 200, description = "Last uri get successfully", body = MediaResponse),
         (status = 400, description = "Invalid request syntax", body = MicropubFormError),
-        (status = 401, description = "Unauthorized to create post"),
+        (status = 401, description = "Unauthorized to get last inserted media file"),
+        (status = 404, description = "No last inserted file found"),
         (status = 500, description = "Server error", body = String),
     ),
     tag = "micropub",
@@ -256,12 +257,9 @@ pub async fn serve_media_endpoint_post(
     )
 )]
 pub async fn serve_media_endpoint_get(
-    TypedHeader(content_type): TypedHeader<ContentType>,
     State(page_context): State<Arc<PageContext<'_>>>,
     Query(req): Query<MicropubRequest>,
 ) -> impl IntoResponse {
-    tracing::info!("content type header: {content_type}");
-
     if let Some(q) = req.q {
         if q != "last" {
             return bad_request_error_response(format!("Invalid query. Must be last but was '{q}'"))
@@ -271,7 +269,7 @@ pub async fn serve_media_endpoint_get(
     }
 
     let Some(mut resource) = Resource::new(&page_context.store_uri) else { 
-        tracing::error!("Invalid storage uri {}", page_context.store_uri);
+        
         return internal_server_error_response(String::from("Invalid server settings that prevented to reach storage")) 
     };
 
@@ -280,6 +278,7 @@ pub async fn serve_media_endpoint_get(
     let result = client.get(resource.to_string()).send().await;
     match result {
         Ok(x) => {
+            tracing::info!("Response status: {}", x.status());
             match x.json::<Vec<File>>().await {
                 Ok(files) => {
                     match files.iter().sorted_by(|a, b| Ord::cmp(&b.id, &a.id)).next() {
