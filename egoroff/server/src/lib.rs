@@ -364,9 +364,6 @@ pub fn create_routes(
         .route(
             "/micropub/",
             get(handlers::micropub::serve_index_get)
-                .layer(RequireIndieAuthorizationLayer::auth(
-                    public_key_path.clone(),
-                ))
                 .post(handlers::micropub::serve_index_post)
                 .layer(RequireIndieAuthorizationLayer::auth(
                     public_key_path.clone(),
@@ -375,9 +372,6 @@ pub fn create_routes(
         .route(
             "/micropub",
             get(handlers::micropub::serve_index_get)
-                .layer(RequireIndieAuthorizationLayer::auth(
-                    public_key_path.clone(),
-                ))
                 .post(handlers::micropub::serve_index_post)
                 .layer(RequireIndieAuthorizationLayer::auth(
                     public_key_path.clone(),
@@ -386,9 +380,6 @@ pub fn create_routes(
         .route(
             "/micropub/media",
             get(handlers::micropub::serve_media_endpoint_get)
-                .layer(RequireIndieAuthorizationLayer::auth(
-                    public_key_path.clone(),
-                ))
                 .post(handlers::micropub::serve_media_endpoint_post)
                 .layer(RequireIndieAuthorizationLayer::auth(public_key_path)),
         )

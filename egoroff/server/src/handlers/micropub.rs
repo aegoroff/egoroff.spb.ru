@@ -1,6 +1,5 @@
 use axum::{body::Bytes, extract::Multipart, headers::ContentType, http, TypedHeader};
 use chrono::Utc;
-use itertools::Itertools;
 use kernel::domain::Post;
 use serde::Deserialize;
 use utoipa::{IntoParams, ToSchema};
@@ -273,23 +272,18 @@ pub async fn serve_media_endpoint_get(
         return internal_server_error_response(String::from("Invalid server settings that prevented to reach storage")) 
     };
 
-    resource.append_path("api").append_path(MEDIA_BUCKET);
+    resource.append_path("api").append_path(MEDIA_BUCKET).append_path("last");
     let client = Client::new();
     let result = client.get(resource.to_string()).send().await;
     match result {
         Ok(x) => {
             tracing::info!("Response status: {}", x.status());
-            match x.json::<Vec<File>>().await {
-                Ok(files) => {
-                    match files.iter().sorted_by(|a, b| Ord::cmp(&b.id, &a.id)).next() {
-                        Some(f) => {
-                            let response = MediaResponse{
-                                url: format!("{ME}storage/{MEDIA_BUCKET}/{}", f.path),
-                            };
-                            success_response(Json(response))
-                        },
-                        None => not_found_response("no media file found".to_string())
-                    }
+            match x.json::<File>().await {
+                Ok(file) => {
+                    let response = MediaResponse{
+                        url: format!("{ME}storage/{MEDIA_BUCKET}/{}", file.path),
+                    };
+                    success_response(Json(response))
                 },
                 Err(e) => internal_server_error_response(e.to_string()),
             }
