@@ -1,8 +1,9 @@
 use axum::{body::Bytes, extract::Multipart, headers::ContentType, http, TypedHeader};
 use chrono::Utc;
+use itertools::Itertools;
 use kernel::domain::Post;
 use serde::Deserialize;
-use utoipa::IntoParams;
+use utoipa::{IntoParams, ToSchema};
 use uuid::Uuid;
 
 use crate::{
@@ -18,6 +19,19 @@ const MEDIA_BUCKET: &str = "media";
 pub struct MicropubRequest {
     pub q: Option<String>,
     pub url: Option<String>,
+}
+
+#[derive(Deserialize)]
+pub struct File {
+    pub id: i64,
+    pub path: String,
+    pub bucket: String,
+    pub size: usize,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct MediaResponse {
+    pub url: String,
 }
 
 /// Gets micropub endpoint configuration to find out it's capabilities
@@ -221,4 +235,68 @@ pub async fn serve_media_endpoint_post(
         StatusCode::CREATED,
         [(http::header::LOCATION, format!("{ME}storage/{MEDIA_BUCKET}/{file_name}"))].into_response(),
     )
+}
+
+/// Gets last inserted media uri
+#[utoipa::path(
+    get,
+    path = "/micropub/media",
+    params(
+        MicropubRequest
+    ),
+    responses(
+        (status = 200, description = "Last uri get successfully", body = MediaResponse),
+        (status = 400, description = "Invalid request syntax", body = MicropubFormError),
+        (status = 401, description = "Unauthorized to create post"),
+        (status = 500, description = "Server error", body = String),
+    ),
+    tag = "micropub",
+    security(
+        ("authorization" = []),
+    )
+)]
+pub async fn serve_media_endpoint_get(
+    TypedHeader(content_type): TypedHeader<ContentType>,
+    State(page_context): State<Arc<PageContext<'_>>>,
+    Query(req): Query<MicropubRequest>,
+) -> impl IntoResponse {
+    tracing::info!("content type header: {content_type}");
+
+    if let Some(q) = req.q {
+        if q != "last" {
+            return bad_request_error_response(format!("Invalid query. Must be last but was '{q}'"))
+        }
+    } else {
+        return bad_request_error_response(String::from("No query")) 
+    }
+
+    let Some(mut resource) = Resource::new(&page_context.store_uri) else { 
+        tracing::error!("Invalid storage uri {}", page_context.store_uri);
+        return internal_server_error_response(String::from("Invalid server settings that prevented to reach storage")) 
+    };
+
+    resource.append_path("api").append_path(MEDIA_BUCKET);
+    let client = Client::new();
+    let result = client.get(resource.to_string()).send().await;
+    match result {
+        Ok(x) => {
+            match x.json::<Vec<File>>().await {
+                Ok(files) => {
+                    match files.iter().sorted_by(|a, b| Ord::cmp(&b.id, &a.id)).next() {
+                        Some(f) => {
+                            let response = MediaResponse{
+                                url: format!("{ME}storage/{MEDIA_BUCKET}/{}", f.path),
+                            };
+                            success_response(Json(response))
+                        },
+                        None => not_found_response("no media file found".to_string())
+                    }
+                },
+                Err(e) => internal_server_error_response(e.to_string()),
+            }
+        }
+        Err(e) => {
+            internal_server_error_response(e.to_string())
+        }
+    }
 }

@@ -292,11 +292,12 @@ pub fn create_routes(
             handlers::micropub::serve_index_get,
             handlers::micropub::serve_index_post,
             handlers::micropub::serve_media_endpoint_post,
+            handlers::micropub::serve_media_endpoint_get,
             handlers::indie::serve_token_generate,
             handlers::indie::serve_token_validate,
         ),
         components(
-            schemas(SmallPost, kernel::domain::SmallPosts, micropub::MicropubConfig, micropub::SyndicateTo, micropub::MicropubFormError, indie::TokenValidationResult, indie::Token, indie::TokenRequest),
+            schemas(SmallPost, kernel::domain::SmallPosts, micropub::MicropubConfig, micropub::SyndicateTo, micropub::MicropubFormError, indie::TokenValidationResult, indie::Token, indie::TokenRequest, handlers::micropub::MediaResponse),
         ),
         modifiers(&SecurityAddon),
         tags(
@@ -384,7 +385,11 @@ pub fn create_routes(
         )
         .route(
             "/micropub/media",
-            post(handlers::micropub::serve_media_endpoint_post)
+            get(handlers::micropub::serve_media_endpoint_get)
+                .layer(RequireIndieAuthorizationLayer::auth(
+                    public_key_path.clone(),
+                ))
+                .post(handlers::micropub::serve_media_endpoint_post)
                 .layer(RequireIndieAuthorizationLayer::auth(public_key_path)),
         )
         .route("/", get(handlers::serve_index))
