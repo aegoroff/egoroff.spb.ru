@@ -47,12 +47,11 @@ pub async fn serve_auth(
             return bad_request_error_response(Empty::new());
         };
 
-        let Some(mut to) = Resource::new(&redirect) else { return bad_request_error_response(Empty::new()) };
-
         // generate token and if success redirect to uri specified
         match generate_jwt(&claims, private_key_path) {
             Ok(token) => {
                 let q = format!("state={state}&code={token}");
+                let Some(mut to) = Resource::new(&redirect) else { return bad_request_error_response(Empty::new()) };
                 let mut c = page_context.cache.lock().await;
                 c.insert(token);
                 to.append_query(&q);
