@@ -25,7 +25,7 @@ pub async fn serve_auth(
     let redirect = query.redirect_uri.unwrap_or_default();
     let client_id = query.client_id.unwrap_or_default();
 
-    if !redirect.is_empty() && redirect.starts_with(&client_id) {
+    if redirect.starts_with(&client_id) {
         let now = Utc::now();
         let issued = now.timestamp() as usize;
         let Some(expired) = now.checked_add_signed(Duration::minutes(10)) else { return bad_request_error_response(Empty::new()) };
