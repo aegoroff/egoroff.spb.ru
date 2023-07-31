@@ -4,7 +4,9 @@ use chrono::{DateTime, NaiveDateTime, Utc};
 use itertools::Itertools;
 use rusqlite::{params, Connection, Error, ErrorCode, OpenFlags, Row, Transaction};
 
-use crate::domain::{OAuthProvider, Post, PostsRequest, SmallPost, Storage, TagAggregate, User};
+use crate::domain::{
+    Download, Folder, OAuthProvider, Post, PostsRequest, SmallPost, Storage, TagAggregate, User,
+};
 
 pub enum Mode {
     ReadWrite,
@@ -63,6 +65,22 @@ impl Storage for Sqlite {
                   PRIMARY KEY (post_id, tag),
                   FOREIGN KEY(post_id) REFERENCES post(id) ON UPDATE CASCADE ON DELETE CASCADE,
                   FOREIGN KEY(tag) REFERENCES tag(tag)
+                  )",
+            [],
+        )?;
+
+        self.conn.execute(
+            "CREATE TABLE folder (
+                  bucket          TEXT PRIMARY KEY,
+                  title           TEXT NOT NULL
+                  )",
+            [],
+        )?;
+
+        self.conn.execute(
+            "CREATE TABLE file (
+                  id              INTEGER PRIMARY KEY,
+                  title           TEXT NOT NULL
                   )",
             [],
         )?;
@@ -360,6 +378,35 @@ impl Storage for Sqlite {
         let mut stmt = self.conn.prepare("SELECT MAX(id) + 1 FROM post")?;
         let post_id = stmt.query_row([], |row| row.get(0))?;
         Ok(post_id)
+    }
+
+    fn get_folders(&self) -> Result<Vec<Folder>, Self::Err> {
+        let mut stmt = self.conn.prepare("SELECT bucket, title FROM folder")?;
+        let folders_query = stmt.query_map([], |row| {
+            let post = Folder {
+                bucket: row.get(0)?,
+                title: row.get(1)?,
+            };
+
+            Ok(post)
+        })?;
+        Ok(folders_query.filter_map(std::result::Result::ok).collect())
+    }
+
+    fn get_download(&self, id: i64) -> Result<Download, Self::Err> {
+        let mut stmt = self
+            .conn
+            .prepare("SELECT id, title FROM file WHERE id=?1")?;
+        let file: Download = stmt.query_row([id], |row| {
+            let file = Download {
+                id: row.get(0)?,
+                title: row.get(1)?,
+            };
+
+            Ok(file)
+        })?;
+
+        Ok(file)
     }
 }
 

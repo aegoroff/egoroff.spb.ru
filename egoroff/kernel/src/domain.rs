@@ -179,6 +179,18 @@ pub struct OAuthProvider {
     pub scopes: Vec<String>,
 }
 
+#[derive(Serialize, Default)]
+pub struct Folder {
+    pub bucket: String,
+    pub title: String,
+}
+
+#[derive(Serialize, Default)]
+pub struct Download {
+    pub id: i64,
+    pub title: String,
+}
+
 pub trait Storage {
     type Err: Sync + Send + Error + 'static;
 
@@ -202,6 +214,8 @@ pub trait Storage {
     fn get_oauth_provider(&self, name: &str) -> Result<OAuthProvider, Self::Err>;
     fn get_user(&self, federated_id: &str, provider: &str) -> Result<User, Self::Err>;
     fn upsert_user(&mut self, user: &User) -> Result<(), Self::Err>;
+    fn get_folders(&self) -> Result<Vec<Folder>, Self::Err>;
+    fn get_download(&self, id: i64) -> Result<Download, Self::Err>;
 }
 
 #[cfg(test)]
