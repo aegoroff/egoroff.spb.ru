@@ -4,7 +4,7 @@
     <ul class="list-unstyled">
     {% for f in folder.files %}
         <li itemscope itemtype="http://schema.org/SoftwareApplication">
-            <a itemprop="downloadUrl" href="{{ f.path }}" title="Размер:&nbsp;{{ f.human_readable_size }}" onclick="_gaq.push(['_trackPageview', '{{ f.filename }}']);"><i class="icon" data-label="download"></i>&nbsp;<span itemprop="name">{{ f.description }}</span></a>
+            <a itemprop="downloadUrl" href="{{ f.path }}" title="Размер:&nbsp;{{ f.size | human_readable_size }}" onclick="_gaq.push(['_trackPageview', '{{ f.filename }}']);"><i class="icon" data-label="download"></i>&nbsp;<span itemprop="name">{{ f.title }}</span></a>
         </li>
     {% endfor %}
     </ul>

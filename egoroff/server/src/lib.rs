@@ -145,6 +145,7 @@ pub async fn run() -> Result<()> {
     let mut tera = Tera::new(templates_path).with_context(|| "Tera templates cannot be created")?;
 
     tera.register_filter("typograph", typograph);
+    tera.register_filter("human_readable_size", human_readable_size);
 
     let tera = Arc::new(tera);
 
@@ -517,4 +518,10 @@ fn typograph(value: &Value, _: &HashMap<String, Value>) -> tera::Result<Value> {
         Ok(s) => Ok(Value::String(s)),
         Err(e) => Err(tera::Error::from(e.to_string())),
     }
+}
+
+fn human_readable_size(value: &Value, _: &HashMap<String, Value>) -> tera::Result<Value> {
+    let bytes = try_get_value!("human_readable_size", "value", u64, value);
+    let s = human_bytes::human_bytes(bytes as f64);
+    Ok(Value::String(s))
 }

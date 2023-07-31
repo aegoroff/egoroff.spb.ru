@@ -101,6 +101,20 @@ pub struct AuthorizedUser {
     pub provider: String,
 }
 
+#[derive(Serialize, Default)]
+pub struct FilesContainer {
+    pub title: String,
+    pub files: Vec<Downloadable>,
+}
+
+#[derive(Serialize, Default)]
+pub struct Downloadable {
+    pub title: String,
+    pub path: String,
+    pub filename: String,
+    pub size: u64,
+}
+
 impl<T> Poster<T> {
     pub fn new(api: ApiResult<T>, page: i32) -> Self {
         let pages_count = api.pages;
