@@ -10,16 +10,16 @@ description = "egoroff.spb.ru server"
 
 [dependencies]
 kernel = { path = "../kernel" }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-tokio = { version = "1", features = ["full"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+tokio = { workspace = true, features = ["full"] }
 mime_guess = "2"
 axum = { version = "0.6.20", features = ["multipart", "http2", "headers"] }
 axum-server = { version = "0.5.1", features = ["tls-rustls"] }
 axum-sessions = "0.5.0"
 axum-login = "0.5.0"
-tokio-util = { version = "0.7.8", features = ["full"] }
-futures = "0.3"
+tokio-util = { workspace = true, features = ["full"] }
+futures = { workspace = true }
 futures-util = "0.3"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tracing = "0.1"
@@ -27,17 +27,17 @@ tower = { version = "0.4", features = ["util", "timeout"] }
 tower-http = { version = "0.4", features = ["add-extension", "trace", "cors", "limit", "compression-gzip", "validate-request", "auth"] }
 tera = "1.19.0"
 rust-embed = { version = "6", features = ["include-exclude"] }
-anyhow = "1.0"
-chrono = {version="0.4.26", default-features = false, features = ["serde", "clock", "std"]}
+anyhow = { workspace = true }
+chrono = { workspace = true, default-features = false, features = ["serde", "clock", "std"]}
 oauth2 = {version= "4.4.1", features = ["reqwest"] }
 async-trait = "0.1"
-reqwest = { version = "0.11", features = ["json", "multipart", "stream"] }
+reqwest = { workspace = true, features = ["json", "multipart", "stream"] }
 eyre = "0.6.8"
 lazy_static = "1.4.0"
 jsonwebtoken = "8.3.0"
-url = "2.4.0"
+url = { workspace = true }
 thiserror = "1.0.44"
-utoipa = { version = "3.4.4", features = ["chrono", "time", "axum_extras"] }
+utoipa = { workspace = true, features = ["chrono", "time", "axum_extras"] }
 utoipa-swagger-ui = { version = "3.1.5", features = ["axum"] }
 rand = { version = "0.8.5", features = ["min_const_gen"] }
 uuid = { version = "1.4.1", features = [

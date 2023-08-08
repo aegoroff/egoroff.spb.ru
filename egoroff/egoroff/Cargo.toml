@@ -11,8 +11,8 @@ kernel = { path = "../kernel" }
 server = { path = "../server" }
 migrate = { path = "../migrate", optional = true }
 clap = { version = "4.3.21", features = ["std", "color", "suggestions", "cargo"] }
-serde = { version = "1.0", features = ["derive"] }
-tokio = { version = "1", features = ["full"] }
+serde = { workspace = true, features = ["derive"] }
+tokio = { workspace = true, features = ["full"] }
 
 mimalloc-rust = { version = "0.2", optional = true }
 

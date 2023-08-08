@@ -8,21 +8,21 @@ workspace = ".."
 
 [dependencies]
 petgraph = "0.6"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-chrono = {version="0.4.26", default-features = false, features = ["serde", "clock", "std"]}
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+chrono = { workspace = true, features = ["serde", "clock", "std"]}
 lol_html = "1.1.1"
 regex = "1.9.3"
 quick-xml = "0.30.0"
 pulldown-cmark = "0.9.3"
-anyhow = "1.0"
+anyhow = { workspace = true }
 lazy_static = "1.4.0"
 itertools = "0.11.0"
 async-session = "3.0.0"
 base64 = "0.21.2"
-url = "2.4.0"
-futures = "0.3"
-utoipa = { version = "3.4.4", features = ["chrono", "time"] }
+url = { workspace = true }
+futures = { workspace = true }
+utoipa = { workspace = true, features = ["chrono", "time"] }
 rusqlite = { version = "0.29", features = ["bundled", "chrono"] }
 
 [dev-dependencies]
