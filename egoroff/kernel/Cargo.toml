@@ -26,5 +26,5 @@ utoipa = { workspace = true, features = ["chrono", "time"] }
 rusqlite = { version = "0.29", features = ["bundled", "chrono"] }
 
 [dev-dependencies]
-rstest = "0.18.1"
+rstest = "0.18.2"
 test-context = "0.1.4"
