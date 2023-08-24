@@ -20,6 +20,7 @@ use oauth2::{
 };
 use reqwest::{Client, StatusCode};
 use serde::Deserialize;
+use thiserror::Error;
 
 #[derive(Clone)]
 pub struct UserStorage {
@@ -42,6 +43,16 @@ pub struct GeneratedUrl {
 pub enum Role {
     User,
     Admin,
+}
+
+#[derive(Error, Debug)]
+pub enum UserStoreError {
+    #[error("invalid provider")]
+    InvalidProvider,
+    #[error("invalid id")]
+    InvalidId,
+    #[error("SQL error: {0:?}")]
+    SqlError(<kernel::sqlite::Sqlite as kernel::domain::Storage>::Err),
 }
 
 pub trait ToUser {
@@ -387,26 +398,26 @@ where
     Role: PartialOrd + PartialEq + Clone + Send + Sync + 'static,
 {
     type User = User;
+    type Error = UserStoreError;
 
     async fn load_user(
         &self,
         user_id: &String,
-    ) -> std::result::Result<Option<Self::User>, eyre::Error> {
-        let storage = Sqlite::open(self.db_path.as_path(), Mode::ReadOnly)?;
-        let mut id_parts = user_id.split('_');
-        let provider = id_parts
-            .next()
-            .ok_or_else(|| eyre::Error::msg("invalid id"))?;
-        let federated_id = id_parts
-            .next()
-            .ok_or_else(|| eyre::Error::msg("invalid id"))?;
-        let user = storage.get_user(federated_id, provider);
-        match user {
-            Ok(user) => Ok(Some(user)),
-            Err(err) => {
-                let msg = format!("{err}");
-                Err(eyre::Error::msg(msg))
+    ) -> std::result::Result<Option<Self::User>, Self::Error> {
+        match Sqlite::open(self.db_path.as_path(), Mode::ReadOnly) {
+            Ok(storage) => {
+                let mut id_parts = user_id.split('_');
+                let provider = id_parts
+                    .next()
+                    .ok_or_else(|| UserStoreError::InvalidProvider)?;
+                let federated_id = id_parts.next().ok_or_else(|| UserStoreError::InvalidId)?;
+                let user = storage.get_user(federated_id, provider);
+                match user {
+                    Ok(user) => Ok(Some(user)),
+                    Err(err) => Err(UserStoreError::SqlError(err)),
+                }
             }
+            Err(err) => Err(UserStoreError::SqlError(err)),
         }
     }
 }
