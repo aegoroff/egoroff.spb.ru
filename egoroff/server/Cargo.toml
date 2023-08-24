@@ -36,7 +36,7 @@ eyre = "0.6.8"
 lazy_static = "1.4.0"
 jsonwebtoken = "8.3.0"
 url = { workspace = true }
-thiserror = "1.0.44"
+thiserror = "1.0.47"
 utoipa = { workspace = true, features = ["chrono", "time", "axum_extras"] }
 utoipa-swagger-ui = { version = "3.1.5", features = ["axum"] }
 rand = { version = "0.8.5", features = ["min_const_gen"] }
