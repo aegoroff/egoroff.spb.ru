@@ -10,14 +10,14 @@ workspace = ".."
 kernel = { path = "../kernel" }
 server = { path = "../server" }
 migrate = { path = "../migrate", optional = true }
-clap = { version = "4.3.24", features = ["std", "color", "suggestions", "cargo"] }
+clap = { version = "4.4.0", features = ["std", "color", "suggestions", "cargo"] }
 serde = { workspace = true, features = ["derive"] }
 tokio = { workspace = true, features = ["full"] }
 
 mimalloc-rust = { version = "0.2", optional = true }
 
 [target.'cfg(not(target_env = "msvc"))'.dependencies]
-tikv-jemallocator = { version = "0.5.0", optional = true }
+tikv-jemallocator = { version = "0.5.4", optional = true }
 
 [features]
 migrating = ["migrate"]

@@ -18,7 +18,7 @@ COPY ui/babel.config.js ./
 RUN npm run build
 
 # Build service
-FROM rust:latest as rust-build
+FROM rust:bullseye as rust-build
 WORKDIR /egoroff
 RUN apt update && apt -y install lld
 COPY --from=node-build /static /static
