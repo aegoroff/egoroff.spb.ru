@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 kernel = { path = "../kernel" }
 chrono = { workspace = true, default-features = false, features = ["clock", "std"] }
-reqwest = { workspace = true, features = ["json"] }
+reqwest = { workspace = true, features = ["json", "rustls-tls"] }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 tokio = { workspace = true, features = ["full"] }

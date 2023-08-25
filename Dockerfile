@@ -18,9 +18,9 @@ COPY ui/babel.config.js ./
 RUN npm run build
 
 # Build service
-FROM rust:bullseye as rust-build
+FROM rust:alpine as rust-build
 WORKDIR /egoroff
-RUN apt update && apt -y install lld
+RUN apk add musl-dev lld openssl-dev
 COPY --from=node-build /static /static
 RUN ls -lah /static
 COPY apache/ /apache/
@@ -33,11 +33,12 @@ COPY egoroff/migrate/ ./migrate/
 COPY egoroff/server/ ./server/
 COPY egoroff/egoroff/ ./egoroff/
 COPY egoroff/Cargo.toml ./
-ENV JEMALLOC_SYS_WITH_MALLOC_CONF=narenas:1,tcache:false,dirty_decay_ms:0,muzzy_decay_ms:0
-RUN cargo test --workspace --features jemalloc
-RUN cargo build --workspace --release --features jemalloc
+#ENV JEMALLOC_SYS_WITH_MALLOC_CONF=narenas:1,tcache:false,dirty_decay_ms:0,muzzy_decay_ms:0
+RUN rustup target add x86_64-unknown-linux-musl
+RUN cargo test -p kernel -p server --target x86_64-unknown-linux-musl
+RUN cargo build -p egoroff --release --target x86_64-unknown-linux-musl
 
-FROM gcr.io/distroless/cc-debian11:latest
+FROM gcr.io/distroless/static-debian11:latest
 ENV EGOROFF_HTTP_PORT=4200
 ENV EGOROFF_HTTPS_PORT=4201
 ENV EGOROFF_CERT_DIR=/data/certs
@@ -45,7 +46,7 @@ ENV EGOROFF_DATA_DIR=/data/data
 ENV EGOROFF_HOME_DIR=/
 COPY --from=rust-build /apache/config.json /apache/
 COPY --from=rust-build /static /static
-COPY --from=rust-build /egoroff/target/release/egoroff /usr/local/bin/egoroff
+COPY --from=rust-build /egoroff/target/x86_64-unknown-linux-musl/release/egoroff /usr/local/bin/egoroff
 ENTRYPOINT [ "/usr/local/bin/egoroff" ]
 CMD [ "server" ]
 EXPOSE 4200
