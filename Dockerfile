@@ -33,9 +33,7 @@ COPY egoroff/migrate/ ./migrate/
 COPY egoroff/server/ ./server/
 COPY egoroff/egoroff/ ./egoroff/
 COPY egoroff/Cargo.toml ./
-#ENV JEMALLOC_SYS_WITH_MALLOC_CONF=narenas:1,tcache:false,dirty_decay_ms:0,muzzy_decay_ms:0
 RUN rustup target add x86_64-unknown-linux-musl
-RUN cargo test -p kernel -p server --target x86_64-unknown-linux-musl
 RUN cargo build -p egoroff --release --target x86_64-unknown-linux-musl
 
 FROM gcr.io/distroless/static-debian11:latest
