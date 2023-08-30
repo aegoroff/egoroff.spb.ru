@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes"/>
     <meta name="author" content="Александр Егоров"/>
     {% if meta_description %}
     <meta name="description" content="{{ meta_description }}"/>
@@ -18,7 +18,8 @@
     <link href="https://www.egoroff.spb.ru/auth" rel="authorization_endpoint"/>
     <link href="https://www.egoroff.spb.ru/token" rel="token_endpoint"/>
     <link href="https://www.egoroff.spb.ru/micropub/" rel="micropub"/>
-    <link href='https://fonts.googleapis.com/css?family=Noto+Serif:400,700,400italic,700italic|Open+Sans:700,400&subset=latin,cyrillic' rel='stylesheet' type='text/css'/>
+    <link href='https://fonts.googleapis.com/css?family=Noto+Serif:400,700,400italic,700italic&subset=latin,cyrillic' rel='stylesheet' type='text/css'/>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:700,400&subset=latin,cyrillic' rel='stylesheet' type='text/css'/>
     <title>{{title}}{% if title_path %}{{" | "}}{{title_path}}{% endif %}</title>
     <link href="/blog/recent.atom"
           rel="alternate"
