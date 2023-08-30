@@ -22,9 +22,11 @@ pub struct Sqlite {
 macro_rules! datetime_from_row {
     ($row:ident, $ix:expr) => {{
         let timespamp: i64 = $row.get($ix)?;
-        let datetime =
-            NaiveDateTime::from_timestamp_opt(timespamp, 0).unwrap_or(NaiveDateTime::MIN);
-        DateTime::<Utc>::from_utc(datetime, Utc)
+        NaiveDateTime::from_timestamp_opt(timespamp, 0)
+            .unwrap_or(NaiveDateTime::MIN)
+            .and_local_timezone(Utc)
+            .latest()
+            .unwrap_or_default()
     }};
 }
 

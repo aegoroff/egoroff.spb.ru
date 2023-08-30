@@ -83,13 +83,17 @@ impl PostsRequest {
         let month = self.month.unwrap_or(0);
         if year > 0 {
             let m: u32 = if month > 0 { month as u32 } else { 1 };
-            let from_dt = NaiveDate::from_ymd_opt(year, m, 1)?.and_hms_opt(0, 0, 0)?;
-            let from_dt = DateTime::<Utc>::from_local(from_dt, Utc);
+            let from_dt = NaiveDate::from_ymd_opt(year, m, 1)?
+                .and_hms_opt(0, 0, 0)?
+                .and_local_timezone(Utc)
+                .latest()?;
 
             let m: u32 = if month > 0 { month as u32 } else { 12 };
             let d = Self::last_day_of_month(year, m)?;
-            let to_dt = NaiveDate::from_ymd_opt(year, m, d)?.and_hms_opt(23, 59, 59)?;
-            let to_dt = DateTime::<Utc>::from_local(to_dt, Utc);
+            let to_dt = NaiveDate::from_ymd_opt(year, m, d)?
+                .and_hms_opt(23, 59, 59)?
+                .and_local_timezone(Utc)
+                .latest()?;
             Some(Period {
                 from: from_dt,
                 to: to_dt,

@@ -150,26 +150,34 @@ mod tests {
         let dt1 = NaiveDate::from_ymd_opt(2015, 2, 2)
             .unwrap()
             .and_hms_opt(2, 0, 0)
+            .unwrap()
+            .and_local_timezone(Utc)
+            .latest()
             .unwrap();
-        let dt1 = DateTime::<Utc>::from_local(dt1, Utc);
 
         let dt2 = NaiveDate::from_ymd_opt(2015, 2, 3)
             .unwrap()
             .and_hms_opt(2, 0, 0)
+            .unwrap()
+            .and_local_timezone(Utc)
+            .latest()
             .unwrap();
-        let dt2 = DateTime::<Utc>::from_local(dt2, Utc);
 
         let dt3 = NaiveDate::from_ymd_opt(2015, 3, 3)
             .unwrap()
             .and_hms_opt(2, 0, 0)
+            .unwrap()
+            .and_local_timezone(Utc)
+            .latest()
             .unwrap();
-        let dt3 = DateTime::<Utc>::from_local(dt3, Utc);
 
         let dt4 = NaiveDate::from_ymd_opt(2016, 3, 3)
             .unwrap()
             .and_hms_opt(2, 0, 0)
+            .unwrap()
+            .and_local_timezone(Utc)
+            .latest()
             .unwrap();
-        let dt4 = DateTime::<Utc>::from_local(dt4, Utc);
 
         let dates = vec![dt1, dt2, dt3, dt4];
 

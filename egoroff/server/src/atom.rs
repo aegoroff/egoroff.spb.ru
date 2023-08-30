@@ -68,7 +68,7 @@ pub fn from_small_posts(posts: Vec<SmallPost>) -> Result<String> {
 mod tests {
     #![allow(clippy::unwrap_in_result)]
     #![allow(clippy::unwrap_used)]
-    use chrono::{DateTime, NaiveDate, Utc};
+    use chrono::{NaiveDate, Utc};
 
     use super::*;
 
@@ -78,8 +78,10 @@ mod tests {
         let dt1 = NaiveDate::from_ymd_opt(2015, 2, 2)
             .unwrap()
             .and_hms_opt(2, 0, 0)
+            .unwrap()
+            .and_local_timezone(Utc)
+            .latest()
             .unwrap();
-        let dt1 = DateTime::<Utc>::from_local(dt1, Utc);
         let p1 = SmallPost {
             created: dt1,
             id: 1,
@@ -91,8 +93,10 @@ mod tests {
         let dt2 = NaiveDate::from_ymd_opt(2015, 2, 2)
             .unwrap()
             .and_hms_opt(2, 0, 0)
+            .unwrap()
+            .and_local_timezone(Utc)
+            .latest()
             .unwrap();
-        let dt2 = DateTime::<Utc>::from_local(dt2, Utc);
         let p2 = SmallPost {
             created: dt2,
             id: 2,
