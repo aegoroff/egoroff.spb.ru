@@ -36,7 +36,7 @@ COPY egoroff/Cargo.toml ./
 RUN rustup target add x86_64-unknown-linux-musl
 RUN cargo build -p egoroff --release --target x86_64-unknown-linux-musl
 
-FROM gcr.io/distroless/static-debian11:latest
+FROM gcr.io/distroless/static-debian12:latest
 ENV EGOROFF_HTTP_PORT=4200
 ENV EGOROFF_HTTPS_PORT=4201
 ENV EGOROFF_CERT_DIR=/data/certs
