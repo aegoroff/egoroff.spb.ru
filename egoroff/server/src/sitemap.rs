@@ -68,7 +68,7 @@ pub fn make_site_map(
     builder.to_string()
 }
 
-fn write_url(builder: &mut Builder, root: &Url) -> Result<(), anyhow::Error> {
+fn write_url(builder: &mut Builder, root: &Url) -> Result<()> {
     builder.write_start_tag(URL_ELT)?;
     builder.write_element(LOC_ELT, root.location)?;
     builder.write_element(CHANGE_FREQ_ELT, root.changefreq)?;
