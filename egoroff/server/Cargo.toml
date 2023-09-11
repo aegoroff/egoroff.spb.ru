@@ -29,7 +29,7 @@ tera = "1.19.1"
 rust-embed = { version = "8", features = ["include-exclude"] }
 anyhow = { workspace = true }
 chrono = { workspace = true, default-features = false, features = ["serde", "clock", "std"]}
-oauth2 = {version= "4.4.1", features = ["reqwest"] }
+oauth2 = {version= "4.4.2", features = ["reqwest"] }
 async-trait = "0.1"
 reqwest = { workspace = true, features = ["json", "multipart", "stream", "rustls-tls" ] }
 lazy_static = "1.4.0"
@@ -44,7 +44,7 @@ uuid = { version = "1.4.1", features = [
     "fast-rng",          # Use a faster (but still sufficiently random) RNG
     "macro-diagnostics", # Enable better diagnostics for compile-time UUIDs
 ]}
-human_bytes = "0.4.2"
+human_bytes = "0.4.3"
 
 [dev-dependencies]
 rstest = "0.18.2"
