@@ -1,6 +1,6 @@
 use std::{collections::HashMap, path::Path};
 
-use chrono::{DateTime, NaiveDateTime, Utc};
+use chrono::{DateTime, Utc};
 use itertools::Itertools;
 use rusqlite::{params, Connection, Error, ErrorCode, OpenFlags, Row, Transaction};
 
@@ -22,11 +22,7 @@ pub struct Sqlite {
 macro_rules! datetime_from_row {
     ($row:ident, $ix:expr) => {{
         let timespamp: i64 = $row.get($ix)?;
-        NaiveDateTime::from_timestamp_opt(timespamp, 0)
-            .unwrap_or(NaiveDateTime::MIN)
-            .and_local_timezone(Utc)
-            .latest()
-            .unwrap_or_default()
+        DateTime::<Utc>::from_timestamp(timespamp, 0).unwrap_or_default()
     }};
 }
 
