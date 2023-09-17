@@ -432,12 +432,12 @@ fn create_client_and_provider<P: AsRef<Path>>(
 
     let provider = storage.get_oauth_provider(provider)?;
 
-    let auth_url = AuthUrl::new(auth_uri.to_string())?;
-    let token_url = TokenUrl::new(token_uri.to_string())?;
+    let auth = AuthUrl::new(auth_uri.to_string())?;
+    let token = TokenUrl::new(token_uri.to_string())?;
 
     let client_id = ClientId::new(provider.client_id.clone());
     let client_secret = ClientSecret::new(provider.secret.clone());
-    let client = BasicClient::new(client_id, Some(client_secret), auth_url, Some(token_url))
+    let client = BasicClient::new(client_id, Some(client_secret), auth, Some(token))
         .set_redirect_uri(RedirectUrl::new(provider.redirect_url.clone())?);
     Ok((client, provider))
 }

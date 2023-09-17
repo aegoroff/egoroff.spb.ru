@@ -11,8 +11,8 @@ pub struct Resource {
 impl Resource {
     #[must_use]
     pub fn new(input: &str) -> Option<Resource> {
-        let url = Url::parse(input).ok()?;
-        Some(Resource { url })
+        let base = Url::parse(input).ok()?;
+        Some(Resource { url: base })
     }
 
     pub fn append_path(&mut self, path: &str) -> &mut Self {
