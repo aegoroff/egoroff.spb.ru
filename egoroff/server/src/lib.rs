@@ -229,6 +229,40 @@ async fn https_server(ports: Ports, handle: Handle, app: Router, certs_path: Str
     }
 }
 
+struct SecurityAddon;
+
+impl Modify for SecurityAddon {
+    fn modify(&self, openapi: &mut utoipa::openapi::OpenApi) {
+        if let Some(components) = openapi.components.as_mut() {
+            components.add_security_scheme(
+                "authorization",
+                SecurityScheme::ApiKey(ApiKey::Header(ApiKeyValue::new("authorization"))),
+            );
+        }
+    }
+}
+
+#[derive(OpenApi)]
+#[openapi(
+        paths(
+            handlers::blog::serve_posts_api,
+            handlers::micropub::serve_index_get,
+            handlers::micropub::serve_index_post,
+            handlers::micropub::serve_media_endpoint_post,
+            handlers::micropub::serve_media_endpoint_get,
+            handlers::indie::serve_token_generate,
+            handlers::indie::serve_token_validate,
+        ),
+        components(
+            schemas(SmallPost, kernel::domain::SmallPosts, micropub::MicropubConfig, micropub::SyndicateTo, micropub::MicropubFormError, indie::TokenValidationResult, indie::Token, indie::TokenRequest, handlers::micropub::MediaResponse),
+        ),
+        modifiers(&SecurityAddon),
+        tags(
+            (name = "egoroff.spb.ru", description = "egoroff.spb.ru API")
+        ),
+    )]
+struct ApiDoc;
+
 pub fn create_routes(
     base_path: PathBuf,
     site_graph: Arc<SiteGraph<'static>>,
@@ -285,40 +319,6 @@ pub fn create_routes(
         .with_persistence_policy(axum_sessions::PersistencePolicy::ExistingOnly);
 
     let auth_layer = AuthLayer::new(user_store, &secret);
-
-    #[derive(OpenApi)]
-    #[openapi(
-        paths(
-            handlers::blog::serve_posts_api,
-            handlers::micropub::serve_index_get,
-            handlers::micropub::serve_index_post,
-            handlers::micropub::serve_media_endpoint_post,
-            handlers::micropub::serve_media_endpoint_get,
-            handlers::indie::serve_token_generate,
-            handlers::indie::serve_token_validate,
-        ),
-        components(
-            schemas(SmallPost, kernel::domain::SmallPosts, micropub::MicropubConfig, micropub::SyndicateTo, micropub::MicropubFormError, indie::TokenValidationResult, indie::Token, indie::TokenRequest, handlers::micropub::MediaResponse),
-        ),
-        modifiers(&SecurityAddon),
-        tags(
-            (name = "egoroff.spb.ru", description = "egoroff.spb.ru API")
-        ),
-    )]
-    struct ApiDoc;
-
-    struct SecurityAddon;
-
-    impl Modify for SecurityAddon {
-        fn modify(&self, openapi: &mut utoipa::openapi::OpenApi) {
-            if let Some(components) = openapi.components.as_mut() {
-                components.add_security_scheme(
-                    "authorization",
-                    SecurityScheme::ApiKey(ApiKey::Header(ApiKeyValue::new("authorization"))),
-                );
-            }
-        }
-    }
 
     let login_handler = handlers::auth::serve_login
         .layer(Extension(google_authorizer.clone()))
