@@ -8,40 +8,19 @@ use axum::Router;
 
 use axum_server::tls_rustls::RustlsConfig;
 use axum_server::Handle;
-use axum_sessions::{SameSite, SessionLayer};
-use domain::{PageContext, RequireAuth};
-use futures::lock::Mutex;
-use indie::RequireIndieAuthorizationLayer;
-use kernel::domain::SmallPost;
 use kernel::graph::{SiteGraph, SiteSection};
-use kernel::session::SqliteSessionStore;
-use kernel::sqlite::{Mode, Sqlite};
 use kernel::typograph;
-use rand::Rng;
 use serde_json::Value;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::env;
-use std::path::Path;
 use std::sync::Arc;
 use std::time::Duration;
 use std::{fs::File, io::BufReader};
 use std::{net::SocketAddr, path::PathBuf};
 use tera::{try_get_value, Tera};
 use tokio::signal;
-use tower::ServiceBuilder;
-use tower_http::classify::ServerErrorsFailureClass;
-use tower_http::compression::predicate::NotForContentType;
-use tower_http::compression::{CompressionLayer, DefaultPredicate, Predicate};
-use tower_http::cors::{Any, CorsLayer};
-use tower_http::limit::RequestBodyLimitLayer;
-use tower_http::trace::TraceLayer;
-use tracing::Span;
 use tracing_subscriber::prelude::__tracing_subscriber_SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
-use utoipa::openapi::security::{ApiKey, ApiKeyValue, SecurityScheme};
-
-use utoipa::{Modify, OpenApi};
-use utoipa_swagger_ui::SwaggerUi;
 
 use crate::domain::Config;
 #[macro_use]
