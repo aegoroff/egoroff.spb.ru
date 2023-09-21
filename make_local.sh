@@ -1,3 +1,5 @@
+#!/bin/bash
+
 base_path=./home
 [[ -d "$base_path" ]] && rm -r "$base_path"
 
