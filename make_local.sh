@@ -1,12 +1,23 @@
-if [ -d "./home/" ]
-then
-    rm -r ./home/
-fi
+base_path=./home
+[[ -d "$base_path" ]] && rm -r "$base_path"
 
-(cd ./ui/; npm run build)
+(
+	cd ./ui/
+	npm run build
+)
 
-mkdir ./home/
-cp -v -R ./static/ ./home/static/
-cp -v -R ./apache/ ./home/apache/
+mkdir "$base_path"
+LOCALS=(
+	"static"
+	"apache"
+)
+for local in "${LOCALS[@]}"; do
+	cp -v -R "./$local/" "$base_path/$local/"
+done
 
-(cd ./egoroff/; cargo clean; cargo b --workspace; ./target/debug/egoroff server)
+(
+	cd ./egoroff/
+	cargo clean
+	cargo b --workspace
+	./target/debug/egoroff server
+)
