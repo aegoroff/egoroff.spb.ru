@@ -43,7 +43,7 @@ ENV EGOROFF_CERT_DIR=/data/certs
 ENV EGOROFF_DATA_DIR=/data/data
 ENV EGOROFF_HOME_DIR=/
 COPY --from=rust-build /apache/config.json /apache/
-COPY --from=rust-build /static /static
+COPY --from=node-build /static /static
 COPY --from=rust-build /egoroff/target/x86_64-unknown-linux-musl/release/egoroff /usr/local/bin/egoroff
 ENTRYPOINT [ "/usr/local/bin/egoroff" ]
 CMD [ "server" ]
