@@ -57,7 +57,6 @@ async fn serve_index(
 ) -> impl IntoResponse {
     let mut context = Context::new();
     context.insert(HTML_CLASS_KEY, "blog");
-    context.insert(CONFIG_KEY, &page_context.site_config);
 
     let page = if let Some(page) = page {
         match page.parse() {
@@ -71,7 +70,9 @@ async fn serve_index(
         1
     };
 
-    let Some(section) = page_context.site_graph.get_section("blog") else { return make_500_page(&mut context, &page_context.tera) };
+    let Some(section) = page_context.site_graph.get_section("blog") else {
+        return make_500_page(&mut context, &page_context.tera);
+    };
 
     let req = PostsRequest {
         page: Some(page),
@@ -119,7 +120,6 @@ pub async fn serve_document(
 ) -> impl IntoResponse {
     let mut context = Context::new();
     context.insert(HTML_CLASS_KEY, "blog");
-    context.insert(CONFIG_KEY, &page_context.site_config);
 
     let doc = strip_extension(&path);
 
@@ -220,7 +220,9 @@ pub async fn serve_atom(State(page_context): State<Arc<PageContext<'_>>>) -> imp
     }
 }
 
-pub async fn serve_archive_api(State(page_context): State<Arc<PageContext<'_>>>) -> impl IntoResponse {
+pub async fn serve_archive_api(
+    State(page_context): State<Arc<PageContext<'_>>>,
+) -> impl IntoResponse {
     let storage = page_context.storage.lock().await;
     let result = archive::archive(storage);
     make_json_response(result)

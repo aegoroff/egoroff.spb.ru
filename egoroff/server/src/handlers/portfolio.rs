@@ -23,7 +23,9 @@ pub struct StoredFile {
 
 pub async fn serve_index(State(page_context): State<Arc<PageContext<'_>>>) -> impl IntoResponse {
     let mut context = tera::Context::new();
-    let Some(section) = page_context.site_graph.get_section("portfolio") else { return make_500_page(&mut context, &page_context.tera) };
+    let Some(section) = page_context.site_graph.get_section("portfolio") else {
+        return make_500_page(&mut context, &page_context.tera);
+    };
 
     let title_path = page_context.site_graph.make_title_path(PORTFOLIO_PATH);
 
@@ -32,7 +34,6 @@ pub async fn serve_index(State(page_context): State<Arc<PageContext<'_>>>) -> im
     context.insert(TITLE_PATH_KEY, &title_path);
     context.insert(KEYWORDS_KEY, &section.keywords);
     context.insert(META_DESCR_KEY, &section.descr);
-    context.insert(CONFIG_KEY, &page_context.site_config);
 
     let downloads = read_downloads(page_context.clone()).await;
     if let Some(downloads) = downloads {
@@ -56,7 +57,6 @@ pub async fn serve_apache_document(
     extract::Path(path): extract::Path<String>,
 ) -> impl IntoResponse {
     let mut context = tera::Context::new();
-    context.insert(CONFIG_KEY, &page_context.site_config);
 
     let apache_documents = match read_apache_documents(&page_context.base_path) {
         Ok(docs) => docs,

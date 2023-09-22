@@ -35,7 +35,6 @@ pub async fn serve_login(
     mut session: WritableSession,
 ) -> impl IntoResponse {
     let mut context = Context::new();
-    context.insert(CONFIG_KEY, &page_context.site_config);
 
     let google_url = google_authorizer.generate_authorize_url();
     let github_url = gitgub_authorizer.generate_authorize_url();
@@ -82,7 +81,6 @@ pub async fn serve_logout(mut auth: AuthContext) -> impl IntoResponse {
 
 pub async fn serve_profile(State(page_context): State<Arc<PageContext<'_>>>) -> impl IntoResponse {
     let mut context = Context::new();
-    context.insert(CONFIG_KEY, &page_context.site_config);
     context.insert(TITLE_KEY, "Редактирование профиля");
 
     serve_page(&context, "profile.html", &page_context.tera)

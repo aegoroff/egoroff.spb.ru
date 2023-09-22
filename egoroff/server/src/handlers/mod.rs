@@ -4,7 +4,7 @@
 use std::{
     collections::HashMap,
     fs::File,
-    io::{BufReader, self},
+    io::{self, BufReader},
     path::{Path, PathBuf},
     sync::Arc,
 };
@@ -19,6 +19,8 @@ use axum::{
     Extension, Json,
 };
 use axum_sessions::extractors::{ReadableSession, WritableSession};
+use futures::{Stream, TryStreamExt};
+use futures_util::StreamExt;
 use kernel::{
     archive,
     converter::{markdown2html, xml2html},
@@ -26,8 +28,6 @@ use kernel::{
     graph,
     resource::Resource,
 };
-use futures::{Stream, TryStreamExt};
-use futures_util::StreamExt;
 use tokio_util::io::StreamReader;
 
 use reqwest::Client;
@@ -88,7 +88,6 @@ struct Apache;
 pub async fn serve_index(State(page_context): State<Arc<PageContext<'_>>>) -> impl IntoResponse {
     let mut context = Context::new();
     context.insert(HTML_CLASS_KEY, "welcome");
-    context.insert(CONFIG_KEY, &page_context.site_config);
 
     let storage = page_context.storage.lock().await;
     let result = archive::get_small_posts(storage, 5, None);
@@ -215,9 +214,11 @@ pub async fn serve_storage(
     extract::Path((bucket, path)): extract::Path<(String, String)>,
     State(page_context): State<Arc<PageContext<'_>>>,
 ) -> impl IntoResponse {
-    let Some(mut resource) = Resource::new(&page_context.store_uri) else { 
+    let Some(mut resource) = Resource::new(&page_context.store_uri) else {
         tracing::error!("Invalid storage uri {}", page_context.store_uri);
-        return internal_server_error_response(String::from("Invalid server settings that prevented to reach storage")) 
+        return internal_server_error_response(String::from(
+            "Invalid server settings that prevented to reach storage",
+        ));
     };
 
     resource
@@ -293,10 +294,10 @@ pub async fn serve_navigation(
     let q = query.uri;
 
     let Some((breadcrumbs, current)) = page_context.site_graph.breadcrumbs(&q) else {
-            return Json(Navigation {
-                ..Default::default()
-            })
-        };
+        return Json(Navigation {
+            ..Default::default()
+        });
+    };
 
     let root = breadcrumbs[0];
     let optional_breadcrumbs = if q == graph::SEP {
@@ -383,7 +384,6 @@ where
     let copied_bytes = tokio::io::copy(&mut body_reader, &mut buffer).await?;
     Ok((buffer, copied_bytes as usize))
 }
-
 
 #[cfg(test)]
 mod tests {
