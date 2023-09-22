@@ -156,12 +156,11 @@ pub async fn google_oauth_callback(
             .await;
         let mut storage = page_context.storage.lock().await;
         login_user_using_token!(token, session, storage, auth, google_authorizer);
+        Redirect::to(PROFILE_URI)
     } else {
         tracing::error!("No code verifier from session");
-        return Redirect::to(LOGIN_URI);
+        Redirect::to(LOGIN_URI)
     }
-
-    Redirect::to(PROFILE_URI)
 }
 
 pub async fn github_oauth_callback(
