@@ -1,53 +1,55 @@
 {% if poster.has_pages %}
 <!--noindex-->
     {% set blog_path = "/blog/" %}
-    {% if request.tag %}
+    {% set tag_query = "" %}
+    {% if request.tag.is_some() %}
         {% set tag_query = "?tag=" %}
-    {% else %}
-        {% set tag_query = "" %}
     {% endif %}
     {% set older = "старее &rarr;" %}
     {% set newer = "&larr; новее" %}
     <ul class="pagination justify-content-center" id="blogPager">
-        {% if poster.has_prev %}
-            {% set li_class = "" %}
-
+        {% let li_class %}
+        {% let href %}
+        
+        {% if poster.has_prev -%}
+            {% let li_class = "" %}
             {% if poster.prev_page == 1 %}
-                {% set href = tag_query %}
+                {% let href = tag_query.to_string() %}
             {% else %}
-            {% set href = poster.prev_page ~ "/" ~ tag_query %}
+                {% let href = (poster.prev_page.to_string() + "/") + tag_query %}
             {% endif %}
         {% else %}
-            {% set li_class = "disabled" %}
-            {% set href = "#" %}
-        {% endif %}
+            {% let li_class = "disabled" %}
+            {% let href = "#".to_string() %}
+        {% endif -%}
+        
         <li class="{{ li_class }} page-item">
-            <a href="{{ blog_path | safe }}{% if poster.prev_page > 1 %}page/{% endif %}{{ href | safe }}" class="page-link">{{ newer | safe }}</a>
+            <a href="{{ blog_path|safe }}{% if poster.prev_page > 1 %}page/{% endif %}{{ href|safe }}" class="page-link">{{ newer|safe }}</a>
         </li>
-        {% for page in poster.pages %}
-            {% if page %}
-                <li {% if page == poster.page %} class="active page-item" {% else %} class="page-item" {% endif %}>
-                    {% if page == 1 %}
-                    <a href="{{ blog_path | safe }}{{ tag_query | safe }}" class="page-link">{{ page }}</a>
-                    {% else %}
-                    <a href="{{ blog_path | safe }}page/{{ page }}/{{ tag_query }}"
-                       class="page-link">{{ page }}</a>
-                    {% endif %}
-                </li>
-            {% else %}
-                ......
-            {% endif %}
+
+        {% for page in poster.pages.iter().copied() %}
+            <li {% if page == poster.page %} class="active page-item" {% else %} class="page-item" {% endif %}>
+                {% if page == 1 %}
+                <a href="{{ blog_path|safe }}{{ tag_query|safe }}" class="page-link">{{ page }}</a>
+                {% else %}
+                <a href="{{ blog_path|safe }}page/{{ page }}/{{ tag_query }}"
+                    class="page-link">{{ page }}</a>
+                {% endif %}
+            </li>
         {% endfor %}
 
+        {% let li_class %}
+        {% let href %}
         {% if poster.has_next %}
             {% set li_class = "" %}
-            {% set href = poster.next_page ~ "/" ~ tag_query %}
+            {% set href = (poster.next_page.to_string() + "/") + tag_query  %}
         {% else %}
             {% set li_class = "disabled" %}
-            {% set href = "#" %}
+            {% set href = "#".to_string() %}
         {% endif %}
+        
         <li class="{{ li_class }} page-item">
-            <a href="{{ blog_path | safe }}page/{{ href | safe }}" class="page-link">{{ older | safe }}</a>
+            <a href="{{ blog_path|safe }}page/{{ href|safe }}" class="page-link">{{ older|safe }}</a>
         </li>
     </ul>
 <!--/noindex-->

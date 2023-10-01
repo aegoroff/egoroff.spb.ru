@@ -9,7 +9,6 @@ use kernel::{
 };
 use oauth2::CsrfToken;
 use serde::{Deserialize, Serialize};
-use tera::Tera;
 
 use crate::auth::Role;
 
@@ -51,7 +50,7 @@ pub struct Config {
 pub struct PageContext<'a> {
     pub base_path: PathBuf,
     pub storage: Database,
-    pub tera: Arc<Tera>,
+    //pub tera: Arc<Tera>,
     pub site_graph: Arc<SiteGraph<'a>>,
     pub site_config: Config,
     pub store_uri: String,
@@ -84,6 +83,12 @@ pub struct Poster<T> {
 pub struct Error {
     pub code: String,
     pub name: String,
+}
+
+#[derive(Deserialize, Serialize, Default)]
+pub struct Message {
+    pub r#type: String,
+    pub text: String,
 }
 
 #[derive(Debug, Deserialize)]

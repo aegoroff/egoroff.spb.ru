@@ -3,7 +3,7 @@ use serde::Deserialize;
 
 use crate::{
     body::Redirect,
-    domain::{Downloadable, FilesContainer},
+    domain::{Apache, Downloadable, FilesContainer},
 };
 
 use super::*;
@@ -21,48 +21,78 @@ pub struct StoredFile {
     pub size: u64,
 }
 
+#[derive(Template)]
+#[template(path = "portfolio/index.html")]
+struct Portfolio<'a> {
+    html_class: &'a str,
+    title: &'a str,
+    title_path: &'a str,
+    keywords: &'a str,
+    meta_description: &'a str,
+    flashed_messages: Vec<Message>,
+    downloads: Vec<FilesContainer>,
+    apache_docs: Vec<Apache>,
+}
+
 pub async fn serve_index(State(page_context): State<Arc<PageContext<'_>>>) -> impl IntoResponse {
-    let mut context = tera::Context::new();
     let Some(section) = page_context.site_graph.get_section("portfolio") else {
-        return make_500_page(&mut context, &page_context.tera);
+        return make_500_page();
     };
 
     let title_path = page_context.site_graph.make_title_path(PORTFOLIO_PATH);
 
-    context.insert(HTML_CLASS_KEY, "portfolio");
-    context.insert(TITLE_KEY, &section.title);
-    context.insert(TITLE_PATH_KEY, &title_path);
-    context.insert(KEYWORDS_KEY, &section.keywords);
-    context.insert(META_DESCR_KEY, &section.descr);
+    let mut context = Portfolio {
+        html_class: "portfolio",
+        title: &section.title,
+        title_path: &title_path,
+        keywords: "",
+        meta_description: &section.descr,
+        flashed_messages: vec![],
+        downloads: vec![],
+        apache_docs: vec![],
+    };
+    if let Some(k) = section.keywords.as_ref() {
+        context.keywords = k;
+    }
 
     let downloads = read_downloads(page_context.clone()).await;
     if let Some(downloads) = downloads {
-        context.insert("downloads", &downloads);
+        context.downloads = downloads;
     }
 
     match read_apache_documents(&page_context.base_path) {
         Ok(docs) => {
-            context.insert(APACHE_DOCS_KEY, &docs);
-            serve_page(&context, "portfolio/index.html", &page_context.tera)
+            context.apache_docs = docs;
+            serve_page(context)
         }
         Err(e) => {
             tracing::error!("{e:#?}");
-            make_500_page(&mut context, &page_context.tera)
+            make_500_page()
         }
     }
+}
+
+#[derive(Template)]
+#[template(path = "portfolio/apache.html")]
+struct ApacheDocument<'a> {
+    html_class: &'a str,
+    title: &'a str,
+    title_path: &'a str,
+    keywords: &'a str,
+    meta_description: &'a str,
+    flashed_messages: Vec<Message>,
+    content: &'a str,
 }
 
 pub async fn serve_apache_document(
     State(page_context): State<Arc<PageContext<'_>>>,
     extract::Path(path): extract::Path<String>,
 ) -> impl IntoResponse {
-    let mut context = tera::Context::new();
-
     let apache_documents = match read_apache_documents(&page_context.base_path) {
         Ok(docs) => docs,
         Err(e) => {
             tracing::error!("{e:#?}");
-            return make_500_page(&mut context, &page_context.tera);
+            return make_500_page();
         }
     };
 
@@ -74,24 +104,27 @@ pub async fn serve_apache_document(
     let doc = path.trim_end_matches(".html");
 
     let Some(doc) = map.get(doc) else {
-        return make_404_page(&mut context, &page_context.tera);
+        return make_404_page();
     };
 
     let uri = format!("{PORTFOLIO_PATH}{path}");
     let title_path = page_context.site_graph.make_title_path(&uri);
 
-    context.insert(TITLE_KEY, &doc.title);
-    context.insert(TITLE_PATH_KEY, &title_path);
-    context.insert(KEYWORDS_KEY, &doc.keywords);
-    context.insert(META_DESCR_KEY, &doc.description);
-
     let asset = ApacheTemplates::get(&path);
     if let Some(file) = asset {
         let content = String::from_utf8_lossy(&file.data);
-        context.insert("content", &content);
-        serve_page(&context, "portfolio/apache.html", &page_context.tera)
+        let context = ApacheDocument {
+            html_class: "",
+            title: &doc.title,
+            title_path: &title_path,
+            keywords: &doc.keywords,
+            meta_description: &doc.description,
+            flashed_messages: vec![],
+            content: &content,
+        };
+        serve_page(context)
     } else {
-        make_404_page(&mut context, &page_context.tera)
+        make_404_page()
     }
 }
 

@@ -1,4 +1,4 @@
-{% if flashed_messages %}
+{% if !flashed_messages.is_empty() %}
 {% for message in flashed_messages %}
 <div class="alert" data-label="{{message.type}}">
     {{message.text}}

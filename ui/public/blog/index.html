@@ -1,8 +1,8 @@
-{% extends 'index.html' %}
+{% extends "../index.html" %}
 
 {% block content %}
 <div class="container">
-    {% include 'bit/notifications.html' %}
+    {% include "bit/notifications.html" %}
     <div class="row">
         <div class="col-lg-9">
             <div class="pb-2 mt-4 mb-2 border-bottom">
@@ -11,17 +11,16 @@
                     <small id="blogSmallTitle">тут я пишу</small>
                 </h1>
             </div>
-            {% set posts = poster.posts %}
-            {% if not posts %}
+            {% if poster.posts.is_empty() %}
                 Ничего нет
             {% else %}
                 <dl itemscope itemtype="http://schema.org/BlogPosting" id="blogcontainer">
-                    {% for post in posts %}
-                        {% include 'blog/post_box.html' %}
+                    {% for post in poster.posts %}
+                        {% include "blog/post_box.html" %}
                     {% endfor %}
                 </dl>
+                {% include "blog/paginator.html" %}
             {% endif %}
-            {% include 'blog/paginator.html' %}
         </div>
         <div class="col-lg-3" id="blogNavigation">
         </div>

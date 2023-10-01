@@ -1,9 +1,9 @@
 
-{% if apache_docs %}
+{% if !apache_docs.is_empty() %}
 <dl>
     {% for item in apache_docs %}
         <dt><a href="/portfolio/{{ item.id }}.html">{{ item.title }}</a></dt>
-        <dd>{{ item.description | typograph | safe }}</dd>
+        <dd>{{ item.description|typograph|safe }}</dd>
     {% endfor %}
 </dl>
 {% endif %}

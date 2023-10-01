@@ -9,15 +9,11 @@ use axum::Router;
 use axum_server::tls_rustls::RustlsConfig;
 use axum_server::Handle;
 use kernel::graph::{SiteGraph, SiteSection};
-use kernel::typograph;
-use serde_json::Value;
-use std::collections::HashMap;
 use std::env;
 use std::sync::Arc;
 use std::time::Duration;
 use std::{fs::File, io::BufReader};
 use std::{net::SocketAddr, path::PathBuf};
-use tera::{try_get_value, Tera};
 use tokio::signal;
 use tracing_subscriber::prelude::__tracing_subscriber_SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
@@ -112,21 +108,10 @@ pub async fn run() -> Result<()> {
         .ok_or(anyhow!("Site root cannot be created"))?;
     let site_graph = Arc::new(SiteGraph::new(root));
 
-    let templates_path = BASE_PATH.join("static/dist/**/*[a-zA-Z0-9][a-zA-Z0-9_].html");
-    let templates_path = templates_path.to_str().unwrap_or_default();
-
-    let mut tera = Tera::new(templates_path).with_context(|| "Tera templates cannot be created")?;
-
-    tera.register_filter("typograph", typograph);
-    tera.register_filter("human_readable_size", human_readable_size);
-
-    let tera = Arc::new(tera);
-
     let app = rest::create_routes(
         BASE_PATH.to_path_buf(),
         site_graph,
         site_config,
-        tera,
         &data_path,
         store_uri,
         certs_path.clone(),
@@ -227,18 +212,4 @@ async fn shutdown_signal(handle: Handle) {
 
     println!("signal received, starting graceful shutdown");
     handle.graceful_shutdown(Some(Duration::from_secs(2)));
-}
-
-fn typograph(value: &Value, _: &HashMap<String, Value>) -> tera::Result<Value> {
-    let s = try_get_value!("typograph", "value", String, value);
-    match typograph::typograph(&s) {
-        Ok(s) => Ok(Value::String(s)),
-        Err(e) => Err(tera::Error::from(e.to_string())),
-    }
-}
-
-fn human_readable_size(value: &Value, _: &HashMap<String, Value>) -> tera::Result<Value> {
-    let bytes = try_get_value!("human_readable_size", "value", u64, value);
-    let s = human_bytes::human_bytes(bytes as f64);
-    Ok(Value::String(s))
 }

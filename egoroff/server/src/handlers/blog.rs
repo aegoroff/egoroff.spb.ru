@@ -50,20 +50,30 @@ pub async fn serve_index_not_default(
     serve_index(request, page_context, Some(page)).await
 }
 
+#[derive(Template)]
+#[template(path = "blog/index.html")]
+struct BlogIndex<'a> {
+    html_class: &'a str,
+    title: &'a str,
+    title_path: &'a str,
+    keywords: &'a str,
+    meta_description: &'a str,
+    flashed_messages: Vec<Message>,
+    poster: &'a Poster<SmallPost>,
+    request: &'a BlogRequest,
+}
+
 async fn serve_index(
     request: BlogRequest,
     page_context: Arc<PageContext<'_>>,
     page: Option<String>,
 ) -> impl IntoResponse {
-    let mut context = Context::new();
-    context.insert(HTML_CLASS_KEY, "blog");
-
     let page = if let Some(page) = page {
         match page.parse() {
             Ok(item) => item,
             Err(e) => {
                 tracing::error!("Invalid page: {e:#?}");
-                return make_404_page(&mut context, &page_context.tera);
+                return make_404_page();
             }
         }
     } else {
@@ -71,7 +81,7 @@ async fn serve_index(
     };
 
     let Some(section) = page_context.site_graph.get_section("blog") else {
-        return make_500_page(&mut context, &page_context.tera);
+        return make_500_page();
     };
 
     let req = PostsRequest {
@@ -82,44 +92,75 @@ async fn serve_index(
     let storage = page_context.storage.lock().await;
     let result = archive::get_small_posts(storage, PAGE_SIZE, Some(req));
 
-    let posts = match result {
+    let api_result = match result {
         Ok(ar) => ar,
         Err(e) => {
             tracing::error!("Get posts error: {e:#?}");
-            return make_500_page(&mut context, &page_context.tera);
+            return make_500_page();
         }
     };
 
-    let poster = Poster::new(posts, page);
+    let poster = Poster::new(api_result, page);
 
+    let mut tpl = BlogIndex {
+        html_class: "blog",
+        title: &section.title,
+        title_path: &section.descr,
+        keywords: "",
+        meta_description: "",
+        flashed_messages: vec![],
+        poster: &poster,
+        request: &request,
+    };
+
+    let title = format!("{page}-я страница");
+    let description = format!("{} {title}", section.descr);
     let title_path = if page == 1 {
-        context.insert(TITLE_KEY, &section.title);
-        context.insert(META_DESCR_KEY, &section.descr);
         page_context.site_graph.make_title_path(BLOG_PATH)
     } else {
-        let title = format!("{page}-я страница");
-        let description = format!("{} {title}", section.descr);
-        context.insert(TITLE_KEY, &title);
-        context.insert(META_DESCR_KEY, &description);
+        tpl.title = &title;
+        tpl.meta_description = &description;
         page_context
             .site_graph
             .make_title_path(&format!("{BLOG_PATH}{page}"))
     };
 
-    context.insert(KEYWORDS_KEY, &section.keywords);
-    context.insert("request", &request);
-    context.insert(TITLE_PATH_KEY, &title_path);
-    context.insert("poster", &poster);
+    if let Some(k) = section.keywords.as_ref() {
+        tpl.keywords = k;
+    }
+    tpl.title_path = &title_path;
 
-    serve_page(&context, "blog/index.html", &page_context.tera)
+    serve_page(tpl)
+}
+
+#[derive(Template)]
+#[template(path = "blog/post.html")]
+struct BlogPost<'a> {
+    html_class: &'a str,
+    title: &'a str,
+    title_path: &'a str,
+    keywords: &'a str,
+    meta_description: String,
+    flashed_messages: Vec<Message>,
+    main_post: &'a Post,
+    content: &'a str,
 }
 
 pub async fn serve_document(
     State(page_context): State<Arc<PageContext<'_>>>,
     extract::Path(path): extract::Path<String>,
 ) -> impl IntoResponse {
-    let mut context = Context::new();
-    context.insert(HTML_CLASS_KEY, "blog");
+    let p = Post::default();
+    let mut context = BlogPost {
+        html_class: "blog",
+        title: "",
+        title_path: "",
+        keywords: "",
+        meta_description: "".to_owned(),
+        flashed_messages: vec![],
+        main_post: &p,
+        content: "",
+    };
 
     let doc = strip_extension(&path);
 
@@ -127,7 +168,7 @@ pub async fn serve_document(
         Ok(item) => item,
         Err(e) => {
             tracing::error!("Invalid post id: {e:#?}. Expected number but was {doc}");
-            return make_404_page(&mut context, &page_context.tera);
+            return make_404_page();
         }
     };
 
@@ -135,37 +176,33 @@ pub async fn serve_document(
 
     if let Ok(id) = storage.get_new_post_id(id) {
         let new_path = format!("/blog/{id}.html");
-        return (
-            StatusCode::PERMANENT_REDIRECT,
-            Redirect::permanent(&new_path).into_response(),
-        );
+        return redirect_response(&new_path);
     }
 
     let post = match storage.get_post(id) {
         Ok(item) => item,
         Err(e) => {
             tracing::error!("Post ID '{id}' not found: {e:#?}");
-            return make_404_page(&mut context, &page_context.tera);
+            return make_404_page();
         }
     };
     drop(storage);
     let uri = format!("{BLOG_PATH}{path}");
     let title_path = page_context.site_graph.make_title_path(&uri);
 
-    context.insert(TITLE_KEY, &post.title);
-    context.insert(TITLE_PATH_KEY, &title_path);
+    context.title = &post.title;
+    context.title_path = &title_path;
 
     let keywords = post.keywords();
 
-    context.insert(KEYWORDS_KEY, &keywords);
-    context.insert("main_post", &post);
+    context.keywords = &keywords;
 
     let content = if post.markdown {
         markdown2html(&post.text)
     } else if post.text.starts_with("<?xml version=\"1.0\"?>") {
         xml2html(&post.text)
     } else {
-        Ok(post.text)
+        Ok(post.text.clone())
     };
 
     match content {
@@ -174,21 +211,22 @@ pub async fn serve_document(
                 let descr = if post.markdown {
                     markdown2html(&post.short_text).unwrap_or_default()
                 } else {
-                    post.short_text
+                    post.short_text.clone()
                 };
                 if !descr.is_empty() {
                     if let Ok(txt) = html2text(&descr) {
-                        context.insert(META_DESCR_KEY, &txt);
+                        context.meta_description = txt;
                     }
                 }
             }
 
-            context.insert("content", &c);
-            serve_page(&context, "blog/post.html", &page_context.tera)
+            context.main_post = &post;
+            context.content = &c;
+            serve_page(context)
         }
         Err(e) => {
             tracing::error!("{e:#?}");
-            make_500_page(&mut context, &page_context.tera)
+            make_500_page()
         }
     }
 }

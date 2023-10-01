@@ -1,7 +1,7 @@
-{% extends 'index.html' %}
+{% extends "index.html" %}
 
 {% block content %}
 <div class="container" id="siteSearch" property="{{config.search_api_key}}" datafld="{{config.google_site_id}}">
-    {% include 'bit/notifications.html' %}
+    {% include "bit/notifications.html" %}
 </div>
 {% endblock %}

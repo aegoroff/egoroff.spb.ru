@@ -25,7 +25,8 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tracing = "0.1"
 tower = { version = "0.4", features = ["util", "timeout"] }
 tower-http = { version = "0.4", features = ["add-extension", "trace", "cors", "limit", "compression-gzip", "validate-request", "auth"] }
-tera = "1.19.1"
+askama = { version = "0.12.1", default-features = false, features = ["with-axum", "mime", "mime_guess", "config", "humansize", "num-traits", "urlencode"] }
+askama_axum = "0.3.0"
 rust-embed = { version = "8", features = ["include-exclude"] }
 anyhow = { workspace = true }
 chrono = { workspace = true, default-features = false, features = ["serde", "clock", "std"]}
@@ -44,7 +45,6 @@ uuid = { version = "1.4.1", features = [
     "fast-rng",          # Use a faster (but still sufficiently random) RNG
     "macro-diagnostics", # Enable better diagnostics for compile-time UUIDs
 ]}
-human_bytes = "0.4.3"
 
 [dev-dependencies]
 rstest = "0.18.2"

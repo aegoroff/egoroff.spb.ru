@@ -22,7 +22,6 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Duration;
-use tera::Tera;
 use tower::ServiceBuilder;
 use tower_http::classify::ServerErrorsFailureClass;
 use tower_http::compression::predicate::NotForContentType;
@@ -77,7 +76,7 @@ pub fn create_routes(
     base_path: PathBuf,
     site_graph: Arc<SiteGraph<'static>>,
     site_config: Config,
-    tera: Arc<Tera>,
+    //tera: Arc<Tera>,
     data_path: &Path,
     store_uri: String,
     certs_path: String,
@@ -110,7 +109,7 @@ pub fn create_routes(
     let page_context = Arc::new(PageContext {
         base_path,
         storage,
-        tera,
+        //tera,
         site_graph,
         site_config,
         store_uri,

@@ -1,9 +1,20 @@
 use super::*;
 
-/// Service administration interface main page
-pub async fn serve(State(page_context): State<Arc<PageContext<'_>>>) -> impl IntoResponse {
-    let mut context = Context::new();
-    context.insert(TITLE_KEY, "Админка");
+#[derive(Template, Default)]
+#[template(path = "admin.html")]
+struct Admin<'a> {
+    html_class: &'a str,
+    title: &'a str,
+    title_path: &'a str,
+    keywords: &'a str,
+    meta_description: &'a str,
+}
 
-    serve_page(&context, "admin.html", &page_context.tera)
+/// Service administration interface main page
+pub async fn serve() -> impl IntoResponse {
+    let t = Admin {
+        title: "Админка",
+        ..Default::default()
+    };
+    serve_page(t)
 }

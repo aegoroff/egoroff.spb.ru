@@ -1,16 +1,11 @@
 #![allow(clippy::unused_async)]
 #![allow(non_upper_case_globals)]
 
-use std::{
-    collections::HashMap,
-    fs::File,
-    io::{self, BufReader},
-    path::{Path, PathBuf},
-    sync::Arc,
-};
-
 use anyhow::Result;
+use askama::Template;
 use axum::body::Bytes;
+use axum::http;
+use axum::response::Redirect;
 use axum::{
     body::Empty,
     extract::{self, Query, State},
@@ -21,6 +16,7 @@ use axum::{
 use axum_sessions::extractors::{ReadableSession, WritableSession};
 use futures::{Stream, TryStreamExt};
 use futures_util::StreamExt;
+use kernel::domain::SmallPost;
 use kernel::{
     archive,
     converter::{markdown2html, xml2html},
@@ -28,16 +24,23 @@ use kernel::{
     graph,
     resource::Resource,
 };
+use std::{
+    collections::HashMap,
+    fs::File,
+    io::{self, BufReader},
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 use tokio_util::io::StreamReader;
 
 use reqwest::Client;
 use rust_embed::RustEmbed;
 use serde::Serialize;
-use tera::{Context, Tera};
 
+use crate::domain::{Config, Message};
 use crate::{
     atom,
-    body::{Binary, FileReply, Html, Xml},
+    body::{Binary, FileReply, Xml},
     domain::{BlogRequest, Error, Navigation, PageContext, Poster, Uri},
     sitemap,
 };
@@ -48,14 +51,6 @@ pub mod blog;
 pub mod indie;
 pub mod micropub;
 pub mod portfolio;
-
-const TITLE_KEY: &str = "title";
-const TITLE_PATH_KEY: &str = "title_path";
-const HTML_CLASS_KEY: &str = "html_class";
-const KEYWORDS_KEY: &str = "keywords";
-const META_DESCR_KEY: &str = "meta_description";
-const CONFIG_KEY: &str = "config";
-const APACHE_DOCS_KEY: &str = "apache_docs";
 
 #[derive(RustEmbed)]
 #[folder = "../../static/dist/css"]
@@ -85,10 +80,20 @@ struct Static;
 #[exclude = "*.dtd"]
 struct Apache;
 
-pub async fn serve_index(State(page_context): State<Arc<PageContext<'_>>>) -> impl IntoResponse {
-    let mut context = Context::new();
-    context.insert(HTML_CLASS_KEY, "welcome");
+#[derive(Template, Default)]
+#[template(path = "welcome.html", whitespace = "suppress")]
+struct Index<'a> {
+    html_class: &'a str,
+    title: &'a str,
+    title_path: &'a str,
+    keywords: &'a str,
+    meta_description: &'a str,
+    posts: Vec<SmallPost>,
+    apache_docs: Vec<crate::domain::Apache>,
+    flashed_messages: Vec<Message>,
+}
 
+pub async fn serve_index(State(page_context): State<Arc<PageContext<'_>>>) -> impl IntoResponse {
     let storage = page_context.storage.lock().await;
     let result = archive::get_small_posts(storage, 5, None);
 
@@ -96,42 +101,67 @@ pub async fn serve_index(State(page_context): State<Arc<PageContext<'_>>>) -> im
         Ok(r) => r,
         Err(e) => {
             tracing::error!("{e:#?}");
-            return make_500_page(&mut context, &page_context.tera);
+            return make_500_page();
         }
     };
 
     match portfolio::read_apache_documents(&page_context.base_path) {
         Ok(docs) => {
             if let Some(section) = page_context.site_graph.get_section("/") {
-                context.insert(TITLE_KEY, kernel::graph::BRAND);
-                context.insert(KEYWORDS_KEY, &section.keywords);
-                context.insert(META_DESCR_KEY, &section.descr);
-                context.insert("posts", &blog_posts.result);
-                context.insert(APACHE_DOCS_KEY, &docs);
-                serve_page(&context, "welcome.html", &page_context.tera)
+                let empty = String::new();
+                let keywords = section.keywords.as_ref().unwrap_or(&empty);
+                let t = Index {
+                    html_class: "welcome",
+                    title: kernel::graph::BRAND,
+                    title_path: "",
+                    keywords,
+                    meta_description: &section.descr,
+                    posts: blog_posts.result,
+                    apache_docs: docs,
+                    flashed_messages: vec![],
+                };
+                serve_page(t)
             } else {
-                make_500_page(&mut context, &page_context.tera)
+                make_500_page()
             }
         }
         Err(e) => {
             tracing::error!("{e:#?}");
-            make_500_page(&mut context, &page_context.tera)
+            make_500_page()
         }
     }
 }
 
+#[derive(Template)]
+#[template(path = "search.html")]
+struct Search<'a> {
+    html_class: &'a str,
+    title: &'a str,
+    title_path: &'a str,
+    keywords: &'a str,
+    meta_description: &'a str,
+    flashed_messages: Vec<Message>,
+    config: &'a Config,
+}
+
 pub async fn serve_search(State(page_context): State<Arc<PageContext<'_>>>) -> impl IntoResponse {
-    let mut context = Context::new();
-    context.insert(CONFIG_KEY, &page_context.site_config);
     if let Some(section) = page_context.site_graph.get_section("search") {
-        context.insert(HTML_CLASS_KEY, "search");
-        context.insert(TITLE_KEY, &section.title);
-        context.insert(KEYWORDS_KEY, &section.keywords);
-        context.insert(META_DESCR_KEY, &section.descr);
-        serve_page(&context, "search.html", &page_context.tera)
+        let mut t = Search {
+            html_class: "search",
+            title: &section.title,
+            title_path: "",
+            keywords: "",
+            meta_description: &section.descr,
+            flashed_messages: vec![],
+            config: &page_context.site_config,
+        };
+        if let Some(keywords) = section.keywords.as_ref() {
+            t.keywords = keywords;
+        }
+        serve_page(t)
     } else {
         tracing::error!("no search section found in graph");
-        make_500_page(&mut context, &page_context.tera)
+        make_500_page()
     }
 }
 
@@ -312,42 +342,62 @@ pub async fn serve_navigation(
     })
 }
 
-fn make_404_page(context: &mut Context, tera: &Tera) -> (StatusCode, Response) {
-    not_found_response(make_error_page(context, "404", tera))
+fn make_404_page() -> Response {
+    make_error_page("404")
 }
 
-fn make_500_page(context: &mut Context, tera: &Tera) -> (StatusCode, Response) {
-    internal_server_error_response(make_error_page(context, "500", tera))
+fn make_500_page() -> Response {
+    make_error_page("500")
 }
 
-fn make_error_page(context: &mut Context, code: &str, tera: &Tera) -> Html<String> {
+fn redirect_response(new_path: &str) -> Response {
+    (
+        StatusCode::PERMANENT_REDIRECT,
+        Redirect::permanent(new_path).into_response(),
+    )
+        .into_response()
+}
+
+#[derive(Template, Default)]
+#[template(path = "error.html")]
+struct HttpError<'a> {
+    html_class: &'a str,
+    title: &'a str,
+    title_path: &'a str,
+    keywords: &'a str,
+    meta_description: &'a str,
+    flashed_messages: Vec<Message>,
+    error: Error,
+}
+
+fn make_error_page(code: &str) -> Response {
     let error = Error {
         code: code.to_string(),
         ..Default::default()
     };
-    if context.contains_key(TITLE_KEY) {
-        context.remove(TITLE_KEY);
-    }
-    context.insert(TITLE_KEY, code);
-    context.insert("error", &error);
-    let index = tera.render("error.html", context);
-    match index {
-        Ok(content) => Html(content),
-        Err(err) => {
-            tracing::error!("Server error: {err}");
-            Html(format!("{err:#?}"))
-        }
-    }
+    let t = HttpError {
+        html_class: "",
+        title: code,
+        title_path: "",
+        keywords: "",
+        meta_description: "",
+        error,
+        flashed_messages: vec![],
+    };
+    serve_page(t)
 }
 
-fn serve_page(context: &Context, template_name: &str, tera: &Tera) -> (StatusCode, Response) {
-    let index = tera.render(template_name, context);
-    match index {
-        Ok(content) => success_response(Html(content)),
-        Err(err) => {
-            tracing::error!("Server error: {err}");
-            internal_server_error_response(Html(format!("{err:#?}")))
+fn serve_page<T: Template>(t: T) -> Response {
+    match t.render() {
+        Ok(body) => {
+            let headers = [(
+                http::header::CONTENT_TYPE,
+                http::HeaderValue::from_static(T::MIME_TYPE),
+            )];
+
+            (headers, body).into_response()
         }
+        Err(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     }
 }
 
@@ -383,6 +433,18 @@ where
 
     let copied_bytes = tokio::io::copy(&mut body_reader, &mut buffer).await?;
     Ok((buffer, copied_bytes as usize))
+}
+
+mod filters {
+    use kernel::typograph;
+
+    pub fn typograph<T: std::fmt::Display>(s: T) -> ::askama::Result<String> {
+        let s = s.to_string();
+        match typograph::typograph(&s) {
+            Ok(s) => Ok(s),
+            Err(_e) => Err(::askama::Error::Fmt(std::fmt::Error)),
+        }
+    }
 }
 
 #[cfg(test)]

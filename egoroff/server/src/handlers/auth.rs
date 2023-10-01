@@ -21,20 +21,33 @@ const PROFILE_URI: &str = "/profile/";
 const LOGIN_URI: &str = "/login";
 
 macro_rules! register_url {
-    ($context:ident, $session:ident, $url:ident, $key:ident, $context_param:expr) => {{
+    ($context:ident, $session:ident, $url:ident, $key:ident, $context_param:ident) => {{
         $session.insert($key, $url.csrf_state).unwrap();
-        $context.insert($context_param, $url.url.as_str());
+        $context.$context_param = $url.url.as_str();
     }};
 }
 
+#[derive(Template, Default)]
+#[template(path = "signin.html")]
+struct Signin<'a> {
+    html_class: &'a str,
+    title: &'a str,
+    title_path: &'a str,
+    keywords: &'a str,
+    meta_description: &'a str,
+    flashed_messages: Vec<Message>,
+    google_signin_url: &'a str,
+    github_signin_url: &'a str,
+    yandex_signin_url: &'a str,
+}
+
 pub async fn serve_login(
-    State(page_context): State<Arc<PageContext<'_>>>,
     Extension(google_authorizer): Extension<Arc<GoogleAuthorizer>>,
     Extension(gitgub_authorizer): Extension<Arc<GithubAuthorizer>>,
     Extension(yandex_authorizer): Extension<Arc<YandexAuthorizer>>,
     mut session: WritableSession,
 ) -> impl IntoResponse {
-    let mut context = Context::new();
+    let mut context = Signin::default();
 
     let google_url = google_authorizer.generate_authorize_url();
     let github_url = gitgub_authorizer.generate_authorize_url();
@@ -45,7 +58,7 @@ pub async fn serve_login(
         session,
         google_url,
         GOOGLE_CSRF_KEY,
-        "google_signin_url"
+        google_signin_url
     );
 
     if let Some(v) = google_url.verifier {
@@ -59,19 +72,19 @@ pub async fn serve_login(
         session,
         github_url,
         GITHUB_CSRF_KEY,
-        "github_signin_url"
+        github_signin_url
     );
     register_url!(
         context,
         session,
         yandex_url,
         YANDEX_CSRF_KEY,
-        "yandex_signin_url"
+        yandex_signin_url
     );
 
-    context.insert(TITLE_KEY, "Авторизация");
+    context.title = "Авторизация";
 
-    serve_page(&context, "signin.html", &page_context.tera)
+    serve_page(context)
 }
 
 pub async fn serve_logout(mut auth: AuthContext) -> impl IntoResponse {
@@ -79,11 +92,23 @@ pub async fn serve_logout(mut auth: AuthContext) -> impl IntoResponse {
     Redirect::to("/login")
 }
 
-pub async fn serve_profile(State(page_context): State<Arc<PageContext<'_>>>) -> impl IntoResponse {
-    let mut context = Context::new();
-    context.insert(TITLE_KEY, "Редактирование профиля");
+#[derive(Template, Default)]
+#[template(path = "profile.html")]
+struct Profile<'a> {
+    html_class: &'a str,
+    title: &'a str,
+    title_path: &'a str,
+    keywords: &'a str,
+    meta_description: &'a str,
+    flashed_messages: Vec<Message>,
+}
 
-    serve_page(&context, "profile.html", &page_context.tera)
+pub async fn serve_profile(State(_page_context): State<Arc<PageContext<'_>>>) -> impl IntoResponse {
+    let context = Profile {
+        title: "Редактирование профиля",
+        ..Default::default()
+    };
+    serve_page(context)
 }
 
 macro_rules! login_user_using_token {
