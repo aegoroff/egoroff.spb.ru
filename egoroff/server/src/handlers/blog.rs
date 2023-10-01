@@ -105,7 +105,7 @@ async fn serve_index(
     let mut tpl = BlogIndex {
         html_class: "blog",
         title: &section.title,
-        title_path: &section.descr,
+        title_path: "",
         keywords: "",
         meta_description: "",
         flashed_messages: vec![],
@@ -150,18 +150,6 @@ pub async fn serve_document(
     State(page_context): State<Arc<PageContext<'_>>>,
     extract::Path(path): extract::Path<String>,
 ) -> impl IntoResponse {
-    let p = Post::default();
-    let mut context = BlogPost {
-        html_class: "blog",
-        title: "",
-        title_path: "",
-        keywords: "",
-        meta_description: "".to_owned(),
-        flashed_messages: vec![],
-        main_post: &p,
-        content: "",
-    };
-
     let doc = strip_extension(&path);
 
     let id: i64 = match doc.parse() {
@@ -190,13 +178,6 @@ pub async fn serve_document(
     let uri = format!("{BLOG_PATH}{path}");
     let title_path = page_context.site_graph.make_title_path(&uri);
 
-    context.title = &post.title;
-    context.title_path = &title_path;
-
-    let keywords = post.keywords();
-
-    context.keywords = &keywords;
-
     let content = if post.markdown {
         markdown2html(&post.text)
     } else if post.text.starts_with("<?xml version=\"1.0\"?>") {
@@ -207,7 +188,7 @@ pub async fn serve_document(
 
     match content {
         Ok(c) => {
-            if !c.is_empty() {
+            let descr = if !c.is_empty() {
                 let descr = if post.markdown {
                     markdown2html(&post.short_text).unwrap_or_default()
                 } else {
@@ -215,14 +196,30 @@ pub async fn serve_document(
                 };
                 if !descr.is_empty() {
                     if let Ok(txt) = html2text(&descr) {
-                        context.meta_description = txt;
+                        txt
+                    } else {
+                        descr
                     }
+                } else {
+                    descr
                 }
-            }
+            } else {
+                String::new()
+            };
 
-            context.main_post = &post;
-            context.content = &c;
-            serve_page(context)
+            let keywords = post.keywords();
+            let page_context: BlogPost<'_> = BlogPost {
+                html_class: "blog",
+                title: &post.title,
+                title_path: &title_path,
+                keywords: &keywords,
+                flashed_messages: vec![],
+                main_post: &post,
+                content: &c,
+                meta_description: descr,
+            };
+
+            serve_page(page_context)
         }
         Err(e) => {
             tracing::error!("{e:#?}");
