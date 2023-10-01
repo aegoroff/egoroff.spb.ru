@@ -102,11 +102,17 @@ async fn serve_index(
 
     let poster = Poster::new(api_result, page);
 
+    let keywords = if let Some(k) = section.keywords.as_ref() {
+        k
+    } else {
+        ""
+    };
+
     let mut tpl = BlogIndex {
         html_class: "blog",
         title: &section.title,
         title_path: "",
-        keywords: "",
+        keywords,
         meta_description: "",
         flashed_messages: vec![],
         poster: &poster,
@@ -124,10 +130,6 @@ async fn serve_index(
             .site_graph
             .make_title_path(&format!("{BLOG_PATH}{page}"))
     };
-
-    if let Some(k) = section.keywords.as_ref() {
-        tpl.keywords = k;
-    }
     tpl.title_path = &title_path;
 
     serve_page(tpl)
