@@ -51,7 +51,7 @@ pub async fn serve_index_not_default(
 }
 
 #[derive(Template)]
-#[template(path = "blog/index.html")]
+#[template(path = "blog/index.html", whitespace = "minimize")]
 struct BlogIndex<'a> {
     html_class: &'a str,
     title: &'a str,
