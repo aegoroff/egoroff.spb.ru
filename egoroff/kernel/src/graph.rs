@@ -72,9 +72,13 @@ impl<'a> SiteGraph<'a> {
     }
 
     fn new_edges(&mut self, root_id: i32) {
-        let Some(root) = self.map.get(&root_id) else { return };
+        let Some(root) = self.map.get(&root_id) else {
+            return;
+        };
 
-        let Some(ref children) = root.children else { return };
+        let Some(ref children) = root.children else {
+            return;
+        };
 
         if children.is_empty() {
             return;
@@ -129,7 +133,11 @@ impl<'a> SiteGraph<'a> {
         let current = &parent_sections[current_ix].id;
         if parent_sections.len() > 1 && uri.ends_with(SEP) {
             // dont add section root itself to breadcrumbs
-            parent_sections.remove(parent_sections.len() - 1);
+            let last = parent_sections[parent_sections.len() - 1];
+            let end = format!("{}{SEP}", last.id);
+            if uri.ends_with(&end) {
+                parent_sections.remove(parent_sections.len() - 1);
+            }
         }
         Some((parent_sections, current))
     }
@@ -139,7 +147,9 @@ impl<'a> SiteGraph<'a> {
         if uri == SEP || uri.is_empty() {
             return String::new();
         }
-        let Some(path) = self.to_path(uri) else { return String::new() };
+        let Some(path) = self.to_path(uri) else {
+            return String::new();
+        };
 
         // if section root - skip it in title
         let skip_count = usize::from(uri.ends_with(SEP));
