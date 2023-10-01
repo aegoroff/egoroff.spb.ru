@@ -11,16 +11,16 @@
                     <small id="blogSmallTitle">тут я пишу</small>
                 </h1>
             </div>
-            {% if poster.posts.is_empty() %}
+            {%- if poster.posts.is_empty() -%}
                 Ничего нет
-            {% else %}
+            {%- else -%}
                 <dl itemscope itemtype="http://schema.org/BlogPosting" id="blogcontainer">
                     {% for post in poster.posts %}
                         {% include "blog/post_box.html" %}
                     {% endfor %}
                 </dl>
-                {% include "blog/paginator.html" %}
-            {% endif %}
+                {%- include "blog/paginator.html" -%}
+            {%- endif -%}
         </div>
         <div class="col-lg-3" id="blogNavigation">
         </div>
