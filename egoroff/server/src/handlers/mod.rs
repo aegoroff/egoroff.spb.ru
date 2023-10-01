@@ -343,11 +343,11 @@ pub async fn serve_navigation(
 }
 
 fn make_404_page() -> Response {
-    make_error_page("404")
+    not_found_response(make_error_page("404")).into_response()
 }
 
 fn make_500_page() -> Response {
-    make_error_page("500")
+    internal_server_error_response(make_error_page("500")).into_response()
 }
 
 fn redirect_response(new_path: &str) -> Response {
