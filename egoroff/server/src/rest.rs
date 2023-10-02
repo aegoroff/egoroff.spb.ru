@@ -76,7 +76,6 @@ pub fn create_routes(
     base_path: PathBuf,
     site_graph: Arc<SiteGraph<'static>>,
     site_config: Config,
-    //tera: Arc<Tera>,
     data_path: &Path,
     store_uri: String,
     certs_path: String,
@@ -109,7 +108,6 @@ pub fn create_routes(
     let page_context = Arc::new(PageContext {
         base_path,
         storage,
-        //tera,
         site_graph,
         site_config,
         store_uri,

@@ -103,12 +103,11 @@ struct Profile<'a> {
     flashed_messages: Vec<Message>,
 }
 
-pub async fn serve_profile(State(_page_context): State<Arc<PageContext<'_>>>) -> impl IntoResponse {
-    let context = Profile {
+pub async fn serve_profile() -> impl IntoResponse {
+    serve_page(Profile {
         title: "Редактирование профиля",
         ..Default::default()
-    };
-    serve_page(context)
+    })
 }
 
 macro_rules! login_user_using_token {

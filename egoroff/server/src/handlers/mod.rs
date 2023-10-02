@@ -17,6 +17,7 @@ use axum_sessions::extractors::{ReadableSession, WritableSession};
 use futures::{Stream, TryStreamExt};
 use futures_util::StreamExt;
 use kernel::domain::SmallPost;
+use kernel::graph::SiteSection;
 use kernel::{
     archive,
     converter::{markdown2html, xml2html},
@@ -108,19 +109,16 @@ pub async fn serve_index(State(page_context): State<Arc<PageContext<'_>>>) -> im
     match portfolio::read_apache_documents(&page_context.base_path) {
         Ok(docs) => {
             if let Some(section) = page_context.site_graph.get_section("/") {
-                let empty = String::new();
-                let keywords = section.keywords.as_ref().unwrap_or(&empty);
-                let t = Index {
+                serve_page(Index {
                     html_class: "welcome",
                     title: kernel::graph::BRAND,
                     title_path: "",
-                    keywords,
+                    keywords: get_keywords(section),
                     meta_description: &section.descr,
                     posts: blog_posts.result,
                     apache_docs: docs,
                     flashed_messages: vec![],
-                };
-                serve_page(t)
+                })
             } else {
                 make_500_page()
             }
@@ -146,19 +144,15 @@ struct Search<'a> {
 
 pub async fn serve_search(State(page_context): State<Arc<PageContext<'_>>>) -> impl IntoResponse {
     if let Some(section) = page_context.site_graph.get_section("search") {
-        let mut t = Search {
+        serve_page(Search {
             html_class: "search",
             title: &section.title,
             title_path: "",
-            keywords: "",
+            keywords: get_keywords(section),
             meta_description: &section.descr,
             flashed_messages: vec![],
             config: &page_context.site_config,
-        };
-        if let Some(keywords) = section.keywords.as_ref() {
-            t.keywords = keywords;
-        }
-        serve_page(t)
+        })
     } else {
         tracing::error!("no search section found in graph");
         make_500_page()
@@ -276,6 +270,14 @@ pub async fn serve_storage(
     }
 }
 
+fn get_keywords(section: &SiteSection) -> &str {
+    if let Some(keywords) = section.keywords.as_ref() {
+        keywords
+    } else {
+        ""
+    }
+}
+
 /// makes HTTP (OK) response code 200
 fn success_response<R: IntoResponse>(r: R) -> (StatusCode, Response) {
     (StatusCode::OK, r.into_response())
@@ -375,7 +377,7 @@ fn make_error_page(code: &str) -> Response {
         code: code.to_string(),
         ..Default::default()
     };
-    let t = ErrorPageTemplate {
+    serve_page(ErrorPageTemplate {
         html_class: "",
         title: code,
         title_path: "",
@@ -383,8 +385,7 @@ fn make_error_page(code: &str) -> Response {
         meta_description: "",
         error,
         flashed_messages: vec![],
-    };
-    serve_page(t)
+    })
 }
 
 fn serve_page<T: Template>(t: T) -> Response {

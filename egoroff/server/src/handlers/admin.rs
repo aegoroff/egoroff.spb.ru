@@ -12,9 +12,8 @@ struct Admin<'a> {
 
 /// Service administration interface main page
 pub async fn serve() -> impl IntoResponse {
-    let t = Admin {
+    serve_page(Admin {
         title: "Админка",
         ..Default::default()
-    };
-    serve_page(t)
+    })
 }

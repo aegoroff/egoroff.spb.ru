@@ -102,17 +102,11 @@ async fn serve_index(
 
     let poster = Poster::new(api_result, page);
 
-    let keywords = if let Some(k) = section.keywords.as_ref() {
-        k
-    } else {
-        ""
-    };
-
     let mut tpl = BlogIndex {
         html_class: "blog",
         title: &section.title,
         title_path: "",
-        keywords,
+        keywords: get_keywords(section),
         meta_description: "",
         flashed_messages: vec![],
         poster: &poster,
@@ -210,7 +204,7 @@ pub async fn serve_document(
             };
 
             let keywords = post.keywords();
-            let page_context: BlogPost<'_> = BlogPost {
+            serve_page(BlogPost {
                 html_class: "blog",
                 title: &post.title,
                 title_path: &title_path,
@@ -219,9 +213,7 @@ pub async fn serve_document(
                 main_post: &post,
                 content: &c,
                 meta_description: descr,
-            };
-
-            serve_page(page_context)
+            })
         }
         Err(e) => {
             tracing::error!("{e:#?}");

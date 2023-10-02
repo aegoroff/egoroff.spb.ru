@@ -45,15 +45,12 @@ pub async fn serve_index(State(page_context): State<Arc<PageContext<'_>>>) -> im
         html_class: "portfolio",
         title: &section.title,
         title_path: &title_path,
-        keywords: "",
+        keywords: get_keywords(section),
         meta_description: &section.descr,
         flashed_messages: vec![],
         downloads: vec![],
         apache_docs: vec![],
     };
-    if let Some(k) = section.keywords.as_ref() {
-        context.keywords = k;
-    }
 
     let downloads = read_downloads(page_context.clone()).await;
     if let Some(downloads) = downloads {
