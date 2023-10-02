@@ -1,23 +1,22 @@
 {% extends "../index.html" %}
 
-{% block content %}
+{%- block content -%}
 <div class="container">
     {% include "bit/notifications.html" %}
     <div class="row">
         <div class="col-lg-9">
             <div class="pb-2 mt-4 mb-2 border-bottom">
                 <h1>
-                    {{ title }}
-                    <small id="blogSmallTitle">тут я пишу</small>
+                    {{- title -}}&nbsp;<small id="blogSmallTitle">тут я пишу</small>
                 </h1>
             </div>
             {%- if poster.posts.is_empty() -%}
                 Ничего нет
             {%- else -%}
                 <dl itemscope itemtype="http://schema.org/BlogPosting" id="blogcontainer">
-                    {% for post in poster.posts %}
-                        {% include "blog/post_box.html" %}
-                    {% endfor %}
+                    {%- for post in poster.posts -%}
+                        {%- include "blog/post_box.html" -%}
+                    {%- endfor -%}
                 </dl>
                 {%- include "blog/paginator.html" -%}
             {%- endif -%}
@@ -26,4 +25,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
+{%- endblock -%}

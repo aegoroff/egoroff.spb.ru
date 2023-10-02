@@ -1,13 +1,13 @@
-{% if !downloads.is_empty() %}
-{% for folder in downloads %}
+{%- if !downloads.is_empty() -%}
+{%- for folder in downloads -%}
     <h3> {{ folder.title }}</h3>
     <ul class="list-unstyled">
-    {% for f in folder.files %}
+    {%- for f in folder.files -%}
         <li itemscope itemtype="http://schema.org/SoftwareApplication">
             <a itemprop="downloadUrl" href="{{ f.path|safe }}" onclick="gtag('event', 'file_download', { 'send_to': 'G-HRFZ3XCBK8', 'file_name': '{{ f.filename }}', 'link_url': '{{ f.path|safe }}' });"><i class="icon" data-label="download"></i>&nbsp;<span itemprop="name">{{ f.title }}</span></a>&nbsp;
             <small><span>&mdash;&nbsp;{{ f.size|filesizeformat }}</span></small>
         </li>
-    {% endfor %}
+    {%- endfor -%}
     </ul>
-{% endfor %}
-{% endif %}
+{%- endfor -%}
+{%- endif -%}

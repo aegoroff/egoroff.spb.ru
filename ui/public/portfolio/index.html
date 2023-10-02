@@ -1,14 +1,11 @@
 {% extends "../index.html" %}
 
-{% block content %}
+{%- block content -%}
 <div class="container">
     {% include "bit/notifications.html" %}
     <div class="pb-2 mt-4 mb-2 border-bottom">
         <h1>
-            {{ title }}
-            <small>
-                тут я делюсь
-            </small>
+            {{- title -}}&nbsp;<small>тут я делюсь</small>
         </h1>
     </div>
     <div class="row">
@@ -22,4 +19,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
+{%- endblock -%}

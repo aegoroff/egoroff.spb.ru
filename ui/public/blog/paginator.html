@@ -28,7 +28,7 @@
         </li>
 
         {%- for page in poster.pages.iter().copied() -%}
-            <li {% if page == poster.page %} class="active page-item" {% else %} class="page-item" {% endif %}>
+            <li {%- if page == poster.page -%} class="active page-item" {%- else -%} class="page-item" {%- endif -%}>
                 {%- if page == 1 -%}
                 <a href="{{ blog_path|safe }}{{ tag_query|safe }}" class="page-link">{{ page }}</a>
                 {%- else -%}

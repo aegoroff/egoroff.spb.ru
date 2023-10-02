@@ -7,7 +7,7 @@
         <div class="col-lg-12">
             <p class="text-muted"><i class="icon" data-label="calendar-alt"></i>&nbsp;<span class="date" data-label="from-now">{{ main_post.created }}</span></p>
             {%- if !content.is_empty() -%}
-                {{ content|typograph|safe }}
+                {{- content|typograph|safe -}}
             {%- else -%}
                 {{ main_post.short_text|typograph|safe  }}
             {%- endif -%}
