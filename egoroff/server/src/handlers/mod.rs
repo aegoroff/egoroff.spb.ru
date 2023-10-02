@@ -360,7 +360,7 @@ fn redirect_response(new_path: &str) -> Response {
 
 #[derive(Template, Default)]
 #[template(path = "error.html")]
-struct HttpError<'a> {
+struct ErrorPageTemplate<'a> {
     html_class: &'a str,
     title: &'a str,
     title_path: &'a str,
@@ -375,7 +375,7 @@ fn make_error_page(code: &str) -> Response {
         code: code.to_string(),
         ..Default::default()
     };
-    let t = HttpError {
+    let t = ErrorPageTemplate {
         html_class: "",
         title: code,
         title_path: "",
