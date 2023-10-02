@@ -184,23 +184,21 @@ pub async fn serve_document(
 
     match content {
         Ok(c) => {
-            let descr = if !c.is_empty() {
+            let descr = if c.is_empty() {
+                String::new()
+            } else {
                 let descr = if post.markdown {
                     markdown2html(&post.short_text).unwrap_or_default()
                 } else {
                     post.short_text.clone()
                 };
-                if !descr.is_empty() {
-                    if let Ok(txt) = html2text(&descr) {
-                        txt
-                    } else {
-                        descr
-                    }
+                if descr.is_empty() {
+                    descr
+                } else if let Ok(txt) = html2text(&descr) {
+                    txt
                 } else {
                     descr
                 }
-            } else {
-                String::new()
             };
 
             let keywords = post.keywords();
