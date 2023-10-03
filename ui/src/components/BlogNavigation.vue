@@ -1,9 +1,13 @@
 <template>
   <div class="col-lg-3" id="blogNavigation">
-    <h3>Метки</h3>
-    <Tags v-bind:tags="archive.tags"/>
-    <h3>Архив</h3>
-    <Chrono v-bind:years="archive.years"/>
+    <b-tabs>
+      <b-tab title="Метки" active>
+        <Tags v-bind:tags="archive.tags"/>
+      </b-tab>
+      <b-tab title="Архив">
+        <Chrono v-bind:years="archive.years"/>
+      </b-tab>
+    </b-tabs>
   </div>
 </template>
 
