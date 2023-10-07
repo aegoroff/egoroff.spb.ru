@@ -1,14 +1,4 @@
-use super::*;
-
-#[derive(Template, Default)]
-#[template(path = "admin.html")]
-struct Admin<'a> {
-    html_class: &'a str,
-    title: &'a str,
-    title_path: &'a str,
-    keywords: &'a str,
-    meta_description: &'a str,
-}
+use super::{template::Admin, *};
 
 /// Service administration interface main page
 pub async fn serve() -> impl IntoResponse {

@@ -7,7 +7,7 @@ use crate::{
     domain::OperationResult,
 };
 
-use super::*;
+use super::{*, template::{BlogIndex, BlogPost}};
 
 const PAGE_SIZE: i32 = 20;
 
@@ -48,19 +48,6 @@ pub async fn serve_index_not_default(
     extract::Path(page): extract::Path<String>,
 ) -> impl IntoResponse {
     serve_index(request, page_context, Some(page)).await
-}
-
-#[derive(Template)]
-#[template(path = "blog/index.html", whitespace = "minimize")]
-struct BlogIndex<'a> {
-    html_class: &'a str,
-    title: &'a str,
-    title_path: &'a str,
-    keywords: &'a str,
-    meta_description: &'a str,
-    flashed_messages: Vec<Message>,
-    poster: &'a Poster<SmallPost>,
-    request: &'a BlogRequest,
 }
 
 async fn serve_index(
@@ -127,19 +114,6 @@ async fn serve_index(
     tpl.title_path = &title_path;
 
     serve_page(tpl)
-}
-
-#[derive(Template)]
-#[template(path = "blog/post.html")]
-struct BlogPost<'a> {
-    html_class: &'a str,
-    title: &'a str,
-    title_path: &'a str,
-    keywords: &'a str,
-    meta_description: String,
-    flashed_messages: Vec<Message>,
-    main_post: &'a Post,
-    content: &'a str,
 }
 
 pub async fn serve_document(

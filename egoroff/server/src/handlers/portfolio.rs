@@ -3,10 +3,13 @@ use serde::Deserialize;
 
 use crate::{
     body::Redirect,
-    domain::{Apache, Downloadable, FilesContainer},
+    domain::{Downloadable, FilesContainer},
 };
 
-use super::*;
+use super::{
+    template::{ApacheDocument, Portfolio},
+    *,
+};
 
 #[derive(RustEmbed)]
 #[folder = "../../templates/apache"]
@@ -19,19 +22,6 @@ pub struct StoredFile {
     pub id: i64,
     pub path: String,
     pub size: u64,
-}
-
-#[derive(Template)]
-#[template(path = "portfolio/index.html")]
-struct Portfolio<'a> {
-    html_class: &'a str,
-    title: &'a str,
-    title_path: &'a str,
-    keywords: &'a str,
-    meta_description: &'a str,
-    flashed_messages: Vec<Message>,
-    downloads: Vec<FilesContainer>,
-    apache_docs: Vec<Apache>,
 }
 
 pub async fn serve_index(State(page_context): State<Arc<PageContext<'_>>>) -> impl IntoResponse {
@@ -67,18 +57,6 @@ pub async fn serve_index(State(page_context): State<Arc<PageContext<'_>>>) -> im
             make_500_page()
         }
     }
-}
-
-#[derive(Template)]
-#[template(path = "portfolio/apache.html")]
-struct ApacheDocument<'a> {
-    html_class: &'a str,
-    title: &'a str,
-    title_path: &'a str,
-    keywords: &'a str,
-    meta_description: &'a str,
-    flashed_messages: Vec<Message>,
-    content: &'a str,
 }
 
 pub async fn serve_apache_document(

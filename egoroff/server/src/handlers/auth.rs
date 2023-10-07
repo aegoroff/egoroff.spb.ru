@@ -1,8 +1,8 @@
-use super::*;
+use super::{*, template::Profile};
 use crate::{
     auth::{ToUser, YandexAuthorizer},
     body::Redirect,
-    domain::AuthorizedUser,
+    domain::AuthorizedUser, handlers::template::Signin,
 };
 use oauth2::{CsrfToken, PkceCodeVerifier, TokenResponse};
 
@@ -25,20 +25,6 @@ macro_rules! register_url {
         $session.insert($key, $url.csrf_state).unwrap();
         $context.$context_param = $url.url.as_str();
     }};
-}
-
-#[derive(Template, Default)]
-#[template(path = "signin.html")]
-struct Signin<'a> {
-    html_class: &'a str,
-    title: &'a str,
-    title_path: &'a str,
-    keywords: &'a str,
-    meta_description: &'a str,
-    flashed_messages: Vec<Message>,
-    google_signin_url: &'a str,
-    github_signin_url: &'a str,
-    yandex_signin_url: &'a str,
 }
 
 pub async fn serve_login(
@@ -90,17 +76,6 @@ pub async fn serve_login(
 pub async fn serve_logout(mut auth: AuthContext) -> impl IntoResponse {
     auth.logout().await;
     Redirect::to("/login")
-}
-
-#[derive(Template, Default)]
-#[template(path = "profile.html")]
-struct Profile<'a> {
-    html_class: &'a str,
-    title: &'a str,
-    title_path: &'a str,
-    keywords: &'a str,
-    meta_description: &'a str,
-    flashed_messages: Vec<Message>,
 }
 
 pub async fn serve_profile() -> impl IntoResponse {

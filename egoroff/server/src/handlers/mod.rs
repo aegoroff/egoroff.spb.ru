@@ -16,7 +16,6 @@ use axum::{
 use axum_sessions::extractors::{ReadableSession, WritableSession};
 use futures::{Stream, TryStreamExt};
 use futures_util::StreamExt;
-use kernel::domain::SmallPost;
 use kernel::graph::SiteSection;
 use kernel::{
     archive,
@@ -38,7 +37,6 @@ use reqwest::Client;
 use rust_embed::RustEmbed;
 use serde::Serialize;
 
-use crate::domain::{Config, Message};
 use crate::{
     atom,
     body::{Binary, FileReply, Xml},
@@ -46,12 +44,17 @@ use crate::{
     sitemap,
 };
 
+use template::{Index, Search};
+
+use self::template::ErrorPageTemplate;
+
 pub mod admin;
 pub mod auth;
 pub mod blog;
 pub mod indie;
 pub mod micropub;
 pub mod portfolio;
+mod template;
 
 #[derive(RustEmbed)]
 #[folder = "../../static/dist/css"]
@@ -80,19 +83,6 @@ struct Static;
 #[exclude = "*.xsl"]
 #[exclude = "*.dtd"]
 struct Apache;
-
-#[derive(Template, Default)]
-#[template(path = "welcome.html", whitespace = "suppress")]
-struct Index<'a> {
-    html_class: &'a str,
-    title: &'a str,
-    title_path: &'a str,
-    keywords: &'a str,
-    meta_description: &'a str,
-    posts: Vec<SmallPost>,
-    apache_docs: Vec<crate::domain::Apache>,
-    flashed_messages: Vec<Message>,
-}
 
 pub async fn serve_index(State(page_context): State<Arc<PageContext<'_>>>) -> impl IntoResponse {
     let storage = page_context.storage.lock().await;
@@ -128,18 +118,6 @@ pub async fn serve_index(State(page_context): State<Arc<PageContext<'_>>>) -> im
             make_500_page()
         }
     }
-}
-
-#[derive(Template)]
-#[template(path = "search.html")]
-struct Search<'a> {
-    html_class: &'a str,
-    title: &'a str,
-    title_path: &'a str,
-    keywords: &'a str,
-    meta_description: &'a str,
-    flashed_messages: Vec<Message>,
-    config: &'a Config,
 }
 
 pub async fn serve_search(State(page_context): State<Arc<PageContext<'_>>>) -> impl IntoResponse {
@@ -360,18 +338,6 @@ fn redirect_response(new_path: &str) -> Response {
         .into_response()
 }
 
-#[derive(Template, Default)]
-#[template(path = "error.html")]
-struct ErrorPageTemplate<'a> {
-    html_class: &'a str,
-    title: &'a str,
-    title_path: &'a str,
-    keywords: &'a str,
-    meta_description: &'a str,
-    flashed_messages: Vec<Message>,
-    error: Error,
-}
-
 fn make_error_page(code: &str) -> Response {
     let error = Error {
         code: code.to_string(),
@@ -434,18 +400,6 @@ where
 
     let copied_bytes = tokio::io::copy(&mut body_reader, &mut buffer).await?;
     Ok((buffer, copied_bytes as usize))
-}
-
-mod filters {
-    use kernel::typograph;
-
-    pub fn typograph<T: std::fmt::Display>(s: T) -> ::askama::Result<String> {
-        let s = s.to_string();
-        match typograph::typograph(&s) {
-            Ok(s) => Ok(s),
-            Err(_e) => Err(::askama::Error::Fmt(std::fmt::Error)),
-        }
-    }
 }
 
 #[cfg(test)]
