@@ -12,6 +12,7 @@ pub struct SiteSection {
     pub id: String,
     pub icon: String,
     pub title: String,
+    #[serde(skip_serializing_if = "String::is_empty")]
     pub descr: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub keywords: Option<String>,
