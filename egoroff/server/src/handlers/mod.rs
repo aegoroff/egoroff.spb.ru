@@ -313,7 +313,17 @@ pub async fn serve_navigation(
     let optional_breadcrumbs = if q == graph::SEP {
         None
     } else {
-        Some(breadcrumbs.into_iter().cloned().collect())
+        Some(
+            breadcrumbs
+                .into_iter()
+                .map(|s| SiteSection {
+                    id: s.id.clone(),
+                    icon: s.icon.clone(),
+                    title: s.title.clone(),
+                    ..Default::default()
+                })
+                .collect(),
+        )
     };
 
     Json(Navigation {
