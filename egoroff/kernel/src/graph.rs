@@ -28,10 +28,13 @@ impl SiteSection {
         self.children.as_ref().map(|sections| {
             sections
                 .iter()
-                .cloned()
-                .map(|mut s| {
-                    s.active = Some(s.id == active);
-                    s
+                .map(|s| SiteSection {
+                    id: s.id.clone(),
+                    icon: s.icon.clone(),
+                    title: s.title.clone(),
+                    descr: s.descr.clone(),
+                    active: Some(s.id == active),
+                    ..Default::default()
                 })
                 .collect()
         })
