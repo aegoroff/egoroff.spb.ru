@@ -16,7 +16,7 @@ tokio = { workspace = true, features = ["full"] }
 mime_guess = "2"
 axum = { version = "0.6.20", features = ["multipart", "http2", "headers"] }
 axum-server = { version = "0.5.1", features = ["tls-rustls"] }
-axum-sessions = "0.5.0"
+axum-sessions = "0.6.1"
 axum-login = "0.6.0"
 tokio-util = { workspace = true, features = ["full"] }
 futures = { workspace = true }
