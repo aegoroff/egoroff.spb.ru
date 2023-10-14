@@ -1,10 +1,12 @@
-use super::{*, template::Profile};
+use super::{template::Profile, *};
 use crate::{
     auth::{ToUser, YandexAuthorizer},
     body::Redirect,
-    domain::AuthorizedUser, handlers::template::Signin,
+    domain::AuthorizedUser,
+    handlers::template::Signin,
 };
 use oauth2::{CsrfToken, PkceCodeVerifier, TokenResponse};
+use tower_sessions::Session;
 
 use crate::{
     auth::{Authorizer, GithubAuthorizer, GoogleAuthorizer, Role, UserStorage},
@@ -31,7 +33,7 @@ pub async fn serve_login(
     Extension(google_authorizer): Extension<Arc<GoogleAuthorizer>>,
     Extension(gitgub_authorizer): Extension<Arc<GithubAuthorizer>>,
     Extension(yandex_authorizer): Extension<Arc<YandexAuthorizer>>,
-    mut session: WritableSession,
+    session: Session,
 ) -> impl IntoResponse {
     let mut context = Signin::default();
 
@@ -125,16 +127,21 @@ macro_rules! login_user_using_token {
 macro_rules! validate_csrf {
     ($key:expr, $session:ident, $query:ident) => {{
         match $session.get::<CsrfToken>($key) {
-            Some(original_csrf_state) => {
-                if original_csrf_state.secret() == $query.state.secret() {
-                    tracing::info!("authorized");
+            Ok(original_csrf_state) => {
+                if let Some(state) = original_csrf_state {
+                    if state.secret() == $query.state.secret() {
+                        tracing::info!("authorized");
+                    } else {
+                        tracing::error!("unauthorized");
+                        return Redirect::to(LOGIN_URI);
+                    }
                 } else {
                     tracing::error!("unauthorized");
                     return Redirect::to(LOGIN_URI);
                 }
             }
-            None => {
-                tracing::error!("No state from session");
+            Err(e) => {
+                tracing::error!("No state from session: {}", e);
                 return Redirect::to(LOGIN_URI);
             }
         }
@@ -145,13 +152,13 @@ pub async fn google_oauth_callback(
     Query(query): Query<AuthRequest>,
     Extension(google_authorizer): Extension<Arc<GoogleAuthorizer>>,
     State(page_context): State<Arc<PageContext<'_>>>,
-    session: ReadableSession,
+    session: Session,
     mut auth: AuthContext,
 ) -> impl IntoResponse {
     validate_csrf!(GOOGLE_CSRF_KEY, session, query);
-    if let Some(pkce_code_verifier) = session.get::<PkceCodeVerifier>(PKCE_CODE_VERIFIER_KEY) {
+    if let Ok(pkce_code_verifier) = session.get::<PkceCodeVerifier>(PKCE_CODE_VERIFIER_KEY) {
         let token = google_authorizer
-            .exchange_code(query.code, Some(pkce_code_verifier))
+            .exchange_code(query.code, pkce_code_verifier)
             .await;
         let mut storage = page_context.storage.lock().await;
         login_user_using_token!(token, session, storage, auth, google_authorizer);
@@ -166,7 +173,7 @@ pub async fn github_oauth_callback(
     Query(query): Query<AuthRequest>,
     Extension(github_authorizer): Extension<Arc<GithubAuthorizer>>,
     State(page_context): State<Arc<PageContext<'_>>>,
-    session: ReadableSession,
+    session: Session,
     mut auth: AuthContext,
 ) -> impl IntoResponse {
     validate_csrf!(GITHUB_CSRF_KEY, session, query);
@@ -180,7 +187,7 @@ pub async fn yandex_oauth_callback(
     Query(query): Query<AuthRequest>,
     Extension(yandex_authorizer): Extension<Arc<YandexAuthorizer>>,
     State(page_context): State<Arc<PageContext<'_>>>,
-    session: ReadableSession,
+    session: Session,
     mut auth: AuthContext,
 ) -> impl IntoResponse {
     validate_csrf!(YANDEX_CSRF_KEY, session, query);

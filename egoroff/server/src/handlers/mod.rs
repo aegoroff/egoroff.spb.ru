@@ -13,7 +13,6 @@ use axum::{
     response::{IntoResponse, Response},
     Extension, Json,
 };
-use axum_sessions::extractors::{ReadableSession, WritableSession};
 use futures::{Stream, TryStreamExt};
 use futures_util::StreamExt;
 use kernel::graph::SiteSection;
