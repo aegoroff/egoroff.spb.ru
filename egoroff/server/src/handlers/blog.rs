@@ -179,10 +179,9 @@ pub async fn serve_document(
             };
 
             let keywords = post.keywords();
-            let title = format!("№ {}. {}", post.id, post.title);
             serve_page(BlogPost {
                 html_class: "blog",
-                title: &title,
+                title: &post.title,
                 title_path: &title_path,
                 keywords: &keywords,
                 flashed_messages: vec![],
