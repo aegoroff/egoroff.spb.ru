@@ -4,7 +4,7 @@
       <dt><small>
         <DateFormatter v-bind:date="post.Created" format-str="LL"></DateFormatter>
       </small>&nbsp;
-        <a itemprop="url" v-bind:href="'/blog/' + post.id + '.html'"><span itemprop="name">{{ post.Title }}</span></a>
+        <a itemprop="url" v-bind:href="'/blog/' + post.id + '.html'"><span itemprop="name">{{ post.id }}&nbsp;|&nbsp;{{ post.Title }}</span></a>
       </dt>
       <dd itemprop="description" v-html="post.ShortText">{{ post.ShortText }}</dd>
     </div>
