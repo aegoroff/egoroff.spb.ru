@@ -7,7 +7,10 @@ use crate::{
     domain::OperationResult,
 };
 
-use super::{*, template::{BlogIndex, BlogPost}};
+use super::{
+    template::{BlogIndex, BlogPost},
+    *,
+};
 
 const PAGE_SIZE: i32 = 20;
 
@@ -176,9 +179,10 @@ pub async fn serve_document(
             };
 
             let keywords = post.keywords();
+            let title = format!("№ {}. {}", post.id, post.title);
             serve_page(BlogPost {
                 html_class: "blog",
-                title: &post.title,
+                title: &title,
                 title_path: &title_path,
                 keywords: &keywords,
                 flashed_messages: vec![],
