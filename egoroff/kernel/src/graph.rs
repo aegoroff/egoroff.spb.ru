@@ -185,7 +185,7 @@ mod tests {
     #![allow(clippy::unwrap_in_result)]
     #![allow(clippy::unwrap_used)]
     use super::*;
-    use rstest::rstest;
+    use rstest::{fixture, rstest};
 
     #[rstest]
     #[case("aa", "/a/aa/")]
@@ -194,10 +194,9 @@ mod tests {
     #[case("bb", "/b/bb/")]
     #[case("ab", "")]
     #[case("/", "/")]
-    fn full_path_tests(#[case] id: &str, #[case] expected: &str) {
+    fn full_path_tests(root: SiteSection, #[case] id: &str, #[case] expected: &str) {
         // arrange
-        let tg = create_test_data();
-        let g = SiteGraph::new(&tg);
+        let g = SiteGraph::new(&root);
 
         // act
         let actual = g.full_path(id);
@@ -209,10 +208,9 @@ mod tests {
     #[rstest]
     #[case("/")]
     #[case("a")]
-    fn get_section_correct(#[case] id: &str) {
+    fn get_section_correct(root: SiteSection, #[case] id: &str) {
         // arrange
-        let tg = create_test_data();
-        let g = SiteGraph::new(&tg);
+        let g = SiteGraph::new(&root);
 
         // act
         let actual = g.get_section(id);
@@ -224,10 +222,9 @@ mod tests {
     #[rstest]
     #[case("")]
     #[case("ab")]
-    fn get_section_incorrect(#[case] id: &str) {
+    fn get_section_incorrect(root: SiteSection, #[case] id: &str) {
         // arrange
-        let tg = create_test_data();
-        let g = SiteGraph::new(&tg);
+        let g = SiteGraph::new(&root);
 
         // act
         let actual = g.get_section(id);
@@ -245,12 +242,12 @@ mod tests {
     #[case("", "/", 1)]
     #[case("/", "/", 1)]
     fn breadcrumbs_test(
+        root: SiteSection,
         #[case] path: &str,
         #[case] expected_current: &str,
         #[case] expected_nodes_count: usize,
     ) {
         // arrange
-        let root = create_test_data();
         let graph = SiteGraph::new(&root);
 
         // act
@@ -268,9 +265,8 @@ mod tests {
     #[case("/b/bb/1.html", "bb | b | egoroff.spb.ru")]
     #[case("", "")]
     #[case("/", "")]
-    fn make_title_path_test(#[case] path: &str, #[case] expected: &str) {
+    fn make_title_path_test(root: SiteSection, #[case] path: &str, #[case] expected: &str) {
         // arrange
-        let root = create_test_data();
         let graph = SiteGraph::new(&root);
 
         // act
@@ -280,7 +276,8 @@ mod tests {
         assert_eq!(actual, expected);
     }
 
-    fn create_test_data() -> SiteSection {
+    #[fixture]
+    fn root() -> SiteSection {
         let aa = SiteSection {
             id: String::from("aa"),
             title: String::from("aa"),
