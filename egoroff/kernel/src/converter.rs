@@ -119,13 +119,11 @@ pub fn xml2html(input: &str) -> Result<String> {
 }
 
 pub fn markdown2html(input: &str) -> Result<String> {
-    let mut options = Options::empty();
-    options.insert(
-        Options::ENABLE_STRIKETHROUGH
-            | Options::ENABLE_TABLES
-            | Options::ENABLE_HEADING_ATTRIBUTES
-            | Options::ENABLE_TASKLISTS,
-    );
+    let options = Options::ENABLE_STRIKETHROUGH
+        | Options::ENABLE_TABLES
+        | Options::ENABLE_HEADING_ATTRIBUTES
+        | Options::ENABLE_TASKLISTS;
+
     let parser = Parser::new_ext(input, options);
     let mut html = String::with_capacity(input.len() * 2);
     html::push_html(&mut html, parser);
