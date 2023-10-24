@@ -13,7 +13,7 @@ serde_json = { workspace = true }
 chrono = { workspace = true, features = ["serde", "clock", "std"]}
 lol_html = "1.2.0"
 regex = "1.10.2"
-quick-xml = "0.30.0"
+quick-xml = "0.31.0"
 pulldown-cmark = "0.9.3"
 anyhow = { workspace = true }
 lazy_static = "1.4.0"
