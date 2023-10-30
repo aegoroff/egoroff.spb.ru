@@ -73,7 +73,7 @@ export default class Search extends Vue {
 
   search (): void {
     if (document.location.hash) {
-      this.page = parseInt(document.location.hash.substr(1), 10)
+      this.page = parseInt(document.location.hash.substring(0,1), 10)
       if (isNaN(this.page) || this.page === 0) {
         this.page = 1
       }
