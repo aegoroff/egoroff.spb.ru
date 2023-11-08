@@ -9,11 +9,11 @@ use oauth2::{CsrfToken, PkceCodeVerifier, TokenResponse};
 use tower_sessions::Session;
 
 use crate::{
-    auth::{Authorizer, GithubAuthorizer, GoogleAuthorizer, Role, UserStorage},
+    auth::{Authorizer, GithubAuthorizer, GoogleAuthorizer, UserStorage},
     domain::AuthRequest,
 };
 
-type AuthContext = axum_login::extractors::AuthContext<String, User, UserStorage, Role>;
+type AuthSession = axum_login::AuthSession<UserStorage>;
 
 const GOOGLE_CSRF_KEY: &str = "google_csrf_state";
 const GITHUB_CSRF_KEY: &str = "github_csrf_state";
@@ -75,7 +75,7 @@ pub async fn serve_login(
     serve_page(context)
 }
 
-pub async fn serve_logout(mut auth: AuthContext) -> impl IntoResponse {
+pub async fn serve_logout(mut auth: AuthSession) -> impl IntoResponse {
     auth.logout().await;
     Redirect::to("/login")
 }
@@ -153,7 +153,7 @@ pub async fn google_oauth_callback(
     Extension(google_authorizer): Extension<Arc<GoogleAuthorizer>>,
     State(page_context): State<Arc<PageContext<'_>>>,
     session: Session,
-    mut auth: AuthContext,
+    mut auth: AuthSession,
 ) -> impl IntoResponse {
     validate_csrf!(GOOGLE_CSRF_KEY, session, query);
     if let Ok(pkce_code_verifier) = session.get::<PkceCodeVerifier>(PKCE_CODE_VERIFIER_KEY) {
@@ -174,7 +174,7 @@ pub async fn github_oauth_callback(
     Extension(github_authorizer): Extension<Arc<GithubAuthorizer>>,
     State(page_context): State<Arc<PageContext<'_>>>,
     session: Session,
-    mut auth: AuthContext,
+    mut auth: AuthSession,
 ) -> impl IntoResponse {
     validate_csrf!(GITHUB_CSRF_KEY, session, query);
     let token = github_authorizer.exchange_code(query.code, None).await;
@@ -188,7 +188,7 @@ pub async fn yandex_oauth_callback(
     Extension(yandex_authorizer): Extension<Arc<YandexAuthorizer>>,
     State(page_context): State<Arc<PageContext<'_>>>,
     session: Session,
-    mut auth: AuthContext,
+    mut auth: AuthSession,
 ) -> impl IntoResponse {
     validate_csrf!(YANDEX_CSRF_KEY, session, query);
     let token = yandex_authorizer.exchange_code(query.code, None).await;
@@ -197,7 +197,7 @@ pub async fn yandex_oauth_callback(
     Redirect::to(PROFILE_URI)
 }
 
-pub async fn serve_user_api_call(auth: AuthContext) -> impl IntoResponse {
+pub async fn serve_user_api_call(auth: AuthSession) -> impl IntoResponse {
     match auth.current_user {
         Some(user) => {
             let authenticated = AuthorizedUser {

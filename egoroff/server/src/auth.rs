@@ -394,6 +394,23 @@ where
     type User = User;
     type Error = UserStoreError;
 
+    async fn authenticate(
+        &self,
+        creds: Self::Credentials,
+    ) -> Result<Option<Self::User>, Self::Error> {
+        match Sqlite::open(self.db_path.as_path(), Mode::ReadOnly) {
+            Ok(storage) => {
+                // TODO: implement authenticate
+                let user = storage.get_user("", "");
+                match user {
+                    Ok(user) => Ok(Some(user)),
+                    Err(err) => Err(UserStoreError::SqlError(err)),
+                }
+            }
+            Err(err) => Err(UserStoreError::SqlError(err)),
+        }
+    }
+
     async fn get_user(
         &self,
         user_id: &String,
