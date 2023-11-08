@@ -7,7 +7,10 @@ use crate::{
     domain::OperationResult,
 };
 
-use super::{*, template::{BlogIndex, BlogPost}};
+use super::{
+    template::{BlogIndex, BlogPost},
+    *,
+};
 
 const PAGE_SIZE: i32 = 20;
 

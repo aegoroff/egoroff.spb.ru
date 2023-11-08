@@ -34,13 +34,13 @@ oauth2 = {version= "4.4.2", features = ["reqwest"] }
 async-trait = { workspace = true }
 reqwest = { workspace = true, features = ["json", "multipart", "stream", "rustls-tls" ] }
 lazy_static = "1.4.0"
-jsonwebtoken = "8.3.0"
+jsonwebtoken = "9.1.0"
 url = { workspace = true }
-thiserror = "1.0.49"
+thiserror = "1.0.50"
 utoipa = { workspace = true, features = ["chrono", "time", "axum_extras"] }
 utoipa-swagger-ui = { version = "4.0.0", features = ["axum"] }
 rand = { version = "0.8.5", features = ["min_const_gen"] }
-uuid = { version = "1.4.1", features = [
+uuid = { version = "1.5.0", features = [
     "v4",                # Lets you generate random UUIDs
     "fast-rng",          # Use a faster (but still sufficiently random) RNG
     "macro-diagnostics", # Enable better diagnostics for compile-time UUIDs
