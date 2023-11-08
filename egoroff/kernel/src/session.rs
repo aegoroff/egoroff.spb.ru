@@ -9,10 +9,7 @@ use chrono::Utc;
 use rusqlite::{params, Connection};
 
 use time::OffsetDateTime;
-use tower_sessions::{
-    session::{SessionId, SessionRecord},
-    Session, SessionStore,
-};
+use tower_sessions::{Session, SessionStore};
 
 #[derive(Debug, Clone)]
 pub struct SqliteSessionStore {
