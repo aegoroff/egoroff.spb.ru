@@ -4,15 +4,15 @@ use axum::error_handling::HandleErrorLayer;
 use axum::extract::DefaultBodyLimit;
 use axum::handler::Handler;
 use axum::routing::{delete, post, put};
-use axum::{Extension, http, BoxError};
+use axum::{http, BoxError, Extension};
 use axum::{routing::get, Router};
 
-use axum_login::AuthLayer;
+use axum_login::AuthManagerLayer;
+use http::StatusCode;
 use tower_sessions::cookie::{time::Duration, SameSite};
 use tower_sessions::SessionManagerLayer;
-use http::StatusCode;
 
-use crate::domain::{PageContext, RequireAuth};
+use crate::domain::PageContext;
 use futures::lock::Mutex;
 use indie::RequireIndieAuthorizationLayer;
 use kernel::domain::SmallPost;
@@ -127,7 +127,7 @@ pub fn create_routes(
         .with_max_age(Duration::seconds(86400 * 14))
         .with_same_site(SameSite::Lax);
 
-    let auth_layer = AuthLayer::new(user_store, &secret);
+    let auth_layer = AuthManagerLayer::new(user_store, session_layer);
 
     let session_service = ServiceBuilder::new()
         .layer(HandleErrorLayer::new(|_: BoxError| async {
@@ -139,7 +139,6 @@ pub fn create_routes(
             },
         ))
         .layer(CorsLayer::new().allow_origin(Any).allow_methods(Any))
-        .layer(session_layer)
         .layer(auth_layer)
         .into_inner();
 

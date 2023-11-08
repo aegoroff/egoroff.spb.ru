@@ -4,7 +4,7 @@ use std::{
 };
 
 use anyhow::{Context, Result};
-use axum_login::{secrecy::SecretVec, AuthUser, UserStore};
+use axum_login::{AuthUser, AuthnBackend};
 use chrono::Utc;
 use kernel::{
     domain::{OAuthProvider, Storage, User},
@@ -374,33 +374,27 @@ impl Authorizer<YandexUser> for YandexAuthorizer {
     }
 }
 
-impl AuthUser<String, Role> for User {
-    fn get_id(&self) -> String {
+impl AuthUser for User {
+    type Id = String;
+
+    fn id(&self) -> String {
         format!("{}_{}", self.provider, self.federated_id)
     }
 
-    fn get_password_hash(&self) -> SecretVec<u8> {
-        SecretVec::new(self.federated_id.clone().into())
-    }
-
-    fn get_role(&self) -> Option<Role> {
-        if self.admin {
-            Some(Role::Admin)
-        } else {
-            Some(Role::User)
-        }
+    fn session_auth_hash(&self) -> &[u8] {
+        self.federated_id
     }
 }
 
 #[async_trait]
-impl UserStore<String, Role> for UserStorage
+impl AuthnBackend for UserStorage
 where
     Role: PartialOrd + PartialEq + Clone + Send + Sync + 'static,
 {
     type User = User;
     type Error = UserStoreError;
 
-    async fn load_user(
+    async fn get_user(
         &self,
         user_id: &String,
     ) -> std::result::Result<Option<Self::User>, Self::Error> {
