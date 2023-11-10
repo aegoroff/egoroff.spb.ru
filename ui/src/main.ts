@@ -120,7 +120,7 @@ if (userProfile) {
 }
 
 if (document.getElementById('blogcontainer') && window.location.hash) {
-  const h = window.location.hash.substr(1)
+  const h = window.location.hash.substring(1)
   const ba = new BlogAnnounces({
     propsData: {
       q: h
