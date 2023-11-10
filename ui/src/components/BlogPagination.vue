@@ -25,7 +25,7 @@ export default class BlogPagination extends Vue {
   @Prop() private page!: number
 
   pageLinkGenerator (pageNum: number): string {
-    const parts = window.location.hash.substr(1).split('&')
+    const parts = window.location.hash.substring(1).split('&')
 
     let q = '#'
     for (const part of parts) {
