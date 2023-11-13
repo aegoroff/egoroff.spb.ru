@@ -1,4 +1,5 @@
 use std::{
+    collections::HashSet,
     path::{Path, PathBuf},
     sync::Arc,
 };
@@ -395,6 +396,19 @@ impl AuthUser for AppUser {
 #[async_trait]
 impl AuthzBackend for AuthBackend {
     type Permission = Role;
+
+    /// Gets the permissions for the provided user.
+    async fn get_user_permissions(
+        &self,
+        user: &Self::User,
+    ) -> Result<HashSet<Self::Permission>, Self::Error> {
+        let mut user_permissions = HashSet::new();
+        user_permissions.insert(Role::User);
+        if user.user.admin {
+            user_permissions.insert(Role::Admin);
+        }
+        Ok(user_permissions)
+    }
 }
 
 #[async_trait]
