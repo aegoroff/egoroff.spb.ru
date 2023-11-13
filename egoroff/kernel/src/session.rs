@@ -8,8 +8,7 @@ use base64::{engine::general_purpose, Engine as _};
 use chrono::Utc;
 use rusqlite::{params, Connection};
 
-use time::OffsetDateTime;
-use tower_sessions::{Session, SessionStore};
+use tower_sessions::{session::Id, Session, SessionStore};
 
 #[derive(Debug, Clone)]
 pub struct SqliteSessionStore {
@@ -99,7 +98,7 @@ impl SqliteSessionStore {
 impl SessionStore for SqliteSessionStore {
     type Error = rusqlite::Error;
 
-    async fn load(&self, session_id: &SessionId) -> Result<Option<Session>, Self::Error> {
+    async fn load(&self, session_id: &Id) -> Result<Option<Session>, Self::Error> {
         let id = session_id.to_string();
         let conn = SqliteSessionStore::create_connection(&self.path)?;
 
@@ -114,22 +113,17 @@ impl SessionStore for SqliteSessionStore {
         let parameters = params![id, now];
         let record = stmt.query_row(parameters, |row| {
             let data: Vec<u8> = row.get(0)?;
-            let data = rmp_serde::from_slice(&data).unwrap_or_default();
-            let expires: i64 = row.get(1)?;
-            let expires = OffsetDateTime::from_unix_timestamp(expires).ok();
-            let session_id: String = row.get(2)?;
-            let session_id = SessionId::try_from(session_id).unwrap_or_default();
-            let session_record = SessionRecord::new(session_id, expires, data);
-            Ok(session_record)
+            let data: Session = rmp_serde::from_slice(&data).unwrap_or_default();
+            Ok(data)
         })?;
 
-        Ok(Some(record.into()))
+        Ok(Some(record))
     }
 
-    async fn save(&self, session_record: &SessionRecord) -> Result<(), Self::Error> {
-        let id = session_record.id().to_string();
-        let data = rmp_serde::to_vec(&session_record.data()).unwrap_or_default();
-        let expiry = &session_record.expiration_time().map(|t| t.unix_timestamp());
+    async fn save(&self, session: &Session) -> Result<(), Self::Error> {
+        let id = session.id().to_string();
+        let data = rmp_serde::to_vec(&session).unwrap_or_default();
+        let expiry = &session.expiry_date().unix_timestamp();
 
         let conn = SqliteSessionStore::create_connection(&self.path)?;
 
@@ -147,7 +141,7 @@ impl SessionStore for SqliteSessionStore {
         Ok(())
     }
 
-    async fn delete(&self, session_id: &SessionId) -> Result<(), Self::Error> {
+    async fn delete(&self, session_id: &Id) -> Result<(), Self::Error> {
         let id = session_id.to_string();
         let conn = SqliteSessionStore::create_connection(&self.path)?;
         let mut stmt = conn.prepare("DELETE FROM session WHERE id = ?")?;

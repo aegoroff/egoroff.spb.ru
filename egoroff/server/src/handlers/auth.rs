@@ -1,4 +1,5 @@
 use super::{template::Profile, *};
+use crate::auth::AppUser;
 use crate::{
     auth::{ToUser, YandexAuthorizer},
     body::Redirect,
@@ -9,11 +10,11 @@ use oauth2::{CsrfToken, PkceCodeVerifier, TokenResponse};
 use tower_sessions::Session;
 
 use crate::{
-    auth::{Authorizer, GithubAuthorizer, GoogleAuthorizer, UserStorage},
+    auth::{AuthBackend, Authorizer, GithubAuthorizer, GoogleAuthorizer},
     domain::AuthRequest,
 };
 
-type AuthSession = axum_login::AuthSession<UserStorage>;
+type AuthSession = axum_login::AuthSession<AuthBackend>;
 
 const GOOGLE_CSRF_KEY: &str = "google_csrf_state";
 const GITHUB_CSRF_KEY: &str = "github_csrf_state";
@@ -76,7 +77,7 @@ pub async fn serve_login(
 }
 
 pub async fn serve_logout(mut auth: AuthSession) -> impl IntoResponse {
-    auth.logout().await;
+    auth.logout().unwrap_or_default();
     Redirect::to("/login")
 }
 
@@ -102,7 +103,8 @@ macro_rules! login_user_using_token {
                         }
                         tracing::info!("User updated");
 
-                        match $auth.login(&user).await {
+                        let u = AppUser { user };
+                        match $auth.login(&u).await {
                             Ok(_) => tracing::info!("login success"),
                             Err(e) => {
                                 tracing::error!("login error: {e:#?}");
@@ -198,13 +200,13 @@ pub async fn yandex_oauth_callback(
 }
 
 pub async fn serve_user_api_call(auth: AuthSession) -> impl IntoResponse {
-    match auth.current_user {
+    match auth.user {
         Some(user) => {
             let authenticated = AuthorizedUser {
-                login_or_name: user.login,
+                login_or_name: user.user.login,
                 authenticated: true,
-                admin: user.admin,
-                provider: user.provider,
+                admin: user.user.admin,
+                provider: user.user.provider,
             };
             Json(authenticated)
         }

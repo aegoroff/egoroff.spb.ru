@@ -1,4 +1,4 @@
-use crate::auth::{GithubAuthorizer, GoogleAuthorizer, Role, UserStorage, YandexAuthorizer};
+use crate::auth::{AuthBackend, GithubAuthorizer, GoogleAuthorizer, Role, YandexAuthorizer};
 use anyhow::Result;
 use axum::error_handling::HandleErrorLayer;
 use axum::extract::DefaultBodyLimit;
@@ -7,10 +7,10 @@ use axum::routing::{delete, post, put};
 use axum::{http, BoxError, Extension};
 use axum::{routing::get, Router};
 
-use axum_login::AuthManagerLayer;
+use axum_login::{login_required, permission_required, AuthManagerLayer};
 use http::StatusCode;
 use tower_sessions::cookie::{time::Duration, SameSite};
-use tower_sessions::SessionManagerLayer;
+use tower_sessions::{Expiry, SessionManagerLayer};
 
 use crate::domain::PageContext;
 use futures::lock::Mutex;
@@ -94,7 +94,7 @@ pub fn create_routes(
     let yandex_authorizer = Arc::new(yandex_authorizer);
 
     let storage_path_clone = storage_path.clone();
-    let user_store = UserStorage::from(Arc::new(storage_path_clone));
+    let auth_backend = AuthBackend::from(Arc::new(storage_path_clone));
 
     let storage = Sqlite::open(storage_path, Mode::ReadWrite)?;
     let storage = Arc::new(Mutex::new(storage));
@@ -120,14 +120,11 @@ pub fn create_routes(
     let secret = rand::thread_rng().gen::<[u8; 64]>();
     let session_store = SqliteSessionStore::open(sessions_path, &secret)?;
     session_store.cleanup()?;
-    let secret = session_store.get_secret()?;
-
+    let session_expiry = Expiry::OnInactivity(Duration::seconds(86400 * 14));
     let session_layer = SessionManagerLayer::new(session_store)
         .with_secure(false)
-        .with_max_age(Duration::seconds(86400 * 14))
+        .with_expiry(session_expiry)
         .with_same_site(SameSite::Lax);
-
-    let auth_layer = AuthManagerLayer::new(user_store, session_layer);
 
     let session_service = ServiceBuilder::new()
         .layer(HandleErrorLayer::new(|_: BoxError| async {
@@ -139,7 +136,7 @@ pub fn create_routes(
             },
         ))
         .layer(CorsLayer::new().allow_origin(Any).allow_methods(Any))
-        .layer(auth_layer)
+        .layer(AuthManagerLayer::new(auth_backend, session_layer))
         .into_inner();
 
     let login_handler = handlers::auth::serve_login
@@ -168,7 +165,11 @@ pub fn create_routes(
             delete(handlers::blog::serve_post_delete),
         )
         // Important all admin protected routes must be the first in the list
-        .route_layer(RequireAuth::login_with_role(Role::Admin..))
+        .route_layer(permission_required!(
+            AuthBackend,
+            login_url = "/login",
+            Role::Admin
+        ))
         .route("/profile", get(handlers::auth::serve_profile))
         .route("/profile/", get(handlers::auth::serve_profile))
         .route("/logout", get(handlers::auth::serve_logout))
@@ -182,7 +183,7 @@ pub fn create_routes(
             get(handlers::auth::serve_user_info_api_call),
         )
         // Important all protected routes must be the first in the list
-        .route_layer(RequireAuth::login())
+        .route_layer(login_required!(AuthBackend, login_url = "/login"))
         .merge(SwaggerUi::new("/api/v2").url("/api/v2/openapi.json", ApiDoc::openapi()))
         .route(
             "/micropub/",

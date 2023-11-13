@@ -4,7 +4,7 @@ use std::{
 };
 
 use anyhow::{Context, Result};
-use axum_login::{AuthUser, AuthnBackend};
+use axum_login::{AuthUser, AuthnBackend, AuthzBackend};
 use chrono::Utc;
 use kernel::{
     domain::{OAuthProvider, Storage, User},
@@ -22,12 +22,17 @@ use reqwest::{Client, StatusCode};
 use serde::Deserialize;
 use thiserror::Error;
 
+#[derive(Clone, Debug)]
+pub struct AppUser {
+    pub user: User,
+}
+
 #[derive(Clone)]
-pub struct UserStorage {
+pub struct AuthBackend {
     db_path: Arc<PathBuf>,
 }
 
-impl UserStorage {
+impl AuthBackend {
     pub fn from(db_path: Arc<PathBuf>) -> Self {
         Self { db_path }
     }
@@ -39,8 +44,9 @@ pub struct GeneratedUrl {
     pub verifier: Option<PkceCodeVerifier>,
 }
 
-#[derive(Debug, Clone, PartialEq, PartialOrd)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Hash, Eq, Default)]
 pub enum Role {
+    #[default]
     User,
     Admin,
 }
@@ -374,25 +380,31 @@ impl Authorizer<YandexUser> for YandexAuthorizer {
     }
 }
 
-impl AuthUser for User {
+impl AuthUser for AppUser {
     type Id = String;
 
     fn id(&self) -> String {
-        format!("{}_{}", self.provider, self.federated_id)
+        format!("{}_{}", self.user.provider, self.user.federated_id)
     }
 
     fn session_auth_hash(&self) -> &[u8] {
-        self.federated_id
+        self.user.federated_id.as_bytes()
     }
 }
 
 #[async_trait]
-impl AuthnBackend for UserStorage
+impl AuthzBackend for AuthBackend {
+    type Permission = Role;
+}
+
+#[async_trait]
+impl AuthnBackend for AuthBackend
 where
     Role: PartialOrd + PartialEq + Clone + Send + Sync + 'static,
 {
-    type User = User;
+    type User = AppUser;
     type Error = UserStoreError;
+    type Credentials = AppUser;
 
     async fn authenticate(
         &self,
@@ -400,10 +412,9 @@ where
     ) -> Result<Option<Self::User>, Self::Error> {
         match Sqlite::open(self.db_path.as_path(), Mode::ReadOnly) {
             Ok(storage) => {
-                // TODO: implement authenticate
-                let user = storage.get_user("", "");
+                let user = storage.get_user(&creds.user.federated_id, &creds.user.provider);
                 match user {
-                    Ok(user) => Ok(Some(user)),
+                    Ok(user) => Ok(Some(AppUser { user })),
                     Err(err) => Err(UserStoreError::SqlError(err)),
                 }
             }
@@ -424,7 +435,7 @@ where
                 let federated_id = id_parts.next().ok_or_else(|| UserStoreError::InvalidId)?;
                 let user = storage.get_user(federated_id, provider);
                 match user {
-                    Ok(user) => Ok(Some(user)),
+                    Ok(user) => Ok(Some(AppUser { user })),
                     Err(err) => Err(UserStoreError::SqlError(err)),
                 }
             }
