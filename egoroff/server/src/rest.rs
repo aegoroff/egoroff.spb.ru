@@ -210,6 +210,7 @@ pub fn create_routes(
         .route("/recent.atom", get(handlers::blog::serve_atom))
         .route("/sitemap.xml", get(handlers::serve_sitemap))
         .route("/news/rss", get(handlers::blog::serve_atom))
+        .route("/news/rss/", get(handlers::blog::serve_atom))
         .route("/portfolio/", get(handlers::portfolio::serve_index))
         .route(
             "/portfolio/:path",
