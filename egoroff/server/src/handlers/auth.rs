@@ -216,6 +216,6 @@ pub async fn serve_user_api_call(auth: AuthSession) -> impl IntoResponse {
     }
 }
 
-pub async fn serve_user_info_api_call(Extension(user): Extension<User>) -> impl IntoResponse {
-    Json(user)
+pub async fn serve_user_info_api_call(Extension(user): Extension<AppUser>) -> impl IntoResponse {
+    Json(user.user)
 }

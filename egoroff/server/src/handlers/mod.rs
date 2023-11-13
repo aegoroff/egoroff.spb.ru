@@ -19,7 +19,7 @@ use kernel::graph::SiteSection;
 use kernel::{
     archive,
     converter::{markdown2html, xml2html},
-    domain::{PostsRequest, Storage, User},
+    domain::{PostsRequest, Storage},
     graph,
     resource::Resource,
 };
