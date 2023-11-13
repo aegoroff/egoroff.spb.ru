@@ -17,7 +17,7 @@ mime_guess = "2"
 axum = { version = "0.6.20", features = ["multipart", "http2", "headers"] }
 axum-server = { version = "0.5.1", features = ["tls-rustls"] }
 tower-sessions = { workspace = true }
-axum-login = "0.7.0"
+axum-login = "0.7.3"
 tokio-util = { workspace = true, features = ["full"] }
 futures = { workspace = true }
 futures-util = "0.3"
