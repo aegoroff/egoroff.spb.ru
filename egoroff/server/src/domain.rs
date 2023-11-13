@@ -1,18 +1,14 @@
 use std::{collections::HashSet, path::PathBuf, sync::Arc};
 
-use axum_login::RequireAuthorizationLayer;
 use futures::lock::Mutex;
 use kernel::{
-    domain::{ApiResult, User},
+    domain::ApiResult,
     graph::{SiteGraph, SiteSection},
     sqlite::Sqlite,
 };
 use oauth2::CsrfToken;
 use serde::{Deserialize, Serialize};
 
-use crate::auth::Role;
-
-pub type RequireAuth = RequireAuthorizationLayer<String, User, Role>;
 pub type Database = Arc<Mutex<Sqlite>>;
 pub type Cache = Arc<Mutex<HashSet<String>>>;
 

@@ -1,10 +1,11 @@
 use std::{
+    collections::HashSet,
     path::{Path, PathBuf},
     sync::Arc,
 };
 
 use anyhow::{Context, Result};
-use axum_login::{secrecy::SecretVec, AuthUser, UserStore};
+use axum_login::{AuthUser, AuthnBackend, AuthzBackend};
 use chrono::Utc;
 use kernel::{
     domain::{OAuthProvider, Storage, User},
@@ -22,12 +23,17 @@ use reqwest::{Client, StatusCode};
 use serde::Deserialize;
 use thiserror::Error;
 
+#[derive(Clone, Debug)]
+pub struct AppUser {
+    pub user: User,
+}
+
 #[derive(Clone)]
-pub struct UserStorage {
+pub struct AuthBackend {
     db_path: Arc<PathBuf>,
 }
 
-impl UserStorage {
+impl AuthBackend {
     pub fn from(db_path: Arc<PathBuf>) -> Self {
         Self { db_path }
     }
@@ -39,8 +45,9 @@ pub struct GeneratedUrl {
     pub verifier: Option<PkceCodeVerifier>,
 }
 
-#[derive(Debug, Clone, PartialEq, PartialOrd)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Hash, Eq, Default)]
 pub enum Role {
+    #[default]
     User,
     Admin,
 }
@@ -374,33 +381,62 @@ impl Authorizer<YandexUser> for YandexAuthorizer {
     }
 }
 
-impl AuthUser<String, Role> for User {
-    fn get_id(&self) -> String {
-        format!("{}_{}", self.provider, self.federated_id)
+impl AuthUser for AppUser {
+    type Id = String;
+
+    fn id(&self) -> String {
+        format!("{}_{}", self.user.provider, self.user.federated_id)
     }
 
-    fn get_password_hash(&self) -> SecretVec<u8> {
-        SecretVec::new(self.federated_id.clone().into())
-    }
-
-    fn get_role(&self) -> Option<Role> {
-        if self.admin {
-            Some(Role::Admin)
-        } else {
-            Some(Role::User)
-        }
+    fn session_auth_hash(&self) -> &[u8] {
+        self.user.federated_id.as_bytes()
     }
 }
 
 #[async_trait]
-impl UserStore<String, Role> for UserStorage
+impl AuthzBackend for AuthBackend {
+    type Permission = Role;
+
+    /// Gets the permissions for the provided user.
+    async fn get_user_permissions(
+        &self,
+        user: &Self::User,
+    ) -> Result<HashSet<Self::Permission>, Self::Error> {
+        let mut user_permissions = HashSet::new();
+        user_permissions.insert(Role::User);
+        if user.user.admin {
+            user_permissions.insert(Role::Admin);
+        }
+        Ok(user_permissions)
+    }
+}
+
+#[async_trait]
+impl AuthnBackend for AuthBackend
 where
     Role: PartialOrd + PartialEq + Clone + Send + Sync + 'static,
 {
-    type User = User;
+    type User = AppUser;
     type Error = UserStoreError;
+    type Credentials = AppUser;
 
-    async fn load_user(
+    async fn authenticate(
+        &self,
+        creds: Self::Credentials,
+    ) -> Result<Option<Self::User>, Self::Error> {
+        match Sqlite::open(self.db_path.as_path(), Mode::ReadOnly) {
+            Ok(storage) => {
+                let user = storage.get_user(&creds.user.federated_id, &creds.user.provider);
+                match user {
+                    Ok(user) => Ok(Some(AppUser { user })),
+                    Err(err) => Err(UserStoreError::SqlError(err)),
+                }
+            }
+            Err(err) => Err(UserStoreError::SqlError(err)),
+        }
+    }
+
+    async fn get_user(
         &self,
         user_id: &String,
     ) -> std::result::Result<Option<Self::User>, Self::Error> {
@@ -413,7 +449,7 @@ where
                 let federated_id = id_parts.next().ok_or_else(|| UserStoreError::InvalidId)?;
                 let user = storage.get_user(federated_id, provider);
                 match user {
-                    Ok(user) => Ok(Some(user)),
+                    Ok(user) => Ok(Some(AppUser { user })),
                     Err(err) => Err(UserStoreError::SqlError(err)),
                 }
             }

@@ -13,14 +13,13 @@ use axum::{
     response::{IntoResponse, Response},
     Extension, Json,
 };
-use axum_sessions::extractors::{ReadableSession, WritableSession};
 use futures::{Stream, TryStreamExt};
 use futures_util::StreamExt;
 use kernel::graph::SiteSection;
 use kernel::{
     archive,
     converter::{markdown2html, xml2html},
-    domain::{PostsRequest, Storage, User},
+    domain::{PostsRequest, Storage},
     graph,
     resource::Resource,
 };

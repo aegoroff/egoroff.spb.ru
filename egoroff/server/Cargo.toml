@@ -16,8 +16,8 @@ tokio = { workspace = true, features = ["full"] }
 mime_guess = "2"
 axum = { version = "0.6.20", features = ["multipart", "http2", "headers"] }
 axum-server = { version = "0.5.1", features = ["tls-rustls"] }
-axum-sessions = "0.6.1"
-axum-login = "0.6.0"
+tower-sessions = { workspace = true }
+axum-login = "0.7.3"
 tokio-util = { workspace = true, features = ["full"] }
 futures = { workspace = true }
 futures-util = "0.3"
@@ -31,7 +31,7 @@ rust-embed = { version = "8", features = ["include-exclude"] }
 anyhow = { workspace = true }
 chrono = { workspace = true, default-features = false, features = ["serde", "clock", "std"]}
 oauth2 = {version= "4.4.2", features = ["reqwest"] }
-async-trait = "0.1"
+async-trait = { workspace = true }
 reqwest = { workspace = true, features = ["json", "multipart", "stream", "rustls-tls" ] }
 lazy_static = "1.4.0"
 jsonwebtoken = "9.1.0"

@@ -1,24 +1,27 @@
-use super::{*, template::Profile};
+use super::{template::Profile, *};
+use crate::auth::AppUser;
 use crate::{
     auth::{ToUser, YandexAuthorizer},
     body::Redirect,
-    domain::AuthorizedUser, handlers::template::Signin,
+    domain::AuthorizedUser,
+    handlers::template::Signin,
 };
 use oauth2::{CsrfToken, PkceCodeVerifier, TokenResponse};
+use tower_sessions::Session;
 
 use crate::{
-    auth::{Authorizer, GithubAuthorizer, GoogleAuthorizer, Role, UserStorage},
+    auth::{AuthBackend, Authorizer, GithubAuthorizer, GoogleAuthorizer},
     domain::AuthRequest,
 };
 
-type AuthContext = axum_login::extractors::AuthContext<String, User, UserStorage, Role>;
+type AuthSession = axum_login::AuthSession<AuthBackend>;
 
 const GOOGLE_CSRF_KEY: &str = "google_csrf_state";
 const GITHUB_CSRF_KEY: &str = "github_csrf_state";
 const YANDEX_CSRF_KEY: &str = "yandex_csrf_state";
 const PKCE_CODE_VERIFIER_KEY: &str = "pkce_code_verifier";
 const PROFILE_URI: &str = "/profile/";
-const LOGIN_URI: &str = "/login";
+pub const LOGIN_URI: &str = "/login";
 
 macro_rules! register_url {
     ($context:ident, $session:ident, $url:ident, $key:ident, $context_param:ident) => {{
@@ -31,7 +34,7 @@ pub async fn serve_login(
     Extension(google_authorizer): Extension<Arc<GoogleAuthorizer>>,
     Extension(gitgub_authorizer): Extension<Arc<GithubAuthorizer>>,
     Extension(yandex_authorizer): Extension<Arc<YandexAuthorizer>>,
-    mut session: WritableSession,
+    session: Session,
 ) -> impl IntoResponse {
     let mut context = Signin::default();
 
@@ -73,8 +76,8 @@ pub async fn serve_login(
     serve_page(context)
 }
 
-pub async fn serve_logout(mut auth: AuthContext) -> impl IntoResponse {
-    auth.logout().await;
+pub async fn serve_logout(mut auth: AuthSession) -> impl IntoResponse {
+    auth.logout().unwrap_or_default();
     Redirect::to("/login")
 }
 
@@ -100,7 +103,8 @@ macro_rules! login_user_using_token {
                         }
                         tracing::info!("User updated");
 
-                        match $auth.login(&user).await {
+                        let u = AppUser { user };
+                        match $auth.login(&u).await {
                             Ok(_) => tracing::info!("login success"),
                             Err(e) => {
                                 tracing::error!("login error: {e:#?}");
@@ -125,16 +129,21 @@ macro_rules! login_user_using_token {
 macro_rules! validate_csrf {
     ($key:expr, $session:ident, $query:ident) => {{
         match $session.get::<CsrfToken>($key) {
-            Some(original_csrf_state) => {
-                if original_csrf_state.secret() == $query.state.secret() {
-                    tracing::info!("authorized");
+            Ok(original_csrf_state) => {
+                if let Some(state) = original_csrf_state {
+                    if state.secret() == $query.state.secret() {
+                        tracing::info!("authorized");
+                    } else {
+                        tracing::error!("unauthorized");
+                        return Redirect::to(LOGIN_URI);
+                    }
                 } else {
                     tracing::error!("unauthorized");
                     return Redirect::to(LOGIN_URI);
                 }
             }
-            None => {
-                tracing::error!("No state from session");
+            Err(e) => {
+                tracing::error!("No state from session: {}", e);
                 return Redirect::to(LOGIN_URI);
             }
         }
@@ -145,13 +154,13 @@ pub async fn google_oauth_callback(
     Query(query): Query<AuthRequest>,
     Extension(google_authorizer): Extension<Arc<GoogleAuthorizer>>,
     State(page_context): State<Arc<PageContext<'_>>>,
-    session: ReadableSession,
-    mut auth: AuthContext,
+    session: Session,
+    mut auth: AuthSession,
 ) -> impl IntoResponse {
     validate_csrf!(GOOGLE_CSRF_KEY, session, query);
-    if let Some(pkce_code_verifier) = session.get::<PkceCodeVerifier>(PKCE_CODE_VERIFIER_KEY) {
+    if let Ok(pkce_code_verifier) = session.get::<PkceCodeVerifier>(PKCE_CODE_VERIFIER_KEY) {
         let token = google_authorizer
-            .exchange_code(query.code, Some(pkce_code_verifier))
+            .exchange_code(query.code, pkce_code_verifier)
             .await;
         let mut storage = page_context.storage.lock().await;
         login_user_using_token!(token, session, storage, auth, google_authorizer);
@@ -166,8 +175,8 @@ pub async fn github_oauth_callback(
     Query(query): Query<AuthRequest>,
     Extension(github_authorizer): Extension<Arc<GithubAuthorizer>>,
     State(page_context): State<Arc<PageContext<'_>>>,
-    session: ReadableSession,
-    mut auth: AuthContext,
+    session: Session,
+    mut auth: AuthSession,
 ) -> impl IntoResponse {
     validate_csrf!(GITHUB_CSRF_KEY, session, query);
     let token = github_authorizer.exchange_code(query.code, None).await;
@@ -180,8 +189,8 @@ pub async fn yandex_oauth_callback(
     Query(query): Query<AuthRequest>,
     Extension(yandex_authorizer): Extension<Arc<YandexAuthorizer>>,
     State(page_context): State<Arc<PageContext<'_>>>,
-    session: ReadableSession,
-    mut auth: AuthContext,
+    session: Session,
+    mut auth: AuthSession,
 ) -> impl IntoResponse {
     validate_csrf!(YANDEX_CSRF_KEY, session, query);
     let token = yandex_authorizer.exchange_code(query.code, None).await;
@@ -190,14 +199,14 @@ pub async fn yandex_oauth_callback(
     Redirect::to(PROFILE_URI)
 }
 
-pub async fn serve_user_api_call(auth: AuthContext) -> impl IntoResponse {
-    match auth.current_user {
+pub async fn serve_user_api_call(auth: AuthSession) -> impl IntoResponse {
+    match auth.user {
         Some(user) => {
             let authenticated = AuthorizedUser {
-                login_or_name: user.login,
+                login_or_name: user.user.login,
                 authenticated: true,
-                admin: user.admin,
-                provider: user.provider,
+                admin: user.user.admin,
+                provider: user.user.provider,
             };
             Json(authenticated)
         }
@@ -207,6 +216,10 @@ pub async fn serve_user_api_call(auth: AuthContext) -> impl IntoResponse {
     }
 }
 
-pub async fn serve_user_info_api_call(Extension(user): Extension<User>) -> impl IntoResponse {
-    Json(user)
+pub async fn serve_user_info_api_call(auth: AuthSession) -> impl IntoResponse {
+    if let Some(u) = auth.user {
+        Json(u.user).into_response()
+    } else {
+        Redirect::to(LOGIN_URI).into_response()
+    }
 }

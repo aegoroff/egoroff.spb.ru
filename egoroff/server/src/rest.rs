@@ -1,15 +1,18 @@
-use crate::auth::{GithubAuthorizer, GoogleAuthorizer, Role, UserStorage, YandexAuthorizer};
+use crate::auth::{AuthBackend, GithubAuthorizer, GoogleAuthorizer, Role, YandexAuthorizer};
 use anyhow::Result;
+use axum::error_handling::HandleErrorLayer;
 use axum::extract::DefaultBodyLimit;
 use axum::handler::Handler;
 use axum::routing::{delete, post, put};
-use axum::Extension;
+use axum::{http, BoxError, Extension};
 use axum::{routing::get, Router};
 
-use axum_login::AuthLayer;
+use axum_login::{login_required, permission_required, AuthManagerLayer};
+use http::StatusCode;
+use tower_sessions::cookie::{time::Duration, SameSite};
+use tower_sessions::{Expiry, SessionManagerLayer};
 
-use crate::domain::{PageContext, RequireAuth};
-use axum_sessions::{SameSite, SessionLayer};
+use crate::domain::PageContext;
 use futures::lock::Mutex;
 use indie::RequireIndieAuthorizationLayer;
 use kernel::domain::SmallPost;
@@ -21,7 +24,6 @@ use std::collections::HashSet;
 use std::path::Path;
 use std::path::PathBuf;
 use std::sync::Arc;
-use std::time::Duration;
 use tower::ServiceBuilder;
 use tower_http::classify::ServerErrorsFailureClass;
 use tower_http::compression::predicate::NotForContentType;
@@ -92,7 +94,7 @@ pub fn create_routes(
     let yandex_authorizer = Arc::new(yandex_authorizer);
 
     let storage_path_clone = storage_path.clone();
-    let user_store = UserStorage::from(Arc::new(storage_path_clone));
+    let auth_backend = AuthBackend::from(Arc::new(storage_path_clone));
 
     let storage = Sqlite::open(storage_path, Mode::ReadWrite)?;
     let storage = Arc::new(Mutex::new(storage));
@@ -118,14 +120,24 @@ pub fn create_routes(
     let secret = rand::thread_rng().gen::<[u8; 64]>();
     let session_store = SqliteSessionStore::open(sessions_path, &secret)?;
     session_store.cleanup()?;
-    let secret = session_store.get_secret()?;
-    let session_layer = SessionLayer::new(session_store, &secret)
+    let session_expiry = Expiry::OnInactivity(Duration::seconds(86400 * 14));
+    let session_layer = SessionManagerLayer::new(session_store)
         .with_secure(false)
-        .with_session_ttl(Some(Duration::from_secs(86400 * 14)))
-        .with_same_site_policy(SameSite::Lax)
-        .with_persistence_policy(axum_sessions::PersistencePolicy::ExistingOnly);
+        .with_expiry(session_expiry)
+        .with_same_site(SameSite::Lax);
 
-    let auth_layer = AuthLayer::new(user_store, &secret);
+    let session_service = ServiceBuilder::new()
+        .layer(HandleErrorLayer::new(|_: BoxError| async {
+            StatusCode::BAD_REQUEST
+        }))
+        .layer(TraceLayer::new_for_http().on_failure(
+            |error: ServerErrorsFailureClass, _latency: std::time::Duration, _span: &Span| {
+                tracing::error!("Server error: {error}");
+            },
+        ))
+        .layer(CorsLayer::new().allow_origin(Any).allow_methods(Any))
+        .layer(AuthManagerLayer::new(auth_backend, session_layer))
+        .into_inner();
 
     let login_handler = handlers::auth::serve_login
         .layer(Extension(google_authorizer.clone()))
@@ -153,7 +165,11 @@ pub fn create_routes(
             delete(handlers::blog::serve_post_delete),
         )
         // Important all admin protected routes must be the first in the list
-        .route_layer(RequireAuth::login_with_role(Role::Admin..))
+        .route_layer(permission_required!(
+            AuthBackend,
+            login_url = handlers::auth::LOGIN_URI,
+            Role::Admin
+        ))
         .route("/profile", get(handlers::auth::serve_profile))
         .route("/profile/", get(handlers::auth::serve_profile))
         .route("/logout", get(handlers::auth::serve_logout))
@@ -167,7 +183,10 @@ pub fn create_routes(
             get(handlers::auth::serve_user_info_api_call),
         )
         // Important all protected routes must be the first in the list
-        .route_layer(RequireAuth::login())
+        .route_layer(login_required!(
+            AuthBackend,
+            login_url = handlers::auth::LOGIN_URI
+        ))
         .merge(SwaggerUi::new("/api/v2").url("/api/v2/openapi.json", ApiDoc::openapi()))
         .route(
             "/micropub/",
@@ -233,7 +252,7 @@ pub fn create_routes(
         .route("/img/:path", get(handlers::serve_img))
         .route("/apache/:path", get(handlers::serve_apache))
         .route("/apache/images/:path", get(handlers::serve_apache_images))
-        .route("/login", get(login_handler))
+        .route(handlers::auth::LOGIN_URI, get(login_handler))
         .route(
             "/_s/callback/google/authorized/",
             get(handlers::auth::google_oauth_callback).layer(Extension(google_authorizer)),
@@ -269,18 +288,7 @@ pub fn create_routes(
             "/token/",
             post(handlers::indie::serve_token_generate).get(handlers::indie::serve_token_validate),
         )
-        .layer(
-            ServiceBuilder::new()
-                .layer(TraceLayer::new_for_http().on_failure(
-                    |error: ServerErrorsFailureClass, _latency: Duration, _span: &Span| {
-                        tracing::error!("Server error: {error}");
-                    },
-                ))
-                .layer(CorsLayer::new().allow_origin(Any).allow_methods(Any))
-                .layer(session_layer)
-                .layer(auth_layer)
-                .into_inner(),
-        )
+        .layer(session_service)
         .layer(CompressionLayer::new().compress_when(compress_predicate))
         .layer(RequestBodyLimitLayer::new(20 * 1024 * 1024))
         .layer(DefaultBodyLimit::disable())
