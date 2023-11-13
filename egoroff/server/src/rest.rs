@@ -167,7 +167,7 @@ pub fn create_routes(
         // Important all admin protected routes must be the first in the list
         .route_layer(permission_required!(
             AuthBackend,
-            login_url = "/login",
+            login_url = handlers::auth::LOGIN_URI,
             Role::Admin
         ))
         .route("/profile", get(handlers::auth::serve_profile))
@@ -183,7 +183,10 @@ pub fn create_routes(
             get(handlers::auth::serve_user_info_api_call),
         )
         // Important all protected routes must be the first in the list
-        .route_layer(login_required!(AuthBackend, login_url = "/login"))
+        .route_layer(login_required!(
+            AuthBackend,
+            login_url = handlers::auth::LOGIN_URI
+        ))
         .merge(SwaggerUi::new("/api/v2").url("/api/v2/openapi.json", ApiDoc::openapi()))
         .route(
             "/micropub/",
@@ -249,7 +252,7 @@ pub fn create_routes(
         .route("/img/:path", get(handlers::serve_img))
         .route("/apache/:path", get(handlers::serve_apache))
         .route("/apache/images/:path", get(handlers::serve_apache_images))
-        .route("/login", get(login_handler))
+        .route(handlers::auth::LOGIN_URI, get(login_handler))
         .route(
             "/_s/callback/google/authorized/",
             get(handlers::auth::google_oauth_callback).layer(Extension(google_authorizer)),

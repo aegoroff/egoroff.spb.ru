@@ -21,7 +21,7 @@ const GITHUB_CSRF_KEY: &str = "github_csrf_state";
 const YANDEX_CSRF_KEY: &str = "yandex_csrf_state";
 const PKCE_CODE_VERIFIER_KEY: &str = "pkce_code_verifier";
 const PROFILE_URI: &str = "/profile/";
-const LOGIN_URI: &str = "/login";
+pub const LOGIN_URI: &str = "/login";
 
 macro_rules! register_url {
     ($context:ident, $session:ident, $url:ident, $key:ident, $context_param:ident) => {{
@@ -216,6 +216,10 @@ pub async fn serve_user_api_call(auth: AuthSession) -> impl IntoResponse {
     }
 }
 
-pub async fn serve_user_info_api_call(Extension(user): Extension<AppUser>) -> impl IntoResponse {
-    Json(user.user)
+pub async fn serve_user_info_api_call(auth: AuthSession) -> impl IntoResponse {
+    if let Some(u) = auth.user {
+        Json(u.user).into_response()
+    } else {
+        Redirect::to(LOGIN_URI).into_response()
+    }
 }
