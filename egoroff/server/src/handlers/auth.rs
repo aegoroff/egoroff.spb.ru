@@ -78,7 +78,7 @@ pub async fn serve_login(
 
 pub async fn serve_logout(mut auth: AuthSession) -> impl IntoResponse {
     auth.logout().unwrap_or_default();
-    Redirect::to("/login")
+    Redirect::to(LOGIN_URI)
 }
 
 pub async fn serve_profile() -> impl IntoResponse {
