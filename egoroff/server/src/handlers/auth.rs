@@ -201,18 +201,8 @@ pub async fn yandex_oauth_callback(
 
 pub async fn serve_user_api_call(auth: AuthSession) -> impl IntoResponse {
     match auth.user {
-        Some(user) => {
-            let authenticated = AuthorizedUser {
-                login_or_name: user.user.login,
-                authenticated: true,
-                admin: user.user.admin,
-                provider: user.user.provider,
-            };
-            Json(authenticated)
-        }
-        None => Json(AuthorizedUser {
-            ..Default::default()
-        }),
+        Some(user) => Json(user.into_authorized()),
+        None => Json(AuthorizedUser::default()),
     }
 }
 

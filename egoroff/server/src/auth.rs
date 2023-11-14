@@ -24,14 +24,25 @@ use reqwest::{Client, StatusCode};
 use serde::Deserialize;
 use thiserror::Error;
 
+use crate::domain::AuthorizedUser;
+
 #[derive(Clone, Debug)]
 pub struct AppUser {
-    pub user: User,
+    user: User,
 }
 
 impl AppUser {
     pub fn new(user: User) -> Self {
         Self { user }
+    }
+
+    pub fn into_authorized(self) -> AuthorizedUser {
+        AuthorizedUser {
+            login_or_name: self.user.login,
+            authenticated: true,
+            admin: self.user.admin,
+            provider: self.user.provider,
+        }
     }
 }
 
