@@ -5,6 +5,7 @@ use std::{
 };
 
 use anyhow::{Context, Result};
+use axum::{response, Json};
 use axum_login::{AuthUser, AuthnBackend, AuthzBackend};
 use chrono::Utc;
 use kernel::{
@@ -26,6 +27,18 @@ use thiserror::Error;
 #[derive(Clone, Debug)]
 pub struct AppUser {
     pub user: User,
+}
+
+impl AppUser {
+    pub fn new(user: User) -> Self {
+        Self { user }
+    }
+}
+
+impl response::IntoResponse for AppUser {
+    fn into_response(self) -> response::Response {
+        Json(self.user).into_response()
+    }
 }
 
 #[derive(Clone)]
@@ -428,7 +441,7 @@ where
             Ok(storage) => {
                 let user = storage.get_user(&creds.user.federated_id, &creds.user.provider);
                 match user {
-                    Ok(user) => Ok(Some(AppUser { user })),
+                    Ok(user) => Ok(Some(AppUser::new(user))),
                     Err(err) => Err(UserStoreError::SqlError(err)),
                 }
             }
@@ -449,7 +462,7 @@ where
                 let federated_id = id_parts.next().ok_or_else(|| UserStoreError::InvalidId)?;
                 let user = storage.get_user(federated_id, provider);
                 match user {
-                    Ok(user) => Ok(Some(AppUser { user })),
+                    Ok(user) => Ok(Some(AppUser::new(user))),
                     Err(err) => Err(UserStoreError::SqlError(err)),
                 }
             }

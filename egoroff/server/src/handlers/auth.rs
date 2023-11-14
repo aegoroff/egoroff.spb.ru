@@ -103,7 +103,7 @@ macro_rules! login_user_using_token {
                         }
                         tracing::info!("User updated");
 
-                        let u = AppUser { user };
+                        let u = AppUser::new(user);
                         match $auth.login(&u).await {
                             Ok(_) => tracing::info!("login success"),
                             Err(e) => {
@@ -218,7 +218,7 @@ pub async fn serve_user_api_call(auth: AuthSession) -> impl IntoResponse {
 
 pub async fn serve_user_info_api_call(auth: AuthSession) -> impl IntoResponse {
     if let Some(u) = auth.user {
-        Json(u.user).into_response()
+        u.into_response()
     } else {
         Redirect::to(LOGIN_URI).into_response()
     }
