@@ -20,7 +20,7 @@ const GOOGLE_CSRF_KEY: &str = "google_csrf_state";
 const GITHUB_CSRF_KEY: &str = "github_csrf_state";
 const YANDEX_CSRF_KEY: &str = "yandex_csrf_state";
 const PKCE_CODE_VERIFIER_KEY: &str = "pkce_code_verifier";
-const PROFILE_URI: &str = "/profile/";
+pub const PROFILE_URI: &str = "/profile/";
 pub const LOGIN_URI: &str = "/login";
 
 macro_rules! register_url {

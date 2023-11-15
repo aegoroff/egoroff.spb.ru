@@ -171,7 +171,10 @@ pub fn create_routes(
             Role::Admin
         ))
         .route("/profile", get(handlers::auth::serve_profile))
-        .route("/profile/", get(handlers::auth::serve_profile))
+        .route(
+            handlers::auth::PROFILE_URI,
+            get(handlers::auth::serve_profile),
+        )
         .route("/logout", get(handlers::auth::serve_logout))
         .route("/logout/", get(handlers::auth::serve_logout))
         .route(
