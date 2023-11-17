@@ -19,22 +19,22 @@ impl SqliteSessionStore {
     pub fn open(path: PathBuf, secret: &[u8]) -> Result<SqliteSessionStore, rusqlite::Error> {
         let conn = SqliteSessionStore::create_connection(&path)?;
         conn.execute(
-            r#"
+            r"
                     CREATE TABLE IF NOT EXISTS session (
                         id TEXT PRIMARY KEY NOT NULL,
                         expires INTEGER NULL,
                         session BLOB NOT NULL
                     )
-                 "#,
+                 ",
             [],
         )?;
 
         conn.execute(
-            r#"
+            r"
                     CREATE TABLE IF NOT EXISTS secret (
                         secret TEXT PRIMARY KEY NOT NULL
                     )
-                 "#,
+                 ",
             [],
         )?;
 
@@ -42,10 +42,10 @@ impl SqliteSessionStore {
         let secret_count: i32 = stmt.query_row([], |row| row.get(0))?;
         if secret_count == 0 {
             let mut stmt = conn.prepare(
-                r#"
+                r"
                 INSERT INTO secret
                   (secret) VALUES (?1)
-                "#,
+                ",
             )?;
             let secret = general_purpose::STANDARD.encode(secret);
             let parameters = params![secret];
@@ -59,11 +59,7 @@ impl SqliteSessionStore {
 
     pub fn cleanup(&self) -> Result<(), rusqlite::Error> {
         let conn = SqliteSessionStore::create_connection(&self.path)?;
-        let mut stmt = conn.prepare(
-            r#"
-            DELETE FROM session WHERE expires < ?1
-            "#,
-        )?;
+        let mut stmt = conn.prepare(r"DELETE FROM session WHERE expires < ?1")?;
 
         stmt.execute(params![Utc::now().timestamp()])?;
 
@@ -103,10 +99,10 @@ impl SessionStore for SqliteSessionStore {
         let conn = SqliteSessionStore::create_connection(&self.path)?;
 
         let mut stmt = conn.prepare(
-            r#"
+            r"
             SELECT session, expires, id FROM session
               WHERE id = ?1 AND (expires IS NULL OR expires > ?2)
-            "#,
+            ",
         )?;
 
         let now = Utc::now().timestamp();
@@ -128,13 +124,13 @@ impl SessionStore for SqliteSessionStore {
         let conn = SqliteSessionStore::create_connection(&self.path)?;
 
         let mut stmt = conn.prepare(
-            r#"
+            r"
             INSERT INTO session
               (id, session, expires) VALUES (?1, ?2, ?3)
             ON CONFLICT(id) DO UPDATE SET
               expires = excluded.expires,
               session = excluded.session
-            "#,
+            ",
         )?;
         let parameters = params![id, data, expiry];
         stmt.execute(parameters)?;
