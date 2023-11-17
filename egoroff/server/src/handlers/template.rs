@@ -1,11 +1,11 @@
 use askama::Template;
 use kernel::domain::{Post, SmallPost};
 
-use crate::domain::{Apache, BlogRequest, Config, FilesContainer, Message, Poster, Error};
+use crate::domain::{Apache, BlogRequest, Config, Error, FilesContainer, Message, Poster};
 
 #[derive(Template, Default)]
 #[template(path = "error.html")]
-pub struct ErrorPageTemplate<'a> {
+pub struct ErrorPage<'a> {
     pub html_class: &'a str,
     pub title: &'a str,
     pub title_path: &'a str,

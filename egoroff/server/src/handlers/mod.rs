@@ -45,7 +45,7 @@ use crate::{
 
 use template::{Index, Search};
 
-use self::template::ErrorPageTemplate;
+use self::template::ErrorPage;
 
 pub mod admin;
 pub mod auth;
@@ -352,7 +352,7 @@ fn make_error_page(code: &str) -> Response {
         code: code.to_string(),
         ..Default::default()
     };
-    serve_page(ErrorPageTemplate {
+    serve_page(ErrorPage {
         html_class: "",
         title: code,
         title_path: "",
