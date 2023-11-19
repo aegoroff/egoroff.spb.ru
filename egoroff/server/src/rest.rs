@@ -7,7 +7,7 @@ use axum::routing::{delete, post, put};
 use axum::{http, BoxError, Extension};
 use axum::{routing::get, Router};
 
-use axum_login::{login_required, permission_required, AuthManagerLayer};
+use axum_login::{login_required, permission_required, AuthManagerLayerBuilder};
 use http::StatusCode;
 use tower_sessions::cookie::{time::Duration, SameSite};
 use tower_sessions::{Expiry, SessionManagerLayer};
@@ -136,7 +136,7 @@ pub fn create_routes(
             },
         ))
         .layer(CorsLayer::new().allow_origin(Any).allow_methods(Any))
-        .layer(AuthManagerLayer::new(auth_backend, session_layer))
+        .layer(AuthManagerLayerBuilder::new(auth_backend, session_layer).build())
         .into_inner();
 
     let login_handler = handlers::auth::serve_login
