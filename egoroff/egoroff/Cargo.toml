@@ -23,3 +23,6 @@ tikv-jemallocator = { version = "0.5.4", optional = true }
 migrating = ["migrate"]
 mimalloc = ["mimalloc-rust"]
 jemalloc = ["tikv-jemallocator"]
+
+[lints]
+workspace = true

@@ -48,3 +48,6 @@ uuid = { version = "1.5.0", features = [
 
 [dev-dependencies]
 rstest = "0.18.2"
+
+[lints]
+workspace = true
