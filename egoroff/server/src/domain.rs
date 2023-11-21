@@ -112,6 +112,7 @@ pub struct Downloadable {
     pub title: String,
     pub path: String,
     pub filename: String,
+    pub blake3_hash: String,
     pub size: u64,
 }
 

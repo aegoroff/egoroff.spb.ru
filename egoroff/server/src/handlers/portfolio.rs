@@ -21,6 +21,7 @@ const PORTFOLIO_PATH: &str = "/portfolio/";
 pub struct StoredFile {
     pub id: i64,
     pub path: String,
+    pub blake3_hash: String,
     pub size: u64,
 }
 
@@ -144,6 +145,7 @@ async fn read_downloads(page_context: Arc<PageContext<'_>>) -> Option<Vec<FilesC
                         path: format!("/storage/{}/{}", f.bucket, file.path),
                         filename: file.path,
                         size: file.size,
+                        blake3_hash: file.blake3_hash,
                     };
                     container.files.push(downloadable);
                 }
