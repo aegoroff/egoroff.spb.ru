@@ -7,8 +7,9 @@
             <a itemprop="downloadUrl" href="{{ f.path|safe }}" onclick="gtag('event', 'file_download', { 'send_to': 'G-HRFZ3XCBK8', 'file_name': '{{ f.filename }}', 'link_url': '{{ f.path|safe }}' });"><i class="icon" data-label="download"></i>&nbsp;<span itemprop="name">{{ f.title }}</span></a>
         </dt>
         <dd>
-            <small><span>Размер:&nbsp;{{ f.size|filesizeformat }}</span></small><br/>
-            <small><span>Blake3:&nbsp;{{ f.blake3_hash }}</span></small><br/>
+            <small><span><strong>Платформа:</strong>&nbsp;Windows, x64</span></small><br/>
+            <small><span><strong>Размер:</strong>&nbsp;{{ f.size|filesizeformat }}</span></small><br/>
+            <small><span><strong>Blake3:</strong>&nbsp;{{ f.blake3_hash }}</span></small><br/>        
         </dd>
     {%- endfor -%}
     </dl>
