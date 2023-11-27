@@ -1,10 +1,7 @@
 use super::*;
 
-use axum::{
-    extract::Form,
-    headers::{authorization::Bearer, Authorization},
-    TypedHeader,
-};
+use axum::extract::Form;
+use axum_extra::{headers::{Authorization, authorization::Bearer}, TypedHeader};
 use chrono::{Duration, Utc};
 
 use crate::{
@@ -28,7 +25,9 @@ pub async fn serve_auth(
     if redirect.starts_with(&client_id) {
         let now = Utc::now();
         let issued = now.timestamp() as usize;
-        let Some(expired) = now.checked_add_signed(Duration::minutes(10)) else { return bad_request_error_response(Empty::new()) };
+        let Some(expired) = now.checked_add_signed(Duration::minutes(10)) else {
+            return bad_request_error_response(Body::empty());
+        };
         let expired = expired.timestamp() as usize;
         let claims = Claims {
             client_id,
@@ -44,14 +43,16 @@ pub async fn serve_auth(
 
         let Some(state) = query.state else {
             tracing::error!("No state extracted from query");
-            return bad_request_error_response(Empty::new());
+            return bad_request_error_response(Body::empty());
         };
 
         // generate token and if success redirect to uri specified
         match generate_jwt(&claims, private_key_path) {
             Ok(token) => {
                 let q = format!("state={state}&code={token}");
-                let Some(mut to) = Resource::new(&redirect) else { return bad_request_error_response(Empty::new()) };
+                let Some(mut to) = Resource::new(&redirect) else {
+                    return bad_request_error_response(Body::empty());
+                };
                 let mut c = page_context.cache.lock().await;
                 c.insert(token);
                 to.append_query(&q);
@@ -69,16 +70,16 @@ pub async fn serve_auth(
         match read_from_client(&u.to_string()).await {
             Ok(resp) => {
                 tracing::info!("Response from client: {resp}");
-                (StatusCode::OK, Empty::new().into_response())
+                (StatusCode::OK, Body::empty().into_response())
             }
             Err(e) => {
                 tracing::error!("Error reading data from client: {e:#?}");
-                bad_request_error_response(Empty::new())
+                bad_request_error_response(Body::empty())
             }
         }
     } else {
         tracing::error!("invalid client ID: {client_id}");
-        bad_request_error_response(Empty::new())
+        bad_request_error_response(Body::empty())
     }
 }
 
@@ -167,7 +168,9 @@ pub async fn serve_token_validate(
 
     match validate_jwt(authorization.token(), public_key_path) {
         Ok(claims) => {
-            let Some(me) = claims.iss else { return unauthorized_response("no iss".to_string()) };
+            let Some(me) = claims.iss else {
+                return unauthorized_response("no iss".to_string());
+            };
 
             let response = TokenValidationResult {
                 me,

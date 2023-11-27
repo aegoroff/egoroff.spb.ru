@@ -6,8 +6,7 @@
 use anyhow::{anyhow, Context, Result};
 use axum::Router;
 
-use axum_server::tls_rustls::RustlsConfig;
-use axum_server::Handle;
+//TODO: use axum_server::tls_rustls::RustlsConfig;
 use kernel::graph::{SiteGraph, SiteSection};
 use std::env;
 use std::sync::Arc;
@@ -123,93 +122,105 @@ pub async fn run() -> Result<()> {
         https: https_port.parse().unwrap_or_default(),
     };
 
-    let handle = Handle::new();
+    //TODO: let handle = Handle::new();
 
-    let https = tokio::spawn(https_server(ports, handle.clone(), app.clone(), certs_path));
-    let http = tokio::spawn(http_server(ports, handle, app));
+    // TODO: let https = tokio::spawn(https_server(ports, handle.clone(), app.clone(), certs_path));
+    let http = tokio::spawn(http_server(ports, app));
 
     // Ignore errors.
-    let (http_r, https_r) = tokio::join!(http, https);
+    let http_r = http.await;
     http_r.with_context(|| "Failed to start http server")?;
-    https_r.with_context(|| "Failed to start https server")?;
+    // TODO: https_r.with_context(|| "Failed to start https server")?;
     Ok(())
 }
 
-async fn http_server(ports: Ports, handle: Handle, app: Router) {
+async fn http_server(ports: Ports, app: Router) {
     let addr = SocketAddr::from(([0, 0, 0, 0], ports.http));
     tracing::debug!("HTTP listening on {}", addr);
 
     // Spawn a task to gracefully shutdown server.
-    tokio::spawn(shutdown_signal(handle.clone()));
+    //TODO: tokio::spawn(shutdown_signal(handle.clone()));
 
-    match axum_server::bind(addr)
-        .handle(handle)
-        .serve(app.into_make_service())
-        .await
-    {
-        Ok(r) => r,
-        Err(e) => {
-            tracing::error!(
-                "Failed to start server at 0.0.0.0:{}. Error: {e}",
-                ports.http
-            );
+    if let Ok(listener) = tokio::net::TcpListener::bind(addr).await {
+        if let Ok(r) = axum::serve(listener, app.into_make_service()).await {
+            r
+        } else {
+            tracing::error!("Failed to start server at 0.0.0.0:{}", ports.http);
         }
-    }
-}
-
-async fn https_server(ports: Ports, handle: Handle, app: Router, certs_path: String) {
-    let addr = SocketAddr::from(([0, 0, 0, 0], ports.https));
-    tracing::debug!("HTTPS listening on {addr}");
-
-    tracing::debug!("Certs path {certs_path}");
-    let config = RustlsConfig::from_pem_file(
-        PathBuf::from(&certs_path).join("egoroff_spb_ru.crt"),
-        PathBuf::from(&certs_path).join("egoroff_spb_ru.key.pem"),
-    )
-    .await
-    .expect("Certificate cannot be loaded");
-
-    // Spawn a task to gracefully shutdown server.
-    tokio::spawn(shutdown_signal(handle.clone()));
-
-    match axum_server::bind_rustls(addr, config)
-        .handle(handle)
-        .serve(app.into_make_service())
-        .await
-    {
-        Ok(r) => r,
-        Err(e) => {
-            tracing::error!(
-                "Failed to start server at 0.0.0.0:{}. Error: {e}",
-                ports.https
-            );
-        }
-    }
-}
-
-async fn shutdown_signal(handle: Handle) {
-    let ctrl_c = async {
-        signal::ctrl_c()
-            .await
-            .expect("failed to install Ctrl+C handler");
-    };
-
-    #[cfg(unix)]
-    let terminate = async {
-        signal::unix::signal(signal::unix::SignalKind::terminate())
-            .expect("failed to install signal handler")
-            .recv()
-            .await;
-    };
-
-    #[cfg(not(unix))]
-    let terminate = std::future::pending::<()>();
-
-    tokio::select! {
-        _ = ctrl_c => {},
-        _ = terminate => {},
+    } else {
+        tracing::error!("Failed to start server at 0.0.0.0:{}", ports.http);
     }
 
-    println!("signal received, starting graceful shutdown");
-    handle.graceful_shutdown(Some(Duration::from_secs(2)));
+    // match axum_server::bind(addr)
+    //     .handle(handle)
+    //     .serve(app.into_make_service())
+    //     .await
+    // {
+    //     Ok(r) => r,
+    //     Err(e) => {
+    //         tracing::error!(
+    //             "Failed to start server at 0.0.0.0:{}. Error: {e}",
+    //             ports.http
+    //         );
+    //     }
+    // }
 }
+
+// TODO https
+// async fn https_server(ports: Ports, handle: Handle, app: Router, certs_path: String) {
+//     let addr = SocketAddr::from(([0, 0, 0, 0], ports.https));
+//     tracing::debug!("HTTPS listening on {addr}");
+
+//     tracing::debug!("Certs path {certs_path}");
+//     let config = RustlsConfig::from_pem_file(
+//         PathBuf::from(&certs_path).join("egoroff_spb_ru.crt"),
+//         PathBuf::from(&certs_path).join("egoroff_spb_ru.key.pem"),
+//     )
+//     .await
+//     .expect("Certificate cannot be loaded");
+
+//     // Spawn a task to gracefully shutdown server.
+//     tokio::spawn(shutdown_signal(handle.clone()));
+
+//     match axum_server::bind_rustls(addr, config)
+//         .handle(handle)
+//         .serve(app.into_make_service())
+//         .await
+//     {
+//         Ok(r) => r,
+//         Err(e) => {
+//             tracing::error!(
+//                 "Failed to start server at 0.0.0.0:{}. Error: {e}",
+//                 ports.https
+//             );
+//         }
+//     }
+// }
+
+// TODO
+// async fn shutdown_signal(handle: Handle) {
+//     let ctrl_c = async {
+//         signal::ctrl_c()
+//             .await
+//             .expect("failed to install Ctrl+C handler");
+//     };
+
+//     #[cfg(unix)]
+//     let terminate = async {
+//         signal::unix::signal(signal::unix::SignalKind::terminate())
+//             .expect("failed to install signal handler")
+//             .recv()
+//             .await;
+//     };
+
+//     #[cfg(not(unix))]
+//     let terminate = std::future::pending::<()>();
+
+//     tokio::select! {
+//         _ = ctrl_c => {},
+//         _ = terminate => {},
+//     }
+
+//     println!("signal received, starting graceful shutdown");
+//     handle.graceful_shutdown(Some(Duration::from_secs(2)));
+// }

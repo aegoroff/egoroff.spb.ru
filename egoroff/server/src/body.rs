@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use axum::{
-    body::{Bytes, Full, StreamBody},
+    body::{Body, Bytes},
     http::{self, header, HeaderValue},
     response::{IntoResponse, Response},
     BoxError,
@@ -15,7 +15,7 @@ pub struct Content<T>(pub T, pub &'static str);
 
 impl<T> IntoResponse for Content<T>
 where
-    T: Into<Full<Bytes>>,
+    T: Into<Body>,
 {
     fn into_response(self) -> Response {
         (
@@ -34,7 +34,7 @@ pub struct Xml<T>(pub T);
 
 impl<T> IntoResponse for Xml<T>
 where
-    T: Into<Full<Bytes>>,
+    T: Into<Body>,
 {
     fn into_response(self) -> Response {
         Content(self.0, "text/xml; charset=utf-8").into_response()
@@ -55,7 +55,7 @@ pub struct Html<T>(pub T);
 
 impl<T> IntoResponse for Html<T>
 where
-    T: Into<Full<Bytes>>,
+    T: Into<Body>,
 {
     fn into_response(self) -> Response {
         (
@@ -92,7 +92,7 @@ pub struct Binary<T, P> {
 
 impl<T, P> Binary<T, P>
 where
-    T: Into<Full<Bytes>>,
+    T: Into<Body>,
     P: AsRef<Path>,
 {
     pub fn new(data: T, path: P) -> Self {
@@ -102,7 +102,7 @@ where
 
 impl<T, P> IntoResponse for Binary<T, P>
 where
-    T: Into<Full<Bytes>>,
+    T: Into<Body>,
     P: AsRef<Path>,
 {
     fn into_response(self) -> Response {
@@ -164,7 +164,7 @@ where
     fn into_response(self) -> Response {
         let file_name = self.name_from_path().to_owned();
         let attachment = format!(r#"attachment; filename="{file_name}""#);
-        let body = StreamBody::new(self.data);
+        let body = Body::from_stream(self.data);
         let content_type = (
             header::CONTENT_TYPE,
             HeaderValue::from_static("application/octet-stream"),

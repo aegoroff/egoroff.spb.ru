@@ -3,11 +3,10 @@
 
 use anyhow::Result;
 use askama::Template;
-use axum::body::Bytes;
-use axum::http;
+use axum::body::{Body, Bytes};
+use axum::http::{self, HeaderName, HeaderValue};
 use axum::response::Redirect;
 use axum::{
-    body::Empty,
     extract::{self, Query, State},
     http::StatusCode,
     response::{IntoResponse, Response},
@@ -23,6 +22,7 @@ use kernel::{
     graph,
     resource::Resource,
 };
+use std::str::FromStr;
 use std::{
     collections::HashMap,
     fs::File,
@@ -232,7 +232,16 @@ pub async fn serve_storage(
     match client.get(resource.to_string()).send().await {
         Ok(response) => match response.error_for_status() {
             Ok(r) => {
-                let len = get_content_length(r.headers());
+                let headers =
+                    r.headers()
+                        .iter()
+                        .fold(axum::http::HeaderMap::new(), |mut acc, (k, v)| {
+                            let k: HeaderName = HeaderName::from_str(k.as_str()).unwrap();
+                            let v = HeaderValue::from_bytes(v.as_bytes()).unwrap();
+                            acc.append(k, v);
+                            acc
+                        });
+                let len = get_content_length(&headers);
                 success_response(FileReply::new(r.bytes_stream(), path, len))
             }
             Err(e) => {
@@ -242,7 +251,7 @@ pub async fn serve_storage(
         },
         Err(e) => {
             tracing::error!("{e:#?}");
-            bad_request_error_response(Empty::new())
+            bad_request_error_response(Body::empty())
         }
     }
 }
@@ -381,7 +390,7 @@ fn get_embed(path: &str, asset: Option<rust_embed::EmbeddedFile>) -> impl IntoRe
     if let Some(file) = asset {
         success_response(Binary::new(file.data, path))
     } else {
-        not_found_response(Empty::new())
+        not_found_response(Body::empty())
     }
 }
 

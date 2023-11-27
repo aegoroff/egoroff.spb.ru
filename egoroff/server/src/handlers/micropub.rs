@@ -1,4 +1,5 @@
-use axum::{body::Bytes, extract::Multipart, headers::ContentType, http, TypedHeader};
+use axum::{body::Bytes, extract::Multipart, http};
+use axum_extra::{TypedHeader, headers::ContentType};
 use chrono::Utc;
 use kernel::domain::Post;
 use serde::Deserialize;
@@ -80,10 +81,10 @@ pub async fn serve_index_get(Query(query): Query<MicropubRequest>) -> impl IntoR
                 };
                 success_response(Json(config))
             }
-            _ => success_response(Empty::new()),
+            _ => success_response(Body::empty()),
         }
     } else {
-        success_response(Empty::new())
+        success_response(Body::empty())
     }
 }
 
@@ -174,65 +175,73 @@ pub async fn serve_media_endpoint_post(
 ) -> impl IntoResponse {
     tracing::info!("content type header: {content_type}");
 
-    let Some(mut resource) = Resource::new(&page_context.store_uri) else { 
+    let Some(mut resource) = Resource::new(&page_context.store_uri) else {
         tracing::error!("Invalid storage uri {}", page_context.store_uri);
-        return internal_server_error_response(String::from("Invalid server settings that prevented to reach storage")) 
+        return internal_server_error_response(String::from(
+            "Invalid server settings that prevented to reach storage",
+        ));
     };
 
     let file_name_prefix = Uuid::new_v4();
     let mut file_name = file_name_prefix.to_string();
 
-    let ids : Vec<i64> = if let "multipart/form-data" = content_type.to_string().to_lowercase().as_str() {
-        if let Ok(Some(field)) = multipart.next_field().await {
-            file_name = format!("{file_name}_{}", field.file_name().unwrap_or_default());
-            match read_from_stream(field).await {
-                Ok((result, read_bytes)) => {
-                    resource
-                    .append_path("api")
-                    .append_path(MEDIA_BUCKET)
-                    .append_path(&file_name);
+    let ids: Vec<i64> =
+        if let "multipart/form-data" = content_type.to_string().to_lowercase().as_str() {
+            if let Ok(Some(field)) = multipart.next_field().await {
+                file_name = format!("{file_name}_{}", field.file_name().unwrap_or_default());
+                match read_from_stream(field).await {
+                    Ok((result, read_bytes)) => {
+                        resource
+                            .append_path("api")
+                            .append_path(MEDIA_BUCKET)
+                            .append_path(&file_name);
 
-                    let client = Client::new();
-                    let mut form = reqwest::multipart::Form::new();
+                        let client = Client::new();
+                        let mut form = reqwest::multipart::Form::new();
 
-                    let stream = reqwest::Body::from(result);
-                    let part =
-                        reqwest::multipart::Part::stream_with_length(stream, read_bytes as u64).file_name(file_name.clone());
-                    form = form.part("file", part);
-                    let result = client.post(resource.to_string()).multipart(form).send().await;
-                    match result {
-                        Ok(x) => {
-                            match x.json().await {
+                        let stream = reqwest::Body::from(result);
+                        let part =
+                            reqwest::multipart::Part::stream_with_length(stream, read_bytes as u64)
+                                .file_name(file_name.clone());
+                        form = form.part("file", part);
+                        let result = client
+                            .post(resource.to_string())
+                            .multipart(form)
+                            .send()
+                            .await;
+                        match result {
+                            Ok(x) => match x.json().await {
                                 Ok(ids) => ids,
                                 Err(e) => return internal_server_error_response(e.to_string()),
+                            },
+                            Err(e) => {
+                                return internal_server_error_response(e.to_string());
                             }
                         }
-                        Err(e) => {
-                            return internal_server_error_response(e.to_string());
-                        }
+                    }
+                    Err(e) => {
+                        tracing::error!("{e}");
+                        return internal_server_error_response(e.to_string());
                     }
                 }
-                Err(e) => {
-                    tracing::error!("{e}");
-                    return internal_server_error_response(e.to_string());
-                }
+            } else {
+                return bad_request_error_response("no form data received".to_string());
             }
         } else {
             return bad_request_error_response(
-                "no form data received".to_string(),
+                "expected content-type of multipart/form-data".to_string(),
             );
-        }
-    } else {
-        return bad_request_error_response(
-            "expected content-type of multipart/form-data".to_string(),
-        );
-    };
+        };
 
     tracing::info!("file id: {}", ids[0]);
 
     (
         StatusCode::CREATED,
-        [(http::header::LOCATION, format!("{ME}storage/{MEDIA_BUCKET}/{file_name}"))].into_response(),
+        [(
+            http::header::LOCATION,
+            format!("{ME}storage/{MEDIA_BUCKET}/{file_name}"),
+        )]
+        .into_response(),
     )
 }
 
@@ -261,18 +270,24 @@ pub async fn serve_media_endpoint_get(
 ) -> impl IntoResponse {
     if let Some(q) = req.q {
         if q != "last" {
-            return bad_request_error_response(format!("Invalid query. Must be last but was '{q}'"))
+            return bad_request_error_response(format!(
+                "Invalid query. Must be last but was '{q}'"
+            ));
         }
     } else {
-        return bad_request_error_response(String::from("No query")) 
+        return bad_request_error_response(String::from("No query"));
     }
 
-    let Some(mut resource) = Resource::new(&page_context.store_uri) else { 
-        
-        return internal_server_error_response(String::from("Invalid server settings that prevented to reach storage")) 
+    let Some(mut resource) = Resource::new(&page_context.store_uri) else {
+        return internal_server_error_response(String::from(
+            "Invalid server settings that prevented to reach storage",
+        ));
     };
 
-    resource.append_path("api").append_path(MEDIA_BUCKET).append_path("last");
+    resource
+        .append_path("api")
+        .append_path(MEDIA_BUCKET)
+        .append_path("last");
     let client = Client::new();
     let result = client.get(resource.to_string()).send().await;
     match result {
@@ -280,16 +295,14 @@ pub async fn serve_media_endpoint_get(
             tracing::info!("Response status: {}", x.status());
             match x.json::<File>().await {
                 Ok(file) => {
-                    let response = MediaResponse{
+                    let response = MediaResponse {
                         url: format!("{ME}storage/{MEDIA_BUCKET}/{}", file.path),
                     };
                     success_response(Json(response))
-                },
+                }
                 Err(e) => internal_server_error_response(e.to_string()),
             }
         }
-        Err(e) => {
-            internal_server_error_response(e.to_string())
-        }
+        Err(e) => internal_server_error_response(e.to_string()),
     }
 }
