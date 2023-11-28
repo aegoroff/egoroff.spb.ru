@@ -190,7 +190,7 @@ pub fn create_routes(
             AuthBackend,
             login_url = handlers::auth::LOGIN_URI
         ))
-        //TODO: .merge(SwaggerUi::new("/api/v2").url("/api/v2/openapi.json", ApiDoc::openapi()))
+        .merge(SwaggerUi::new("/api/v2").url("/api/v2/openapi.json", ApiDoc::openapi()))
         .route(
             "/micropub/",
             get(handlers::micropub::serve_index_get)
