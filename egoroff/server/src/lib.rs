@@ -139,14 +139,14 @@ pub async fn run() -> Result<()> {
 }
 
 async fn http_server(ports: Ports, app: Router) {
-    let addr = SocketAddr::from(([0, 0, 0, 0], ports.http));
-    tracing::debug!("HTTP listening on {}", addr);
+    let listen_socket = SocketAddr::from(([0, 0, 0, 0], ports.http));
+    tracing::debug!("HTTP listening on {listen_socket}");
 
     let (close_tx, close_rx) = watch::channel(());
 
-    if let Ok(listener) = tokio::net::TcpListener::bind(addr).await {
+    if let Ok(listener) = tokio::net::TcpListener::bind(listen_socket).await {
         loop {
-            let (socket, _remote_addr) = tokio::select! {
+            let (client_stream, _remote_addr) = tokio::select! {
                 result = listener.accept() => {
                     match result {
                         Ok(r) => r,
@@ -167,7 +167,7 @@ async fn http_server(ports: Ports, app: Router) {
             let close_rx = close_rx.clone();
 
             tokio::spawn(async move {
-                let socket = TokioIo::new(socket);
+                let client_socket = TokioIo::new(client_stream);
 
                 // Hyper also has its own `Service` trait and doesn't use tower. We can use
                 // `hyper::service::service_fn` to create a hyper `Service` that calls our app through
@@ -185,7 +185,7 @@ async fn http_server(ports: Ports, app: Router) {
                 // support graceful so we have to use hyper directly and unfortunately pick between
                 // http1 and http2.
                 let conn = hyper::server::conn::http1::Builder::new()
-                    .serve_connection(socket, hyper_service)
+                    .serve_connection(client_socket, hyper_service)
                     // `with_upgrades` is required for websockets.
                     .with_upgrades();
 
