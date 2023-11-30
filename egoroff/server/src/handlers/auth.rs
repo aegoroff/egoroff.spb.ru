@@ -105,7 +105,7 @@ macro_rules! login_user_using_token {
 
                         let u = AppUser::new(user);
                         match $auth.login(&u).await {
-                            Ok(_) => tracing::info!("login success"),
+                            Ok(()) => tracing::info!("login success"),
                             Err(e) => {
                                 tracing::error!("login error: {e:#?}");
                                 return Redirect::to(LOGIN_URI);
