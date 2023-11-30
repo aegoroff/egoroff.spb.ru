@@ -156,7 +156,7 @@ async fn http_server(ports: Ports, app: Router) {
                         },
                     }
                 }
-                _ = shutdown_signal() => {
+                () = shutdown_signal() => {
                     break;
                 }
             };
@@ -199,7 +199,7 @@ async fn http_server(ports: Ports, app: Router) {
                             }
                             break;
                         }
-                        _ = shutdown_signal() => {
+                        () = shutdown_signal() => {
                             conn.as_mut().graceful_shutdown();
                         }
                     }
