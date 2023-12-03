@@ -18,7 +18,7 @@ axum = { version = "0.7.1", features = ["multipart", "http2"] }
 axum-extra = { version = "0.9.0", features = ["typed-header"] }
 axum-server = { version = "0.5.1", features = ["tls-rustls"] }
 tower-sessions = { workspace = true }
-axum-login = "0.10.0"
+axum-login = "0.10.2"
 tokio-util = { workspace = true, features = ["full"] }
 futures = { workspace = true }
 futures-util = "0.3"
@@ -35,7 +35,7 @@ oauth2 = {version= "4.4.2", features = ["reqwest"] }
 async-trait = { workspace = true }
 reqwest = { workspace = true, features = ["json", "multipart", "stream", "rustls-tls" ] }
 lazy_static = "1.4.0"
-jsonwebtoken = "9.1.0"
+jsonwebtoken = "9.2.0"
 url = { workspace = true }
 thiserror = "1.0.50"
 utoipa = { workspace = true, features = ["chrono", "time", "axum_extras"] }
