@@ -1,7 +1,10 @@
 use super::*;
 
 use axum::extract::Form;
-use axum_extra::{headers::{Authorization, authorization::Bearer}, TypedHeader};
+use axum_extra::{
+    headers::{authorization::Bearer, Authorization},
+    TypedHeader,
+};
 use chrono::{Duration, Utc};
 
 use crate::{
@@ -107,7 +110,7 @@ pub async fn serve_token_generate(
         }
         Err(e) => {
             tracing::error!("validate jwt token error: {e:#?}");
-            return bad_request_error_response(e.to_string());
+            return unauthorized_response(e.to_string());
         }
     }
 
