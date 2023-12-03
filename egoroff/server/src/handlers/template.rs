@@ -16,7 +16,7 @@ pub struct ErrorPage<'a> {
 }
 
 #[derive(Template, Default)]
-#[template(path = "welcome.html", whitespace = "suppress")]
+#[template(path = "welcome.html")]
 pub struct Index<'a> {
     pub html_class: &'a str,
     pub title: &'a str,
@@ -66,7 +66,7 @@ pub struct Portfolio<'a> {
 }
 
 #[derive(Template)]
-#[template(path = "blog/index.html", whitespace = "minimize")]
+#[template(path = "blog/index.html")]
 pub struct BlogIndex<'a> {
     pub html_class: &'a str,
     pub title: &'a str,
