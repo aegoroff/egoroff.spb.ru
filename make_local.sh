@@ -5,7 +5,7 @@ base_path=./home
 
 (
   cd ./ui/
-  bun run build
+  npm run build
 )
 
 mkdir "$base_path"
