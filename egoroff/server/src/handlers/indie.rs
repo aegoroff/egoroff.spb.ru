@@ -93,7 +93,7 @@ pub async fn serve_auth(
     request_body(content = TokenRequest, content_type = "application/x-www-form-urlencoded"),
     responses(
         (status = 200, description = "Configuration read successfully", body = Token),
-        (status = 400, description = "Claims validation failed", body = String),
+        (status = 401, description = "Claims validation failed", body = String),
     ),
     tag = "indie",
 )]
