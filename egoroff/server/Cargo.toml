@@ -14,7 +14,7 @@ serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 tokio = { workspace = true, features = ["full"] }
 mime_guess = "2"
-axum = { version = "0.7.1", features = ["multipart", "http2"] }
+axum = { version = "0.7.2", features = ["multipart", "http2"] }
 axum-extra = { version = "0.9.0", features = ["typed-header"] }
 axum-server = { version = "0.5.1", features = ["tls-rustls"] }
 tower-sessions = { workspace = true }
