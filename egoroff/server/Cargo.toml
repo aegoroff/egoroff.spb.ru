@@ -47,7 +47,7 @@ uuid = { version = "1.6.1", features = [
     "macro-diagnostics", # Enable better diagnostics for compile-time UUIDs
 ]}
 hyper = { version = "1.0.1", features = [] }
-hyper-util = { version = "0.1.1", features = ["tokio", "server-auto", "http1", "http2"] }
+hyper-util = { version = "0.1.1", features = ["tokio", "server-auto", "http1"] }
 
 [dev-dependencies]
 rstest = "0.18.2"

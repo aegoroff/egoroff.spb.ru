@@ -7,9 +7,7 @@ use anyhow::{anyhow, Context, Result};
 use axum::Router;
 
 use axum::extract::Request;
-use futures_util::Future;
 use hyper::body::Incoming;
-use hyper::rt::Executor;
 use hyper_util::rt::TokioIo;
 //TODO: use axum_server::tls_rustls::RustlsConfig;
 use kernel::graph::{SiteGraph, SiteSection};
@@ -186,8 +184,10 @@ async fn http_server(ports: Ports, app: Router) {
                 // `hyper_util::server::conn::auto::Builder` supports both http1 and http2 but doesn't
                 // support graceful so we have to use hyper directly and unfortunately pick between
                 // http1 and http2.
-                let conn = hyper::server::conn::http2::Builder::new(TokioExecutor)
-                    .serve_connection(client_socket, hyper_service);
+                let conn = hyper::server::conn::http1::Builder::new()
+                    .serve_connection(client_socket, hyper_service)
+                    // `with_upgrades` is required for websockets.
+                    .with_upgrades();
 
                 let mut conn = std::pin::pin!(conn);
 
@@ -212,19 +212,6 @@ async fn http_server(ports: Ports, app: Router) {
         close_tx.closed().await;
     } else {
         tracing::error!("Failed to start server at 0.0.0.0:{}", ports.http);
-    }
-}
-
-#[derive(Clone)]
-struct TokioExecutor;
-
-impl<F> Executor<F> for TokioExecutor
-where
-    F: Future + Send + 'static,
-    F::Output: Send + 'static,
-{
-    fn execute(&self, future: F) {
-        tokio::spawn(future);
     }
 }
 
