@@ -1,3 +1,5 @@
+use std::iter;
+
 use anyhow::Result;
 use kernel::xml::Builder;
 
@@ -22,7 +24,7 @@ pub fn make_site_map(
 
     builder.write_attributed_start_tag(
         URLSET_ELT,
-        vec![("xmlns", "http://www.sitemaps.org/schemas/sitemap/0.9")],
+        iter::once(("xmlns", "http://www.sitemaps.org/schemas/sitemap/0.9")),
     )?;
 
     let root = Url {

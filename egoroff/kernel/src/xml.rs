@@ -16,7 +16,8 @@ impl Default for Builder {
 }
 
 impl Builder {
-    #[must_use] pub fn new() -> Self {
+    #[must_use]
+    pub fn new() -> Self {
         Self {
             writer: Writer::new(Cursor::new(Vec::new())),
         }
@@ -43,10 +44,10 @@ impl Builder {
         Ok(())
     }
 
-    pub fn write_attributed_start_tag(
+    pub fn write_attributed_start_tag<'a, I: Iterator<Item = (&'a str, &'a str)>>(
         &mut self,
         elt: &str,
-        attributes: Vec<(&str, &str)>,
+        attributes: I,
     ) -> Result<(), anyhow::Error> {
         let mut start_tag = BytesStart::new(elt);
         for (attr, val) in attributes {
@@ -70,11 +71,11 @@ impl Builder {
         Ok(())
     }
 
-    pub fn write_attributed_element(
+    pub fn write_attributed_element<'a, I: Iterator<Item = (&'a str, &'a str)>>(
         &mut self,
         elt: &str,
         txt: &str,
-        attributes: Vec<(&str, &str)>,
+        attributes: I,
     ) -> Result<(), anyhow::Error> {
         self.write_attributed_start_tag(elt, attributes)?;
 
@@ -84,10 +85,10 @@ impl Builder {
         Ok(())
     }
 
-    pub fn write_empty_attributed_element(
+    pub fn write_empty_attributed_element<'a, I: Iterator<Item = (&'a str, &'a str)>>(
         &mut self,
         elt: &str,
-        attributes: Vec<(&str, &str)>,
+        attributes: I,
     ) -> Result<(), anyhow::Error> {
         self.write_attributed_start_tag(elt, attributes)?;
 

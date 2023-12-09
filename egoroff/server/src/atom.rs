@@ -1,3 +1,5 @@
+use std::iter;
+
 use anyhow::Result;
 use chrono::SecondsFormat;
 use kernel::{domain::SmallPost, xml::Builder};
@@ -7,36 +9,46 @@ const LINK_ELT: &str = "link";
 const ENTRY_ELT: &str = "entry";
 const AUTHOR_ELT: &str = "author";
 
+lazy_static::lazy_static! {
+    static ref LINK_ATTRS : Vec<(&'static str, &'static str)> = vec![
+        ("href", "https://www.egoroff.spb.ru/blog/recent.atom"),
+        ("rel", "self"),
+    ];
+}
+
 pub fn from_small_posts(posts: Vec<SmallPost>) -> Result<String> {
     let mut builder = Builder::new();
 
-    builder.write_attributed_start_tag(FEED_ELT, vec![("xmlns", "http://www.w3.org/2005/Atom")])?;
+    builder.write_attributed_start_tag(
+        FEED_ELT,
+        iter::once(("xmlns", "http://www.w3.org/2005/Atom")),
+    )?;
 
-    builder.write_attributed_element("title", "egoroff.spb.ru feed", vec![("type", "text")])?;
+    builder.write_attributed_element(
+        "title",
+        "egoroff.spb.ru feed",
+        iter::once(("type", "text")),
+    )?;
 
     builder.write_element("id", "https://www.egoroff.spb.ru/blog/recent.atom")?;
 
     let updated = posts[0].created.to_rfc3339_opts(SecondsFormat::Secs, true);
     builder.write_element("updated", &updated)?;
 
-    builder
-        .write_empty_attributed_element(LINK_ELT, vec![("href", "https://www.egoroff.spb.ru/")])?;
-
     builder.write_empty_attributed_element(
         LINK_ELT,
-        vec![
-            ("href", "https://www.egoroff.spb.ru/blog/recent.atom"),
-            ("rel", "self"),
-        ],
+        iter::once(("href", "https://www.egoroff.spb.ru/")),
     )?;
+
+    builder.write_empty_attributed_element(LINK_ELT, LINK_ATTRS.iter().cloned())?;
 
     for post in posts {
         builder.write_attributed_start_tag(
             ENTRY_ELT,
-            vec![("xml:base", "https://www.egoroff.spb.ru/blog/recent.atom")],
+            iter::once(("xml:base", "https://www.egoroff.spb.ru/blog/recent.atom")),
         )?;
 
-        builder.write_attributed_element("title", &post.title, vec![("type", "text")])?;
+        builder.write_attributed_element("title", &post.title, iter::once(("type", "text")))?;
 
         builder.write_element(
             "id",
@@ -48,7 +60,11 @@ pub fn from_small_posts(posts: Vec<SmallPost>) -> Result<String> {
 
         builder.write_element("published", &updated)?;
 
-        builder.write_attributed_element("content", &post.short_text, vec![("type", "html")])?;
+        builder.write_attributed_element(
+            "content",
+            &post.short_text,
+            iter::once(("type", "html")),
+        )?;
 
         builder.write_start_tag(AUTHOR_ELT)?;
 
