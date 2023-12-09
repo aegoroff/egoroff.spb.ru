@@ -139,7 +139,7 @@ impl<'a> SiteGraph<'a> {
             // dont add section root itself to breadcrumbs
             let last = parent_sections[parent_sections.len() - 1];
             // HACK: to decrease allocations. Equal to let end = format!("{}{SEP}", last.id); uri.ends_with(&end)
-            if uri.ends_with(SEP) && uri[0..uri.len() - 1].ends_with(last.id.as_str()) {
+            if uri[0..uri.len() - 1].ends_with(last.id.as_str()) {
                 parent_sections.remove(parent_sections.len() - 1);
             }
         }
