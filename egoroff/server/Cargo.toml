@@ -18,7 +18,7 @@ axum = { version = "0.7.2", features = ["multipart", "http2"] }
 axum-extra = { version = "0.9.0", features = ["typed-header"] }
 axum-server = { version = "0.5.1", features = ["tls-rustls"] }
 tower-sessions = { workspace = true }
-axum-login = "0.10.2"
+axum-login = "0.11.0"
 tokio-util = { workspace = true, features = ["full"] }
 futures = { workspace = true }
 futures-util = "0.3"
