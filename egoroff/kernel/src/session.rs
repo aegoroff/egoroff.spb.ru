@@ -111,7 +111,7 @@ impl SessionStore for SqliteSessionStore {
         let parameters = params![id, now];
         let record = stmt.query_row(parameters, |row| {
             let data: Vec<u8> = row.get(0)?;
-            let data: Session = rmp_serde::from_slice(&data).unwrap_or_default();
+            let data: Record = rmp_serde::from_slice(&data)?;
             Ok(data)
         })?;
 
