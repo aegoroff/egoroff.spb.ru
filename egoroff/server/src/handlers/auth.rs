@@ -25,7 +25,7 @@ pub const LOGIN_URI: &str = "/login";
 
 macro_rules! register_url {
     ($context:ident, $session:ident, $url:ident, $key:ident, $context_param:ident) => {{
-        $session.insert($key, $url.csrf_state).unwrap();
+        $session.insert($key, $url.csrf_state).await.unwrap();
         $context.$context_param = $url.url.as_str();
     }};
 }
@@ -51,7 +51,7 @@ pub async fn serve_login(
     );
 
     if let Some(v) = google_url.verifier {
-        if let Err(e) = session.insert(PKCE_CODE_VERIFIER_KEY, v) {
+        if let Err(e) = session.insert(PKCE_CODE_VERIFIER_KEY, v).await {
             tracing::error!("error inserting pkce_code_verifier: {e:#?}");
         }
     }
@@ -77,7 +77,7 @@ pub async fn serve_login(
 }
 
 pub async fn serve_logout(mut auth: AuthSession) -> impl IntoResponse {
-    auth.logout().unwrap_or_default();
+    auth.logout().await.unwrap_or_default();
     Redirect::to(LOGIN_URI)
 }
 
@@ -128,7 +128,7 @@ macro_rules! login_user_using_token {
 
 macro_rules! validate_csrf {
     ($key:expr, $session:ident, $query:ident) => {{
-        match $session.get::<CsrfToken>($key) {
+        match $session.get::<CsrfToken>($key).await {
             Ok(original_csrf_state) => {
                 if let Some(state) = original_csrf_state {
                     if state.secret() == $query.state.secret() {
@@ -158,7 +158,10 @@ pub async fn google_oauth_callback(
     mut auth: AuthSession,
 ) -> impl IntoResponse {
     validate_csrf!(GOOGLE_CSRF_KEY, session, query);
-    if let Ok(pkce_code_verifier) = session.get::<PkceCodeVerifier>(PKCE_CODE_VERIFIER_KEY) {
+    if let Ok(pkce_code_verifier) = session
+        .get::<PkceCodeVerifier>(PKCE_CODE_VERIFIER_KEY)
+        .await
+    {
         let token = google_authorizer
             .exchange_code(query.code, pkce_code_verifier)
             .await;
