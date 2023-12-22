@@ -8,7 +8,11 @@ use base64::{engine::general_purpose, Engine as _};
 use chrono::Utc;
 use rusqlite::{params, Connection};
 
-use tower_sessions::{session::Id, Session, SessionStore};
+use tower_sessions::session_store::Result;
+use tower_sessions::{
+    session::{Id, Record},
+    Session, SessionStore,
+};
 
 #[derive(Debug, Clone)]
 pub struct SqliteSessionStore {
@@ -16,7 +20,7 @@ pub struct SqliteSessionStore {
 }
 
 impl SqliteSessionStore {
-    pub fn open(path: PathBuf, secret: &[u8]) -> Result<SqliteSessionStore, rusqlite::Error> {
+    pub fn open(path: PathBuf, secret: &[u8]) -> anyhow::Result<SqliteSessionStore> {
         let conn = SqliteSessionStore::create_connection(&path)?;
         conn.execute(
             r"
@@ -57,7 +61,7 @@ impl SqliteSessionStore {
         })
     }
 
-    pub fn cleanup(&self) -> Result<(), rusqlite::Error> {
+    pub fn cleanup(&self) -> anyhow::Result<()> {
         let conn = SqliteSessionStore::create_connection(&self.path)?;
         let mut stmt = conn.prepare(r"DELETE FROM session WHERE expires < ?1")?;
 
@@ -66,7 +70,7 @@ impl SqliteSessionStore {
         Ok(())
     }
 
-    pub fn get_secret(&self) -> Result<Vec<u8>, rusqlite::Error> {
+    pub fn get_secret(&self) -> anyhow::Result<Vec<u8>> {
         let conn = SqliteSessionStore::create_connection(&self.path)?;
         let mut stmt = conn.prepare("SELECT secret FROM secret")?;
         let encoded: String = stmt.query_row([], |row| {
@@ -81,7 +85,7 @@ impl SqliteSessionStore {
         Ok(result)
     }
 
-    fn create_connection(path: &Path) -> Result<Connection, rusqlite::Error> {
+    fn create_connection(path: &Path) -> anyhow::Result<Connection> {
         let conn = Connection::open(path)?;
         conn.pragma_update(None, "synchronous", "OFF")?;
         conn.pragma_update(None, "journal_mode", "MEMORY")?;
@@ -92,9 +96,7 @@ impl SqliteSessionStore {
 
 #[async_trait]
 impl SessionStore for SqliteSessionStore {
-    type Error = rusqlite::Error;
-
-    async fn load(&self, session_id: &Id) -> Result<Option<Session>, Self::Error> {
+    async fn load(&self, session_id: &Id) -> Result<Option<Record>> {
         let id = session_id.to_string();
         let conn = SqliteSessionStore::create_connection(&self.path)?;
 
@@ -116,10 +118,10 @@ impl SessionStore for SqliteSessionStore {
         Ok(Some(record))
     }
 
-    async fn save(&self, session: &Session) -> Result<(), Self::Error> {
-        let id = session.id().to_string();
-        let data = rmp_serde::to_vec(&session).unwrap_or_default();
-        let expiry = &session.expiry_date().unix_timestamp();
+    async fn save(&self, session_record: &Record) -> Result<()> {
+        let id = session_record.id.to_string();
+        let data = rmp_serde::to_vec(&session_record).unwrap_or_default();
+        let expiry = &session_record.expiry_date.unix_timestamp();
 
         let conn = SqliteSessionStore::create_connection(&self.path)?;
 
@@ -137,7 +139,7 @@ impl SessionStore for SqliteSessionStore {
         Ok(())
     }
 
-    async fn delete(&self, session_id: &Id) -> Result<(), Self::Error> {
+    async fn delete(&self, session_id: &Id) -> Result<()> {
         let id = session_id.to_string();
         let conn = SqliteSessionStore::create_connection(&self.path)?;
         let mut stmt = conn.prepare("DELETE FROM session WHERE id = ?")?;
