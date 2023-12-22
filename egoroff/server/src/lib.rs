@@ -9,7 +9,6 @@ use axum::Router;
 use axum::extract::Request;
 use hyper::body::Incoming;
 use hyper_util::rt::TokioIo;
-//TODO: use axum_server::tls_rustls::RustlsConfig;
 use kernel::graph::{SiteGraph, SiteSection};
 use std::env;
 use std::sync::Arc;
@@ -28,7 +27,6 @@ extern crate async_trait;
 #[derive(Clone, Copy)]
 struct Ports {
     http: u16,
-    // TODO: https: u16,
 }
 
 mod atom;
@@ -86,7 +84,6 @@ pub async fn run() -> Result<()> {
         .init();
 
     let http_port = env::var("EGOROFF_HTTP_PORT").unwrap_or_else(|_| String::from("4200"));
-    // TODO: let https_port = env::var("EGOROFF_HTTPS_PORT").unwrap_or_else(|_| String::from("4201"));
     let store_uri = env::var("EGOROFF_STORE_URI").unwrap_or_default();
     let certs_path = env::var("EGOROFF_CERT_DIR").unwrap_or_default();
 
@@ -123,18 +120,13 @@ pub async fn run() -> Result<()> {
 
     let ports = Ports {
         http: http_port.parse().unwrap_or_default(),
-        // TODO: https: https_port.parse().unwrap_or_default(),
     };
 
-    //TODO: let handle = Handle::new();
-
-    // TODO: let https = tokio::spawn(https_server(ports, handle.clone(), app.clone(), certs_path));
     let http = tokio::spawn(http_server(ports, app));
 
     // Ignore errors.
     let http_r = http.await;
     http_r.with_context(|| "Failed to start http server")?;
-    // TODO: https_r.with_context(|| "Failed to start https server")?;
     Ok(())
 }
 
@@ -214,37 +206,6 @@ async fn http_server(ports: Ports, app: Router) {
         tracing::error!("Failed to start server at 0.0.0.0:{}", ports.http);
     }
 }
-
-// TODO https
-// async fn https_server(ports: Ports, handle: Handle, app: Router, certs_path: String) {
-//     let addr = SocketAddr::from(([0, 0, 0, 0], ports.https));
-//     tracing::debug!("HTTPS listening on {addr}");
-
-//     tracing::debug!("Certs path {certs_path}");
-//     let config = RustlsConfig::from_pem_file(
-//         PathBuf::from(&certs_path).join("egoroff_spb_ru.crt"),
-//         PathBuf::from(&certs_path).join("egoroff_spb_ru.key.pem"),
-//     )
-//     .await
-//     .expect("Certificate cannot be loaded");
-
-//     // Spawn a task to gracefully shutdown server.
-//     tokio::spawn(shutdown_signal(handle.clone()));
-
-//     match axum_server::bind_rustls(addr, config)
-//         .handle(handle)
-//         .serve(app.into_make_service())
-//         .await
-//     {
-//         Ok(r) => r,
-//         Err(e) => {
-//             tracing::error!(
-//                 "Failed to start server at 0.0.0.0:{}. Error: {e}",
-//                 ports.https
-//             );
-//         }
-//     }
-// }
 
 async fn shutdown_signal() {
     let ctrl_c = async {
