@@ -40,7 +40,7 @@ pub fn from_small_posts(posts: Vec<SmallPost>) -> Result<String> {
         iter::once(("href", "https://www.egoroff.spb.ru/")),
     )?;
 
-    builder.write_empty_attributed_element(LINK_ELT, LINK_ATTRS.iter().cloned())?;
+    builder.write_empty_attributed_element(LINK_ELT, LINK_ATTRS.iter().copied())?;
 
     for post in posts {
         builder.write_attributed_start_tag(
