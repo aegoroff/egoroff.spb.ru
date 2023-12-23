@@ -108,11 +108,11 @@ impl SqliteSessionStore {
         let parameters = params![id, now];
         let record = stmt.query_row(parameters, |row| {
             let data: Vec<u8> = row.get(0)?;
-            let data = rmp_serde::from_slice(&data).map_err(|_| rusqlite::Error::InvalidQuery)?;
+            let data = rmp_serde::from_slice(&data).ok();
             Ok(data)
         })?;
 
-        Ok(Some(record))
+        Ok(record)
     }
 
     async fn delete_impl(&self, session_id: &Id) -> anyhow::Result<()> {
