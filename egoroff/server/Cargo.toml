@@ -37,7 +37,7 @@ reqwest = { workspace = true, features = ["json", "multipart", "stream", "rustls
 lazy_static = "1.4.0"
 jsonwebtoken = "9.2.0"
 url = { workspace = true }
-thiserror = "1.0.51"
+thiserror = "1.0.52"
 utoipa = { workspace = true, features = ["chrono", "time", "axum_extras"] }
 utoipa-swagger-ui = { version = "5.0.0", features = ["axum"] }
 rand = { version = "0.8.5", features = ["min_const_gen"] }
