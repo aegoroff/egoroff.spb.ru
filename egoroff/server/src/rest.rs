@@ -1,14 +1,12 @@
 use crate::auth::{AuthBackend, GithubAuthorizer, GoogleAuthorizer, Role, YandexAuthorizer};
 use anyhow::Result;
-use axum::error_handling::HandleErrorLayer;
 use axum::extract::DefaultBodyLimit;
 use axum::handler::Handler;
 use axum::routing::{delete, post, put};
-use axum::{http, BoxError, Extension};
+use axum::Extension;
 use axum::{routing::get, Router};
 
 use axum_login::{login_required, permission_required, AuthManagerLayerBuilder};
-use http::StatusCode;
 use tower_sessions::cookie::{time::Duration, SameSite};
 use tower_sessions::{Expiry, SessionManagerLayer};
 
@@ -127,9 +125,6 @@ pub fn create_routes(
         .with_same_site(SameSite::Lax);
 
     let session_service = ServiceBuilder::new()
-        .layer(HandleErrorLayer::new(|_: BoxError| async {
-            StatusCode::BAD_REQUEST
-        }))
         .layer(TraceLayer::new_for_http().on_failure(
             |error: ServerErrorsFailureClass, _latency: std::time::Duration, _span: &Span| {
                 tracing::error!("Server error: {error}");
