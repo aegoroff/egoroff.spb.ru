@@ -149,6 +149,7 @@ async fn http_server(ports: Ports, app: Router) {
                     }
                 }
                 () = shutdown_signal() => {
+                    tracing::info!("signal received, not accepting new connections");
                     break;
                 }
             };
@@ -192,6 +193,7 @@ async fn http_server(ports: Ports, app: Router) {
                             break;
                         }
                         () = shutdown_signal() => {
+                            tracing::info!("signal received in task, starting graceful shutdown");
                             conn.as_mut().graceful_shutdown();
                         }
                     }
