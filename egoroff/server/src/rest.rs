@@ -89,13 +89,7 @@ pub fn create_routes(
     let storage = Sqlite::open(storage_path.clone(), Mode::ReadWrite)?;
     let storage = Arc::new(Mutex::new(storage));
     let cache = Arc::new(Mutex::new(HashSet::new()));
-
-    let public_key_path = PathBuf::from(&certs_path)
-        .join("egoroffspbrupub.pem")
-        .to_str()
-        .unwrap_or_default()
-        .to_string();
-    let public_key_path = Arc::new(public_key_path);
+    let micropub_api = micropub_api(&certs_path);
 
     let page_context = Arc::new(PageContext {
         base_path,
@@ -144,93 +138,15 @@ pub fn create_routes(
             login_url = handlers::auth::LOGIN_URI,
             Role::Admin
         ))
-        .route("/profile", get(handlers::auth::serve_profile))
-        .route(
-            handlers::auth::PROFILE_URI,
-            get(handlers::auth::serve_profile),
-        )
-        .route("/logout", get(handlers::auth::serve_logout))
-        .route("/logout/", get(handlers::auth::serve_logout))
-        .route(
-            "/api/v2/auth/userinfo",
-            get(handlers::auth::serve_user_info_api_call),
-        )
-        .route(
-            "/api/v2/auth/userinfo/",
-            get(handlers::auth::serve_user_info_api_call),
-        )
+        .merge(auth_routes())
         // Important all protected routes must be the first in the list
         .route_layer(login_required!(
             AuthBackend,
             login_url = handlers::auth::LOGIN_URI
         ))
-        .merge(SwaggerUi::new("/api/v2").url("/api/v2/openapi.json", ApiDoc::openapi()))
-        .route(
-            "/micropub/",
-            get(handlers::micropub::serve_index_get)
-                .post(handlers::micropub::serve_index_post)
-                .layer(RequireIndieAuthorizationLayer::auth(
-                    public_key_path.clone(),
-                )),
-        )
-        .route(
-            "/micropub",
-            get(handlers::micropub::serve_index_get)
-                .post(handlers::micropub::serve_index_post)
-                .layer(RequireIndieAuthorizationLayer::auth(
-                    public_key_path.clone(),
-                )),
-        )
-        .route(
-            "/micropub/media",
-            get(handlers::micropub::serve_media_endpoint_get)
-                .post(handlers::micropub::serve_media_endpoint_post)
-                .layer(RequireIndieAuthorizationLayer::auth(public_key_path)),
-        )
         .route("/", get(handlers::serve_index))
-        .route("/recent.atom", get(handlers::blog::serve_atom))
         .route("/sitemap.xml", get(handlers::serve_sitemap))
-        .route("/news/rss", get(handlers::blog::serve_atom))
-        .route("/news/rss/", get(handlers::blog::serve_atom))
-        .route("/portfolio/", get(handlers::portfolio::serve_index))
-        .route(
-            "/portfolio/:path",
-            get(handlers::portfolio::serve_apache_document),
-        )
-        .route(
-            "/portfolio/apache/:path",
-            get(handlers::portfolio::redirect_to_real_document),
-        )
-        .route(
-            "/portfolio/portfolio/:path",
-            get(handlers::portfolio::redirect_to_real_document),
-        )
-        .route("/blog/", get(handlers::blog::serve_index_default))
-        .route("/news/", get(handlers::blog::redirect))
-        .route("/opinions/", get(handlers::blog::serve_index_default))
-        .route(
-            "/blog/page/:page",
-            get(handlers::blog::serve_index_not_default),
-        )
-        .route(
-            "/blog/page/:page/",
-            get(handlers::blog::serve_index_not_default),
-        )
-        .route("/blog/recent.atom", get(handlers::blog::serve_atom))
-        .route("/blog/:path", get(handlers::blog::serve_document))
-        .route(
-            "/opinions/:path",
-            get(handlers::blog::redirect_to_real_document),
-        )
         .route("/search/", get(handlers::serve_search))
-        .route("/:path", get(handlers::serve_root))
-        .route("/js/:path", get(handlers::serve_js))
-        .route("/css/:path", get(handlers::serve_css))
-        .route("/img/:path", get(handlers::serve_img))
-        .route("/apache/:path", get(handlers::serve_apache))
-        .route("/apache/images/:path", get(handlers::serve_apache_images))
-        .nest("/api/v2", public_api())
-        .merge(oauth2_routes(storage_path)?)
         .route("/storage/:bucket/:path", get(handlers::serve_storage))
         .route(
             "/token",
@@ -240,6 +156,13 @@ pub fn create_routes(
             "/token/",
             post(handlers::indie::serve_token_generate).get(handlers::indie::serve_token_validate),
         )
+        .merge(SwaggerUi::new("/api/v2").url("/api/v2/openapi.json", ApiDoc::openapi()))
+        .merge(micropub_api)
+        .merge(blog_routes())
+        .nest("/portfolio/", portfolio_routes())
+        .merge(static_resources_routes())
+        .nest("/api/v2", public_api())
+        .merge(oauth2_routes(storage_path)?)
         .layer(session_service)
         .layer(CompressionLayer::new().compress_when(compress_predicate))
         .layer(RequestBodyLimitLayer::new(20 * 1024 * 1024))
@@ -299,4 +222,104 @@ fn oauth2_routes(storage_path: PathBuf) -> Result<Router<Arc<PageContext<'static
     Ok(Router::new()
         .route(handlers::auth::LOGIN_URI, get(login_handler))
         .nest("/_s/callback", callbacks))
+}
+
+fn micropub_api(certs_path: &str) -> Router<Arc<PageContext<'static>>> {
+    let public_key_path = PathBuf::from(certs_path)
+        .join("egoroffspbrupub.pem")
+        .to_str()
+        .unwrap_or_default()
+        .to_string();
+    let public_key_path = Arc::new(public_key_path);
+
+    Router::new()
+        .route(
+            "/micropub/",
+            get(handlers::micropub::serve_index_get)
+                .post(handlers::micropub::serve_index_post)
+                .layer(RequireIndieAuthorizationLayer::auth(
+                    public_key_path.clone(),
+                )),
+        )
+        .route(
+            "/micropub",
+            get(handlers::micropub::serve_index_get)
+                .post(handlers::micropub::serve_index_post)
+                .layer(RequireIndieAuthorizationLayer::auth(
+                    public_key_path.clone(),
+                )),
+        )
+        .route(
+            "/micropub/media",
+            get(handlers::micropub::serve_media_endpoint_get)
+                .post(handlers::micropub::serve_media_endpoint_post)
+                .layer(RequireIndieAuthorizationLayer::auth(public_key_path)),
+        )
+}
+
+fn blog_routes() -> Router<Arc<PageContext<'static>>> {
+    Router::new()
+        .route("/blog/", get(handlers::blog::serve_index_default))
+        .route("/news/", get(handlers::blog::redirect))
+        .route("/opinions/", get(handlers::blog::serve_index_default))
+        .route(
+            "/blog/page/:page",
+            get(handlers::blog::serve_index_not_default),
+        )
+        .route(
+            "/blog/page/:page/",
+            get(handlers::blog::serve_index_not_default),
+        )
+        .route("/blog/recent.atom", get(handlers::blog::serve_atom))
+        .route("/blog/:path", get(handlers::blog::serve_document))
+        .route(
+            "/opinions/:path",
+            get(handlers::blog::redirect_to_real_document),
+        )
+        .route("/news/rss", get(handlers::blog::serve_atom))
+        .route("/news/rss/", get(handlers::blog::serve_atom))
+        .route("/recent.atom", get(handlers::blog::serve_atom))
+}
+
+fn portfolio_routes() -> Router<Arc<PageContext<'static>>> {
+    Router::new()
+        .route("/", get(handlers::portfolio::serve_index))
+        .route("/:path", get(handlers::portfolio::serve_apache_document))
+        .route(
+            "/apache/:path",
+            get(handlers::portfolio::redirect_to_real_document),
+        )
+        .route(
+            "/portfolio/:path",
+            get(handlers::portfolio::redirect_to_real_document),
+        )
+}
+
+fn auth_routes() -> Router<Arc<PageContext<'static>>> {
+    Router::new()
+        .route("/profile", get(handlers::auth::serve_profile))
+        .route(
+            handlers::auth::PROFILE_URI,
+            get(handlers::auth::serve_profile),
+        )
+        .route("/logout", get(handlers::auth::serve_logout))
+        .route("/logout/", get(handlers::auth::serve_logout))
+        .route(
+            "/api/v2/auth/userinfo",
+            get(handlers::auth::serve_user_info_api_call),
+        )
+        .route(
+            "/api/v2/auth/userinfo/",
+            get(handlers::auth::serve_user_info_api_call),
+        )
+}
+
+fn static_resources_routes() -> Router<Arc<PageContext<'static>>> {
+    Router::new()
+        .route("/:path", get(handlers::serve_root))
+        .route("/js/:path", get(handlers::serve_js))
+        .route("/css/:path", get(handlers::serve_css))
+        .route("/img/:path", get(handlers::serve_img))
+        .route("/apache/:path", get(handlers::serve_apache))
+        .route("/apache/images/:path", get(handlers::serve_apache_images))
 }
