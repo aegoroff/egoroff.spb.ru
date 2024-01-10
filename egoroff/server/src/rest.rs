@@ -83,18 +83,10 @@ pub fn create_routes(
     let storage_path = data_path.join(kernel::sqlite::DATABASE);
     let sessions_path = data_path.join(crate::SESSIONS_DATABASE);
 
-    let google_authorizer = GoogleAuthorizer::new(storage_path.as_path())?;
-    let github_authorizer = GithubAuthorizer::new(storage_path.as_path())?;
-    let yandex_authorizer = YandexAuthorizer::new(storage_path.as_path())?;
-
-    let google_authorizer = Arc::new(google_authorizer);
-    let github_authorizer = Arc::new(github_authorizer);
-    let yandex_authorizer = Arc::new(yandex_authorizer);
-
     let storage_path_clone = storage_path.clone();
     let auth_backend = AuthBackend::from(Arc::new(storage_path_clone));
 
-    let storage = Sqlite::open(storage_path, Mode::ReadWrite)?;
+    let storage = Sqlite::open(storage_path.clone(), Mode::ReadWrite)?;
     let storage = Arc::new(Mutex::new(storage));
     let cache = Arc::new(Mutex::new(HashSet::new()));
 
@@ -133,11 +125,6 @@ pub fn create_routes(
         .layer(CorsLayer::new().allow_origin(Any).allow_methods(Any))
         .layer(AuthManagerLayerBuilder::new(auth_backend, session_layer).build())
         .into_inner();
-
-    let login_handler = handlers::auth::serve_login
-        .layer(Extension(google_authorizer.clone()))
-        .layer(Extension(github_authorizer.clone()))
-        .layer(Extension(yandex_authorizer.clone()));
 
     // build our custom compression predicate
     // its recommended to still include `DefaultPredicate` as part of
@@ -242,20 +229,8 @@ pub fn create_routes(
         .route("/img/:path", get(handlers::serve_img))
         .route("/apache/:path", get(handlers::serve_apache))
         .route("/apache/images/:path", get(handlers::serve_apache_images))
-        .route(handlers::auth::LOGIN_URI, get(login_handler))
-        .route(
-            "/_s/callback/google/authorized/",
-            get(handlers::auth::google_oauth_callback).layer(Extension(google_authorizer)),
-        )
-        .route(
-            "/_s/callback/github/authorized/",
-            get(handlers::auth::github_oauth_callback).layer(Extension(github_authorizer)),
-        )
-        .route(
-            "/_s/callback/yandex/authorized/",
-            get(handlers::auth::yandex_oauth_callback).layer(Extension(yandex_authorizer)),
-        )
         .nest("/api/v2", public_api())
+        .merge(oauth2_routes(storage_path)?)
         .route("/storage/:bucket/:path", get(handlers::serve_storage))
         .route(
             "/token",
@@ -292,4 +267,36 @@ fn public_api() -> Router<Arc<PageContext<'static>>> {
         .route("/blog/posts/", get(handlers::blog::serve_posts_api))
         .route("/auth/user/", get(handlers::auth::serve_user_api_call))
         .route("/auth/user", get(handlers::auth::serve_user_api_call))
+}
+
+fn oauth2_routes(storage_path: PathBuf) -> Result<Router<Arc<PageContext<'static>>>> {
+    let google_authorizer = GoogleAuthorizer::new(storage_path.as_path())?;
+    let github_authorizer = GithubAuthorizer::new(storage_path.as_path())?;
+    let yandex_authorizer = YandexAuthorizer::new(storage_path.as_path())?;
+
+    let google_authorizer = Arc::new(google_authorizer);
+    let github_authorizer = Arc::new(github_authorizer);
+    let yandex_authorizer = Arc::new(yandex_authorizer);
+
+    let login_handler = handlers::auth::serve_login
+        .layer(Extension(google_authorizer.clone()))
+        .layer(Extension(github_authorizer.clone()))
+        .layer(Extension(yandex_authorizer.clone()));
+
+    let callbacks = Router::new()
+        .route(
+            "/google/authorized/",
+            get(handlers::auth::google_oauth_callback).layer(Extension(google_authorizer)),
+        )
+        .route(
+            "/github/authorized/",
+            get(handlers::auth::github_oauth_callback).layer(Extension(github_authorizer)),
+        )
+        .route(
+            "/yandex/authorized/",
+            get(handlers::auth::yandex_oauth_callback).layer(Extension(yandex_authorizer)),
+        );
+    Ok(Router::new()
+        .route(handlers::auth::LOGIN_URI, get(login_handler))
+        .nest("/_s/callback", callbacks))
 }
