@@ -150,15 +150,7 @@ pub fn create_routes(
     let router = Router::new()
         .route("/auth", get(handlers::indie::serve_auth))
         .route("/admin", get(handlers::admin::serve))
-        .route(
-            "/api/v2/admin/posts/",
-            get(handlers::blog::serve_posts_admin_api),
-        )
-        .route("/api/v2/admin/post", put(handlers::blog::serve_post_update))
-        .route(
-            "/api/v2/admin/post/:id",
-            delete(handlers::blog::serve_post_delete),
-        )
+        .nest("/api/v2/admin", admin_api())
         // Important all admin protected routes must be the first in the list
         .route_layer(permission_required!(
             AuthBackend,
@@ -263,20 +255,7 @@ pub fn create_routes(
             "/_s/callback/yandex/authorized/",
             get(handlers::auth::yandex_oauth_callback).layer(Extension(yandex_authorizer)),
         )
-        .route("/api/v2/navigation/", get(handlers::serve_navigation))
-        .route(
-            "/api/v2/blog/archive/",
-            get(handlers::blog::serve_archive_api),
-        )
-        .route("/api/v2/blog/posts/", get(handlers::blog::serve_posts_api))
-        .route(
-            "/api/v2/auth/user/",
-            get(handlers::auth::serve_user_api_call),
-        )
-        .route(
-            "/api/v2/auth/user",
-            get(handlers::auth::serve_user_api_call),
-        )
+        .nest("/api/v2", public_api())
         .route("/storage/:bucket/:path", get(handlers::serve_storage))
         .route(
             "/token",
@@ -297,4 +276,20 @@ pub fn create_routes(
 
     #[cfg(not(feature = "prometheus"))]
     return Ok(router);
+}
+
+fn admin_api() -> Router<Arc<PageContext<'static>>> {
+    Router::new()
+        .route("/posts/", get(handlers::blog::serve_posts_admin_api))
+        .route("/post", put(handlers::blog::serve_post_update))
+        .route("/post/:id", delete(handlers::blog::serve_post_delete))
+}
+
+fn public_api() -> Router<Arc<PageContext<'static>>> {
+    Router::new()
+        .route("/navigation/", get(handlers::serve_navigation))
+        .route("/blog/archive/", get(handlers::blog::serve_archive_api))
+        .route("/blog/posts/", get(handlers::blog::serve_posts_api))
+        .route("/auth/user/", get(handlers::auth::serve_user_api_call))
+        .route("/auth/user", get(handlers::auth::serve_user_api_call))
 }
