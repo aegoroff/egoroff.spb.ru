@@ -154,7 +154,6 @@ pub async fn serve_token_generate(
     path = "/token",
     responses(
         (status = 200, description = "Configuration read successfully", body = TokenValidationResult),
-        (status = 400, description = "No authorization headed provided"),
         (status = 401, description = "Token validation failed"),
     ),
     tag = "indie",
