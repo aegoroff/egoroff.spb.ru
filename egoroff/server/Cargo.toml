@@ -26,7 +26,7 @@ tracing = "0.1"
 tower = { version = "0.4", features = ["util", "timeout"] }
 tower-http = { version = "0.5", features = ["add-extension", "trace", "cors", "limit", "compression-gzip", "validate-request", "auth"] }
 askama = { version = "0.12.1", default-features = false, features = ["with-axum", "mime", "mime_guess", "config", "humansize", "num-traits", "urlencode"] }
-askama_derive = "=0.12.2"
+askama_derive = "0.12.5"
 askama_axum = "0.4.0"
 rust-embed = { version = "8", features = ["include-exclude"] }
 anyhow = { workspace = true }
