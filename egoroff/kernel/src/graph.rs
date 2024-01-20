@@ -1,3 +1,5 @@
+#![allow(clippy::module_name_repetitions)]
+
 use std::{collections::HashMap, iter::once};
 
 use itertools::Itertools;

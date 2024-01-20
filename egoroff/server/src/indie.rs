@@ -1,3 +1,5 @@
+#![allow(clippy::module_name_repetitions)]
+
 use std::{collections::HashSet, fs, marker::PhantomData, path::Path, sync::Arc};
 
 use anyhow::{Context, Result};
@@ -126,12 +128,10 @@ where
     type ResponseBody = Resp;
 
     fn validate(&mut self, request: &mut Request<Req>) -> Result<(), Response<Self::ResponseBody>> {
-        let Ok(unauthorized_response) = Response::builder()
-              .status(http::StatusCode::UNAUTHORIZED)
-              .body(Default::default()) else {
-              tracing::error!("Couldn't create unauthorized_response");
-              return Ok(());
-          };
+        let unauthorized_response = Response::builder()
+            .status(http::StatusCode::UNAUTHORIZED)
+            .body(Default::default())
+            .unwrap_or_default();
 
         let Some(value) = request.headers().get("authorization") else {
             tracing::error!("{}", IndieAuthError::MissingAuthorizationHeader.to_string());

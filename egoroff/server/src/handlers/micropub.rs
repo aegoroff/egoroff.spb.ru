@@ -1,5 +1,7 @@
+#![allow(clippy::module_name_repetitions)]
+
 use axum::{body::Bytes, extract::Multipart, http};
-use axum_extra::{TypedHeader, headers::ContentType};
+use axum_extra::{headers::ContentType, TypedHeader};
 use chrono::Utc;
 use kernel::domain::Post;
 use serde::Deserialize;
