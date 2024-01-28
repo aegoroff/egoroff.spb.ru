@@ -14,9 +14,9 @@ chrono = { workspace = true, features = ["serde", "clock", "std"]}
 time = { version = "0.3.31", features = ["serde"] }
 rmp-serde = { version = "1.1.2" }
 lol_html = "1.2.0"
-regex = "1.10.2"
+regex = "1.10.3"
 quick-xml = "0.31.0"
-pulldown-cmark = "0.9.3"
+pulldown-cmark = "0.9.5"
 anyhow = { workspace = true }
 lazy_static = "1.4.0"
 itertools = "0.12.0"
