@@ -139,15 +139,16 @@ async fn read_downloads(page_context: Arc<PageContext<'_>>) -> Option<Vec<FilesC
             let files = r.json::<Vec<StoredFile>>().await;
             if let Ok(files) = files {
                 for file in files {
-                    let meta_info = storage.get_download(file.id).ok()?;
-                    let downloadable = Downloadable {
-                        title: meta_info.title,
-                        path: format!("/storage/{}/{}", f.bucket, file.path),
-                        filename: file.path,
-                        size: file.size,
-                        blake3_hash: file.blake3_hash,
-                    };
-                    container.files.push(downloadable);
+                    if let Ok(meta_info) = storage.get_download(file.id) {
+                        let downloadable = Downloadable {
+                            title: meta_info.title,
+                            path: format!("/storage/{}/{}", f.bucket, file.path),
+                            filename: file.path,
+                            size: file.size,
+                            blake3_hash: file.blake3_hash,
+                        };
+                        container.files.push(downloadable);    
+                    }
                 }
             }
         }
