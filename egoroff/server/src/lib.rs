@@ -6,17 +6,12 @@
 use anyhow::{anyhow, Context, Result};
 use axum::Router;
 
-use axum::extract::Request;
-use hyper::body::Incoming;
-use hyper_util::rt::TokioIo;
 use kernel::graph::{SiteGraph, SiteSection};
 use std::env;
 use std::sync::Arc;
 use std::{fs::File, io::BufReader};
 use std::{net::SocketAddr, path::PathBuf};
 use tokio::signal;
-use tokio::sync::watch;
-use tower::Service;
 use tracing_subscriber::prelude::__tracing_subscriber_SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 
@@ -134,76 +129,13 @@ async fn http_server(ports: Ports, app: Router) {
     let listen_socket = SocketAddr::from(([0, 0, 0, 0], ports.http));
     tracing::debug!("HTTP listening on {listen_socket}");
 
-    let (close_tx, close_rx) = watch::channel(());
-
     if let Ok(listener) = tokio::net::TcpListener::bind(listen_socket).await {
-        loop {
-            let (client_stream, _remote_addr) = tokio::select! {
-                result = listener.accept() => {
-                    match result {
-                        Ok(r) => r,
-                        Err(e) => {
-                            tracing::error!("failed to accept connection: {e:#}");
-                            continue;
-                        },
-                    }
-                }
-                () = shutdown_signal() => {
-                    tracing::info!("signal received, not accepting new connections");
-                    break;
-                }
-            };
-
-            // We don't need to call `poll_ready` because `Router` is always ready.
-            let tower_service = app.clone();
-
-            let close_rx = close_rx.clone();
-
-            tokio::spawn(async move {
-                let client_socket = TokioIo::new(client_stream);
-
-                // Hyper also has its own `Service` trait and doesn't use tower. We can use
-                // `hyper::service::service_fn` to create a hyper `Service` that calls our app through
-                // `tower::Service::call`.
-                let hyper_service =
-                    hyper::service::service_fn(move |request: Request<Incoming>| {
-                        // We have to clone `tower_service` because hyper's `Service` uses `&self` whereas
-                        // tower's `Service` requires `&mut self`.
-                        //
-                        // We don't need to call `poll_ready` since `Router` is always ready.
-                        tower_service.clone().call(request)
-                    });
-
-                // `hyper_util::server::conn::auto::Builder` supports both http1 and http2 but doesn't
-                // support graceful so we have to use hyper directly and unfortunately pick between
-                // http1 and http2.
-                let conn = hyper::server::conn::http1::Builder::new()
-                    .serve_connection(client_socket, hyper_service)
-                    // `with_upgrades` is required for websockets.
-                    .with_upgrades();
-
-                let mut conn = std::pin::pin!(conn);
-
-                loop {
-                    tokio::select! {
-                        result = conn.as_mut() => {
-                            if let Err(err) = result {
-                                tracing::error!("failed to serve connection: {err:#}");
-                            }
-                            break;
-                        }
-                        () = shutdown_signal() => {
-                            tracing::info!("signal received in task, starting graceful shutdown");
-                            conn.as_mut().graceful_shutdown();
-                        }
-                    }
-                }
-                drop(close_rx);
-            });
+        if let Err(e) = axum::serve(listener, app)
+            .with_graceful_shutdown(shutdown_signal())
+            .await
+        {
+            tracing::error!("Sever run failed with: {}", e)
         }
-        drop(close_rx);
-        drop(listener);
-        close_tx.closed().await;
     } else {
         tracing::error!("Failed to start server at 0.0.0.0:{}", ports.http);
     }
@@ -214,6 +146,7 @@ async fn shutdown_signal() {
         signal::ctrl_c()
             .await
             .expect("failed to install Ctrl+C handler");
+        tracing::info!("ctrl_c signal received in task, starting graceful shutdown");
     };
 
     #[cfg(unix)]
@@ -222,6 +155,7 @@ async fn shutdown_signal() {
             .expect("failed to install signal handler")
             .recv()
             .await;
+        tracing::info!("terminate signal received in task, starting graceful shutdown");
     };
 
     #[cfg(not(unix))]
