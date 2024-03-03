@@ -189,7 +189,7 @@ pub struct Folder {
     pub title: String,
 }
 
-#[derive(Serialize, Default)]
+#[derive(Debug, Default, Clone, Deserialize, Serialize)]
 pub struct Download {
     pub id: i64,
     pub title: String,
@@ -220,6 +220,8 @@ pub trait Storage {
     fn upsert_user(&mut self, user: &User) -> Result<(), Self::Err>;
     fn get_folders(&self) -> Result<Vec<Folder>, Self::Err>;
     fn get_download(&self, id: i64) -> Result<Download, Self::Err>;
+    fn upsert_download(&mut self, download: Download) -> Result<(), Self::Err>;
+    fn delete_download(&mut self, id: i64) -> Result<usize, Self::Err>;
 }
 
 #[cfg(test)]

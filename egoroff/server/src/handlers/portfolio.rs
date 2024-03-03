@@ -1,4 +1,5 @@
 use anyhow::Context;
+use kernel::domain::Download;
 use serde::Deserialize;
 
 use crate::{
@@ -147,7 +148,7 @@ async fn read_downloads(page_context: Arc<PageContext<'_>>) -> Option<Vec<FilesC
                             size: file.size,
                             blake3_hash: file.blake3_hash,
                         };
-                        container.files.push(downloadable);    
+                        container.files.push(downloadable);
                     }
                 }
             }
@@ -155,4 +156,22 @@ async fn read_downloads(page_context: Arc<PageContext<'_>>) -> Option<Vec<FilesC
         result.push(container);
     }
     Some(result)
+}
+
+pub async fn serve_download_update(
+    State(page_context): State<Arc<PageContext<'_>>>,
+    Json(download): Json<Download>,
+) -> impl IntoResponse {
+    let mut storage = page_context.storage.lock().await;
+    let result = storage.upsert_download(download);
+    updated_response(result)
+}
+
+pub async fn serve_download_delete(
+    extract::Path(id): extract::Path<i64>,
+    State(page_context): State<Arc<PageContext<'_>>>,
+) -> impl IntoResponse {
+    let mut storage = page_context.storage.lock().await;
+    let result = storage.delete_download(id);
+    updated_response(result)
 }

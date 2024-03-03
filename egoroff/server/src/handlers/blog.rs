@@ -1,11 +1,6 @@
-use std::fmt::Display;
-
 use kernel::{converter::html2text, domain::Post};
 
-use crate::{
-    body::{Content, Redirect},
-    domain::OperationResult,
-};
+use crate::body::{Content, Redirect};
 
 use super::{
     template::{BlogIndex, BlogPost},
@@ -291,15 +286,6 @@ pub async fn redirect_to_real_document(
             Redirect::permanent(&new_path)
         }
         None => Redirect::permanent("/blog/"),
-    }
-}
-
-fn updated_response<T, E: Display>(result: Result<T, E>) -> impl IntoResponse {
-    if let Err(e) = result {
-        let error = format!("{e}");
-        internal_server_error_response(Json(OperationResult { result: &error }))
-    } else {
-        success_response(Json(OperationResult { result: "success" }))
     }
 }
 

@@ -173,12 +173,32 @@ impl Storage for Sqlite {
         Ok(())
     }
 
+    fn upsert_download(&mut self, download: crate::domain::Download) -> Result<(), Self::Err> {
+        let items = vec![download];
+        self.upsert(&items, Sqlite::upsert_download)?;
+        Ok(())
+    }
+
     fn delete_post(&mut self, id: i64) -> Result<usize, Self::Err> {
         self.enable_foreign_keys()?;
         Sqlite::execute_with_retry(|| {
             let tx = self.conn.transaction()?;
 
             let mut stmt = tx.prepare("DELETE FROM post WHERE id = ?1")?;
+            let deleted_count = stmt.execute(params![id])?;
+            stmt.finalize()?;
+
+            tx.commit()?;
+
+            Ok(deleted_count)
+        })
+    }
+
+    fn delete_download(&mut self, id: i64) -> Result<usize, Self::Err> {
+        Sqlite::execute_with_retry(|| {
+            let tx = self.conn.transaction()?;
+
+            let mut stmt = tx.prepare("DELETE FROM file WHERE id = ?1")?;
             let deleted_count = stmt.execute(params![id])?;
             stmt.finalize()?;
 
@@ -469,6 +489,16 @@ impl Sqlite {
                 ON CONFLICT(federated_id, provider) DO UPDATE SET email=?2, name=?3, login=?4, avatar_url=?5",
         )?
         .execute(params![u.created.timestamp(), u.email, u.name, u.login, u.avatar_url, u.federated_id, u.admin, u.verified, u.provider])?;
+
+        Ok(result)
+    }
+
+    fn upsert_download(tx: &Transaction, d: &Download) -> Result<usize, Error> {
+        let result = tx
+            .prepare_cached(
+                "INSERT INTO file (id, title) VALUES (?1, ?2) ON CONFLICT(id) DO UPDATE SET title=?2",
+            )?
+            .execute(params![d.id, d.title,])?;
 
         Ok(result)
     }

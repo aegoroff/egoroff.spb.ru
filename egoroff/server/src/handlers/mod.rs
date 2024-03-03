@@ -22,6 +22,7 @@ use kernel::{
     graph,
     resource::Resource,
 };
+use std::fmt::Display;
 use std::str::FromStr;
 use std::{
     collections::HashMap,
@@ -36,6 +37,7 @@ use reqwest::Client;
 use rust_embed::RustEmbed;
 use serde::Serialize;
 
+use crate::domain::OperationResult;
 use crate::{
     atom,
     body::{Binary, FileReply, Xml},
@@ -422,6 +424,15 @@ where
 
     let copied_bytes = tokio::io::copy(&mut body_reader, &mut buffer).await?;
     Ok((buffer, copied_bytes as usize))
+}
+
+fn updated_response<T, E: Display>(result: Result<T, E>) -> impl IntoResponse {
+    if let Err(e) = result {
+        let error = format!("{e}");
+        internal_server_error_response(Json(OperationResult { result: &error }))
+    } else {
+        success_response(Json(OperationResult { result: "success" }))
+    }
 }
 
 #[cfg(test)]

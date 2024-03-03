@@ -181,6 +181,11 @@ fn admin_api() -> Router<Arc<PageContext<'static>>> {
         .route("/posts/", get(handlers::blog::serve_posts_admin_api))
         .route("/post", put(handlers::blog::serve_post_update))
         .route("/post/:id", delete(handlers::blog::serve_post_delete))
+        .route("/download", put(handlers::portfolio::serve_download_update))
+        .route(
+            "/download/:id",
+            delete(handlers::portfolio::serve_download_delete),
+        )
 }
 
 fn public_api() -> Router<Arc<PageContext<'static>>> {
