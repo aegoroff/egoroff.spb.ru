@@ -5,7 +5,7 @@ Vue.use(VueRouter)
 
 const routes: Array<RouteConfig> = [
   {
-    path: '/posts/:page?',
+    path: '/:page?',
     name: 'Блог',
     // route level code-splitting
     // this generates a separate chunk (posts.[hash].js) for this route

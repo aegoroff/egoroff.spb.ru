@@ -8,6 +8,7 @@ import { Archive } from '@/components/BlogNavigation.vue'
 import { toQuery } from '@/util'
 import { FullUserInfo } from '@/views/Profile.vue'
 import { Post } from '@/components/admin/EditPost.vue'
+import { Download } from '@/components/admin/EditDownload.vue'
 
 export class ApiResult<T> {
   public status!: string
@@ -86,6 +87,14 @@ export default class ApiService extends Vue {
 
   public deletePost (id: number): void {
     axios.delete(`/api/v2/admin/post/${id}`)
+  }
+
+  public editDownload (d: Download): void {
+    axios.put<Post>('/api/v2/admin/download', d)
+  }
+
+  public deleteDownload (id: number): void {
+    axios.delete(`/api/v2/admin/download/${id}`)
   }
 
   public async getPosts<T> (q?: Query): Promise<ApiResult<T>> {
