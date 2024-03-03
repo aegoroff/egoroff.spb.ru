@@ -1,5 +1,5 @@
 use anyhow::Context;
-use kernel::domain::Download;
+use kernel::domain::{ApiResult, Download, DownloadsRequest};
 use serde::Deserialize;
 
 use crate::{
@@ -174,4 +174,45 @@ pub async fn serve_download_delete(
     let mut storage = page_context.storage.lock().await;
     let result = storage.delete_download(id);
     updated_response(result)
+}
+
+pub async fn serve_downloads_admin_api(
+    State(page_context): State<Arc<PageContext<'_>>>,
+    Query(request): Query<DownloadsRequest>,
+) -> impl IntoResponse {
+    let page_size = 10;
+    let page = request.page.unwrap_or(1);
+    let storage = page_context.storage.lock().await;
+
+    let total_downloads_count = match storage.count_downloads() {
+        Ok(c) => c,
+        Err(e) => {
+            tracing::error!("{e:#?}");
+            return make_500_page().into_response();
+        }
+    };
+
+    let pages_count = count_pages(total_downloads_count, page_size);
+
+    let downloads = match storage.get_downloads(page_size, page_size * (page - 1)) {
+        Ok(downloads) => downloads,
+        Err(e) => {
+            tracing::error!("{e:#?}");
+            return make_500_page().into_response();
+        }
+    };
+
+    let result = ApiResult {
+        result: downloads,
+        pages: pages_count,
+        page,
+        count: total_downloads_count,
+        status: "success",
+    };
+
+    make_json_response(Ok(result)).into_response()
+}
+
+fn count_pages(count: i32, page_size: i32) -> i32 {
+    count / page_size + i32::from(count % page_size > 0)
 }

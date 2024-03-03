@@ -426,6 +426,30 @@ impl Storage for Sqlite {
 
         Ok(file)
     }
+
+    fn get_downloads(&self, limit: i32, offset: i32) -> Result<Vec<Download>, Self::Err> {
+        let mut stmt = self
+            .conn
+            .prepare("SELECT id, title FROM file ORDER BY id DESC LIMIT ?1 OFFSET ?2")?;
+        let downloads_query = stmt.query_map([limit, offset], |row| {
+            let download = Download {
+                id: row.get(0)?,
+                title: row.get(1)?,
+            };
+
+            Ok(download)
+        })?;
+
+        let downloads = downloads_query
+            .filter_map(std::result::Result::ok)
+            .collect();
+        Ok(downloads)
+    }
+
+    fn count_downloads(&self) -> Result<i32, Self::Err> {
+        let mut stmt = self.conn.prepare("SELECT COUNT(1) FROM file")?;
+        stmt.query_row([], |row| row.get(0))
+    }
 }
 
 impl Sqlite {

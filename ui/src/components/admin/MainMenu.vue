@@ -1,7 +1,8 @@
 <template>
   <nav>
     <b-nav vertical pills>
-      <b-nav-item to="/" active-class="active">Блог</b-nav-item>
+      <b-nav-item to="/posts" active-class="active">Блог</b-nav-item>
+      <b-nav-item to="/downloads" active-class="active">Загрузки</b-nav-item>
       <b-nav-item to="/users" active-class="active">Пользователи</b-nav-item>
     </b-nav>
   </nav>

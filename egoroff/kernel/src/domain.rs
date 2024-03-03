@@ -71,6 +71,11 @@ pub struct PostsRequest {
     pub include_private: Option<bool>,
 }
 
+#[derive(Deserialize, Serialize, Default, Clone, IntoParams)]
+pub struct DownloadsRequest {
+    pub page: Option<i32>,
+}
+
 pub struct Period {
     pub from: DateTime<Utc>,
     pub to: DateTime<Utc>,
@@ -222,6 +227,8 @@ pub trait Storage {
     fn get_download(&self, id: i64) -> Result<Download, Self::Err>;
     fn upsert_download(&mut self, download: Download) -> Result<(), Self::Err>;
     fn delete_download(&mut self, id: i64) -> Result<usize, Self::Err>;
+    fn get_downloads(&self, limit: i32, offset: i32) -> Result<Vec<Download>, Self::Err>;
+    fn count_downloads(&self) -> Result<i32, Self::Err>;
 }
 
 #[cfg(test)]

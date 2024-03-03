@@ -5,12 +5,20 @@ Vue.use(VueRouter)
 
 const routes: Array<RouteConfig> = [
   {
-    path: '/:page?',
+    path: '/posts/:page?',
     name: 'Блог',
     // route level code-splitting
     // this generates a separate chunk (posts.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
     component: () => import(/* webpackChunkName: "posts" */ '../views/admin/Posts.vue')
+  },
+  {
+    path: '/downloads/:page?',
+    name: 'Загрузки',
+    // route level code-splitting
+    // this generates a separate chunk (downloads.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () => import(/* webpackChunkName: "users" */ '../views/admin/Downloads.vue')
   },
   {
     path: '/users',

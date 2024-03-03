@@ -90,11 +90,18 @@ export default class ApiService extends Vue {
   }
 
   public editDownload (d: Download): void {
-    axios.put<Post>('/api/v2/admin/download', d)
+    axios.put<Post>('/api/v2/admin/download/', d)
   }
 
   public deleteDownload (id: number): void {
     axios.delete(`/api/v2/admin/download/${id}`)
+  }
+
+  public async getDownloads<T> (q?: Query): Promise<ApiResult<T>> {
+    this.$Progress.start()
+    return await axios.get<ApiResult<T>>(`/api/v2/admin/download/${toQuery(q)}`).then(r => {
+      return r.data
+    }).finally(() => this.$Progress.finish())
   }
 
   public async getPosts<T> (q?: Query): Promise<ApiResult<T>> {
