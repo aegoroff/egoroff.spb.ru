@@ -1,17 +1,13 @@
 <template>
   <b-modal size="xl" scrollable id="edit-download" :title="download.title" @ok="onOk">
     <form ref="form">
-      <b-tabs>
-        <b-tab title="Свойства" active>
-          <b-form-group label="Название" label-for="download-title-input" invalid-feedback="название обязательно">
-            <b-form-input
-              id="download-title-input"
-              v-model="download.title"
-              required
-            ></b-form-input>
-          </b-form-group>
-        </b-tab>
-      </b-tabs>
+      <b-form-group label="Название" label-for="download-title-input" invalid-feedback="название обязательно">
+        <b-form-input
+          id="download-title-input"
+          v-model="download.title"
+          required
+        ></b-form-input>
+      </b-form-group>
     </form>
   </b-modal>
 </template>

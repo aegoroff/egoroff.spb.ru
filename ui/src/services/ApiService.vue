@@ -90,7 +90,7 @@ export default class ApiService extends Vue {
   }
 
   public editDownload (d: Download): void {
-    axios.put<Post>('/api/v2/admin/download/', d)
+    axios.put<Download>('/api/v2/admin/download/', d)
   }
 
   public deleteDownload (id: number): void {

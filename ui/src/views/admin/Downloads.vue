@@ -1,5 +1,6 @@
 <template>
   <div>
+    <b-button block variant="primary" v-b-modal.create-download href="#">Создать загрузку</b-button>
     <b-pagination-nav
       id="downloads-pager"
       aria-controls="downloads-table"
@@ -12,6 +13,7 @@
       use-router
     ></b-pagination-nav>
     <EditDownload id="edit-download" :download="selectedDownload"></EditDownload>
+    <CreateDownload id="create-download"></CreateDownload>
     <DeleteDownload id="delete-download" :downloadId="selectedDownloadId"></DeleteDownload>
     <b-table-lite responsive small striped hover :items="downloads" :fields="fields" id="downloads-table">
       <template #cell(title)="data">
@@ -35,11 +37,13 @@ import AppIcon from '@/components/AppIcon.vue'
 import { bus } from '@/main'
 import EditDownload, { Download } from '@/components/admin/EditDownload.vue'
 import DeleteDownload from '@/components/admin/DeleteDownload.vue'
+import CreateDownload from '@/components/admin/CreateDownload.vue'
 
 @Component({
   components: {
     EditDownload,
     DeleteDownload,
+    CreateDownload,
     AppIcon
   },
   providers: [ApiService]
@@ -57,6 +61,9 @@ export default class Downloads extends Vue {
     super()
     this.update(1)
     bus.$on('downloadDeleted', () => {
+      this.update(this.page)
+    })
+    bus.$on('downloadCreated', () => {
       this.update(this.page)
     })
   }
