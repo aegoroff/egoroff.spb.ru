@@ -87,7 +87,7 @@ export default class Posts extends Vue {
   }
 
   pageLinkGenerator (pageNum: number): string {
-    return `/posts/${pageNum}`
+    return `/${pageNum}`
   }
 }
 </script>
