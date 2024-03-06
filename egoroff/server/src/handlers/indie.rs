@@ -5,7 +5,7 @@ use axum_extra::{
     headers::{authorization::Bearer, Authorization},
     TypedHeader,
 };
-use chrono::{Duration, Utc};
+use chrono::{TimeDelta, Utc};
 
 use crate::{
     body::Redirect,
@@ -28,7 +28,10 @@ pub async fn serve_auth(
     if redirect.starts_with(&client_id) {
         let now = Utc::now();
         let issued = now.timestamp() as usize;
-        let Some(expired) = now.checked_add_signed(Duration::minutes(10)) else {
+        let Some(lifetime_minutes) = TimeDelta::try_minutes(10) else {
+            return bad_request_error_response(Body::empty());
+        };
+        let Some(expired) = now.checked_add_signed(lifetime_minutes) else {
             return bad_request_error_response(Body::empty());
         };
         let expired = expired.timestamp() as usize;
