@@ -3,18 +3,6 @@ use clap::{arg, ArgAction};
 
 use clap::{command, crate_name, Command};
 
-#[cfg(all(not(feature = "mimalloc"), not(all(feature = "jemalloc", not(target_env = "msvc")))))]
-use std::alloc::System as Alloc;
-
-#[cfg(feature = "mimalloc")]
-use mimalloc_rust::GlobalMiMalloc as Alloc;
-
-#[cfg(all(feature = "jemalloc", not(target_env = "msvc")))]
-use tikv_jemallocator::Jemalloc as Alloc;
-
-#[global_allocator]
-static GLOBAL_MIMALLOC: Alloc = Alloc;
-
 mod cli;
 
 #[tokio::main]
@@ -29,7 +17,7 @@ async fn main() {
                 .help("Database directory path"),
         )
         .arg(
-            arg!(-f --file)
+            arg!(-f - -file)
                 .required(false)
                 .action(ArgAction::SetTrue)
                 .help("Use files instead if remote resource"),
