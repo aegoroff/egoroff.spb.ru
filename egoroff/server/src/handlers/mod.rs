@@ -4,7 +4,7 @@
 use anyhow::Result;
 use askama::Template;
 use axum::body::{Body, Bytes};
-use axum::http::{self, HeaderName, HeaderValue};
+use axum::http::{self};
 use axum::response::Redirect;
 use axum::{
     extract::{self, Query, State},
@@ -23,7 +23,6 @@ use kernel::{
     resource::Resource,
 };
 use std::fmt::Display;
-use std::str::FromStr;
 use std::{
     collections::HashMap,
     fs::File,
@@ -234,20 +233,8 @@ pub async fn serve_storage(
     match client.get(resource.to_string()).send().await {
         Ok(response) => match response.error_for_status() {
             Ok(r) => {
-                // TODO: use r.headers() as before afwer reqwest migration to http 1.0
-                let headers = r
-                    .headers()
-                    .iter()
-                    .filter_map(|(k, v)| {
-                        let k = HeaderName::from_str(k.as_str()).ok()?;
-                        let v = HeaderValue::from_bytes(v.as_bytes()).ok()?;
-                        Some((k, v))
-                    })
-                    .fold(axum::http::HeaderMap::new(), |mut acc, (k, v)| {
-                        acc.append(k, v);
-                        acc
-                    });
-                let len = get_content_length(&headers);
+                let headers = r.headers();
+                let len = get_content_length(headers);
                 success_response(FileReply::new(r.bytes_stream(), path, len))
             }
             Err(e) => {
