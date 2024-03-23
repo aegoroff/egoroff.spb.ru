@@ -162,7 +162,7 @@ where
     S::Error: Into<BoxError>,
 {
     fn into_response(self) -> Response {
-        let file_name = self.name_from_path().to_owned();
+        let file_name = self.name_from_path();
         let attachment = format!(r#"attachment; filename="{file_name}""#);
         let body = Body::from_stream(self.data);
         let content_type = (
