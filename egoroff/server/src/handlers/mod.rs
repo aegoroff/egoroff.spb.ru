@@ -371,6 +371,14 @@ fn serve_page<T: Template>(t: T) -> Response {
             let headers = [(
                 http::header::CONTENT_TYPE,
                 http::HeaderValue::from_static(T::MIME_TYPE),
+            ),
+            (
+                http::header::X_XSS_PROTECTION,
+                http::HeaderValue::from_static("1; mode=block"),
+            ),
+            (
+                http::header::X_CONTENT_TYPE_OPTIONS,
+                http::HeaderValue::from_static("nosniff"),
             )];
 
             (headers, body).into_response()
