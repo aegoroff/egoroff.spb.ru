@@ -368,18 +368,32 @@ fn make_error_page(code: &str) -> Response {
 fn serve_page<T: Template>(t: T) -> Response {
     match t.render() {
         Ok(body) => {
-            let headers = [(
-                http::header::CONTENT_TYPE,
-                http::HeaderValue::from_static(T::MIME_TYPE),
-            ),
-            (
-                http::header::X_XSS_PROTECTION,
-                http::HeaderValue::from_static("1; mode=block"),
-            ),
-            (
-                http::header::X_CONTENT_TYPE_OPTIONS,
-                http::HeaderValue::from_static("nosniff"),
-            )];
+            let headers = [
+                (
+                    http::header::CONTENT_TYPE,
+                    http::HeaderValue::from_static(T::MIME_TYPE),
+                ),
+                (
+                    http::header::X_XSS_PROTECTION,
+                    http::HeaderValue::from_static("1; mode=block"),
+                ),
+                (
+                    http::header::X_CONTENT_TYPE_OPTIONS,
+                    http::HeaderValue::from_static("nosniff"),
+                ),
+                (
+                    http::header::X_FRAME_OPTIONS,
+                    http::HeaderValue::from_static("sameorigin"),
+                ),
+                (
+                    http::header::CONTENT_SECURITY_POLICY,
+                    http::HeaderValue::from_static("default-src 'none'; script-src 'self'; connect-src 'self'; img-src 'self' *.ggpht.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.googleapis.com fonts.gstatic.com;"),
+                ),
+                (
+                    http::header::REFERRER_POLICY,
+                    http::HeaderValue::from_static("strict-origin-when-cross-origin"),
+                ),
+            ];
 
             (headers, body).into_response()
         }
