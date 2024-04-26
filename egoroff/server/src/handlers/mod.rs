@@ -387,7 +387,7 @@ fn serve_page<T: Template>(t: T) -> Response {
                 ),
                 (
                     http::header::CONTENT_SECURITY_POLICY,
-                    http::HeaderValue::from_static("default-src 'none'; script-src 'self'; connect-src 'self'; img-src 'self' *.ggpht.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.googleapis.com fonts.gstatic.com;"),
+                    http::HeaderValue::from_static("default-src 'none'; script-src 'self'; connect-src 'self' www.googleapis.com; img-src 'self' *.ggpht.com avatars.githubusercontent.com *.googleusercontent.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.googleapis.com fonts.gstatic.com;"),
                 ),
                 (
                     http::header::REFERRER_POLICY,
