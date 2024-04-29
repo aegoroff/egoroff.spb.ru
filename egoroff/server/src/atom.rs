@@ -50,10 +50,9 @@ pub fn from_small_posts(posts: Vec<SmallPost>) -> Result<String> {
 
         builder.write_attributed_element("title", &post.title, iter::once(("type", "text")))?;
 
-        builder.write_element(
-            "id",
-            &format!("https://www.egoroff.spb.ru/blog/{}.html", post.id),
-        )?;
+        let uri = format!("https://www.egoroff.spb.ru/blog/{}.html", post.id);
+        builder.write_element("id", &uri)?;
+        builder.write_empty_attributed_element(LINK_ELT, iter::once(("href", uri.as_str())))?;
 
         let updated = post.created.to_rfc3339_opts(SecondsFormat::Secs, true);
         builder.write_element("updated", &updated)?;
