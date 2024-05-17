@@ -365,7 +365,7 @@ impl Storage for Sqlite {
 
         let mut post_tags: HashMap<i64, Vec<String>> = tags_query
             .filter_map(std::result::Result::ok)
-            .group_by(|(id, _tag)| *id)
+            .chunk_by(|(id, _tag)| *id)
             .into_iter()
             .map(|(id, g)| (id, g.map(|(_, tag)| tag).collect()))
             .collect();

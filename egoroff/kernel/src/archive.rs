@@ -39,11 +39,11 @@ fn group_to_years(dates: &[DateTime<Utc>]) -> Vec<Year> {
     dates
         .iter()
         .map(|dt| (dt.year(), dt.month()))
-        .group_by(|(year, _month)| *year)
+        .chunk_by(|(year, _month)| *year)
         .into_iter()
         .map(|(y, months)| {
             months
-                .group_by(|(_y, m)| *m)
+                .chunk_by(|(_y, m)| *m)
                 .into_iter()
                 .map(|(month, mg)| Month {
                     month: month as i32,
