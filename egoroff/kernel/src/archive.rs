@@ -66,7 +66,7 @@ pub fn get_small_posts(
     let page = request.page.unwrap_or(1);
 
     let total_posts_count = storage.count_posts(request.clone())?;
-    let pages_count = count_pages(total_posts_count, page_size);
+    let pages_count = ceil_div(total_posts_count, page_size);
 
     let posts = storage.get_small_posts(page_size, page_size * (page - 1), request)?;
 
@@ -89,7 +89,7 @@ pub fn get_posts(
     let mut req = request;
     req.include_private = Some(true);
     let total_posts_count = storage.count_posts(req)?;
-    let pages_count = count_pages(total_posts_count, page_size);
+    let pages_count = ceil_div(total_posts_count, page_size);
 
     let posts = storage.get_posts(page_size, page_size * (page - 1))?;
 
@@ -102,8 +102,9 @@ pub fn get_posts(
     })
 }
 
-fn count_pages(count: i32, page_size: i32) -> i32 {
-    count / page_size + i32::from(count % page_size > 0)
+/// Integer division with upper rounding (ceil)
+fn ceil_div(dividend: i32, divider: i32) -> i32 {
+    dividend / divider + (dividend % divider).signum()
 }
 
 fn update_short_text(mut posts: Vec<SmallPost>) -> Vec<SmallPost> {
@@ -133,12 +134,12 @@ mod tests {
     #[case(41, 3)]
     #[case(60, 3)]
     #[case(66, 4)]
-    fn count_pages_tests(#[case] count: i32, #[case] expected: i32) {
+    fn ceil_div_tests(#[case] dividend: i32, #[case] expected: i32) {
         // arrange
         let page_size = 20;
 
         // act
-        let actual = count_pages(count, page_size);
+        let actual = ceil_div(dividend, page_size);
 
         // assert
         assert_eq!(expected, actual);
