@@ -20,7 +20,7 @@ RUN npm run build
 # Build service
 FROM rust:alpine as rust-build
 WORKDIR /egoroff
-RUN apk add musl-dev lld openssl-dev
+RUN apk add musl-dev lld openssl-dev ca-certificates
 COPY --from=node-build /static /static
 COPY apache/ /apache/
 COPY templates/apache/ /templates/apache/
