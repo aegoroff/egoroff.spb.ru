@@ -31,7 +31,7 @@ tower-sessions = "0.12.2"
 async-trait = "0.1"
 anyhow = "1.0"
 futures = "0.3"
-url = "2.5.0"
+url = "2.5.1"
 
 [workspace.lints.rust]
 unsafe_code = "forbid"
