@@ -94,6 +94,7 @@ pub trait ToUser {
 
 // https://developers.google.com/identity/openid-connect/openid-connect#obtainuserinfo
 #[derive(Deserialize, Default, Debug)]
+#[allow(dead_code)]
 pub struct GoogleUser {
     pub sub: String,
     pub name: Option<String>,
@@ -118,6 +119,7 @@ pub struct GithubUser {
 
 // https://yandex.ru/dev/id/doc/dg/api-id/reference/response.html
 #[derive(Deserialize, Default, Debug)]
+#[allow(dead_code)]
 pub struct YandexUser {
     pub login: String,
     pub id: String,

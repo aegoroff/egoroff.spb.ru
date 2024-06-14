@@ -87,6 +87,7 @@ pub struct Message {
 }
 
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct AuthRequest {
     pub code: String,
     pub scope: Option<String>,

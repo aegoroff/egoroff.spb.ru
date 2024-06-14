@@ -24,6 +24,7 @@ pub struct MicropubRequest {
 }
 
 #[derive(Deserialize)]
+#[allow(dead_code)]
 pub struct File {
     pub id: i64,
     pub path: String,
