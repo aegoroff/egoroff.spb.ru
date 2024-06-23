@@ -34,7 +34,7 @@ chrono = { workspace = true, default-features = false, features = ["serde", "clo
 oauth2 = {version= "4.4.2", features = ["reqwest"] }
 async-trait = { workspace = true }
 reqwest = { workspace = true, features = ["json", "multipart", "stream", "rustls-tls" ] }
-lazy_static = "1.4.0"
+lazy_static = "1.5.0"
 jsonwebtoken = "9.3.0"
 url = { workspace = true }
 thiserror = "1.0.61"
