@@ -169,11 +169,7 @@ pub fn create_routes(
         .layer(DefaultBodyLimit::disable())
         .with_state(page_context);
 
-    #[cfg(feature = "prometheus")]
-    return router.layer(prometheus_layer);
-
-    #[cfg(not(feature = "prometheus"))]
-    return Ok(router);
+    Ok(router)
 }
 
 fn admin_api() -> Router<Arc<PageContext<'static>>> {
