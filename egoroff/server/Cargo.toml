@@ -50,7 +50,7 @@ hyper = { version = "1.4.1", features = [] }
 hyper-util = { workspace = true, features = ["tokio", "server-auto", "http1"] }
 
 [dev-dependencies]
-rstest = "0.21.0"
+rstest = "0.22.0"
 
 [lints]
 workspace = true
