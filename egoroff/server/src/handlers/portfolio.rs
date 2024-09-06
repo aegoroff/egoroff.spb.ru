@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use anyhow::Context;
 use kernel::domain::{ApiResult, Download, DownloadsRequest};
 use serde::Deserialize;
@@ -135,7 +137,11 @@ async fn read_downloads(page_context: Arc<PageContext<'_>>) -> Option<Vec<FilesC
             ..Default::default()
         };
         resource.append_path("api").append_path(&f.bucket);
-        let client = Client::new();
+        let client = Client::builder()
+            .timeout(Duration::from_secs(1))
+            .build()
+            .ok()?;
+
         if let Ok(r) = client.get(resource.to_string()).send().await {
             let files = r.json::<Vec<StoredFile>>().await;
             if let Ok(files) = files {
