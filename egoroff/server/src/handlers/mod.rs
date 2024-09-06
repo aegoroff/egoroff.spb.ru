@@ -250,11 +250,7 @@ pub async fn serve_storage(
 }
 
 fn get_keywords(section: &SiteSection) -> &str {
-    if let Some(keywords) = section.keywords.as_ref() {
-        keywords
-    } else {
-        ""
-    }
+    section.keywords.as_ref().map_or("", |v| v)
 }
 
 /// makes HTTP (OK) response code 200
