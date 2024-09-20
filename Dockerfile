@@ -18,7 +18,7 @@ COPY ui/babel.config.js ./
 RUN npm run build
 
 # Build service
-FROM rust:alpine as rust-build
+FROM rust:alpine AS rust-build
 WORKDIR /egoroff
 RUN apk add musl-dev lld openssl-dev ca-certificates curl && update-ca-certificates
 COPY --from=node-build /static /static
