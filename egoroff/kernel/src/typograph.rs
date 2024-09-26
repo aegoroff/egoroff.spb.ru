@@ -2,6 +2,7 @@
 #![allow(clippy::unwrap_used)]
 
 use anyhow::Result;
+use lol_html::html_content::Element;
 use std::cell::RefCell;
 use std::collections::HashSet;
 use std::rc::Rc;
@@ -58,7 +59,7 @@ pub fn typograph(html: &str) -> Result<String> {
         Ok(())
     };
 
-    let element_handler: (Cow<Selector>, ElementContentHandlers) = element!("*", |e| {
+    let element_handler: (Cow<Selector>, ElementContentHandlers) = element!("*", |e: &mut Element| {
         stack.borrow_mut().push(e.tag_name());
 
         if let Some(handlers) = e.end_tag_handlers() {
