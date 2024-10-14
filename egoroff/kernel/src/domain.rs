@@ -166,7 +166,6 @@ pub struct Month {
 }
 
 #[derive(Serialize, Default, ToSchema)]
-#[aliases(SmallPosts = ApiResult<SmallPost>)]
 pub struct ApiResult<T> {
     pub result: Vec<T>,
     #[schema(example = 4)]

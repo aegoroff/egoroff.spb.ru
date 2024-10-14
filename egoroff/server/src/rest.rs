@@ -13,7 +13,7 @@ use tower_sessions::{Expiry, SessionManagerLayer};
 use crate::domain::PageContext;
 use futures::lock::Mutex;
 use indie::RequireIndieAuthorizationLayer;
-use kernel::domain::SmallPost;
+use kernel::domain::{ApiResult, SmallPost};
 use kernel::graph::SiteGraph;
 use kernel::session::SqliteSessionStore;
 use kernel::sqlite::{Mode, Sqlite};
@@ -63,7 +63,7 @@ impl Modify for SecurityAddon {
             handlers::indie::serve_token_validate,
         ),
         components(
-            schemas(SmallPost, kernel::domain::SmallPosts, micropub::MicropubConfig, micropub::SyndicateTo, micropub::MicropubFormError, indie::TokenValidationResult, indie::Token, indie::TokenRequest, handlers::micropub::MediaResponse),
+            schemas(SmallPost, ApiResult<SmallPost>, micropub::MicropubConfig, micropub::SyndicateTo, micropub::MicropubFormError, indie::TokenValidationResult, indie::Token, indie::TokenRequest, handlers::micropub::MediaResponse),
         ),
         modifiers(&SecurityAddon),
         tags(

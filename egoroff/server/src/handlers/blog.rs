@@ -1,4 +1,7 @@
-use kernel::{converter::html2text, domain::Post};
+use kernel::{
+    converter::html2text,
+    domain::{ApiResult, Post, SmallPost},
+};
 
 use crate::body::{Content, Redirect};
 
@@ -236,7 +239,7 @@ pub async fn serve_archive_api(
     ),
     tag = "blog",
     responses(
-        (status = 200, description = "Get posts successfully", body = SmallPosts),
+        (status = 200, description = "Get posts successfully", body = ApiResult<SmallPost>),
     ),
 )]
 pub async fn serve_posts_api(

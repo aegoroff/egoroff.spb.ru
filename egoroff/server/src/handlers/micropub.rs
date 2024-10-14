@@ -10,7 +10,7 @@ use uuid::Uuid;
 
 use crate::{
     indie::ME,
-    micropub::{MicropubConfig, MicropubForm},
+    micropub::{MicropubConfig, MicropubForm, MicropubFormError},
 };
 
 use super::*;
