@@ -147,7 +147,7 @@ where
 
     fn name_from_path(&self) -> &str {
         let path = &self.path;
-        if let Some(ix) = path.rfind(&['\\', '/']) {
+        if let Some(ix) = path.rfind(['\\', '/']) {
             &path[ix + 1..]
         } else {
             path
