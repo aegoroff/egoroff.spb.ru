@@ -44,7 +44,7 @@
     "eslint-plugin-promise": "^7.1.0",
     "eslint-plugin-standard": "^5.0.0",
     "eslint-plugin-vue": "^8.7.1",
-    "sass": "^1.80.2",
+    "sass": "^1.80.3",
     "sass-loader": "^16.0",
     "typescript": "~4.2.4",
     "vue-template-compiler": "^2.7.16"
