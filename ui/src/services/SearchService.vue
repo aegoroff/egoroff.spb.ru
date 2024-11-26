@@ -125,7 +125,7 @@ export class SearchQuery {
 export default class SearchService extends Vue {
   public async search (q?: SearchQuery): Promise<GoogleSearch> {
     this.$Progress.start()
-    return await axios.get<GoogleSearch>(`https://www.googleapis.com/customsearch/v1${toQuery(q)}`).then(r => {
+    return await axios.get<GoogleSearch>(`https://www.googleapis.com/customsearch/v1${toQuery(q)}`).then((r: any) => {
       return r.data
     }).finally(() => this.$Progress.finish())
   }

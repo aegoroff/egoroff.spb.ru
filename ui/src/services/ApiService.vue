@@ -48,7 +48,7 @@ export default class ApiService extends Vue {
     navigation.breadcrumbs = new Array<Section>()
 
     const q = encodeURIComponent(document.location.pathname)
-    axios.get<Nav>(`/api/v2/navigation/?uri=${q}`).then(r => {
+    axios.get<Nav>(`/api/v2/navigation/?uri=${q}`).then((r: any) => {
       navigation.sections.push(...r.data.sections)
       if (r.data.breadcrumbs) {
         navigation.breadcrumbs.push(...r.data.breadcrumbs)
@@ -60,19 +60,19 @@ export default class ApiService extends Vue {
 
   public async getBlogArchive (): Promise<Archive> {
     this.$Progress.start()
-    return await axios.get<Archive>('/api/v2/blog/archive/').then(r => {
+    return await axios.get<Archive>('/api/v2/blog/archive/').then((r: any) => {
       return r.data
     }).finally(() => this.$Progress.finish())
   }
 
   public async getUser (): Promise<User> {
-    return await axios.get<User>('/api/v2/auth/user/').then(r => {
+    return await axios.get<User>('/api/v2/auth/user/').then((r: any) => {
       return r.data
     })
   }
 
   public async getFullUserInfo (): Promise<FullUserInfo> {
-    return await axios.get<FullUserInfo>('/api/v2/auth/userinfo/').then(r => {
+    return await axios.get<FullUserInfo>('/api/v2/auth/userinfo/').then((r: any) => {
       return r.data
     })
   }
@@ -99,21 +99,21 @@ export default class ApiService extends Vue {
 
   public async getDownloads<T> (q?: Query): Promise<ApiResult<T>> {
     this.$Progress.start()
-    return await axios.get<ApiResult<T>>(`/api/v2/admin/download/${toQuery(q)}`).then(r => {
+    return await axios.get<ApiResult<T>>(`/api/v2/admin/download/${toQuery(q)}`).then((r: any) => {
       return r.data
     }).finally(() => this.$Progress.finish())
   }
 
   public async getPosts<T> (q?: Query): Promise<ApiResult<T>> {
     this.$Progress.start()
-    return await axios.get<ApiResult<T>>(`/api/v2/blog/posts/${toQuery(q)}`).then(r => {
+    return await axios.get<ApiResult<T>>(`/api/v2/blog/posts/${toQuery(q)}`).then((r: any) => {
       return r.data
     }).finally(() => this.$Progress.finish())
   }
 
   public async getAdminPosts<T> (q?: Query): Promise<ApiResult<T>> {
     this.$Progress.start()
-    return await axios.get<ApiResult<T>>(`/api/v2/admin/posts/${toQuery(q)}`).then(r => {
+    return await axios.get<ApiResult<T>>(`/api/v2/admin/posts/${toQuery(q)}`).then((r: any) => {
       return r.data
     }).finally(() => this.$Progress.finish())
   }
