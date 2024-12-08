@@ -19,6 +19,7 @@ use super::{
 struct ApacheTemplates;
 
 const PORTFOLIO_PATH: &str = "/portfolio/";
+const DOWNLOADS_WAIT_TIMEOUT_SECONDS: u64 = 1;
 
 #[derive(Deserialize, Default)]
 pub struct StoredFile {
@@ -138,26 +139,35 @@ async fn read_downloads(page_context: Arc<PageContext<'_>>) -> Option<Vec<FilesC
         };
         resource.append_path("api").append_path(&f.bucket);
         let client = Client::builder()
-            .timeout(Duration::from_secs(1))
+            .timeout(Duration::from_secs(DOWNLOADS_WAIT_TIMEOUT_SECONDS))
             .build()
             .ok()?;
 
-        if let Ok(r) = client.get(resource.to_string()).send().await {
-            let files = r.json::<Vec<StoredFile>>().await;
-            if let Ok(files) = files {
-                for file in files {
-                    if let Ok(meta_info) = storage.get_download(file.id) {
-                        let downloadable = Downloadable {
-                            title: meta_info.title,
-                            path: format!("/storage/{}/{}", f.bucket, file.path),
-                            filename: file.path,
-                            size: file.size,
-                            blake3_hash: file.blake3_hash,
-                        };
-                        container.files.push(downloadable);
+        match client.get(resource.to_string()).send().await {
+            Ok(r) => {
+                let files = r.json::<Vec<StoredFile>>().await;
+                match files {
+                    Ok(files) => {
+                        for file in files {
+                            match storage.get_download(file.id) {
+                                Ok(meta_info) => {
+                                    let downloadable = Downloadable {
+                                        title: meta_info.title,
+                                        path: format!("/storage/{}/{}", f.bucket, file.path),
+                                        filename: file.path,
+                                        size: file.size,
+                                        blake3_hash: file.blake3_hash,
+                                    };
+                                    container.files.push(downloadable);
+                                }
+                                Err(e) => tracing::warn!("{e:#?}"),
+                            }
+                        }
                     }
+                    Err(e) => tracing::error!("{e:#?}"),
                 }
             }
+            Err(e) => tracing::warn!("{e:#?}"),
         }
         result.push(container);
     }
