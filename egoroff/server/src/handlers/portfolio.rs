@@ -160,7 +160,7 @@ async fn read_downloads(page_context: Arc<PageContext<'_>>) -> Option<Vec<FilesC
                                     };
                                     container.files.push(downloadable);
                                 }
-                                Err(e) => tracing::warn!("{e:#?}"),
+                                Err(e) => tracing::debug!("{e:#?}"),
                             }
                         }
                     }
