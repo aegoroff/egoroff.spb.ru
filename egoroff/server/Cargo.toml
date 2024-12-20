@@ -37,7 +37,7 @@ reqwest = { workspace = true, features = ["json", "multipart", "stream", "rustls
 lazy_static = "1.5.0"
 jsonwebtoken = "9.3.0"
 url = { workspace = true }
-thiserror = "2.0.6"
+thiserror = "2.0.8"
 utoipa = { workspace = true, features = ["chrono", "time", "axum_extras"] }
 utoipa-swagger-ui = { version = "=8.1.0", features = ["axum"] }
 rand = { version = "0.8.5", features = ["min_const_gen"] }
@@ -46,7 +46,7 @@ uuid = { version = "1.11.0", features = [
     "fast-rng",          # Use a faster (but still sufficiently random) RNG
     "macro-diagnostics", # Enable better diagnostics for compile-time UUIDs
 ]}
-hyper = { version = "1.5.1", features = [] }
+hyper = { version = "1.5.2", features = [] }
 hyper-util = { workspace = true, features = ["tokio", "server-auto", "http1"] }
 
 [dev-dependencies]
