@@ -1,5 +1,13 @@
 #!/bin/bash
 
+CONFIGURATION=$1
+[[ -n "${CONFIGURATION}" ]] || CONFIGURATION="debug"
+if [[ $CONFIGURATION = "release" ]]; then
+  ADDITIONAL_OPTIONS="--release"
+else
+  ADDITIONAL_OPTIONS=""
+fi
+
 base_path=./home
 [[ -d "$base_path" ]] && rm -r "$base_path"
 
@@ -20,6 +28,6 @@ done
 (
   cd ./egoroff/
   cargo clean
-  cargo b --workspace
-  ./target/debug/egoroff server
+  cargo b --workspace $ADDITIONAL_OPTIONS
+  ./target/$CONFIGURATION/egoroff server
 )
