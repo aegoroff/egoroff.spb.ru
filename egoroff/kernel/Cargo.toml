@@ -7,7 +7,7 @@ workspace = ".."
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-petgraph = "0.6"
+petgraph = "0.7"
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 chrono = { workspace = true, features = ["serde", "clock", "std"]}
@@ -19,7 +19,7 @@ quick-xml = "0.37.2"
 pulldown-cmark = "0.12.2"
 anyhow = { workspace = true }
 lazy_static = "1.5.0"
-itertools = "0.13.0"
+itertools = "0.14.0"
 tower-sessions = { workspace = true }
 async-trait = { workspace = true }
 base64 = "0.22.1"
