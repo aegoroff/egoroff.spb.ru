@@ -21,7 +21,7 @@ jobs:
 
     steps:
       - name: Update rust
-        if: matrix.build == 'linux'
+        if: matrix.build == 'linux' # build rust only on linux
         run: rustup update
       - uses: actions/checkout@v4
       - name: Use Node.js 20.0
