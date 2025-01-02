@@ -4,7 +4,6 @@
 import argparse
 import json
 import os
-import platform
 import shutil
 from datetime import datetime
 
