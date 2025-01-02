@@ -50,7 +50,7 @@ def print_out(script, filename=''):
     if not filename:
         filename = '-' * 46
         script = script.rjust(12, '-')
-    print('[%s] %12s %s', timestamp, script, filename)
+    print('[{}] {:12} {}'.format(timestamp, script, filename))
 
 
 def make_dirs(directory):
