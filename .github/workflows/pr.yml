@@ -21,7 +21,7 @@ jobs:
 
     steps:
       - name: Update rust
-        if: matrix.build == 'linux'
+        if: matrix.build == 'linux' # build rust only on linux
         run: rustup update
       - uses: actions/checkout@v4
       - name: Use Node.js 20.0
@@ -40,7 +40,10 @@ jobs:
         if: matrix.build == 'linux'
         run: |
           sudo apt-get update -y
-          sudo apt-get install lld -y
+          sudo apt-get install lld python3-lxml -y
+      - name: Run build script
+        if: matrix.build == 'linux'
+        run: ./build.py
       - name: Rust Build
         if: matrix.build == 'linux'
         run: cargo build --workspace
