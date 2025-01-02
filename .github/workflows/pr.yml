@@ -41,6 +41,9 @@ jobs:
         run: |
           sudo apt-get update -y
           sudo apt-get install lld -y
+      - name: Run build script
+        if: matrix.build == 'linux'
+        run: ./build.py
       - name: Rust Build
         if: matrix.build == 'linux'
         run: cargo build --workspace
