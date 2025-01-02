@@ -20,6 +20,9 @@ jobs:
             os: windows-latest
 
     steps:
+      - name: Update rust
+        if: matrix.build == 'linux'
+        run: rustup update
       - uses: actions/checkout@v4
       - name: Use Node.js 20.0
         uses: actions/setup-node@v4
@@ -33,3 +36,16 @@ jobs:
         working-directory: ./ui
         run: |
           npm run build
+      - name: Install LLVM linker (Linux)
+        if: matrix.build == 'linux'
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install lld -y
+      - name: Rust Build
+        if: matrix.build == 'linux'
+        run: cargo build --workspace
+        working-directory: ./egoroff
+      - name: Run tests
+        if: matrix.build == 'linux'
+        run: cargo test --workspace
+        working-directory: ./egoroff
