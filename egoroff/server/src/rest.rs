@@ -147,7 +147,7 @@ pub fn create_routes(
         .route("/", get(handlers::serve_index))
         .route("/sitemap.xml", get(handlers::serve_sitemap))
         .route("/search/", get(handlers::serve_search))
-        .route("/storage/:bucket/:path", get(handlers::serve_storage))
+        .route("/storage/{bucket}/{path}", get(handlers::serve_storage))
         .route(
             "/token",
             post(handlers::indie::serve_token_generate).get(handlers::indie::serve_token_validate),
@@ -176,14 +176,14 @@ fn admin_api() -> Router<Arc<PageContext<'static>>> {
     Router::new()
         .route("/posts/", get(handlers::blog::serve_posts_admin_api))
         .route("/post", put(handlers::blog::serve_post_update))
-        .route("/post/:id", delete(handlers::blog::serve_post_delete))
+        .route("/post/{id}", delete(handlers::blog::serve_post_delete))
         .route(
             "/download/",
             put(handlers::portfolio::serve_download_update)
                 .get(handlers::portfolio::serve_downloads_admin_api),
         )
         .route(
-            "/download/:id",
+            "/download/{id}",
             delete(handlers::portfolio::serve_download_delete),
         )
 }
@@ -268,17 +268,17 @@ fn blog_routes() -> Router<Arc<PageContext<'static>>> {
         .route("/news/", get(handlers::blog::redirect))
         .route("/opinions/", get(handlers::blog::serve_index_default))
         .route(
-            "/blog/page/:page",
+            "/blog/page/{page}",
             get(handlers::blog::serve_index_not_default),
         )
         .route(
-            "/blog/page/:page/",
+            "/blog/page/{page}/",
             get(handlers::blog::serve_index_not_default),
         )
         .route("/blog/recent.atom", get(handlers::blog::serve_atom))
-        .route("/blog/:path", get(handlers::blog::serve_document))
+        .route("/blog/{path}", get(handlers::blog::serve_document))
         .route(
-            "/opinions/:path",
+            "/opinions/{path}",
             get(handlers::blog::redirect_to_real_document),
         )
         .route("/news/rss", get(handlers::blog::serve_atom))
@@ -289,13 +289,13 @@ fn blog_routes() -> Router<Arc<PageContext<'static>>> {
 fn portfolio_routes() -> Router<Arc<PageContext<'static>>> {
     Router::new()
         .route("/", get(handlers::portfolio::serve_index))
-        .route("/:path", get(handlers::portfolio::serve_apache_document))
+        .route("/{path}", get(handlers::portfolio::serve_apache_document))
         .route(
-            "/apache/:path",
+            "/apache/{path}",
             get(handlers::portfolio::redirect_to_real_document),
         )
         .route(
-            "/portfolio/:path",
+            "/portfolio/{path}",
             get(handlers::portfolio::redirect_to_real_document),
         )
 }
@@ -321,10 +321,10 @@ fn auth_routes() -> Router<Arc<PageContext<'static>>> {
 
 fn static_resources_routes() -> Router<Arc<PageContext<'static>>> {
     Router::new()
-        .route("/:path", get(handlers::serve_root))
-        .route("/js/:path", get(handlers::serve_js))
-        .route("/css/:path", get(handlers::serve_css))
-        .route("/img/:path", get(handlers::serve_img))
-        .route("/apache/:path", get(handlers::serve_apache))
-        .route("/apache/images/:path", get(handlers::serve_apache_images))
+        .route("/{path}", get(handlers::serve_root))
+        .route("/js/{path}", get(handlers::serve_js))
+        .route("/css/{path}", get(handlers::serve_css))
+        .route("/img/{path}", get(handlers::serve_img))
+        .route("/apache/{path}", get(handlers::serve_apache))
+        .route("/apache/images/{path}", get(handlers::serve_apache_images))
 }
