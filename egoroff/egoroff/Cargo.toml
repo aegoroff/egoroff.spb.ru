@@ -10,7 +10,7 @@ workspace = ".."
 kernel = { path = "../kernel" }
 server = { path = "../server" }
 migrate = { path = "../migrate", optional = true }
-clap = { version = "4.5.23", features = ["std", "color", "suggestions", "cargo"] }
+clap = { version = "4.5.24", features = ["std", "color", "suggestions", "cargo"] }
 serde = { workspace = true, features = ["derive"] }
 tokio = { workspace = true, features = ["full"] }
 
