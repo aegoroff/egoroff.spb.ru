@@ -1,6 +1,3 @@
-#![allow(clippy::unwrap_in_result)]
-#![allow(clippy::unwrap_used)]
-
 use anyhow::Result;
 use lol_html::html_content::Element;
 use std::cell::RefCell;
@@ -21,14 +18,14 @@ const ALLOWED_TAGS: &[&str] = &[
 ];
 
 lazy_static::lazy_static! {
-    static ref SPACES_RE : Regex = Regex::new(r"(\w)-(\s+)").unwrap();
-    static ref PLUSMN_RE : Regex = Regex::new(r"\+-").unwrap();
-    static ref NBSP_RE : Regex = Regex::new(r"(\s+)(--?|—|-)(\s|\u00a0)").unwrap();
-    static ref MDASH_RE : Regex = Regex::new(r"(^)(--?|—|-)(\s|\u00a0)").unwrap();
-    static ref HELLIP_RE : Regex = Regex::new(r"\.{2,}").unwrap();
-    static ref MINUS_BEETWEEN_DIGITS_RE : Regex = Regex::new(r"(\d)-(\d)").unwrap();
-    static ref OPEN_QUOTE_RE : Regex = Regex::new(r#"["»](\S)"#).unwrap();
-    static ref CLOSE_QUOTE_RE : Regex = Regex::new(r#"(\S)["«]"#).unwrap();
+    static ref SPACES_RE : Result<Regex, regex::Error> = Regex::new(r"(\w)-(\s+)");
+    static ref PLUSMN_RE : Result<Regex, regex::Error> = Regex::new(r"\+-");
+    static ref NBSP_RE : Result<Regex, regex::Error> = Regex::new(r"(\s+)(--?|—|-)(\s|\u00a0)");
+    static ref MDASH_RE : Result<Regex, regex::Error> = Regex::new(r"(^)(--?|—|-)(\s|\u00a0)");
+    static ref HELLIP_RE : Result<Regex, regex::Error> = Regex::new(r"\.{2,}");
+    static ref MINUS_BEETWEEN_DIGITS_RE : Result<Regex, regex::Error> = Regex::new(r"(\d)-(\d)");
+    static ref OPEN_QUOTE_RE : Result<Regex, regex::Error> = Regex::new(r#"["»](\S)"#);
+    static ref CLOSE_QUOTE_RE : Result<Regex, regex::Error> = Regex::new(r#"(\S)["«]"#);
     static ref ALLOWED_SET: HashSet<&'static &'static str> = ALLOWED_TAGS.iter().collect();
 }
 
@@ -46,34 +43,40 @@ pub fn typograph(html: &str) -> Result<String> {
             }
         }
 
-        let replace = SPACES_RE.replace_all(t.as_str(), "$1 -$2");
-        let replace = PLUSMN_RE.replace_all(&replace, "&plusmn;");
-        let replace = NBSP_RE.replace_all(&replace, "&nbsp;&mdash;$3");
-        let replace = MDASH_RE.replace_all(&replace, "&mdash;$3");
-        let replace = HELLIP_RE.replace_all(&replace, "&hellip;");
-        let replace = MINUS_BEETWEEN_DIGITS_RE.replace_all(&replace, "$1&minus;$2");
-        let replace = OPEN_QUOTE_RE.replace_all(&replace, "«$1");
-        let replace = CLOSE_QUOTE_RE.replace_all(&replace, "$1»").to_string();
+        let replace = SPACES_RE.as_ref()?.replace_all(t.as_str(), "$1 -$2");
+        let replace = PLUSMN_RE.as_ref()?.replace_all(&replace, "&plusmn;");
+        let replace = NBSP_RE.as_ref()?.replace_all(&replace, "&nbsp;&mdash;$3");
+        let replace = MDASH_RE.as_ref()?.replace_all(&replace, "&mdash;$3");
+        let replace = HELLIP_RE.as_ref()?.replace_all(&replace, "&hellip;");
+        let replace = MINUS_BEETWEEN_DIGITS_RE
+            .as_ref()?
+            .replace_all(&replace, "$1&minus;$2");
+        let replace = OPEN_QUOTE_RE.as_ref()?.replace_all(&replace, "«$1");
+        let replace = CLOSE_QUOTE_RE
+            .as_ref()?
+            .replace_all(&replace, "$1»")
+            .to_string();
         t.replace(&replace, ContentType::Html);
 
         Ok(())
     };
 
-    let element_handler: (Cow<Selector>, ElementContentHandlers) = element!("*", |e: &mut Element| {
-        stack.borrow_mut().push(e.tag_name());
+    let element_handler: (Cow<Selector>, ElementContentHandlers) =
+        element!("*", |e: &mut Element| {
+            stack.borrow_mut().push(e.tag_name());
 
-        if let Some(handlers) = e.end_tag_handlers() {
-            let stack = stack.clone();
-            handlers.push(Box::new(move |_end| {
+            if let Some(handlers) = e.end_tag_handlers() {
+                let stack = stack.clone();
+                handlers.push(Box::new(move |_end| {
+                    stack.borrow_mut().pop();
+                    Ok(())
+                }));
+            } else {
                 stack.borrow_mut().pop();
-                Ok(())
-            }));
-        } else {
-            stack.borrow_mut().pop();
-        }
+            }
 
-        Ok(())
-    });
+            Ok(())
+        });
 
     let handlers: Vec<(Cow<Selector>, ElementContentHandlers)> = ALLOWED_TAGS
         .iter()
@@ -99,6 +102,7 @@ pub fn typograph(html: &str) -> Result<String> {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::unwrap_used)]
     use super::*;
     use rstest::rstest;
 
