@@ -31,7 +31,7 @@ askama_axum = "0.4.0"
 rust-embed = { version = "8", features = ["include-exclude"] }
 anyhow = { workspace = true }
 chrono = { workspace = true, default-features = false, features = ["serde", "clock", "std"]}
-oauth2 = {version= "4.4.2", features = ["reqwest"] }
+oauth2 = {version= "5.0.0", features = ["reqwest"] }
 async-trait = { workspace = true }
 reqwest = { workspace = true, features = ["json", "multipart", "stream", "rustls-tls" ] }
 lazy_static = "1.5.0"
