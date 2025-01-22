@@ -16,7 +16,6 @@ use kernel::{
 };
 use oauth2::{
     basic::{BasicClient, BasicTokenType},
-    reqwest::async_http_client,
     url::Url,
     AccessToken, AuthUrl, AuthorizationCode, AuthorizationRequest, ClientId, ClientSecret,
     CsrfToken, EmptyExtraTokenFields, PkceCodeChallenge, PkceCodeVerifier, RedirectUrl, Scope,
@@ -27,6 +26,19 @@ use serde::Deserialize;
 use thiserror::Error;
 
 use crate::domain::AuthorizedUser;
+
+type SpecialClient = oauth2::Client<
+    oauth2::StandardErrorResponse<oauth2::basic::BasicErrorResponseType>,
+    StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>,
+    oauth2::StandardTokenIntrospectionResponse<EmptyExtraTokenFields, BasicTokenType>,
+    oauth2::StandardRevocableToken,
+    oauth2::StandardErrorResponse<oauth2::RevocationErrorResponseType>,
+    oauth2::EndpointSet,
+    oauth2::EndpointNotSet,
+    oauth2::EndpointNotSet,
+    oauth2::EndpointNotSet,
+    oauth2::EndpointSet,
+>;
 
 #[derive(Clone, Debug)]
 pub struct AppUser {
@@ -193,22 +205,22 @@ pub trait Authorizer<T> {
 }
 
 pub struct GoogleAuthorizer {
-    client: BasicClient,
+    client: SpecialClient,
     provider: OAuthProvider,
 }
 
 pub struct GithubAuthorizer {
-    client: BasicClient,
+    client: SpecialClient,
     provider: OAuthProvider,
 }
 
 pub struct YandexAuthorizer {
-    client: BasicClient,
+    client: SpecialClient,
     provider: OAuthProvider,
 }
 
 fn make_auth_request<'a>(
-    client: &'a BasicClient,
+    client: &'a SpecialClient,
     provider: &OAuthProvider,
 ) -> AuthorizationRequest<'a> {
     let request = client.authorize_url(CsrfToken::new_random);
@@ -221,20 +233,25 @@ fn make_auth_request<'a>(
 }
 
 async fn exchange_code(
-    client: &BasicClient,
+    client: &SpecialClient,
     code: String,
     pkce_code_verifier: Option<PkceCodeVerifier>,
 ) -> Result<StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>> {
+    let http_client = reqwest::ClientBuilder::new()
+        // Following redirects opens the client up to SSRF vulnerabilities.
+        .redirect(reqwest::redirect::Policy::none())
+        .build()?;
+
     let result = match pkce_code_verifier {
         Some(verifier) => client
             .exchange_code(AuthorizationCode::new(code))
             .set_pkce_verifier(verifier)
-            .request_async(async_http_client)
+            .request_async(&http_client)
             .await
             .with_context(|| "Failed to exchange OAuth code with pkce verifier")?,
         None => client
             .exchange_code(AuthorizationCode::new(code))
-            .request_async(async_http_client)
+            .request_async(&http_client)
             .await
             .with_context(|| "Failed to exchange OAuth code")?,
     };
@@ -491,7 +508,7 @@ fn create_client_and_provider<P: AsRef<Path>>(
     provider: &str,
     auth_uri: &str,
     token_uri: &str,
-) -> Result<(BasicClient, OAuthProvider)> {
+) -> Result<(SpecialClient, OAuthProvider)> {
     let storage = Sqlite::open(db_path, Mode::ReadOnly)?;
 
     let provider = storage.get_oauth_provider(provider)?;
@@ -501,7 +518,10 @@ fn create_client_and_provider<P: AsRef<Path>>(
 
     let client_id = ClientId::new(provider.client_id.clone());
     let client_secret = ClientSecret::new(provider.secret.clone());
-    let client = BasicClient::new(client_id, Some(client_secret), auth, Some(token))
+    let client = BasicClient::new(client_id)
+        .set_client_secret(client_secret)
+        .set_token_uri(token)
+        .set_auth_uri(auth)
         .set_redirect_uri(RedirectUrl::new(provider.redirect_url.clone())?);
     Ok((client, provider))
 }

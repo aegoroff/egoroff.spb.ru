@@ -15,7 +15,7 @@ serde_json = { workspace = true }
 tokio = { workspace = true, features = ["full"] }
 mime_guess = "2"
 axum = { version = "0.8.1", features = ["multipart", "http2"] }
-axum-extra = { version = "0.11.0", features = ["typed-header"] }
+axum-extra = { version = "0.10.0", features = ["typed-header"] }
 tower-sessions = { workspace = true }
 axum-login = "0.17.0"
 tokio-util = { workspace = true, features = ["full"] }
@@ -31,7 +31,7 @@ askama_axum = "0.4.0"
 rust-embed = { version = "8", features = ["include-exclude"] }
 anyhow = { workspace = true }
 chrono = { workspace = true, default-features = false, features = ["serde", "clock", "std"]}
-oauth2 = {version= "4.4.2", features = ["reqwest"] }
+oauth2 = {version= "5.0.0", features = ["reqwest"] }
 async-trait = { workspace = true }
 reqwest = { workspace = true, features = ["json", "multipart", "stream", "rustls-tls" ] }
 lazy_static = "1.5.0"
@@ -41,7 +41,7 @@ thiserror = "2.0.11"
 utoipa = { workspace = true, features = ["chrono", "time", "axum_extras"] }
 utoipa-swagger-ui = { version = "=9.0.0", features = ["axum"] }
 rand = { version = "0.8.5", features = ["min_const_gen"] }
-uuid = { version = "1.12.0", features = [
+uuid = { version = "1.12.1", features = [
     "v4",                # Lets you generate random UUIDs
     "fast-rng",          # Use a faster (but still sufficiently random) RNG
     "macro-diagnostics", # Enable better diagnostics for compile-time UUIDs
