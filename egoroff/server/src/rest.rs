@@ -101,7 +101,7 @@ pub fn create_routes(
         cache,
     });
 
-    let secret = rand::thread_rng().gen::<[u8; 64]>();
+    let secret = rand::rng().random::<[u8; 64]>();
     let session_store = SqliteSessionStore::open(sessions_path, &secret)?;
     session_store.cleanup()?;
     let session_expiry = Expiry::OnInactivity(Duration::seconds(86400 * 14));
