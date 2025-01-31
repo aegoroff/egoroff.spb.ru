@@ -5,6 +5,13 @@ use clap::{command, crate_name, Command};
 
 mod cli;
 
+#[cfg(target_os = "linux")]
+use mimalloc_rust::GlobalMiMalloc;
+
+#[cfg(target_os = "linux")]
+#[global_allocator]
+static GLOBAL_MIMALLOC: GlobalMiMalloc = GlobalMiMalloc;
+
 #[tokio::main]
 async fn main() {
     #[cfg(feature = "migrating")]
