@@ -6,11 +6,11 @@ use clap::{command, crate_name, Command};
 mod cli;
 
 #[cfg(target_os = "linux")]
-use mimalloc_rust::GlobalMiMalloc;
+use mimalloc::MiMalloc;
 
 #[cfg(target_os = "linux")]
 #[global_allocator]
-static GLOBAL_MIMALLOC: GlobalMiMalloc = GlobalMiMalloc;
+static GLOBAL: MiMalloc = MiMalloc;
 
 #[tokio::main]
 async fn main() {
