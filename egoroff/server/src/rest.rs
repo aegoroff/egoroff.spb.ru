@@ -1,13 +1,13 @@
 use crate::auth::{AuthBackend, GithubAuthorizer, GoogleAuthorizer, Role, YandexAuthorizer};
 use anyhow::Result;
+use axum::Extension;
 use axum::extract::DefaultBodyLimit;
 use axum::handler::Handler;
 use axum::routing::{delete, post, put};
-use axum::Extension;
-use axum::{routing::get, Router};
+use axum::{Router, routing::get};
 
-use axum_login::{login_required, permission_required, AuthManagerLayerBuilder};
-use tower_sessions::cookie::{time::Duration, SameSite};
+use axum_login::{AuthManagerLayerBuilder, login_required, permission_required};
+use tower_sessions::cookie::{SameSite, time::Duration};
 use tower_sessions::{Expiry, SessionManagerLayer};
 
 use crate::domain::PageContext;

@@ -7,7 +7,7 @@ use std::{
 };
 
 use anyhow::{Context, Result};
-use axum::{response, Json};
+use axum::{Json, response};
 use axum_login::{AuthUser, AuthnBackend, AuthzBackend};
 use chrono::Utc;
 use kernel::{
@@ -15,11 +15,11 @@ use kernel::{
     sqlite::{Mode, Sqlite},
 };
 use oauth2::{
-    basic::{BasicClient, BasicTokenType},
-    url::Url,
     AccessToken, AuthUrl, AuthorizationCode, AuthorizationRequest, ClientId, ClientSecret,
     CsrfToken, EmptyExtraTokenFields, PkceCodeChallenge, PkceCodeVerifier, RedirectUrl, Scope,
     StandardTokenResponse, TokenUrl,
+    basic::{BasicClient, BasicTokenType},
+    url::Url,
 };
 use reqwest::{Client, StatusCode};
 use serde::Deserialize;

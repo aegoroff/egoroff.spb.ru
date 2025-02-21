@@ -6,11 +6,11 @@ use std::{
 };
 
 use anyhow::Result;
-use lol_html::{element, text, ElementContentHandlers, HtmlRewriter, Selector, Settings};
-use pulldown_cmark::{html, Options, Parser};
+use lol_html::{ElementContentHandlers, HtmlRewriter, Selector, Settings, element, text};
+use pulldown_cmark::{Options, Parser, html};
 use quick_xml::{
-    events::{BytesEnd, BytesStart, Event},
     Reader, Writer,
+    events::{BytesEnd, BytesStart, Event},
 };
 
 const REPLACES: &[(&[u8], &str)] = &[

@@ -7,10 +7,10 @@ use axum::body::{Body, Bytes};
 use axum::http::{self};
 use axum::response::Redirect;
 use axum::{
+    Extension, Json,
     extract::{self, Query, State},
     http::StatusCode,
     response::{IntoResponse, Response},
-    Extension, Json,
 };
 use futures::{Stream, TryStreamExt};
 use futures_util::StreamExt;
@@ -155,7 +155,7 @@ pub async fn serve_sitemap(State(page_context): State<Arc<PageContext<'_>>>) -> 
         Err(e) => {
             return internal_server_error_response(format!(
                 "<?xml version=\"1.0\"?><error>{e}</error>"
-            ))
+            ));
         }
     };
     let xml = match sitemap::make_site_map(apache_documents, post_ids) {
@@ -163,7 +163,7 @@ pub async fn serve_sitemap(State(page_context): State<Arc<PageContext<'_>>>) -> 
         Err(e) => {
             return internal_server_error_response(format!(
                 "<?xml version=\"1.0\"?><error>{e}</error>"
-            ))
+            ));
         }
     };
     success_response(Xml(xml))
@@ -383,7 +383,9 @@ fn serve_page<T: Template>(t: T) -> Response {
                 ),
                 (
                     http::header::CONTENT_SECURITY_POLICY,
-                    http::HeaderValue::from_static("default-src 'none'; script-src 'self'; frame-ancestors 'self'; connect-src 'self' www.googleapis.com; img-src 'self' data: *.ggpht.com avatars.githubusercontent.com *.googleusercontent.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.googleapis.com fonts.gstatic.com;"),
+                    http::HeaderValue::from_static(
+                        "default-src 'none'; script-src 'self'; frame-ancestors 'self'; connect-src 'self' www.googleapis.com; img-src 'self' data: *.ggpht.com avatars.githubusercontent.com *.googleusercontent.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.googleapis.com fonts.gstatic.com;",
+                    ),
                 ),
                 (
                     http::header::REFERRER_POLICY,
@@ -397,7 +399,7 @@ fn serve_page<T: Template>(t: T) -> Response {
     }
 }
 
-fn get_embed(path: &str, asset: Option<rust_embed::EmbeddedFile>) -> impl IntoResponse {
+fn get_embed(path: &str, asset: Option<rust_embed::EmbeddedFile>) -> impl IntoResponse + use<> {
     if let Some(file) = asset {
         success_response(Binary::new(file.data, path))
     } else {

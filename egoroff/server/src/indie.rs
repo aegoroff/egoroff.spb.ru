@@ -7,7 +7,7 @@ use axum::{
     body::HttpBody,
     http::{self, Request, Response},
 };
-use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
+use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;

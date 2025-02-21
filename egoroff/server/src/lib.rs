@@ -3,7 +3,7 @@
 #![warn(clippy::unwrap_used)]
 #![allow(clippy::missing_errors_doc)]
 
-use anyhow::{anyhow, Context, Result};
+use anyhow::{Context, Result, anyhow};
 use axum::Router;
 
 use kernel::graph::{SiteGraph, SiteSection};

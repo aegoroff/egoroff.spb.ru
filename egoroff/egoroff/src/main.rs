@@ -1,7 +1,7 @@
 #[cfg(feature = "migrating")]
-use clap::{arg, ArgAction};
+use clap::{ArgAction, arg};
 
-use clap::{command, crate_name, Command};
+use clap::{Command, command, crate_name};
 
 mod cli;
 

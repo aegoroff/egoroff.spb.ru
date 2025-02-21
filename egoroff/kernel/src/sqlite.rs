@@ -2,7 +2,7 @@ use std::{collections::HashMap, path::Path};
 
 use chrono::{DateTime, Utc};
 use itertools::Itertools;
-use rusqlite::{params, Connection, Error, ErrorCode, OpenFlags, Row, Transaction};
+use rusqlite::{Connection, Error, ErrorCode, OpenFlags, Row, Transaction, params};
 
 use crate::domain::{
     Download, Folder, OAuthProvider, Post, PostsRequest, SmallPost, Storage, TagAggregate, User,

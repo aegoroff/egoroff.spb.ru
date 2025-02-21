@@ -6,9 +6,9 @@ use std::rc::Rc;
 use std::{borrow::Cow, iter};
 
 use lol_html::{
-    element,
+    ElementContentHandlers, HtmlRewriter, Selector, Settings, element,
     html_content::{ContentType, TextChunk, TextType},
-    text, ElementContentHandlers, HtmlRewriter, Selector, Settings,
+    text,
 };
 use regex::Regex;
 

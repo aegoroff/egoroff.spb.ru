@@ -2,8 +2,8 @@ use super::*;
 
 use axum::extract::Form;
 use axum_extra::{
-    headers::{authorization::Bearer, Authorization},
     TypedHeader,
+    headers::{Authorization, authorization::Bearer},
 };
 use chrono::{TimeDelta, Utc};
 
@@ -11,8 +11,8 @@ use crate::{
     body::Redirect,
     domain::PageContext,
     indie::{
-        generate_jwt, read_from_client, validate_jwt, Claims, IndieQuery, Token, TokenRequest,
-        TokenValidationResult, ME, SCOPES,
+        Claims, IndieQuery, ME, SCOPES, Token, TokenRequest, TokenValidationResult, generate_jwt,
+        read_from_client, validate_jwt,
     },
 };
 

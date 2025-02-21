@@ -1,13 +1,13 @@
 use std::path::Path;
 
 use axum::{
-    body::{Body, Bytes},
-    http::{self, header, HeaderValue},
-    response::{IntoResponse, Response},
     BoxError,
+    body::{Body, Bytes},
+    http::{self, HeaderValue, header},
+    response::{IntoResponse, Response},
 };
 use futures::TryStream;
-use http::{header::LOCATION, StatusCode};
+use http::{StatusCode, header::LOCATION};
 
 /// Custom response with content type specified.
 #[derive(Clone, Copy, Debug)]

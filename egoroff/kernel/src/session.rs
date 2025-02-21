@@ -4,14 +4,14 @@ use std::{
 };
 
 use async_trait::async_trait;
-use base64::{engine::general_purpose, Engine as _};
+use base64::{Engine as _, engine::general_purpose};
 use chrono::Utc;
-use rusqlite::{params, Connection};
+use rusqlite::{Connection, params};
 
 use tower_sessions::session_store::{Error, Result};
 use tower_sessions::{
-    session::{Id, Record},
     SessionStore,
+    session::{Id, Record},
 };
 
 #[derive(Debug, Clone)]
