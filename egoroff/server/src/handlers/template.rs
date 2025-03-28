@@ -1,4 +1,4 @@
-use askama::Template;
+use askama_derive::Template;
 use kernel::domain::{Post, SmallPost};
 
 use crate::domain::{Apache, BlogRequest, Config, Error, FilesContainer, Message, Poster};
@@ -133,7 +133,7 @@ mod filters {
         let s = s.to_string();
         match typograph::typograph(&s) {
             Ok(s) => Ok(s),
-            Err(_e) => Err(::askama::Error::Fmt(std::fmt::Error)),
+            Err(_) => Err(::askama::Error::Fmt),
         }
     }
 }

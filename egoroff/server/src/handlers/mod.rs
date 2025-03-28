@@ -367,7 +367,7 @@ fn serve_page<T: Template>(t: T) -> Response {
             let headers = [
                 (
                     http::header::CONTENT_TYPE,
-                    http::HeaderValue::from_static(T::MIME_TYPE),
+                    http::HeaderValue::from_static("text/html"),
                 ),
                 (
                     http::header::X_XSS_PROTECTION,
