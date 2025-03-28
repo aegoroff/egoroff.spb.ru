@@ -1,4 +1,4 @@
-use askama_derive::Template;
+use askama::Template;
 use kernel::domain::{Post, SmallPost};
 
 use crate::domain::{Apache, BlogRequest, Config, Error, FilesContainer, Message, Poster};
