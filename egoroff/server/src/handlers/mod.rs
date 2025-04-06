@@ -279,19 +279,9 @@ fn unauthorized_response<R: IntoResponse>(r: R) -> (StatusCode, Response) {
 }
 
 fn get_content_length(headers: &axum::http::HeaderMap) -> Option<i64> {
-    if let Some(len_header) = headers.get("content-length") {
-        if let Ok(val) = len_header.to_str() {
-            if let Ok(v) = val.parse() {
-                Some(v)
-            } else {
-                None
-            }
-        } else {
-            None
-        }
-    } else {
-        None
-    }
+    let len_header = headers.get("content-length")?;
+    let val = len_header.to_str().ok()?;
+    val.parse().ok()
 }
 
 pub async fn serve_navigation(
