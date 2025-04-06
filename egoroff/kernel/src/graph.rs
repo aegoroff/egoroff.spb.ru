@@ -1,9 +1,9 @@
 #![allow(clippy::module_name_repetitions)]
 
-use std::{collections::HashMap, iter::once};
-
 use itertools::Itertools;
 use petgraph::prelude::*;
+use std::collections::hash_map::RandomState;
+use std::{collections::HashMap, iter::once};
 
 pub const SEP: &str = "/";
 
@@ -109,8 +109,10 @@ impl<'a> SiteGraph<'a> {
             None => return String::new(),
         };
 
-        let ways = petgraph::algo::all_simple_paths::<Vec<_>, _>(&self.g, 1, node_id, 0, None)
-            .collect::<Vec<_>>();
+        let ways = petgraph::algo::all_simple_paths::<Vec<_>, _, RandomState>(
+            &self.g, 1, node_id, 0, None,
+        )
+        .collect::<Vec<_>>();
         if ways.is_empty() {
             if id == SEP {
                 String::from(SEP)
