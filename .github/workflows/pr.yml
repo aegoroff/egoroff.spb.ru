@@ -46,9 +46,9 @@ jobs:
         run: ./build.py
       - name: Rust Build
         if: matrix.build == 'linux'
-        run: cargo build --workspace
+        run: cargo update -p libmimalloc-sys --precise 0.1.40 && cargo build --workspace --locked
         working-directory: ./egoroff
       - name: Run tests
         if: matrix.build == 'linux'
-        run: cargo test --workspace
+        run: cargo update -p libmimalloc-sys --precise 0.1.40 && cargo test --workspace --locked
         working-directory: ./egoroff
