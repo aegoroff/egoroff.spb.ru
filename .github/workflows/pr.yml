@@ -46,9 +46,9 @@ jobs:
         run: ./build.py
       - name: Rust Build
         if: matrix.build == 'linux'
-        run: cargo update -p zip --precise 2.4.2 && cargo build --workspace
+        run: cargo build --workspace
         working-directory: ./egoroff
       - name: Run tests
         if: matrix.build == 'linux'
-        run: cargo update -p zip --precise 2.4.2 && cargo test --workspace
+        run: cargo test --workspace
         working-directory: ./egoroff

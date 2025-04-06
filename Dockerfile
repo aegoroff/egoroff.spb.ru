@@ -31,7 +31,6 @@ COPY egoroff/server/ ./server/
 COPY egoroff/egoroff/ ./egoroff/
 COPY egoroff/Cargo.toml ./
 RUN rustup target add x86_64-unknown-linux-musl && \
-    cargo update -p zip --precise 2.4.2 && \
     cargo build -p egoroff --release --target x86_64-unknown-linux-musl
 
 FROM gcr.io/distroless/static-debian12:latest
