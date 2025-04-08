@@ -17,17 +17,32 @@ const ALLOWED_TAGS: &[&str] = &[
     "h4", "h5", "h6", "td", "th",
 ];
 
-lazy_static::lazy_static! {
-    static ref SPACES_RE : Result<Regex, regex::Error> = Regex::new(r"(\w)-(\s+)");
-    static ref PLUSMN_RE : Result<Regex, regex::Error> = Regex::new(r"\+-");
-    static ref NBSP_RE : Result<Regex, regex::Error> = Regex::new(r"(\s+)(--?|—|-)(\s|\u00a0)");
-    static ref MDASH_RE : Result<Regex, regex::Error> = Regex::new(r"(^)(--?|—|-)(\s|\u00a0)");
-    static ref HELLIP_RE : Result<Regex, regex::Error> = Regex::new(r"\.{2,}");
-    static ref MINUS_BEETWEEN_DIGITS_RE : Result<Regex, regex::Error> = Regex::new(r"(\d)-(\d)");
-    static ref OPEN_QUOTE_RE : Result<Regex, regex::Error> = Regex::new(r#"["»](\S)"#);
-    static ref CLOSE_QUOTE_RE : Result<Regex, regex::Error> = Regex::new(r#"(\S)["«]"#);
-    static ref ALLOWED_SET: HashSet<&'static &'static str> = ALLOWED_TAGS.iter().collect();
-}
+static SPACES_RE: std::sync::LazyLock<Result<Regex, regex::Error>> =
+    std::sync::LazyLock::new(|| Regex::new(r"(\w)-(\s+)"));
+
+static PLUSMN_RE: std::sync::LazyLock<Result<Regex, regex::Error>> =
+    std::sync::LazyLock::new(|| Regex::new(r"\+-"));
+
+static NBSP_RE: std::sync::LazyLock<Result<Regex, regex::Error>> =
+    std::sync::LazyLock::new(|| Regex::new(r"(\s+)(--?|—|-)(\s|\u00a0)"));
+
+static MDASH_RE: std::sync::LazyLock<Result<Regex, regex::Error>> =
+    std::sync::LazyLock::new(|| Regex::new(r"(^)(--?|—|-)(\s|\u00a0)"));
+
+static HELLIP_RE: std::sync::LazyLock<Result<Regex, regex::Error>> =
+    std::sync::LazyLock::new(|| Regex::new(r"\.{2,}"));
+
+static MINUS_BEETWEEN_DIGITS_RE: std::sync::LazyLock<Result<Regex, regex::Error>> =
+    std::sync::LazyLock::new(|| Regex::new(r"(\d)-(\d)"));
+
+static OPEN_QUOTE_RE: std::sync::LazyLock<Result<Regex, regex::Error>> =
+    std::sync::LazyLock::new(|| Regex::new(r#"["»](\S)"#));
+
+static CLOSE_QUOTE_RE: std::sync::LazyLock<Result<Regex, regex::Error>> =
+    std::sync::LazyLock::new(|| Regex::new(r#"(\S)["«]"#));
+
+static ALLOWED_SET: std::sync::LazyLock<HashSet<&'static &'static str>> =
+    std::sync::LazyLock::new(|| ALLOWED_TAGS.iter().collect());
 
 pub fn typograph(html: &str) -> Result<String> {
     let stack = Rc::new(RefCell::new(Vec::<String>::with_capacity(64)));

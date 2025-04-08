@@ -32,9 +32,8 @@ const OPINIONS_REMAP: &[(&str, &str)] = &[
 
 const BLOG_PATH: &str = "/blog/";
 
-lazy_static::lazy_static! {
-    static ref REPLACES_MAP: HashMap<&'static str, &'static str> = OPINIONS_REMAP.iter().map(|(k, v)| (*k, *v)).collect();
-}
+static REPLACES_MAP: std::sync::LazyLock<HashMap<&'static str, &'static str>> =
+    std::sync::LazyLock::new(|| OPINIONS_REMAP.iter().map(|(k, v)| (*k, *v)).collect());
 
 pub async fn serve_index_default(
     Query(request): Query<BlogRequest>,

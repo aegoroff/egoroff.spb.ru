@@ -36,10 +36,8 @@ mod sitemap;
 
 pub const SESSIONS_DATABASE: &str = "egoroff_sessions.db";
 
-lazy_static::lazy_static! {
-    static ref BASE_PATH : PathBuf = base_path();
-    static ref SITE_MAP : Option<SiteSection> = make_site_map();
-}
+static BASE_PATH: std::sync::LazyLock<PathBuf> = std::sync::LazyLock::new(base_path);
+static SITE_MAP: std::sync::LazyLock<Option<SiteSection>> = std::sync::LazyLock::new(make_site_map);
 
 fn base_path() -> PathBuf {
     if let Ok(d) = env::var("EGOROFF_HOME_DIR") {

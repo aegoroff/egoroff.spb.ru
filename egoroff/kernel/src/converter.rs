@@ -28,10 +28,11 @@ const REPLACES: &[(&[u8], &str)] = &[
 
 const PARENTS: &[&[u8]] = &[b"div1", b"div2", b"div3"];
 
-lazy_static::lazy_static! {
-    static ref PARENTS_SET: HashSet<&'static [u8]> = PARENTS.iter().copied().collect();
-    static ref REPLACES_MAP: HashMap<&'static [u8], &'static str> = REPLACES.iter().map(|(k, v)| (*k, *v)).collect();
-}
+static PARENTS_SET: std::sync::LazyLock<HashSet<&'static [u8]>> =
+    std::sync::LazyLock::new(|| PARENTS.iter().copied().collect());
+
+static REPLACES_MAP: std::sync::LazyLock<HashMap<&'static [u8], &'static str>> =
+    std::sync::LazyLock::new(|| REPLACES.iter().map(|(k, v)| (*k, *v)).collect());
 
 pub fn xml2html(input: &str) -> Result<String> {
     let mut reader = Reader::from_str(input);

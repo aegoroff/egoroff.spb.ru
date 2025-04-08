@@ -9,12 +9,13 @@ const LINK_ELT: &str = "link";
 const ENTRY_ELT: &str = "entry";
 const AUTHOR_ELT: &str = "author";
 
-lazy_static::lazy_static! {
-    static ref LINK_ATTRS : Vec<(&'static str, &'static str)> = vec![
-        ("href", "https://www.egoroff.spb.ru/blog/recent.atom"),
-        ("rel", "self"),
-    ];
-}
+static LINK_ATTRS: std::sync::LazyLock<Vec<(&'static str, &'static str)>> =
+    std::sync::LazyLock::new(|| {
+        vec![
+            ("href", "https://www.egoroff.spb.ru/blog/recent.atom"),
+            ("rel", "self"),
+        ]
+    });
 
 pub fn from_small_posts(posts: Vec<SmallPost>) -> Result<String> {
     let mut builder = Builder::new();
