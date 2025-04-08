@@ -31,8 +31,7 @@ COPY egoroff/server/ ./server/
 COPY egoroff/egoroff/ ./egoroff/
 COPY egoroff/Cargo.toml ./
 RUN rustup target add x86_64-unknown-linux-musl && \
-    cargo update -p libmimalloc-sys --precise 0.1.40 && \
-    cargo build -p egoroff --release --target x86_64-unknown-linux-musl --locked
+    cargo build -p egoroff --release --target x86_64-unknown-linux-musl
 
 FROM gcr.io/distroless/static-debian12:latest
 ENV EGOROFF_HTTP_PORT=4200 \
