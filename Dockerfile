@@ -1,7 +1,7 @@
 # docker image build --tag egoroff/egoroff .
 
 # build UI
-FROM node:lts AS node-build
+FROM node:lts-slim AS node-build
 WORKDIR /app
 COPY ui/package.json .
 COPY ui/public/ ./public/
