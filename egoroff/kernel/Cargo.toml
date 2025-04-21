@@ -25,7 +25,7 @@ base64 = "0.22.1"
 url = { workspace = true }
 futures = { workspace = true }
 utoipa = { workspace = true, features = ["chrono", "time"] }
-rusqlite = { version = "0.34", features = ["bundled", "chrono"] }
+rusqlite = { version = "0.35", features = ["bundled", "chrono"] }
 
 [dev-dependencies]
 rstest = "0.25.0"
