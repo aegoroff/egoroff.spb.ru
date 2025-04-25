@@ -129,7 +129,10 @@ pub struct Admin<'a> {
 mod filters {
     use kernel::typograph;
 
-    pub fn typograph<T: std::fmt::Display>(s: T) -> ::askama::Result<String> {
+    pub fn typograph<T: std::fmt::Display>(
+        s: T,
+        _: &dyn askama::Values,
+    ) -> ::askama::Result<String> {
         let s = s.to_string();
         match typograph::typograph(&s) {
             Ok(s) => Ok(s),
