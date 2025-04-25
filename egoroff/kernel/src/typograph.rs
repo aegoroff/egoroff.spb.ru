@@ -17,68 +17,73 @@ const ALLOWED_TAGS: &[&str] = &[
     "h4", "h5", "h6", "td", "th",
 ];
 
-static SPACES_RE: std::sync::LazyLock<Result<Regex, regex::Error>> =
-    std::sync::LazyLock::new(|| Regex::new(r"(\w)-(\s+)"));
+// Combine similar patterns for optimization
+static TYPOGRAPH_RE: std::sync::LazyLock<Result<Vec<Regex>, regex::Error>> =
+    std::sync::LazyLock::new(|| {
+        Ok(vec![
+            // Replace spaces before hyphens
+            Regex::new(r"(\w)-(\s+)")?,
+            // Replace plus-minus
+            Regex::new(r"\+-")?,
+            // Replace dashes with spaces
+            Regex::new(r"(\s+)(--?|—|-)(\s|\u00a0)")?,
+            // Replace dash at the beginning of a line
+            Regex::new(r"(^)(--?|—|-)(\s|\u00a0)")?,
+            // Replace ellipsis
+            Regex::new(r"\.{2,}")?,
+            // Replace minus between digits
+            Regex::new(r"(\d)-(\d)")?,
+            // Replace opening quotes
+            Regex::new(r#"["»](\S)"#)?,
+            // Replace closing quotes
+            Regex::new(r#"(\S)["«]"#)?,
+        ])
+    });
 
-static PLUSMN_RE: std::sync::LazyLock<Result<Regex, regex::Error>> =
-    std::sync::LazyLock::new(|| Regex::new(r"\+-"));
-
-static NBSP_RE: std::sync::LazyLock<Result<Regex, regex::Error>> =
-    std::sync::LazyLock::new(|| Regex::new(r"(\s+)(--?|—|-)(\s|\u00a0)"));
-
-static MDASH_RE: std::sync::LazyLock<Result<Regex, regex::Error>> =
-    std::sync::LazyLock::new(|| Regex::new(r"(^)(--?|—|-)(\s|\u00a0)"));
-
-static HELLIP_RE: std::sync::LazyLock<Result<Regex, regex::Error>> =
-    std::sync::LazyLock::new(|| Regex::new(r"\.{2,}"));
-
-static MINUS_BEETWEEN_DIGITS_RE: std::sync::LazyLock<Result<Regex, regex::Error>> =
-    std::sync::LazyLock::new(|| Regex::new(r"(\d)-(\d)"));
-
-static OPEN_QUOTE_RE: std::sync::LazyLock<Result<Regex, regex::Error>> =
-    std::sync::LazyLock::new(|| Regex::new(r#"["»](\S)"#));
-
-static CLOSE_QUOTE_RE: std::sync::LazyLock<Result<Regex, regex::Error>> =
-    std::sync::LazyLock::new(|| Regex::new(r#"(\S)["«]"#));
-
-static ALLOWED_SET: std::sync::LazyLock<HashSet<&'static &'static str>> =
-    std::sync::LazyLock::new(|| ALLOWED_TAGS.iter().collect());
+static ALLOWED_SET: std::sync::LazyLock<HashSet<&'static str>> =
+    std::sync::LazyLock::new(|| ALLOWED_TAGS.iter().copied().collect());
 
 pub fn typograph(html: &str) -> Result<String> {
-    let stack = Rc::new(RefCell::new(Vec::<String>::with_capacity(64)));
+    let stack = Rc::new(RefCell::new(Vec::<String>::with_capacity(32)));
 
     let text_handler = |t: &mut TextChunk| {
         if t.text_type() != TextType::Data {
             return Ok(());
         }
 
-        if let Some(t) = stack.borrow().last() {
-            if !ALLOWED_SET.contains(&t.as_str()) {
+        if let Some(tag) = stack.borrow().last() {
+            if !ALLOWED_SET.contains(tag.as_str()) {
                 return Ok(());
             }
         }
 
-        let replace = SPACES_RE.as_ref()?.replace_all(t.as_str(), "$1 -$2");
-        let replace = PLUSMN_RE.as_ref()?.replace_all(&replace, "&plusmn;");
-        let replace = NBSP_RE.as_ref()?.replace_all(&replace, "&nbsp;&mdash;$3");
-        let replace = MDASH_RE.as_ref()?.replace_all(&replace, "&mdash;$3");
-        let replace = HELLIP_RE.as_ref()?.replace_all(&replace, "&hellip;");
-        let replace = MINUS_BEETWEEN_DIGITS_RE
-            .as_ref()?
-            .replace_all(&replace, "$1&minus;$2");
-        let replace = OPEN_QUOTE_RE.as_ref()?.replace_all(&replace, "«$1");
-        let replace = CLOSE_QUOTE_RE
-            .as_ref()?
-            .replace_all(&replace, "$1»")
-            .to_string();
-        t.replace(&replace, ContentType::Html);
+        let mut text = t.as_str().to_string();
 
+        // Apply all replacements in one pass
+        if let Ok(regexes) = TYPOGRAPH_RE.as_ref() {
+            for (i, re) in regexes.iter().enumerate() {
+                text = match i {
+                    0 => re.replace_all(&text, "$1 -$2").into_owned(),
+                    1 => re.replace_all(&text, "&plusmn;").into_owned(),
+                    2 => re.replace_all(&text, "&nbsp;&mdash;$3").into_owned(),
+                    3 => re.replace_all(&text, "&mdash;$3").into_owned(),
+                    4 => re.replace_all(&text, "&hellip;").into_owned(),
+                    5 => re.replace_all(&text, "$1&minus;$2").into_owned(),
+                    6 => re.replace_all(&text, "«$1").into_owned(),
+                    7 => re.replace_all(&text, "$1»").into_owned(),
+                    _ => text,
+                };
+            }
+        }
+
+        t.replace(&text, ContentType::Html);
         Ok(())
     };
 
     let element_handler: (Cow<Selector>, ElementContentHandlers) =
         element!("*", |e: &mut Element| {
-            stack.borrow_mut().push(e.tag_name());
+            let tag_name = e.tag_name();
+            stack.borrow_mut().push(tag_name);
 
             if let Some(handlers) = e.end_tag_handlers() {
                 let stack = stack.clone();
@@ -99,7 +104,7 @@ pub fn typograph(html: &str) -> Result<String> {
         .chain(iter::once(element_handler))
         .collect();
 
-    let mut result = Vec::with_capacity(html.len());
+    let mut result = Vec::with_capacity(html.len() * 2); // Pre-allocate more memory
 
     let mut rewriter = HtmlRewriter::new(
         Settings {
