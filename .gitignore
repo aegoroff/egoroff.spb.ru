@@ -23,7 +23,6 @@ intodev.bat
 egoroffspbrupri.pem
 egoroffspbrupub.pem
 /egoroff/target/
-/egoroff/Cargo.lock
 egoroff/egoroff_spb_ru.crt
 egoroff/egoroff_spb_ru.key.pem
 home/

@@ -30,8 +30,9 @@ COPY egoroff/migrate/ ./migrate/
 COPY egoroff/server/ ./server/
 COPY egoroff/egoroff/ ./egoroff/
 COPY egoroff/Cargo.toml ./
+COPY egoroff/Cargo.lock ./
 RUN rustup target add x86_64-unknown-linux-musl && \
-    cargo build -p egoroff --release --target x86_64-unknown-linux-musl
+    cargo build -p egoroff --release --target x86_64-unknown-linux-musl --locked
 
 FROM gcr.io/distroless/static-debian12:latest
 ENV EGOROFF_HTTP_PORT=4200 \
