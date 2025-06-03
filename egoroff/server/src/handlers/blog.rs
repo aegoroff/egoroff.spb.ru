@@ -158,8 +158,8 @@ pub async fn serve_document(
 
     match content {
         Ok(c) => {
-            let descr = if c.is_empty() {
-                String::new()
+            let meta_description = if c.is_empty() {
+                post.title.clone()
             } else {
                 let descr = if post.markdown {
                     markdown2html(&post.short_text).unwrap_or_default()
@@ -184,7 +184,7 @@ pub async fn serve_document(
                 flashed_messages: vec![],
                 main_post: &post,
                 content: &c,
-                meta_description: descr,
+                meta_description,
             })
         }
         Err(e) => {
