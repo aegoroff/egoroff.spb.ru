@@ -113,7 +113,10 @@ pub async fn serve_index_post(
     body: Bytes,
 ) -> impl IntoResponse {
     tracing::info!("content type header: {content_type}");
-    let form = if let "application/json" = content_type.to_string().to_lowercase().as_str() {
+    let form = if content_type
+        .to_string()
+        .eq_ignore_ascii_case("application/json")
+    {
         MicropubForm::from_json_bytes(&body.slice(..))
     } else {
         // x-www-form-urlencoded
@@ -188,53 +191,53 @@ pub async fn serve_media_endpoint_post(
     let file_name_prefix = Uuid::new_v4();
     let mut file_name = file_name_prefix.to_string();
 
-    let ids: Vec<i64> =
-        if let "multipart/form-data" = content_type.to_string().to_lowercase().as_str() {
-            if let Ok(Some(field)) = multipart.next_field().await {
-                file_name = format!("{file_name}_{}", field.file_name().unwrap_or_default());
-                match read_from_stream(field).await {
-                    Ok((result, read_bytes)) => {
-                        resource
-                            .append_path("api")
-                            .append_path(MEDIA_BUCKET)
-                            .append_path(&file_name);
+    let ids: Vec<i64> = if content_type
+        .to_string()
+        .eq_ignore_ascii_case("multipart/form-data")
+    {
+        if let Ok(Some(field)) = multipart.next_field().await {
+            file_name = format!("{file_name}_{}", field.file_name().unwrap_or_default());
+            match read_from_stream(field).await {
+                Ok((result, read_bytes)) => {
+                    resource
+                        .append_path("api")
+                        .append_path(MEDIA_BUCKET)
+                        .append_path(&file_name);
 
-                        let client = Client::new();
-                        let mut form = reqwest::multipart::Form::new();
+                    let client = Client::new();
+                    let mut form = reqwest::multipart::Form::new();
 
-                        let stream = reqwest::Body::from(result);
-                        let part =
-                            reqwest::multipart::Part::stream_with_length(stream, read_bytes as u64)
-                                .file_name(file_name.clone());
-                        form = form.part("file", part);
-                        let result = client
-                            .post(resource.to_string())
-                            .multipart(form)
-                            .send()
-                            .await;
-                        match result {
-                            Ok(x) => match x.json().await {
-                                Ok(ids) => ids,
-                                Err(e) => return internal_server_error_response(e.to_string()),
-                            },
-                            Err(e) => {
-                                return internal_server_error_response(e.to_string());
-                            }
+                    let stream = reqwest::Body::from(result);
+                    let part =
+                        reqwest::multipart::Part::stream_with_length(stream, read_bytes as u64)
+                            .file_name(file_name.clone());
+                    form = form.part("file", part);
+                    let result = client
+                        .post(resource.to_string())
+                        .multipart(form)
+                        .send()
+                        .await;
+                    match result {
+                        Ok(x) => match x.json().await {
+                            Ok(ids) => ids,
+                            Err(e) => return internal_server_error_response(e.to_string()),
+                        },
+                        Err(e) => {
+                            return internal_server_error_response(e.to_string());
                         }
                     }
-                    Err(e) => {
-                        tracing::error!("{e}");
-                        return internal_server_error_response(e.to_string());
-                    }
                 }
-            } else {
-                return bad_request_error_response("no form data received".to_string());
+                Err(e) => {
+                    tracing::error!("{e}");
+                    return internal_server_error_response(e.to_string());
+                }
             }
         } else {
-            return bad_request_error_response(
-                "expected content-type of multipart/form-data".to_string(),
-            );
-        };
+            return bad_request_error_response("no form data received");
+        }
+    } else {
+        return bad_request_error_response("expected content-type of multipart/form-data");
+    };
 
     tracing::info!("file id: {}", ids[0]);
 

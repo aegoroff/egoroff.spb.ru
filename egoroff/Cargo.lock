@@ -2276,6 +2276,7 @@ dependencies = [
  "tower-sessions",
  "tracing",
  "tracing-subscriber",
+ "unicase",
  "url",
  "utoipa",
  "utoipa-swagger-ui",
