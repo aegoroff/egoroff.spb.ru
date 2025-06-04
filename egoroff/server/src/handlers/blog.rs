@@ -167,7 +167,7 @@ pub async fn serve_document(
                     post.short_text.clone()
                 };
                 if descr.is_empty() {
-                    descr
+                    post.title.clone()
                 } else if let Ok(txt) = html2text(&descr) {
                     txt
                 } else {
