@@ -94,7 +94,7 @@ async fn serve_index(
         title: &section.title,
         title_path: "",
         keywords: get_keywords(section),
-        meta_description: "",
+        meta_description: section.descr.as_str(),
         flashed_messages: vec![],
         poster: &poster,
         request: &request,
