@@ -15,7 +15,7 @@ serde = { workspace = true, features = ["derive"] }
 tokio = { workspace = true, features = ["full"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
-mimalloc = "=0.1.46"
+mimalloc = "=0.1.47"
 
 [features]
 migrating = ["migrate"]
