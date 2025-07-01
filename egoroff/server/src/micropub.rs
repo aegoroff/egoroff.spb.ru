@@ -186,7 +186,7 @@ impl MicropubFormBuilder {
                 .for_each(|s| self.set_name((**s).clone()));
         } else {
             tracing::error!("unexpected name type");
-        };
+        }
     }
 
     fn handle_category(&mut self, val: MicropubPropertyValue) {
