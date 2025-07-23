@@ -438,7 +438,6 @@ impl AuthUser for AppUser {
     }
 }
 
-#[async_trait]
 impl AuthzBackend for AuthBackend {
     type Permission = Role;
 
@@ -456,7 +455,6 @@ impl AuthzBackend for AuthBackend {
     }
 }
 
-#[async_trait]
 impl AuthnBackend for AuthBackend
 where
     Role: PartialOrd + PartialEq + Clone + Send + Sync + 'static,
