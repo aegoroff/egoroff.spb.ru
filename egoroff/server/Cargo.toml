@@ -48,7 +48,7 @@ hyper-util = { workspace = true, features = ["tokio", "server-auto", "http1"] }
 unicase = "2.8.1"
 
 [dev-dependencies]
-rstest = "0.25.0"
+rstest = "0.26.1"
 
 [lints]
 workspace = true

@@ -28,7 +28,7 @@ utoipa = { workspace = true, features = ["chrono", "time"] }
 rusqlite = { version = "0.37", features = ["bundled", "chrono"] }
 
 [dev-dependencies]
-rstest = "0.25.0"
+rstest = "0.26.1"
 
 [lints]
 workspace = true
