@@ -76,6 +76,10 @@ pub async fn run() -> Result<()> {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
+    for (key, value) in std::env::vars() {
+        tracing::debug!("{key}: {value}");
+    }
+
     let http_port = env::var("EGOROFF_HTTP_PORT").unwrap_or_else(|_| String::from("4200"));
     let store_uri = env::var("EGOROFF_STORE_URI").unwrap_or_default();
     let certs_path = env::var("EGOROFF_CERT_DIR").unwrap_or_default();
