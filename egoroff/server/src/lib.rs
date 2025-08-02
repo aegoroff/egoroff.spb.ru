@@ -160,11 +160,37 @@ async fn shutdown_signal() {
         tracing::info!("terminate signal received in task, starting graceful shutdown");
     };
 
+    #[cfg(unix)]
+    let quit = async {
+        signal::unix::signal(signal::unix::SignalKind::quit())
+            .expect("failed to install signal handler")
+            .recv()
+            .await;
+        tracing::info!("quit signal received in task, starting graceful shutdown");
+    };
+
+    #[cfg(unix)]
+    let interrupt = async {
+        signal::unix::signal(signal::unix::SignalKind::interrupt())
+            .expect("failed to install signal handler")
+            .recv()
+            .await;
+        tracing::info!("interrupt signal received in task, starting graceful shutdown");
+    };
+
     #[cfg(not(unix))]
     let terminate = std::future::pending::<()>();
+
+    #[cfg(not(unix))]
+    let quit = std::future::pending::<()>();
+
+    #[cfg(not(unix))]
+    let interrupt = std::future::pending::<()>();
 
     tokio::select! {
         () = ctrl_c => {},
         () = terminate => {},
+        () = quit => {},
+        () = interrupt => {},
     }
 }
