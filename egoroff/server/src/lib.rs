@@ -144,13 +144,6 @@ async fn http_server(ports: Ports, app: Router) {
 }
 
 async fn shutdown_signal() {
-    let ctrl_c = async {
-        signal::ctrl_c()
-            .await
-            .expect("failed to install Ctrl+C handler");
-        tracing::info!("ctrl_c signal received in task, starting graceful shutdown");
-    };
-
     #[cfg(unix)]
     let terminate = async {
         signal::unix::signal(signal::unix::SignalKind::terminate())
@@ -185,10 +178,14 @@ async fn shutdown_signal() {
     let quit = std::future::pending::<()>();
 
     #[cfg(not(unix))]
-    let interrupt = std::future::pending::<()>();
+    let interrupt = async {
+        signal::ctrl_c()
+            .await
+            .expect("failed to install Ctrl+C handler");
+        tracing::info!("ctrl_c signal received in task, starting graceful shutdown");
+    };
 
     tokio::select! {
-        () = ctrl_c => {},
         () = terminate => {},
         () = quit => {},
         () = interrupt => {},
