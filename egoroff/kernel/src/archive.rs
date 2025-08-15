@@ -109,10 +109,10 @@ fn ceil_div(dividend: i32, divider: i32) -> i32 {
 
 fn update_short_text(mut posts: Vec<SmallPost>) -> Vec<SmallPost> {
     for post in &mut posts {
-        if post.markdown {
-            if let Ok(text) = markdown2html(&post.short_text) {
-                post.short_text = text;
-            }
+        if post.markdown
+            && let Ok(text) = markdown2html(&post.short_text)
+        {
+            post.short_text = text;
         }
     }
     posts

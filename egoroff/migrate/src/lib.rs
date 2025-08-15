@@ -49,8 +49,8 @@ async fn from_files(files_path: &str, db_path: &str) {
         let path = entry.path();
         let path = path.as_path();
 
-        if let Some(e) = path.extension() {
-            if let Some(ext) = e.to_str() {
+        if let Some(e) = path.extension()
+            && let Some(ext) = e.to_str() {
                 if ext != "txt" {
                     continue;
                 }
@@ -88,7 +88,6 @@ async fn from_files(files_path: &str, db_path: &str) {
                 };
                 storage.upsert_post(post).unwrap();
             }
-        }
     }
 }
 

@@ -51,10 +51,10 @@ pub fn typograph(html: &str) -> Result<String> {
             return Ok(());
         }
 
-        if let Some(tag) = stack.borrow().last() {
-            if !ALLOWED_SET.contains(tag.as_str()) {
-                return Ok(());
-            }
+        if let Some(tag) = stack.borrow().last()
+            && !ALLOWED_SET.contains(tag.as_str())
+        {
+            return Ok(());
         }
 
         let mut text = t.as_str().to_string();
