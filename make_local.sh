@@ -29,5 +29,5 @@ done
   cd ./egoroff/
   cargo clean
   cargo b --workspace $ADDITIONAL_OPTIONS
-  EGOROFF_HOME_DIR=../home/ EGOROFF_DATA_DIR=../../lxc/ ./target/$CONFIGURATION/egoroff server
+  ./target/$CONFIGURATION/egoroff server
 )

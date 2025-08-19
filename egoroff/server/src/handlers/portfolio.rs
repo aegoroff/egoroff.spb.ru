@@ -108,6 +108,35 @@ pub async fn serve_apache_document(
     }
 }
 
+/// Gets downloadable files
+#[utoipa::path(
+    get,
+    path = "/api/v2/portfolio/files/",
+    params(),
+    tag = "portfolio",
+    responses(
+        (status = 200, description = "Get files successfully", body = ApiResult<FilesContainer>),
+    ),
+)]
+pub async fn serve_downloadable_files(
+    State(page_context): State<Arc<PageContext<'_>>>,
+) -> impl IntoResponse {
+    let downloads = read_downloads(page_context.clone()).await;
+    if let Some(downloads) = downloads {
+        let count = downloads.len() as i32;
+        let result = ApiResult {
+            result: downloads,
+            pages: 1,
+            page: 1,
+            count,
+            status: "success",
+        };
+        make_json_response(Ok(result)).into_response()
+    } else {
+        make_500_page().into_response()
+    }
+}
+
 pub fn read_apache_documents(base_path: &Path) -> Result<Vec<crate::domain::Apache>> {
     let config_path = base_path.join("apache/config.json");
     let file = File::open(config_path)

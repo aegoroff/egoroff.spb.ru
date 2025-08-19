@@ -8,6 +8,7 @@ use kernel::{
 };
 use oauth2::CsrfToken;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
 pub type Database = Arc<Mutex<Sqlite>>;
 pub type Cache = Arc<Mutex<HashSet<String>>>;
@@ -102,18 +103,32 @@ pub struct AuthorizedUser {
     pub provider: String,
 }
 
-#[derive(Serialize, Default)]
+#[derive(Serialize, Default, ToSchema)]
 pub struct FilesContainer {
+    #[serde(rename(serialize = "Title"))]
+    #[schema(rename = "Title")]
     pub title: String,
+    #[serde(rename(serialize = "Files"))]
+    #[schema(rename = "Files")]
     pub files: Vec<Downloadable>,
 }
 
-#[derive(Serialize, Default)]
+#[derive(Serialize, Default, ToSchema)]
 pub struct Downloadable {
+    #[serde(rename(serialize = "Title"))]
+    #[schema(rename = "Title")]
     pub title: String,
+    #[serde(rename(serialize = "Path"))]
+    #[schema(rename = "Path")]
     pub path: String,
+    #[serde(rename(serialize = "FileName"))]
+    #[schema(rename = "FileName")]
     pub filename: String,
+    #[serde(rename(serialize = "Blake3Hash"))]
+    #[schema(rename = "Blake3Hash")]
     pub blake3_hash: String,
+    #[serde(rename(serialize = "Size"))]
+    #[schema(rename = "Size")]
     pub size: u64,
 }
 
