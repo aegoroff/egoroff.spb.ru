@@ -1,4 +1,5 @@
 import Vue from 'vue'
+import Vue2Filters from 'vue2-filters'
 import VueTypeScriptInject from 'vue-typescript-inject'
 import VueHighlightJS from 'vue-highlight.js'
 import VueSocialSharing from 'vue-social-sharing'
@@ -55,6 +56,7 @@ Vue.use(IconsPlugin)
 Vue.use(VueProgressBar)
 Vue.use(VueSocialSharing)
 Vue.use(VueHighlightJS)
+Vue.use(Vue2Filters)
 
 library.add(faBook, faBriefcase, faSearch, faHome, faUser, faCalendarAlt, faDownload, faSignInAlt, faSignOutAlt, faTools, faTrashAlt)
 library.add(faGoogle, faGithub, faVk, faYandex)

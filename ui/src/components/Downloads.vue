@@ -45,7 +45,7 @@ export default class Downloads extends Vue {
           </dt>
           <dd>
             <small><span><strong>Платформа:</strong>&nbsp;Windows, x64</span></small><br/>
-            <small><span><strong>Размер:</strong>&nbsp;{{ f.Size  }}</span></small><br/>
+            <small><span><strong>Размер:</strong>&nbsp;{{ f.Size | bytes }}</span></small><br/>
             <small><span><strong>Blake3:</strong>&nbsp;{{ f.Blake3Hash }}</span></small><br/>
           </dd>
         </div>
