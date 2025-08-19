@@ -40,7 +40,7 @@ export default class Downloads extends Vue {
         <div v-for="f in folder.Files" :key="f.Blake3Hash">
           <dt itemscope itemtype="http://schema.org/SoftwareApplication">
             <a itemprop="downloadUrl" v-bind:href="f.Path">
-              <i class="icon" data-label="download"></i>&nbsp;<span itemprop="name">{{ f.Title }}</span>
+              <b-icon icon="download"></b-icon>&nbsp;<span itemprop="name">{{ f.Title }}</span>
             </a>
           </dt>
           <dd>

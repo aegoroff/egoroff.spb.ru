@@ -19,7 +19,7 @@ use super::{
 struct ApacheTemplates;
 
 const PORTFOLIO_PATH: &str = "/portfolio/";
-const DOWNLOADS_WAIT_TIMEOUT_SECONDS: u64 = 1;
+const DOWNLOADS_WAIT_TIMEOUT_SECONDS: u64 = 5;
 
 #[derive(Deserialize, Default)]
 pub struct StoredFile {
