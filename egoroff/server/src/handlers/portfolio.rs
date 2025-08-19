@@ -43,14 +43,8 @@ pub async fn serve_index(State(page_context): State<Arc<PageContext<'_>>>) -> im
         keywords: get_keywords(section),
         meta_description: &section.descr,
         flashed_messages: vec![],
-        downloads: vec![],
         apache_docs: vec![],
     };
-
-    let downloads = read_downloads(page_context.clone()).await;
-    if let Some(downloads) = downloads {
-        context.downloads = downloads;
-    }
 
     match read_apache_documents(&page_context.base_path) {
         Ok(docs) => {

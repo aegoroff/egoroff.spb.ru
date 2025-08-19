@@ -46,6 +46,7 @@ import Highlighter from '@/components/Highlighter.vue'
 import Alert from '@/components/Alert.vue'
 import VueRouter from 'vue-router'
 import routes from '@/router'
+import Downloads from '@/components/Downloads.vue'
 
 Vue.config.productionTip = false
 Vue.use(VueTypeScriptInject)
@@ -80,6 +81,11 @@ if (app) {
 if (document.getElementById('blogNavigation')) {
   const bn = new BlogNavigation()
   bn.$mount('#blogNavigation')
+}
+
+if (document.getElementById('portfolioDownloads')) {
+  const bn = new Downloads()
+  bn.$mount('#portfolioDownloads')
 }
 
 const social = document.getElementById('social')

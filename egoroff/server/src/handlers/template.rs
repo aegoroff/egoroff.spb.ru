@@ -1,7 +1,7 @@
 use askama::Template;
 use kernel::domain::{Post, SmallPost};
 
-use crate::domain::{Apache, BlogRequest, Config, Error, FilesContainer, Message, Poster};
+use crate::domain::{Apache, BlogRequest, Config, Error, Message, Poster};
 
 #[derive(Template, Default)]
 #[template(path = "error.html")]
@@ -61,7 +61,6 @@ pub struct Portfolio<'a> {
     pub keywords: &'a str,
     pub meta_description: &'a str,
     pub flashed_messages: Vec<Message>,
-    pub downloads: Vec<FilesContainer>,
     pub apache_docs: Vec<Apache>,
 }
 

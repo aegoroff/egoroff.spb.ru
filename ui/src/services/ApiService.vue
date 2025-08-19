@@ -111,6 +111,13 @@ export default class ApiService extends Vue {
     }).finally(() => this.$Progress.finish())
   }
 
+  public async getDownloadableFiles<T> (): Promise<ApiResult<T>> {
+    this.$Progress.start()
+    return await axios.get<ApiResult<T>>('/api/v2/portfolio/files/').then((r: any) => {
+      return r.data
+    }).finally(() => this.$Progress.finish())
+  }
+
   public async getAdminPosts<T> (q?: Query): Promise<ApiResult<T>> {
     this.$Progress.start()
     return await axios.get<ApiResult<T>>(`/api/v2/admin/posts/${toQuery(q)}`).then((r: any) => {
