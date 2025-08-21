@@ -1,7 +1,10 @@
 #!/bin/bash
 
-tag="registry.egoroff.spb.ru/egoroff/egoroff.spb.ru:master"
-DOCKER_BUILDKIT=1 docker build . -t $tag --progress plain
-docker push $tag
-DOCKER_BUILDKIT=1 docker build . -f DockerfileArm64 -t "${tag}-arm64" --progress plain --platform=linux/arm64
-docker push "${tag}-arm64"
+TAG=master
+full_tag="registry.egoroff.spb.ru/egoroff/egoroff.spb.ru:${TAG}"
+DOCKER_BUILDKIT=1 docker build . -t "${full_tag}-x64"
+DOCKER_BUILDKIT=1 docker build . -f DockerfileArm64 -t "${full_tag}-arm64" --platform=linux/arm64
+docker manifest create $full_tag --amend ${full_tag}-x64 --amend ${full_tag}-arm64
+docker push "${full_tag}-x64"
+docker push "${full_tag}-arm64"
+docker manifest push $full_tag
