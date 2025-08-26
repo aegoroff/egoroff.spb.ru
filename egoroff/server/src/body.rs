@@ -170,33 +170,18 @@ impl Redirect {
     /// you generally don't want the redirected-to page to observe the original request method and
     /// body (if non-empty). If you want to preserve the request method and body,
     /// [`Redirect::temporary`] should be used instead.
-    ///
-    /// # Panics
-    ///
-    /// If `uri` isn't a valid [`HeaderValue`].
-    ///
     /// [mdn]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/303
     pub fn to(uri: &str) -> Self {
         Self::with_status_code(StatusCode::SEE_OTHER, uri)
     }
 
     /// Create a new [`Redirect`] that uses a [`308 Permanent Redirect`][mdn] status code.
-    ///
-    /// # Panics
-    ///
-    /// If `uri` isn't a valid [`HeaderValue`].
-    ///
     /// [mdn]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/308
     pub fn permanent(uri: &str) -> Self {
         Self::with_status_code(StatusCode::PERMANENT_REDIRECT, uri)
     }
 
     /// Create a new [`Redirect`] that uses a [`308 Permanent Redirect`][mdn] status code.
-    ///
-    /// # Panics
-    ///
-    /// If `uri` isn't a valid [`HeaderValue`].
-    ///
     /// [mdn]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/302
     pub fn found(uri: &str) -> Self {
         Self::with_status_code(StatusCode::FOUND, uri)
@@ -211,10 +196,17 @@ impl Redirect {
             status_code.is_redirection(),
             "not a redirection status code"
         );
+        let location = match HeaderValue::try_from(uri) {
+            Ok(h) => h,
+            Err(err) => {
+                tracing::error!("URI {uri} isn't a valid header value. Error: {err:?}");
+                HeaderValue::from_static("/")
+            }
+        };
 
         Self {
             status_code,
-            location: HeaderValue::try_from(uri).expect("URI isn't a valid header value"),
+            location,
         }
     }
 }
