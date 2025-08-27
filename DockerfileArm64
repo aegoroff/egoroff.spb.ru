@@ -18,7 +18,7 @@ COPY ui/babel.config.js ./
 RUN npm run build
 
 # Build service
-FROM --platform=$BUILDPLATFORM messense/rust-musl-cross:aarch64-musl AS rust-build
+FROM --platform=$BUILDPLATFORM ghcr.io/rust-cross/rust-musl-cross:aarch64-musl AS rust-build
 WORKDIR /egoroff
 COPY --from=node-build /static /static
 COPY apache/ /apache/
