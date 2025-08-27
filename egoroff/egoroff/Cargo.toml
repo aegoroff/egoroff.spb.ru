@@ -10,12 +10,12 @@ workspace = ".."
 kernel = { path = "../kernel" }
 server = { path = "../server" }
 migrate = { path = "../migrate", optional = true }
-clap = { version = "4.5.45", features = ["std", "color", "suggestions", "cargo"] }
+clap = { version = "4.5.46", features = ["std", "color", "suggestions", "cargo"] }
 serde = { workspace = true, features = ["derive"] }
 tokio = { workspace = true, features = ["full"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
-mimalloc = "=0.1.47"
+mimalloc = "=0.1.48"
 
 [features]
 migrating = ["migrate"]
