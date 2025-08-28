@@ -19,6 +19,10 @@ RUN npm run build
 
 # Build service
 FROM --platform=$BUILDPLATFORM ghcr.io/rust-cross/rust-musl-cross:aarch64-musl AS rust-build
+RUN rustup toolchain uninstall stable-x86_64-unknown-linux-gnu && \
+    rustup toolchain install stable-x86_64-unknown-linux-gnu && \
+    rustup update stable && \
+    rustup target add aarch64-unknown-linux-musl
 WORKDIR /egoroff
 COPY --from=node-build /static /static
 COPY apache/ /apache/
