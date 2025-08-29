@@ -5,6 +5,7 @@ use axum::extract::DefaultBodyLimit;
 use axum::handler::Handler;
 use axum::routing::{delete, post, put};
 use axum::{Router, routing::get};
+use axum_prometheus::PrometheusMetricLayer;
 
 use axum_login::{AuthManagerLayerBuilder, login_required, permission_required};
 use tower_sessions::cookie::{SameSite, time::Duration};
@@ -129,6 +130,7 @@ pub fn create_routes(
         .and(NotForContentType::new("application/octet-stream"))
         .and(NotForContentType::new("application/json"));
 
+    let (prometheus_layer, metric_handle) = PrometheusMetricLayer::pair();
     let router = Router::new()
         .route("/auth", get(handlers::indie::serve_auth))
         .route("/admin", get(handlers::admin::serve))
@@ -157,6 +159,7 @@ pub fn create_routes(
             "/token/",
             post(handlers::indie::serve_token_generate).get(handlers::indie::serve_token_validate),
         )
+        .route("/metrics", get(|| async move { metric_handle.render() }))
         .merge(SwaggerUi::new("/api/v2").url("/api/v2/openapi.json", ApiDoc::openapi()))
         .merge(micropub_api)
         .merge(blog_routes())
@@ -168,6 +171,7 @@ pub fn create_routes(
         .layer(CompressionLayer::new().compress_when(compress_predicate))
         .layer(RequestBodyLimitLayer::new(20 * 1024 * 1024))
         .layer(DefaultBodyLimit::disable())
+        .layer(prometheus_layer)
         .with_state(page_context);
 
     Ok(router)

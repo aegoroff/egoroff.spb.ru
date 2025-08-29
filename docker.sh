@@ -7,4 +7,5 @@ DOCKER_BUILDKIT=1 docker build . -f DockerfileArm64 -t "${full_tag}-arm64" --pla
 docker manifest create $full_tag --amend ${full_tag}-x64 --amend ${full_tag}-arm64
 docker push "${full_tag}-x64"
 docker push "${full_tag}-arm64"
+docker manifest create $full_tag --amend ${full_tag}-x64 --amend ${full_tag}-arm64
 docker manifest push --purge $full_tag
