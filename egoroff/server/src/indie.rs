@@ -18,7 +18,7 @@ pub const ME: &str = "https://www.egoroff.spb.ru/";
 pub const SCOPES: &str = "create media delete";
 
 /// Our claims struct, it needs to derive `Serialize` and/or `Deserialize`
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Claims {
     pub client_id: String,
     pub redirect_uri: Option<String>,
