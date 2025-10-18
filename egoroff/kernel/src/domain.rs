@@ -2,55 +2,81 @@ use chrono::{DateTime, Datelike, NaiveDate, Utc};
 use std::{error::Error, fmt::Debug};
 use utoipa::{IntoParams, ToSchema};
 
+/// Represents a user in the system.
 #[derive(Debug, Default, Clone, Deserialize, Serialize)]
 pub struct User {
+    /// The timestamp when the user was created.
     pub created: DateTime<Utc>,
+    /// The email address associated with the user.
     pub email: String,
+    /// The display name of the user.
     pub name: String,
+    /// The username used to log in to the system.
     #[serde(rename(serialize = "username"))]
     pub login: String,
+    /// The URL of the user's avatar image.
     #[serde(rename(serialize = "avatarUrl"))]
     pub avatar_url: String,
+    /// The federated ID of the user (e.g., from an external authentication provider).
     pub federated_id: String,
+    /// A boolean indicating whether the user is an administrator.
     pub admin: bool,
+    /// A boolean indicating whether the user's email address has been verified.
     pub verified: bool,
+    /// The name of the authentication provider used to create the user account.
     pub provider: String,
 }
 
+/// Represents a small post (e.g., for the home page).
 #[derive(Debug, Default, Clone, Deserialize, Serialize, ToSchema)]
 pub struct SmallPost {
+    /// The timestamp when the post was created.
     #[serde(rename(serialize = "Created"))]
     #[schema(rename = "Created")]
     pub created: DateTime<Utc>,
+    /// The unique ID of the post.
     #[schema(example = 66)]
     pub id: i64,
+    /// The title of the post.
     #[schema(example = "Blake3", rename = "Title")]
     #[serde(rename(serialize = "Title"))]
     pub title: String,
+    /// A short summary or teaser text for the post.
     #[schema(example = "# About Blake3", rename = "ShortText")]
     #[serde(rename(serialize = "ShortText"))]
     pub short_text: String,
+    /// A boolean indicating whether the post content is in Markdown format (not serialized).
     #[serde(skip_serializing)]
     pub markdown: bool,
 }
 
+/// Represents a regular post.
 #[derive(Debug, Default, Clone, Deserialize, Serialize)]
 pub struct Post {
+    /// The timestamp when the post was created.
     #[serde(rename(serialize = "Created", deserialize = "Created"))]
     pub created: DateTime<Utc>,
+    /// The timestamp when the post was last modified.
     #[serde(rename(serialize = "Modified", deserialize = "Modified"))]
     pub modified: DateTime<Utc>,
+    /// The unique ID of the post.
     pub id: i64,
+    /// The title of the post.
     #[serde(rename(serialize = "Title", deserialize = "Title"))]
     pub title: String,
+    /// A short summary or teaser text for the post.
     #[serde(rename(serialize = "ShortText", deserialize = "ShortText"))]
     pub short_text: String,
+    /// The full content of the post in Markdown format.
     #[serde(rename(serialize = "Text", deserialize = "Text"))]
     pub text: String,
+    /// A boolean indicating whether the post content is in Markdown format.
     #[serde(rename(serialize = "Markdown", deserialize = "Markdown"))]
     pub markdown: bool,
+    /// A boolean indicating whether the post is publicly visible.
     #[serde(rename(serialize = "IsPublic", deserialize = "IsPublic"))]
     pub is_public: bool,
+    /// A list of tags associated with the post.
     #[serde(rename(serialize = "Tags", deserialize = "Tags"))]
     pub tags: Vec<String>,
 }
@@ -62,22 +88,40 @@ impl Post {
     }
 }
 
+/// Request for retrieving posts.
+///
+/// This struct holds parameters for filtering posts based on tag, page number,
+/// year, month, and whether to include private posts.
 #[derive(Deserialize, Serialize, Default, Clone, IntoParams)]
 pub struct PostsRequest {
+    /// The tag to filter posts by (optional).
     pub tag: Option<String>,
+    /// The page number of posts to retrieve (optional).
     pub page: Option<i32>,
+    /// The year to filter posts by (optional).
     pub year: Option<i32>,
+    /// The month to filter posts by (optional).
     pub month: Option<i32>,
+    /// Whether to include private posts in the result (optional).
     pub include_private: Option<bool>,
 }
 
+/// Request for retrieving downloads.
+///
+/// This struct holds a single parameter for specifying the page number of
+/// downloads to retrieve.
 #[derive(Deserialize, Serialize, Default, Clone, IntoParams)]
 pub struct DownloadsRequest {
+    /// The page number of downloads to retrieve (optional).
     pub page: Option<i32>,
 }
 
+/// A time period with start and end dates in UTC.
+#[derive(Deserialize, Serialize, Default)]
 pub struct Period {
+    /// The start date of the period (inclusive) in UTC.
     pub from: DateTime<Utc>,
+    /// The end date of the period (inclusive) in UTC.
     pub to: DateTime<Utc>,
 }
 
@@ -118,28 +162,41 @@ impl PostsRequest {
     }
 }
 
+/// Represents a collection of archives.
 #[derive(Serialize, Default)]
 pub struct Archive {
+    /// A list of tags associated with this archive.
     pub tags: Vec<Tag>,
+    /// A list of years for this archive.
     pub years: Vec<Year>,
 }
 
+/// Represents a single tag.
 #[derive(Deserialize, Serialize, Default)]
 pub struct Tag {
+    /// The title of the tag.
     pub title: String,
+    /// The level of importance or relevance of the tag (1-10).
     pub level: usize,
 }
 
+/// Represents an aggregate count of tags.
 #[derive(Deserialize, Serialize, Default)]
 pub struct TagAggregate {
+    /// The title of the aggregated tag.
     pub title: String,
+    /// The total count of posts associated with this tag.
     pub count: i32,
 }
 
+/// Represents a single year in the archive.
 #[derive(Deserialize, Serialize, Default)]
 pub struct Year {
+    /// The year in question (e.g. 2022).
     pub year: i32,
+    /// The number of posts published during this year.
     pub posts: i32,
+    /// A list of months within this year.
     pub months: Vec<Month>,
 }
 
@@ -159,43 +216,74 @@ impl Year {
     }
 }
 
+/// Represents a month with its corresponding number of posts.
+///
+/// This struct is used for deserialization and serialization purposes only.
 #[derive(Deserialize, Serialize, Default)]
 pub struct Month {
+    /// The month number (1-12).
     pub month: i32,
+    /// The total number of posts in the month.
     pub posts: i32,
 }
 
+/// Represents an API result with a list of items and pagination information.
+///
+/// This struct is used for serialization and deserialization purposes only.
 #[derive(Serialize, Default, ToSchema)]
 pub struct ApiResult<T> {
+    /// A vector of items returned by the API.
     pub result: Vec<T>,
+    /// The total number of pages in the result.
     #[schema(example = 4)]
     pub pages: i32,
+    /// The current page number.
     #[schema(example = 1)]
     pub page: i32,
+    /// The total count of items returned by the API.
     #[schema(example = 68)]
     pub count: i32,
+    /// A status message indicating whether the operation was successful.
     #[schema(example = "success")]
     pub status: &'static str,
 }
 
+/// Represents an OAuth provider with its authentication settings.
+///
+/// This struct is used for serialization purposes only.
 #[derive(Serialize, Default)]
 pub struct OAuthProvider {
+    /// The name of the OAuth provider (e.g. Google, Facebook).
     pub name: String,
+    /// The client ID of the OAuth provider.
     pub client_id: String,
+    /// The client secret of the OAuth provider.
     pub secret: String,
+    /// The redirect URL for the OAuth provider's authentication flow.
     pub redirect_url: String,
+    /// A list of scopes required by the OAuth provider.
     pub scopes: Vec<String>,
 }
 
+/// Represents a folder with its bucket and title information.
+///
+/// This struct is used for serialization purposes only.
 #[derive(Serialize, Default)]
 pub struct Folder {
+    /// The name of the bucket containing the folder.
     pub bucket: String,
+    /// The title of the folder.
     pub title: String,
 }
 
+/// Represents a downloadable file with its ID and title information.
+///
+/// This struct is used for deserialization and serialization purposes only.
 #[derive(Debug, Default, Clone, Deserialize, Serialize)]
 pub struct Download {
+    /// The unique ID of the download.
     pub id: i64,
+    /// The title of the downloadable file.
     pub title: String,
 }
 
