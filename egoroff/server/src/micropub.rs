@@ -8,15 +8,21 @@ use thiserror::Error;
 use url::form_urlencoded::parse;
 use utoipa::ToSchema;
 
+/// Configuration options for the Micropub endpoint.
 #[derive(Serialize, Default, ToSchema)]
 pub struct MicropubConfig {
+    /// Optional query parameters for the request.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub q: Option<Vec<String>>,
+
+    /// URL of the media upload endpoint. Optional.
     #[serde(
         rename(serialize = "media-endpoint"),
         skip_serializing_if = "Option::is_none"
     )]
     pub media_endpoint: Option<String>,
+
+    /// List of syndication targets. Optional.
     #[serde(
         rename(serialize = "syndicate-to"),
         skip_serializing_if = "Option::is_none"
@@ -24,14 +30,19 @@ pub struct MicropubConfig {
     pub syndicate_to: Option<Vec<SyndicateTo>>,
 }
 
+/// A single syndication target for the Micropub request.
 #[derive(Serialize, ToSchema)]
 pub struct SyndicateTo {
+    /// Unique identifier of the target.
     pub uid: String,
+    /// Human‑readable name of the target.
     pub name: String,
 }
 
+/// Errors that can occur while processing a Micropub form submission.
 #[derive(Debug, Error, ToSchema)]
 pub enum MicropubFormError {
+    /// Indicates that a required field is missing.
     #[error("Required field '{0}' is missing.")]
     MissingField(String),
 }

@@ -32,11 +32,17 @@ pub struct File {
     pub size: usize,
 }
 
+/// Response containing a URL to the uploaded media.
+///
+/// This struct is returned by the micropub media endpoint and
+/// represents the location where the media can be accessed.
 #[derive(Serialize, ToSchema)]
 pub struct MediaResponse {
+    /// The absolute URL of the stored media resource.
+    ///
+    /// This URL can be used by clients to retrieve the media content.
     pub url: String,
 }
-
 /// Gets micropub endpoint configuration to find out it's capabilities
 #[utoipa::path(
     get,
