@@ -13,123 +13,183 @@ use utoipa::ToSchema;
 pub type Database = Arc<Mutex<Sqlite>>;
 pub type Cache = Arc<Mutex<HashSet<String>>>;
 
+/// Represents a URI, which is a string representing a Uniform Resource Identifier.
 #[derive(Deserialize)]
 pub struct Uri {
-    pub uri: String,
+   /// The actual URI value.
+   pub uri: String,
 }
 
+/// Represents the result of an operation. It holds a reference to a string result.
 #[derive(Deserialize, Serialize, Default)]
 pub struct OperationResult<'a> {
-    pub result: &'a str,
+   /// The result of the operation as a string reference.
+   pub result: &'a str,
 }
 
+/// Represents a request for a blog.
 #[derive(Deserialize, Serialize, Default)]
 pub struct BlogRequest {
-    pub tag: Option<String>,
+   /// The tag associated with the blog request (optional).
+   pub tag: Option<String>,
 }
 
+/// Represents navigation data in the application.
 #[derive(Deserialize, Serialize, Default)]
 pub struct Navigation {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub sections: Option<Vec<SiteSection>>,
+   /// A list of site sections (optional).
+   #[serde(skip_serializing_if = "Option::is_none")]
+   pub sections: Option<Vec<SiteSection>>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub breadcrumbs: Option<Vec<SiteSection>>,
+   /// A list of breadcrumbs (optional).
+   #[serde(skip_serializing_if = "Option::is_none")]
+   pub breadcrumbs: Option<Vec<SiteSection>>,
 }
 
+/// Represents the application's configuration data.
 #[derive(Serialize, Deserialize, Default)]
 pub struct Config {
-    pub search_api_key: String,
-    pub google_site_id: String,
-    pub analytics_id: String,
+   /// The search API key.
+   pub search_api_key: String,
+   /// The Google Site ID.
+   pub google_site_id: String,
+   /// The analytics ID.
+   pub analytics_id: String,
 }
 
+/// Represents the context of a page in the application.
 pub struct PageContext<'a> {
-    pub base_path: PathBuf,
-    pub storage: Database,
-    pub site_graph: Arc<SiteGraph<'a>>,
-    pub site_config: Config,
-    pub store_uri: String,
-    pub certs_path: String,
-    pub cache: Cache,
+   /// The base path of the page.
+   pub base_path: PathBuf,
+   /// The database storage instance.
+   pub storage: Database,
+   /// The site graph instance.
+   pub site_graph: Arc<SiteGraph<'a>>,
+   /// The site configuration data.
+   pub site_config: Config,
+   /// The store URI.
+   pub store_uri: String,
+   /// The certificates path.
+   pub certs_path: String,
+   /// The cache instance.
+   pub cache: Cache,
 }
 
+/// Represents Apache-related data in the application.
 #[derive(Serialize, Deserialize, Default)]
 pub struct Apache {
-    pub id: String,
-    pub stylesheet: String,
-    pub title: String,
-    pub description: String,
-    pub keywords: String,
+   /// The ID of the Apache instance.
+   pub id: String,
+   /// The stylesheet URL.
+   pub stylesheet: String,
+   /// The title of the page.
+   pub title: String,
+   /// The description of the page.
+   pub description: String,
+   /// The keywords for the page.
+   pub keywords: String,
 }
 
+/// Represents a collection of posts or pages in the application.
 #[derive(Serialize, Default)]
 pub struct Poster<T> {
-    pub posts: Vec<T>,
-    pub pages: Vec<i32>,
-    pub has_pages: bool,
-    pub has_prev: bool,
-    pub has_next: bool,
-    pub page: i32,
-    pub prev_page: i32,
-    pub next_page: i32,
+   /// A list of posts or pages.
+   pub posts: Vec<T>,
+   /// A list of page numbers.
+   pub pages: Vec<i32>,
+   /// Whether there are multiple pages.
+   pub has_pages: bool,
+   /// Whether there is a previous page.
+   pub has_prev: bool,
+   /// Whether there is a next page.
+   pub has_next: bool,
+   /// The current page number.
+   pub page: i32,
+   /// The previous page number.
+   pub prev_page: i32,
+   /// The next page number.
+   pub next_page: i32,
 }
 
+/// Represents an error in the application.
 #[derive(Deserialize, Serialize, Default)]
 pub struct Error {
-    pub code: String,
-    pub name: String,
+   /// The error code.
+   pub code: String,
+   /// The error name.
+   pub name: String,
 }
 
+/// Represents a message sent by the application.
 #[derive(Deserialize, Serialize, Default)]
 pub struct Message {
-    pub r#type: String,
-    pub text: String,
+   /// The type of the message.
+   pub r#type: String,
+   /// The text content of the message.
+   pub text: String,
 }
 
+/// Represents an authentication request in the application.
 #[derive(Debug, Deserialize)]
 #[allow(dead_code)]
 pub struct AuthRequest {
-    pub code: String,
-    pub scope: Option<String>,
-    pub state: CsrfToken,
+   /// The authorization code.
+   pub code: String,
+   /// The scope of the authorization (optional).
+   pub scope: Option<String>,
+   /// The CSRF token for the request.
+   pub state: CsrfToken,
 }
 
+/// Represents an authorized user in the application.
 #[derive(Debug, Deserialize, Serialize, Default)]
 pub struct AuthorizedUser {
-    pub login_or_name: String,
-    pub authenticated: bool,
-    pub admin: bool,
-    pub provider: String,
+   /// The login or name of the user.
+   pub login_or_name: String,
+   /// Whether the user is authenticated.
+   pub authenticated: bool,
+   /// Whether the user has admin privileges.
+   pub admin: bool,
+   /// The provider of the user's account.
+   pub provider: String,
 }
 
+/// Represents a container for files in the application.
 #[derive(Serialize, Default, ToSchema)]
 pub struct FilesContainer {
-    #[serde(rename(serialize = "Title"))]
-    #[schema(rename = "Title")]
-    pub title: String,
-    #[serde(rename(serialize = "Files"))]
-    #[schema(rename = "Files")]
-    pub files: Vec<Downloadable>,
+   /// The title of the file collection.
+   #[serde(rename(serialize = "Title"))]
+   #[schema(rename = "Title")]
+   pub title: String,
+   /// A list of downloadable files.
+   #[serde(rename(serialize = "Files"))]
+   #[schema(rename = "Files")]
+   pub files: Vec<Downloadable>,
 }
 
+/// Represents a downloadable file in the application.
 #[derive(Serialize, Default, ToSchema)]
 pub struct Downloadable {
-    #[serde(rename(serialize = "Title"))]
-    #[schema(rename = "Title")]
-    pub title: String,
-    #[serde(rename(serialize = "Path"))]
-    #[schema(rename = "Path")]
-    pub path: String,
-    #[serde(rename(serialize = "FileName"))]
-    #[schema(rename = "FileName")]
-    pub filename: String,
-    #[serde(rename(serialize = "Blake3Hash"))]
-    #[schema(rename = "Blake3Hash")]
-    pub blake3_hash: String,
-    #[serde(rename(serialize = "Size"))]
-    #[schema(rename = "Size")]
-    pub size: u64,
+   /// The title of the file.
+   #[serde(rename(serialize = "Title"))]
+   #[schema(rename = "Title")]
+   pub title: String,
+   /// The path to the file.
+   #[serde(rename(serialize = "Path"))]
+   #[schema(rename = "Path")]
+   pub path: String,
+   /// The filename of the downloadable file.
+   #[serde(rename(serialize = "FileName"))]
+   #[schema(rename = "FileName")]
+   pub filename: String,
+   /// The Blake3 hash of the file.
+   #[serde(rename(serialize = "Blake3Hash"))]
+   #[schema(rename = "Blake3Hash")]
+   pub blake3_hash: String,
+   /// The size of the downloadable file in bytes.
+   #[serde(rename(serialize = "Size"))]
+   #[schema(rename = "Size")]
+   pub size: u64,
 }
 
 impl<T> Poster<T> {
