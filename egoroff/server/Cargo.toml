@@ -44,7 +44,7 @@ uuid = { version = "1.18.1", features = [
     "fast-rng",          # Use a faster (but still sufficiently random) RNG
     "macro-diagnostics", # Enable better diagnostics for compile-time UUIDs
 ]}
-hyper = { version = "1.7.0", features = [] }
+hyper = { version = "1.8.0", features = [] }
 hyper-util = { workspace = true, features = ["tokio", "server-auto", "http1"] }
 unicase = "2.8.1"
 
