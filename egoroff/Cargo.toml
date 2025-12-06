@@ -1,17 +1,10 @@
 [workspace]
 resolver = "3"
-members = [
-  "egoroff",
-  "kernel",
-  "server",
-  "migrate",
-]
+members = ["egoroff", "kernel", "server", "migrate"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 # to be able to run with `cargo run`, `check` and so on without selecting a specific package with `-p`
-default-members = [
-  "egoroff",
-]
+default-members = ["egoroff"]
 
 [profile.release]
 lto = true
@@ -24,9 +17,9 @@ tokio-util = { version = "0.7.17", default-features = false }
 serde = { version = "1.0", default-features = false }
 serde_json = "1.0"
 utoipa = { version = "5.4.0", default-features = false }
-chrono = { version="0.4.42", default-features = false }
+chrono = { version = "0.4.42", default-features = false }
 reqwest = { version = "0.12", default-features = false }
-hyper-util = { version = "0.1.18", default-features = false }
+hyper-util = { version = "0.1.19", default-features = false }
 tower-sessions = "0.14.0"
 async-trait = "0.1"
 anyhow = "1.0"
