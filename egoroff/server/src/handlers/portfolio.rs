@@ -31,7 +31,7 @@ pub struct StoredFile {
 
 pub async fn serve_index(State(page_context): State<Arc<PageContext<'_>>>) -> impl IntoResponse {
     let Some(section) = page_context.site_graph.get_section("portfolio") else {
-        return make_500_page();
+        return internal_server_error();
     };
 
     let title_path = page_context.site_graph.make_title_path(PORTFOLIO_PATH);
@@ -49,11 +49,11 @@ pub async fn serve_index(State(page_context): State<Arc<PageContext<'_>>>) -> im
     match read_apache_documents(&page_context.base_path) {
         Ok(docs) => {
             context.apache_docs = docs;
-            serve_page(context)
+            context.into_response()
         }
         Err(e) => {
             tracing::error!("{e:#?}");
-            make_500_page()
+            internal_server_error()
         }
     }
 }
@@ -66,7 +66,7 @@ pub async fn serve_apache_document(
         Ok(docs) => docs,
         Err(e) => {
             tracing::error!("{e:#?}");
-            return make_500_page();
+            return internal_server_error();
         }
     };
 
@@ -87,7 +87,7 @@ pub async fn serve_apache_document(
     let asset = ApacheTemplates::get(&path);
     if let Some(file) = asset {
         let content = String::from_utf8_lossy(&file.data);
-        let context = ApacheDocument {
+        ApacheDocument {
             html_class: "",
             title: &doc.title,
             title_path: &title_path,
@@ -95,8 +95,8 @@ pub async fn serve_apache_document(
             meta_description: &doc.description,
             flashed_messages: vec![],
             content: &content,
-        };
-        serve_page(context)
+        }
+        .into_response()
     } else {
         make_404_page()
     }
@@ -127,7 +127,7 @@ pub async fn serve_downloadable_files(
         };
         make_json_response(Ok(result)).into_response()
     } else {
-        make_500_page().into_response()
+        internal_server_error().into_response()
     }
 }
 
@@ -227,7 +227,7 @@ pub async fn serve_downloads_admin_api(
         Ok(c) => c,
         Err(e) => {
             tracing::error!("{e:#?}");
-            return make_500_page().into_response();
+            return internal_server_error().into_response();
         }
     };
 
@@ -237,7 +237,7 @@ pub async fn serve_downloads_admin_api(
         Ok(downloads) => downloads,
         Err(e) => {
             tracing::error!("{e:#?}");
-            return make_500_page().into_response();
+            return internal_server_error().into_response();
         }
     };
 

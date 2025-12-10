@@ -68,7 +68,7 @@ async fn serve_index(
     };
 
     let Some(section) = page_context.site_graph.get_section("blog") else {
-        return make_500_page();
+        return internal_server_error();
     };
 
     let req = PostsRequest {
@@ -83,7 +83,7 @@ async fn serve_index(
         Ok(ar) => ar,
         Err(e) => {
             tracing::error!("Get posts error: {e:#?}");
-            return make_500_page();
+            return internal_server_error();
         }
     };
 
@@ -113,7 +113,7 @@ async fn serve_index(
     };
     tpl.title_path = &title_path;
 
-    serve_page(tpl)
+    tpl.into_response()
 }
 
 pub async fn serve_document(
@@ -176,7 +176,7 @@ pub async fn serve_document(
             };
 
             let keywords = post.keywords();
-            serve_page(BlogPost {
+            BlogPost {
                 html_class: "blog",
                 title: &post.title,
                 title_path: &title_path,
@@ -185,11 +185,12 @@ pub async fn serve_document(
                 main_post: &post,
                 content: &c,
                 meta_description,
-            })
+            }
+            .into_response()
         }
         Err(e) => {
             tracing::error!("{e:#?}");
-            make_500_page()
+            internal_server_error()
         }
     }
 }

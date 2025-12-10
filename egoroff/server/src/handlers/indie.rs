@@ -76,7 +76,7 @@ pub async fn serve_auth(
         match read_from_client(&u.to_string()).await {
             Ok(resp) => {
                 tracing::info!("Response from client: {resp}");
-                (StatusCode::OK, Body::empty().into_response())
+                success_response(Body::empty())
             }
             Err(e) => {
                 tracing::error!("Error reading data from client: {e:#?}");

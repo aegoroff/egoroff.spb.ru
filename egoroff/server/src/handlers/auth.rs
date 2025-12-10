@@ -73,7 +73,7 @@ pub async fn serve_login(
 
     context.title = "Авторизация";
 
-    serve_page(context)
+    context.into_response()
 }
 
 pub async fn serve_logout(mut auth: AuthSession) -> impl IntoResponse {
@@ -82,10 +82,11 @@ pub async fn serve_logout(mut auth: AuthSession) -> impl IntoResponse {
 }
 
 pub async fn serve_profile() -> impl IntoResponse {
-    serve_page(Profile {
+    Profile {
         title: "Редактирование профиля",
         ..Default::default()
-    })
+    }
+    .into_response()
 }
 
 macro_rules! login_user_using_token {

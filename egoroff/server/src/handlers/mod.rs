@@ -2,9 +2,7 @@
 #![allow(non_upper_case_globals)]
 
 use anyhow::Result;
-use askama::Template;
 use axum::body::{Body, Bytes};
-use axum::http::{self};
 use axum::response::Redirect;
 use axum::{
     Extension, Json,
@@ -92,14 +90,14 @@ pub async fn serve_index(State(page_context): State<Arc<PageContext<'_>>>) -> im
         Ok(r) => r,
         Err(e) => {
             tracing::error!("{e:#?}");
-            return make_500_page();
+            return internal_server_error();
         }
     };
 
     match portfolio::read_apache_documents(&page_context.base_path) {
         Ok(docs) => {
             if let Some(section) = page_context.site_graph.get_section("/") {
-                serve_page(Index {
+                Index {
                     html_class: "welcome",
                     title: kernel::graph::BRAND,
                     title_path: "",
@@ -108,21 +106,22 @@ pub async fn serve_index(State(page_context): State<Arc<PageContext<'_>>>) -> im
                     posts: blog_posts.result,
                     apache_docs: docs,
                     flashed_messages: vec![],
-                })
+                }
+                .into_response()
             } else {
-                make_500_page()
+                internal_server_error()
             }
         }
         Err(e) => {
             tracing::error!("{e:#?}");
-            make_500_page()
+            internal_server_error()
         }
     }
 }
 
 pub async fn serve_search(State(page_context): State<Arc<PageContext<'_>>>) -> impl IntoResponse {
     if let Some(section) = page_context.site_graph.get_section("search") {
-        serve_page(Search {
+        Search {
             html_class: "search",
             title: &section.title,
             title_path: "",
@@ -130,10 +129,11 @@ pub async fn serve_search(State(page_context): State<Arc<PageContext<'_>>>) -> i
             meta_description: &section.descr,
             flashed_messages: vec![],
             config: &page_context.site_config,
-        })
+        }
+        .into_response()
     } else {
         tracing::error!("no search section found in graph");
-        make_500_page()
+        internal_server_error()
     }
 }
 
@@ -323,7 +323,7 @@ fn make_404_page() -> Response {
     not_found_response(make_error_page("404")).into_response()
 }
 
-fn make_500_page() -> Response {
+fn internal_server_error() -> Response {
     internal_server_error_response(make_error_page("500")).into_response()
 }
 
@@ -340,7 +340,7 @@ fn make_error_page(code: &str) -> Response {
         code: code.to_string(),
         ..Default::default()
     };
-    serve_page(ErrorPage {
+    ErrorPage {
         html_class: "",
         title: code,
         title_path: "",
@@ -348,45 +348,8 @@ fn make_error_page(code: &str) -> Response {
         meta_description: "",
         error,
         flashed_messages: vec![],
-    })
-}
-
-fn serve_page<T: Template>(t: T) -> Response {
-    match t.render() {
-        Ok(body) => {
-            let headers = [
-                (
-                    http::header::CONTENT_TYPE,
-                    http::HeaderValue::from_static("text/html"),
-                ),
-                (
-                    http::header::X_XSS_PROTECTION,
-                    http::HeaderValue::from_static("1; mode=block"),
-                ),
-                (
-                    http::header::X_CONTENT_TYPE_OPTIONS,
-                    http::HeaderValue::from_static("nosniff"),
-                ),
-                (
-                    http::header::X_FRAME_OPTIONS,
-                    http::HeaderValue::from_static("sameorigin"),
-                ),
-                (
-                    http::header::CONTENT_SECURITY_POLICY,
-                    http::HeaderValue::from_static(
-                        "default-src 'none'; script-src 'self'; frame-ancestors 'self'; connect-src 'self' www.googleapis.com; img-src 'self' data: *.ggpht.com avatars.githubusercontent.com *.googleusercontent.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.googleapis.com fonts.gstatic.com;",
-                    ),
-                ),
-                (
-                    http::header::REFERRER_POLICY,
-                    http::HeaderValue::from_static("strict-origin-when-cross-origin"),
-                ),
-            ];
-
-            (headers, body).into_response()
-        }
-        Err(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     }
+    .into_response()
 }
 
 fn get_embed(path: &str, asset: Option<rust_embed::EmbeddedFile>) -> impl IntoResponse + use<> {
