@@ -31,7 +31,7 @@ pub struct Claims {
     pub jti: Option<String>,
 }
 
-/// Query parameters received in the IndieAuth authorization request.
+/// Query parameters received in the `IndieAuth` authorization request.
 /// These are extracted from the incoming query string.
 #[derive(Deserialize, Serialize)]
 pub struct IndieQuery {
@@ -46,9 +46,9 @@ pub struct IndieQuery {
 /// Request payload sent by the client to exchange an authorization code for an access token.
 #[derive(Deserialize, Serialize, ToSchema)]
 pub struct TokenRequest {
-    /// The type of grant requested; for IndieAuth this is typically `"authorization_code"`.
+    /// The type of grant requested; for `IndieAuth` this is typically `"authorization_code"`.
     pub grant_type: String,
-    /// The authorization code received from the IndieAuth provider.
+    /// The authorization code received from the `IndieAuth` provider.
     pub code: String,
     /// The client identifier of the application making the request.
     pub client_id: String,
@@ -63,7 +63,7 @@ pub struct TokenRequest {
 pub struct Token {
     /// The issued access token string.
     pub access_token: String,
-    /// The type of the token; for IndieAuth this is typically `"Bearer"`.
+    /// The type of the token; for `IndieAuth` this is typically `"Bearer"`.
     pub token_type: String,
     /// Scopes granted to the access token.
     pub scope: String,
@@ -71,7 +71,7 @@ pub struct Token {
     pub me: String,
 }
 
-/// Result of validating an access token against the IndieAuth provider.
+/// Result of validating an access token against the `IndieAuth` provider.
 #[derive(Deserialize, Serialize, ToSchema)]
 pub struct TokenValidationResult {
     /// The resource owner's identifier (the “me” URL).

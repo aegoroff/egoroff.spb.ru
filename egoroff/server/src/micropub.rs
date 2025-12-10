@@ -206,7 +206,9 @@ impl MicropubFormBuilder {
                 self.add_category(c);
             }
             MicropubPropertyValue::Values(cs) => {
-                cs.iter().for_each(|c| self.add_category(c.clone()));
+                for c in &cs {
+                    self.add_category(c.clone());
+                }
             }
             _ => tracing::error!("unexpected category type"),
         }

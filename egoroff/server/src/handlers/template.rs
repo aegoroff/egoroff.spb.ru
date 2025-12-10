@@ -55,7 +55,7 @@ pub struct ErrorPage<'a> {
     pub error: Error,
 }
 
-impl<'a> IntoResponse for ErrorPage<'a> {
+impl IntoResponse for ErrorPage<'_> {
     fn into_response(self) -> axum::response::Response {
         text_html_respose(self)
     }
@@ -74,7 +74,7 @@ pub struct Index<'a> {
     pub flashed_messages: Vec<Message>,
 }
 
-impl<'a> IntoResponse for Index<'a> {
+impl IntoResponse for Index<'_> {
     fn into_response(self) -> axum::response::Response {
         text_html_respose(self)
     }
@@ -92,7 +92,7 @@ pub struct Search<'a> {
     pub config: &'a Config,
 }
 
-impl<'a> IntoResponse for Search<'a> {
+impl IntoResponse for Search<'_> {
     fn into_response(self) -> axum::response::Response {
         text_html_respose(self)
     }
@@ -110,7 +110,7 @@ pub struct ApacheDocument<'a> {
     pub content: &'a str,
 }
 
-impl<'a> IntoResponse for ApacheDocument<'a> {
+impl IntoResponse for ApacheDocument<'_> {
     fn into_response(self) -> axum::response::Response {
         text_html_respose(self)
     }
@@ -128,7 +128,7 @@ pub struct Portfolio<'a> {
     pub apache_docs: Vec<Apache>,
 }
 
-impl<'a> IntoResponse for Portfolio<'a> {
+impl IntoResponse for Portfolio<'_> {
     fn into_response(self) -> axum::response::Response {
         text_html_respose(self)
     }
@@ -147,7 +147,7 @@ pub struct BlogIndex<'a> {
     pub request: &'a BlogRequest,
 }
 
-impl<'a> IntoResponse for BlogIndex<'a> {
+impl IntoResponse for BlogIndex<'_> {
     fn into_response(self) -> axum::response::Response {
         text_html_respose(self)
     }
@@ -166,7 +166,7 @@ pub struct BlogPost<'a> {
     pub content: &'a str,
 }
 
-impl<'a> IntoResponse for BlogPost<'a> {
+impl IntoResponse for BlogPost<'_> {
     fn into_response(self) -> axum::response::Response {
         text_html_respose(self)
     }
@@ -186,7 +186,7 @@ pub struct Signin<'a> {
     pub yandex_signin_url: &'a str,
 }
 
-impl<'a> IntoResponse for Signin<'a> {
+impl IntoResponse for Signin<'_> {
     fn into_response(self) -> axum::response::Response {
         text_html_respose(self)
     }
@@ -203,7 +203,7 @@ pub struct Profile<'a> {
     pub flashed_messages: Vec<Message>,
 }
 
-impl<'a> IntoResponse for Profile<'a> {
+impl IntoResponse for Profile<'_> {
     fn into_response(self) -> axum::response::Response {
         text_html_respose(self)
     }
@@ -219,7 +219,7 @@ pub struct Admin<'a> {
     pub meta_description: &'a str,
 }
 
-impl<'a> IntoResponse for Admin<'a> {
+impl IntoResponse for Admin<'_> {
     fn into_response(self) -> axum::response::Response {
         text_html_respose(self)
     }
