@@ -90,7 +90,7 @@ pub async fn serve_index(State(page_context): State<Arc<PageContext<'_>>>) -> im
         Ok(r) => r,
         Err(e) => {
             tracing::error!("{e:#?}");
-            return internal_server_error();
+            return internal_server_error_page();
         }
     };
 
@@ -109,12 +109,12 @@ pub async fn serve_index(State(page_context): State<Arc<PageContext<'_>>>) -> im
                 }
                 .into_response()
             } else {
-                internal_server_error()
+                internal_server_error_page()
             }
         }
         Err(e) => {
             tracing::error!("{e:#?}");
-            internal_server_error()
+            internal_server_error_page()
         }
     }
 }
@@ -133,7 +133,7 @@ pub async fn serve_search(State(page_context): State<Arc<PageContext<'_>>>) -> i
         .into_response()
     } else {
         tracing::error!("no search section found in graph");
-        internal_server_error()
+        internal_server_error_page()
     }
 }
 
@@ -319,12 +319,12 @@ pub async fn serve_navigation(
     })
 }
 
-fn make_404_page() -> Response {
-    not_found_response(make_error_page("404")).into_response()
+fn not_found_page() -> Response {
+    not_found_response(error_page_response("404")).into_response()
 }
 
-fn internal_server_error() -> Response {
-    internal_server_error_response(make_error_page("500")).into_response()
+fn internal_server_error_page() -> Response {
+    internal_server_error_response(error_page_response("500")).into_response()
 }
 
 fn redirect_response(new_path: &str) -> Response {
@@ -335,7 +335,7 @@ fn redirect_response(new_path: &str) -> Response {
         .into_response()
 }
 
-fn make_error_page(code: &str) -> Response {
+fn error_page_response(code: &str) -> Response {
     let error = Error {
         code: code.to_string(),
         ..Default::default()

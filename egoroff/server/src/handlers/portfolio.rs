@@ -31,7 +31,7 @@ pub struct StoredFile {
 
 pub async fn serve_index(State(page_context): State<Arc<PageContext<'_>>>) -> impl IntoResponse {
     let Some(section) = page_context.site_graph.get_section("portfolio") else {
-        return internal_server_error();
+        return internal_server_error_page();
     };
 
     let title_path = page_context.site_graph.make_title_path(PORTFOLIO_PATH);
@@ -53,7 +53,7 @@ pub async fn serve_index(State(page_context): State<Arc<PageContext<'_>>>) -> im
         }
         Err(e) => {
             tracing::error!("{e:#?}");
-            internal_server_error()
+            internal_server_error_page()
         }
     }
 }
@@ -66,7 +66,7 @@ pub async fn serve_apache_document(
         Ok(docs) => docs,
         Err(e) => {
             tracing::error!("{e:#?}");
-            return internal_server_error();
+            return internal_server_error_page();
         }
     };
 
@@ -78,7 +78,7 @@ pub async fn serve_apache_document(
     let doc = path.trim_end_matches(".html");
 
     let Some(doc) = map.get(doc) else {
-        return make_404_page();
+        return not_found_page();
     };
 
     let uri = format!("{PORTFOLIO_PATH}{path}");
@@ -98,7 +98,7 @@ pub async fn serve_apache_document(
         }
         .into_response()
     } else {
-        make_404_page()
+        not_found_page()
     }
 }
 
@@ -127,7 +127,7 @@ pub async fn serve_downloadable_files(
         };
         make_json_response(Ok(result)).into_response()
     } else {
-        internal_server_error().into_response()
+        internal_server_error_page().into_response()
     }
 }
 
@@ -227,7 +227,7 @@ pub async fn serve_downloads_admin_api(
         Ok(c) => c,
         Err(e) => {
             tracing::error!("{e:#?}");
-            return internal_server_error().into_response();
+            return internal_server_error_page().into_response();
         }
     };
 
@@ -237,7 +237,7 @@ pub async fn serve_downloads_admin_api(
         Ok(downloads) => downloads,
         Err(e) => {
             tracing::error!("{e:#?}");
-            return internal_server_error().into_response();
+            return internal_server_error_page().into_response();
         }
     };
 

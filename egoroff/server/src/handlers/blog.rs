@@ -60,7 +60,7 @@ async fn serve_index(
             Ok(item) => item,
             Err(e) => {
                 tracing::error!("Invalid page: {e:#?}");
-                return make_404_page();
+                return not_found_page();
             }
         }
     } else {
@@ -68,7 +68,7 @@ async fn serve_index(
     };
 
     let Some(section) = page_context.site_graph.get_section("blog") else {
-        return internal_server_error();
+        return internal_server_error_page();
     };
 
     let req = PostsRequest {
@@ -83,7 +83,7 @@ async fn serve_index(
         Ok(ar) => ar,
         Err(e) => {
             tracing::error!("Get posts error: {e:#?}");
-            return internal_server_error();
+            return internal_server_error_page();
         }
     };
 
@@ -126,7 +126,7 @@ pub async fn serve_document(
         Ok(item) => item,
         Err(e) => {
             tracing::error!("Invalid post id: {e:#?}. Expected number but was {doc}");
-            return make_404_page();
+            return not_found_page();
         }
     };
 
@@ -141,7 +141,7 @@ pub async fn serve_document(
         Ok(item) => item,
         Err(e) => {
             tracing::error!("Post ID '{id}' not found: {e:#?}");
-            return make_404_page();
+            return not_found_page();
         }
     };
     drop(storage);
@@ -190,7 +190,7 @@ pub async fn serve_document(
         }
         Err(e) => {
             tracing::error!("{e:#?}");
-            internal_server_error()
+            internal_server_error_page()
         }
     }
 }
