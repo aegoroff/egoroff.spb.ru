@@ -113,8 +113,6 @@ export default defineComponent({
       const blogTitle = document.getElementById('blogSmallTitle')
       
       if (blogContainer) {
-        // В реальном приложении здесь будет создание компонента
-        // через createApp и монтирование
         blogContainer.innerHTML = `<blog-announces q="year=${year}&page=${page}"></blog-announces>`
       }
       

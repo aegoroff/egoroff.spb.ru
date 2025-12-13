@@ -63,7 +63,6 @@ export default defineComponent({
         const result = await apiService.getPosts<Post>(query)
         posts.value = result.result
         
-        // Создаем и монтируем пагинатор
         const pagerElement = document.getElementById('blogPager')
         if (pagerElement) {
           const vueApp = createApp({

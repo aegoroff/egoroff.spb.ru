@@ -14,8 +14,6 @@
 
 <script lang="ts">
 import { defineComponent, PropType, ref, onMounted } from 'vue'
-import BlogAnnounces from '@/components/BlogAnnounces.vue'
-import BlogTitle from '@/components/BlogTitle.vue'
 import { emitter } from '@/main'
 
 export class Tag {
