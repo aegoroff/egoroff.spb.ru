@@ -54,7 +54,7 @@
 <script lang="ts">
 import { defineComponent, ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import ApiService, { Query } from '@/services/ApiService.vue'
+import ApiService, { Query } from '@/services/ApiService'
 import AppIcon from '@/components/AppIcon.vue'
 import { emitter } from '@/main'
 import EditDownload, { Download } from '@/components/admin/EditDownload.vue'

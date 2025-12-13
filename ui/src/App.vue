@@ -9,7 +9,7 @@
 <script lang="ts">
 import { defineComponent, ref, onMounted } from 'vue'
 import Navigation, { Section } from '@/components/Navigation.vue'
-import ApiService, { User as ApiUser, Nav } from '@/services/ApiService.vue'
+import ApiService, { User as ApiUser } from '@/services/ApiService'
 import Breadcrumbs from '@/components/Breadcrumbs.vue'
 
 export default defineComponent({

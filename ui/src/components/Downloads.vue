@@ -23,7 +23,7 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted } from 'vue'
-import ApiService from '@/services/ApiService.vue'
+import ApiService from '@/services/ApiService'
 
 export class Downloadable {
   public Title!: string

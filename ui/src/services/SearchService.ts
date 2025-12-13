@@ -1,4 +1,5 @@
-<script lang="ts">
+// Переименуйте файл из SearchService.vue в SearchService.ts
+
 import axios from 'axios'
 import { toQuery } from '@/util'
 
@@ -117,10 +118,8 @@ export class SearchQuery {
   public start!: number
 }
 
-export default class SearchService {
+class SearchService {
   public async search (q?: SearchQuery): Promise<GoogleSearch> {
-    // В Vue 3 нет глобального $Progress, нужно использовать альтернативы
-    // или удалить прогресс-бар для поиска
     try {
       const response = await axios.get<GoogleSearch>(`https://www.googleapis.com/customsearch/v1${toQuery(q)}`)
       return response.data
@@ -130,4 +129,5 @@ export default class SearchService {
     }
   }
 }
-</script>
+
+export default SearchService

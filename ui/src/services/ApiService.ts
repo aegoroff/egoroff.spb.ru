@@ -1,4 +1,5 @@
-<script lang="ts">
+// Переименуйте файл из ApiService.vue в ApiService.ts
+
 import axios from 'axios'
 import { Section } from '../components/Navigation.vue'
 import { Archive } from '@/components/BlogNavigation.vue'
@@ -17,12 +18,12 @@ export class ApiResult<T> {
 }
 
 export class Query {
-  public limit!: string
-  public offset!: string
-  public tag!: string
-  public year!: string
-  public month!: string
-  public page!: string
+  public limit: string = '10'
+  public offset: string = '0'
+  public tag: string = ''
+  public year: string = ''
+  public month: string = ''
+  public page: string = '1'
 }
 
 export class Nav {
@@ -37,7 +38,7 @@ export class User {
   public admin!: boolean
 }
 
-export default class ApiService {
+class ApiService {
   public getNavigation (): Nav {
     const navigation = new Nav()
     navigation.sections = []
@@ -176,4 +177,5 @@ export default class ApiService {
     }
   }
 }
-</script>
+
+export default ApiService

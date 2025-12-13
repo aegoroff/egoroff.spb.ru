@@ -28,6 +28,7 @@ import BlogNavigation from '@/components/BlogNavigation.vue'
 
 import './App.scss'
 import 'bootstrap/dist/css/bootstrap.min.css'
+import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 import BlogAnnounces from '@/components/BlogAnnounces.vue'
 import BlogTitle from '@/components/BlogTitle.vue'
 import Search from '@/views/Search.vue'
@@ -44,8 +45,7 @@ import 'vue-highlight.js/lib/allLanguages'
 import 'highlight.js/styles/googlecode.css'
 import Highlighter from '@/components/Highlighter.vue'
 import Alert from '@/components/Alert.vue'
-import { createRouter, createWebHashHistory } from 'vue-router'
-import routes from '@/router'
+import router from '@/router' // Импортируем готовый роутер
 import Downloads from '@/components/Downloads.vue'
 import { createPinia } from 'pinia'
 import mitt from 'mitt'
@@ -200,8 +200,8 @@ const icons = document.querySelectorAll('i.icon[data-label]')
 icons.forEach(x => {
   const label = x.getAttribute('data-label')
   const type = x.getAttribute('datatype')
-  const icon = label === null ? '' : label.value
-  const lib = type === null ? '' : type.value
+  const icon = label || ''
+  const lib = type || ''
   
   const vueApp = createApp({
     render() {
@@ -218,7 +218,7 @@ icons.forEach(x => {
 const dates = document.querySelectorAll('span.date[data-label]')
 dates.forEach(x => {
   const label = x.getAttribute('data-label')
-  const fmt = label === null ? 'LL' : label.value
+  const fmt = label || 'LL'
   
   if (fmt === 'from-now') {
     const vueApp = createApp({
@@ -280,7 +280,7 @@ snippets.forEach(x => {
 const alerts = document.querySelectorAll('.alert')
 alerts.forEach(x => {
   const type = x.getAttribute('data-label')
-  const alert = type === null ? 'success' : type.value
+  const alert = type || 'success'
   
   const vueApp = createApp({
     render() {
@@ -295,13 +295,8 @@ alerts.forEach(x => {
 
 const adminApp = document.getElementById('admin')
 if (adminApp) {
-  const router = createRouter({
-    history: createWebHashHistory(),
-    routes
-  })
-  
   const vueApp = createApp(AdminApp)
-  vueApp.use(router)
+  vueApp.use(router) // Используем готовый роутер
   vueApp.component('font-awesome-icon', FontAwesomeIcon)
   vueApp.mount('#admin')
 }

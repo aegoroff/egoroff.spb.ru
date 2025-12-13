@@ -31,7 +31,7 @@
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
-import ApiService from '@/services/ApiService.vue'
+import ApiService from '@/services/ApiService'
 import { emitter } from '@/main'
 import { Download } from './EditDownload.vue'
 

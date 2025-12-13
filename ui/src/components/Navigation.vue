@@ -61,7 +61,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
-import { User } from '@/services/ApiService.vue'
+import { User } from '@/services/ApiService'
 
 export class Section {
   public id!: string

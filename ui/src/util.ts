@@ -1,5 +1,5 @@
-import { Query } from '@/services/ApiService.vue'
-import { SearchQuery } from '@/services/SearchService.vue'
+import { Query } from '@/services/ApiService'
+import { SearchQuery } from '@/services/SearchService'
 
 export function removeHash (): void {
   history.pushState('', document.title, window.location.pathname + window.location.search)

@@ -17,7 +17,7 @@
 <script lang="ts">
 import { defineComponent, PropType, ref, onMounted, createApp, h } from 'vue'
 import DateFormatter from '@/components/DateFomatter.vue'
-import ApiService, { Query } from '@/services/ApiService.vue'
+import ApiService, { Query } from '@/services/ApiService'
 import BlogPagination from '@/components/BlogPagination.vue'
 
 export class Post {

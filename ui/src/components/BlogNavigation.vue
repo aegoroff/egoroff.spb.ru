@@ -23,7 +23,7 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted } from 'vue'
-import ApiService from '@/services/ApiService.vue'
+import ApiService from '@/services/ApiService'
 import Tags, { Tag } from '@/components/Tags.vue'
 import Chrono, { Year } from '@/components/Chrono.vue'
 

@@ -12,7 +12,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
-import { SearchResult } from '@/services/SearchService.vue'
+import { SearchResult } from '@/services/SearchService'
 
 export default defineComponent({
   name: 'SearchResulter',

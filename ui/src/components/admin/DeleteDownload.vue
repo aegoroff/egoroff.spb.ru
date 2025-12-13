@@ -20,7 +20,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
-import ApiService from '@/services/ApiService.vue'
+import ApiService from '@/services/ApiService'
 import { emitter } from '@/main'
 
 export default defineComponent({

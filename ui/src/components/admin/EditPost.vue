@@ -68,7 +68,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType, computed } from 'vue'
-import ApiService from '@/services/ApiService.vue'
+import ApiService from '@/services/ApiService'
 
 export class Post {
   public Created!: string

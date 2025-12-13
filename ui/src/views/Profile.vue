@@ -62,7 +62,7 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted } from 'vue'
-import ApiService from '@/services/ApiService.vue'
+import ApiService from '@/services/ApiService'
 import AppIcon from '@/components/AppIcon.vue'
 
 export class FullUserInfo {

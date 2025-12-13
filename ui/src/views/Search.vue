@@ -46,7 +46,7 @@
 
 <script lang="ts">
 import { defineComponent, ref, computed, onMounted } from 'vue'
-import SearchService, { GoogleSearch, SearchQuery } from '@/services/SearchService.vue'
+import SearchService, { GoogleSearch, SearchQuery } from '@/services/SearchService'
 import SearchResulter from '@/components/SearchResulter.vue'
 import { removeHash } from '@/util'
 
