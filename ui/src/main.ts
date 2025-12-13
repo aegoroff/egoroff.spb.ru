@@ -1,6 +1,6 @@
 import { createApp, h } from 'vue'
 import Vue3Filters from 'vue3-filters'
-import { Vue3Highlightjs } from 'vue3-highlightjs'
+import Vue3Highlightjs from 'vue3-highlightjs'
 import VueSocialSharing from 'vue3-social-sharing'
 import App from './App.vue'
 import AdminApp from './AdminApp.vue'
@@ -77,6 +77,7 @@ if (appElement) {
   vueApp.component('Downloads', Downloads)
   vueApp.component('Search', Search)
   vueApp.component('Profile', Profile)
+  vueApp.component('highlightjs', Vue3Highlightjs)
 
   vueApp.use(pinia)
   vueApp.use(Vue3Filters, {})
@@ -97,7 +98,6 @@ const progressBarOptions = {
 
   vueApp.use(Vue3ProgressPlugin, progressBarOptions)
   vueApp.use(VueSocialSharing)
-  vueApp.use(Vue3Highlightjs)
 
   vueApp.config.globalProperties.emitter = emitter
   vueApp.mount('#app')
