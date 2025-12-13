@@ -1,5 +1,5 @@
 import { createApp, h } from 'vue'
-import Vue2Filters from 'vue2-filters'
+import Vue3Filters from 'vue3-filters'
 import { Vue3Highlightjs } from 'vue3-highlightjs'
 import 'highlight.js/styles/googlecode.css'
 import VueSocialSharing from 'vue-social-sharing'
@@ -43,7 +43,7 @@ import Social from '@/components/Social.vue'
 import 'highlight.js/styles/googlecode.css'
 import Highlighter from '@/components/Highlighter.vue'
 import Alert from '@/components/Alert.vue'
-import router from '@/router' // Импортируем готовый роутер
+import router from '@/router'
 import Downloads from '@/components/Downloads.vue'
 import { createPinia } from 'pinia'
 import mitt from 'mitt'
@@ -51,10 +51,8 @@ import mitt from 'mitt'
 library.add(faBook, faBriefcase, faSearch, faHome, faUser, faCalendarAlt, faDownload, faSignInAlt, faSignOutAlt, faTools, faTrashAlt)
 library.add(faGoogle, faGithub, faVk, faYandex)
 
-// Создаем Pinia store
 const pinia = createPinia()
 
-// Создаем event bus
 export const emitter = mitt()
 
 const appElement = document.getElementById('app')
@@ -66,8 +64,7 @@ if (appElement) {
       return h(App, { title: t || '' })
     }
   })
-  
-  // Регистрируем глобальные компоненты
+
   vueApp.component('font-awesome-icon', FontAwesomeIcon)
   vueApp.component('AppIcon', AppIcon)
   vueApp.component('DateFormatter', DateFormatter)
@@ -81,12 +78,10 @@ if (appElement) {
   vueApp.component('Downloads', Downloads)
   vueApp.component('Search', Search)
   vueApp.component('Profile', Profile)
-  
-  // Используем плагины
+
   vueApp.use(pinia)
-  vueApp.use(Vue2Filters)
-  
-  // VueProgressBar конфигурация
+  vueApp.use(Vue3Filters, {})
+
 const progressBarOptions = {
   color: '#bffaf3',
   failedColor: '#874b4b',
@@ -100,18 +95,15 @@ const progressBarOptions = {
   location: 'top',
   inverse: false
 }
- 
+
   vueApp.use(Vue3ProgressPlugin, progressBarOptions)
   vueApp.use(VueSocialSharing)
   vueApp.use(Vue3Highlightjs)
-  
-  // Добавляем event bus в глобальные свойства
+
   vueApp.config.globalProperties.emitter = emitter
-  
   vueApp.mount('#app')
 }
 
-// Монтируем отдельные компоненты
 const blogNavigationElement = document.getElementById('blogNavigation')
 if (blogNavigationElement) {
   const vueApp = createApp(BlogNavigation)
@@ -148,7 +140,7 @@ if (siteSearchElement) {
   const cx = siteSearchElement.getAttribute('datafld')
   const urlParams = new URLSearchParams(window.location.search)
   const q = urlParams.get('q')
-  
+
   const vueApp = createApp({
     render() {
       return h(Search, {
@@ -172,7 +164,7 @@ if (userProfileElement) {
 
 if (document.getElementById('blogcontainer') && window.location.hash) {
   const hash = window.location.hash.substring(1)
-  
+
   const vueApp = createApp({
     render() {
       return h(BlogAnnounces, { q: hash })
@@ -181,7 +173,7 @@ if (document.getElementById('blogcontainer') && window.location.hash) {
   vueApp.component('DateFormatter', DateFormatter)
   vueApp.component('font-awesome-icon', FontAwesomeIcon)
   vueApp.mount('#blogcontainer')
-  
+
   const blogTitleElement = document.getElementById('blogSmallTitle')
   if (blogTitleElement) {
     const e = hash.split('=')
@@ -200,7 +192,7 @@ icons.forEach(x => {
   const type = x.getAttribute('datatype')
   const icon = label || ''
   const lib = type || ''
-  
+
   const vueApp = createApp({
     render() {
       return h(AppIcon, {
@@ -217,7 +209,7 @@ const dates = document.querySelectorAll('span.date[data-label]')
 dates.forEach(x => {
   const label = x.getAttribute('data-label')
   const fmt = label || 'LL'
-  
+
   if (fmt === 'from-now') {
     const vueApp = createApp({
       render() {
@@ -257,7 +249,7 @@ function mountHighlighting (prefix: string, x: Element): void {
   }
   const lang = x.className.replace(prefix, '')
     .replace(';', '')
-    
+
   const vueApp = createApp({
     render() {
       return h(Highlighter, {
@@ -279,7 +271,7 @@ const alerts = document.querySelectorAll('.alert')
 alerts.forEach(x => {
   const type = x.getAttribute('data-label')
   const alert = type || 'success'
-  
+
   const vueApp = createApp({
     render() {
       return h(Alert, {
@@ -294,7 +286,7 @@ alerts.forEach(x => {
 const adminApp = document.getElementById('admin')
 if (adminApp) {
   const vueApp = createApp(AdminApp)
-  vueApp.use(router) // Используем готовый роутер
+  vueApp.use(router)
   vueApp.component('font-awesome-icon', FontAwesomeIcon)
   vueApp.mount('#admin')
 }

@@ -7,6 +7,7 @@ $breadcrumb-divider: "→";
 // Импортируйте только Bootstrap (порядок важен)
 // Сначала определите кастомные переменные, потом импортируйте Bootstrap
 @import '~bootstrap/scss/bootstrap';
+@import "@marcoschulte/vue3-progress/style";
 
 $footer-height: ($spacer);
 

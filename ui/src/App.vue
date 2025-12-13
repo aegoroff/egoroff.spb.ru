@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <vue-progress-bar></vue-progress-bar>
+    <vue3-progress-bar></vue3-progress-bar>
     <Navigation :navigation="navigation" :user="user"/>
     <Breadcrumbs :breadcrumbs="breadcrumbs" :title="title"/>
   </div>
@@ -28,15 +28,13 @@ export default defineComponent({
     const navigation = ref<Array<Section>>([])
     const breadcrumbs = ref<Array<Section>>([])
     const user = ref<ApiUser | null>(null)
-    
+
     onMounted(async () => {
-      // Инициализация навигации
       const apiService = new ApiService()
       const nav = apiService.getNavigation()
       navigation.value = nav.sections
       breadcrumbs.value = nav.breadcrumbs
-      
-      // Получение информации о пользователе
+
       try {
         const userData = await apiService.getUser()
         user.value = userData
@@ -44,7 +42,7 @@ export default defineComponent({
         console.error('Failed to fetch user:', error)
       }
     })
-    
+
     return {
       navigation,
       breadcrumbs,

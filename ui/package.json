@@ -30,7 +30,7 @@
     "vue-router": "^4.6.4",
     "vue-social-sharing": "^3.0.9",
     "vue-typescript-inject": "^0.3.1",
-    "vue2-filters": "^0.14.0",
+    "vue3-filters": "^3.0.1",
     "vue3-highlightjs": "^1.0.5"
   },
   "devDependencies": {
