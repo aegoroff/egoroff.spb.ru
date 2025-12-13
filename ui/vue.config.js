@@ -5,5 +5,19 @@ module.exports = {
   lintOnSave: false,
   transpileDependencies: true,
   outputDir: '../static/dist/',
-  productionSourceMap: false
+  productionSourceMap: false,
+  configureWebpack: {
+    module: {
+      rules: [
+        {
+          test: /\.tsx?$/,
+          loader: 'esbuild-loader',
+          options: {
+            loader: 'ts',
+            target: 'es2020'
+          }
+        }
+      ]
+    }
+  }
 }

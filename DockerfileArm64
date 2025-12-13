@@ -1,12 +1,12 @@
 # docker image build --tag egoroff/egoroff .
 
 # build UI
-FROM --platform=$BUILDPLATFORM node:lts-slim AS node-build
+FROM --platform=$BUILDPLATFORM oven/bun:1 AS node-build
 WORKDIR /app
 COPY ui/package.json .
 COPY ui/public/ ./public/
 RUN ls -lah ./public
-RUN npm i -f
+RUN bun install
 COPY ui/src/ ./src/
 COPY static/img/ /static/img/
 COPY static/map.json /static/
@@ -14,8 +14,8 @@ COPY static/config.json /static/
 COPY static/robots.txt /static/
 COPY ui/vue.config.js ./
 COPY ui/tsconfig.json ./
-COPY ui/babel.config.js ./
-RUN npm run build
+COPY ui/bun.lock ./
+RUN bun run build
 
 # Build service
 FROM --platform=$BUILDPLATFORM ghcr.io/rust-cross/rust-musl-cross:aarch64-musl AS rust-build
