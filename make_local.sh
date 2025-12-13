@@ -13,7 +13,7 @@ base_path=./home
 
 (
   cd ./ui/
-  npm run build
+  bun run build
 )
 
 mkdir "$base_path"
