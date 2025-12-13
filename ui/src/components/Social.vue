@@ -1,14 +1,17 @@
 <template>
   <div>
-    <ShareNetwork class="btn btn-sm" v-for="net in networks" :key="net" :network="net" :url="url"
-                  :title="title">
+    <!-- Замените ShareNetwork на обычные ссылки -->
+    <a v-for="net in networks" :key="net" 
+       :href="getShareUrl(net)" 
+       class="btn btn-sm" 
+       target="_blank">
       <font-awesome-icon :icon="['fab', net]"></font-awesome-icon>
-    </ShareNetwork>
+    </a>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref, onMounted } from 'vue'
+import { defineComponent, PropType } from 'vue'
 
 export default defineComponent({
   name: 'Social',
@@ -22,15 +25,32 @@ export default defineComponent({
       required: true
     }
   },
-  setup() {
-    const networks = ref<string[]>([])
+  setup(props) {
+    const networks = ['vk', 'telegram', 'whatsapp']
     
-    onMounted(() => {
-      networks.value = ['vk']
-    })
+    const getShareUrl = (network: string): string => {
+      const encodedUrl = encodeURIComponent(props.url)
+      const encodedTitle = encodeURIComponent(props.title)
+      
+      switch(network) {
+        case 'vk':
+          return `https://vk.com/share.php?url=${encodedUrl}&title=${encodedTitle}`
+        case 'telegram':
+          return `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}`
+        case 'whatsapp':
+          return `https://api.whatsapp.com/send?text=${encodedTitle}%20${encodedUrl}`
+        case 'facebook':
+          return `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`
+        case 'twitter':
+          return `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`
+        default:
+          return '#'
+      }
+    }
     
     return {
-      networks
+      networks,
+      getShareUrl
     }
   }
 })

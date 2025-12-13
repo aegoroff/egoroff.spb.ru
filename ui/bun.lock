@@ -24,10 +24,10 @@
         "vue-class-component": "^7.2.6",
         "vue-property-decorator": "^9.1.2",
         "vue-router": "^4.6.4",
-        "vue-social-sharing": "^3.0.9",
         "vue-typescript-inject": "^0.3.1",
         "vue3-filters": "^3.0.1",
         "vue3-highlightjs": "^1.0.5",
+        "vue3-social-sharing": "^1.4.1",
       },
       "devDependencies": {
         "@typescript-eslint/eslint-plugin": "^8.49.0",
@@ -1929,8 +1929,6 @@
 
     "vue-router": ["vue-router@4.6.4", "", { "dependencies": { "@vue/devtools-api": "^6.6.4" }, "peerDependencies": { "vue": "^3.5.0" } }, "sha512-Hz9q5sa33Yhduglwz6g9skT8OBPii+4bFn88w6J+J4MfEo4KRRpmiNG/hHHkdbRFlLBOqxN8y8gf2Fb0MTUgVg=="],
 
-    "vue-social-sharing": ["vue-social-sharing@3.0.9", "", { "peerDependencies": { "vue": "^2.6.10" } }, "sha512-Yg4oz5cSkr7ieMAgumwoRLnFhAaoUGCsN8lZE9yUkuQzbKid8yBOn4mLjfx/DA/E8nxYjunAfIUFs7eKIkBjPA=="],
-
     "vue-style-loader": ["vue-style-loader@4.1.3", "", { "dependencies": { "hash-sum": "^1.0.2", "loader-utils": "^1.0.2" } }, "sha512-sFuh0xfbtpRlKfm39ss/ikqs9AbKCoXZBpHeVZ8Tx650o0k0q/YCM7FRvigtxpACezfq6af+a7JeqVTWvncqDg=="],
 
     "vue-template-compiler": ["vue-template-compiler@2.7.16", "", { "dependencies": { "de-indent": "^1.0.2", "he": "^1.2.0" } }, "sha512-AYbUWAJHLGGQM7+cNTELw+KsOG9nl2CnSv467WobS5Cv9uk3wFcnr1Etsz2sEIHEZvw1U+o9mRlEO6QbZvUPGQ=="],
@@ -1944,6 +1942,8 @@
     "vue3-filters": ["vue3-filters@3.0.1", "", {}, "sha512-mW/bFaOk2R525WDLM012bIga+n/M2Up8FPRs7Tfoe5hmZ817VLCeFY0Rw1njY8I3lxyh3lwK3Ahe5gCrwRsNtg=="],
 
     "vue3-highlightjs": ["vue3-highlightjs@1.0.5", "", { "dependencies": { "highlight.js": "^10.3.2" }, "peerDependencies": { "vue": "^3.0.0" } }, "sha512-Q4YNPXu0X5VMBnwPVOk+IQf1Ohp9jFdMitEAmzaz8qVVefcQpN6Dx4BnDGKxja3TLDVF+EgL136wC8YzmoCX9w=="],
+
+    "vue3-social-sharing": ["vue3-social-sharing@1.4.1", "", { "dependencies": { "vue": "^3.3.11" } }, "sha512-VzH3iSxvszb4628k4ZrGgQOAAXMLX0B+QJJvChdZqaiXNsW5LGoBSr2Xd2sXcGfiSwmVgcerfa+/HLM++Mozng=="],
 
     "watchpack": ["watchpack@2.4.4", "", { "dependencies": { "glob-to-regexp": "^0.4.1", "graceful-fs": "^4.1.2" } }, "sha512-c5EGNOiyxxV5qmTtAB7rbiXxi1ooX1pQKMLX/MIabJjRA0SJBQOjKF+KSVfHkr9U1cADPon0mRiVe/riyaiDUA=="],
 

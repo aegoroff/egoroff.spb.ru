@@ -28,10 +28,10 @@
     "vue-class-component": "^7.2.6",
     "vue-property-decorator": "^9.1.2",
     "vue-router": "^4.6.4",
-    "vue-social-sharing": "^3.0.9",
     "vue-typescript-inject": "^0.3.1",
     "vue3-filters": "^3.0.1",
-    "vue3-highlightjs": "^1.0.5"
+    "vue3-highlightjs": "^1.0.5",
+    "vue3-social-sharing": "^1.4.1"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.49.0",
