@@ -1,17 +1,23 @@
 <template>
   <nav>
-    <b-nav vertical pills>
-      <b-nav-item to="/posts" active-class="active">Блог</b-nav-item>
-      <b-nav-item to="/downloads" active-class="active">Загрузки</b-nav-item>
-      <b-nav-item to="/users" active-class="active">Пользователи</b-nav-item>
-    </b-nav>
+    <ul class="nav nav-pills flex-column">
+      <li class="nav-item">
+        <router-link class="nav-link" :class="{ active: $route.path.startsWith('/posts') }" to="/posts">Блог</router-link>
+      </li>
+      <li class="nav-item">
+        <router-link class="nav-link" :class="{ active: $route.path.startsWith('/downloads') }" to="/downloads">Загрузки</router-link>
+      </li>
+      <li class="nav-item">
+        <router-link class="nav-link" :class="{ active: $route.path.startsWith('/users') }" to="/users">Пользователи</router-link>
+      </li>
+    </ul>
   </nav>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 
-@Component
-export default class MainMenu extends Vue {
-}
+export default defineComponent({
+  name: 'MainMenu'
+})
 </script>

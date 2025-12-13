@@ -4,24 +4,28 @@
 
 <script lang="ts">
 import moment from 'moment'
-import { Component, Prop, Vue } from 'vue-property-decorator'
+import { defineComponent, PropType } from 'vue'
 
-@Component
-export default class DateFormatter extends Vue {
-  @Prop({
-    type: String,
-    required: true
-  })
-  public date!: string
-
-  @Prop({
-    type: String,
-    required: true
-  })
-  public formatStr!: string
-
-  format (): string {
-    return moment(this.date).locale('ru').format(this.formatStr)
+export default defineComponent({
+  name: 'DateFormatter',
+  props: {
+    date: {
+      type: String as PropType<string>,
+      required: true
+    },
+    formatStr: {
+      type: String as PropType<string>,
+      required: true
+    }
+  },
+  setup(props) {
+    const format = (): string => {
+      return moment(props.date).locale('ru').format(props.formatStr)
+    }
+    
+    return {
+      format
+    }
   }
-}
+})
 </script>

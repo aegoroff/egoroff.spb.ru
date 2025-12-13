@@ -1,27 +1,57 @@
 <template>
-  <b-modal scrollable id="delete-download" title="Удалить загрузку" @ok="onOk">
-    <p class="my-4">Действительно удалить загрузку?</p>
-  </b-modal>
+  <div class="modal fade" id="delete-download" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Удалить загрузку</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="my-4">Действительно удалить загрузку?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+          <button type="button" class="btn btn-danger" @click="onOk">Удалить</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator'
+import { defineComponent, PropType } from 'vue'
 import ApiService from '@/services/ApiService.vue'
-import { inject } from 'vue-typescript-inject'
-import { bus } from '@/main'
+import { emitter } from '@/main'
 
-@Component({
-  providers: [ApiService]
-})
-export default class DeleteDownload extends Vue {
-  @Prop() private downloadId!: number
-  @inject() private api!: ApiService
-
-  onOk (): void {
-    this.api.deleteDownload(this.downloadId)
-    bus.$emit('downloadDeleted')
+export default defineComponent({
+  name: 'DeleteDownload',
+  props: {
+    downloadId: {
+      type: Number as PropType<number>,
+      required: true
+    }
+  },
+  setup(props) {
+    const onOk = (): void => {
+      const apiService = new ApiService()
+      apiService.deleteDownload(props.downloadId)
+      emitter.emit('downloadDeleted')
+      
+      // Закрываем модальное окно
+      const modalElement = document.getElementById('delete-download')
+      if (modalElement) {
+        const modal = bootstrap.Modal.getInstance(modalElement)
+        if (modal) {
+          modal.hide()
+        }
+      }
+    }
+    
+    return {
+      onOk
+    }
   }
-}
+})
 </script>
 
 <style scoped>

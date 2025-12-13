@@ -1,8 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import { Query } from '@/services/ApiService.vue'
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import { SearchQuery } from '@/services/SearchService.vue'
 
 export function removeHash (): void {
@@ -18,8 +14,10 @@ export function toQuery (q?: Query | SearchQuery): string {
     if (str !== '?') {
       str += '&'
     }
-    const v = Reflect.get(q, key)
-    str += key + '=' + encodeURIComponent(v)
+    const v = (q as any)[key]
+    if (v !== undefined && v !== null) {
+      str += key + '=' + encodeURIComponent(v)
+    }
   }
-  return str
+  return str === '?' ? '' : str
 }

@@ -1,24 +1,37 @@
 <template>
   <div>
-    <ShareNetwork class="btn btn-sm" v-for="net in networks" :key="net" v-bind:network="net" v-bind:url="url"
-                  v-bind:title="title">
-      <font-awesome-icon v-bind:icon="['fab', net]"></font-awesome-icon>
+    <ShareNetwork class="btn btn-sm" v-for="net in networks" :key="net" :network="net" :url="url"
+                  :title="title">
+      <font-awesome-icon :icon="['fab', net]"></font-awesome-icon>
     </ShareNetwork>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator'
+import { defineComponent, PropType, ref, onMounted } from 'vue'
 
-@Component
-export default class Social extends Vue {
-  @Prop() private url!: string
-  @Prop() private title!: string
-  @Prop() private networks!: Array<string>
-
-  mounted (): void {
-    this.networks = new Array<string>()
-    this.networks.push('vk')
+export default defineComponent({
+  name: 'Social',
+  props: {
+    url: {
+      type: String as PropType<string>,
+      required: true
+    },
+    title: {
+      type: String as PropType<string>,
+      required: true
+    }
+  },
+  setup() {
+    const networks = ref<string[]>([])
+    
+    onMounted(() => {
+      networks.value = ['vk']
+    })
+    
+    return {
+      networks
+    }
   }
-}
+})
 </script>

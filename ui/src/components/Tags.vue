@@ -3,84 +3,94 @@
     <ul class="list-inline">
       <li class="list-inline-item" v-for="tag in tags" :key="tag.title">
         <a
-          v-bind:href="`/blog/#tag=${tag.title}`"
-          v-bind:class="[currentTag === tag.title ? `btn btn-outline-dark ${tagClass(tag.level)}` : tagClass(tag.level)]"
-          v-on:click="update(tag.title, 1)"
-          v-bind:id="`t_${tag.title}`">{{ tag.title }}</a>
+          :href="`/blog/#tag=${tag.title}`"
+          :class="[currentTag === tag.title ? `btn btn-outline-dark ${tagClass(tag.level)}` : tagClass(tag.level)]"
+          @click.prevent="update(tag.title, 1)"
+          :id="`t_${tag.title}`">{{ tag.title }}</a>
       </li>
     </ul>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator'
+import { defineComponent, PropType, ref, onMounted } from 'vue'
 import BlogAnnounces from '@/components/BlogAnnounces.vue'
 import BlogTitle from '@/components/BlogTitle.vue'
-import { bus } from '@/main'
+import { emitter } from '@/main'
 
 export class Tag {
   public title!: string
   public level!: number
 }
 
-@Component
-export default class Tags extends Vue {
-  @Prop() private tags!: Array<Tag>
-  @Prop() private currentTag!: string
-  private tagsClasses: { [key: number]: string } = {
-    0: 'tagRank10',
-    1: 'tagRank9',
-    2: 'tagRank8',
-    3: 'tagRank7',
-    4: 'tagRank6',
-    5: 'tagRank5',
-    6: 'tagRank4',
-    7: 'tagRank3',
-    8: 'tagRank2',
-    10: 'tagRank1'
-  };
+export default defineComponent({
+  name: 'Tags',
+  props: {
+    tags: {
+      type: Array as PropType<Tag[]>,
+      required: true
+    }
+  },
+  setup(props) {
+    const currentTag = ref('')
+    const tagsClasses: Record<number, string> = {
+      0: 'tagRank10',
+      1: 'tagRank9',
+      2: 'tagRank8',
+      3: 'tagRank7',
+      4: 'tagRank6',
+      5: 'tagRank5',
+      6: 'tagRank4',
+      7: 'tagRank3',
+      8: 'tagRank2',
+      10: 'tagRank1'
+    }
 
-  created (): void {
-    bus.$on('pageChanged', (data: number) => {
-      const parts = window.location.hash.substring(1).split('&')
+    onMounted(() => {
+      emitter.on('pageChanged', (data: any) => {
+        const page = typeof data === 'number' ? data : 1
+        const parts = window.location.hash.substring(1).split('&')
 
-      for (const part of parts) {
-        const elts = part.split('=')
-        if (elts[0] === 'tag') {
-          this.update(elts[1], data)
-          return
+        for (const part of parts) {
+          const elts = part.split('=')
+          if (elts[0] === 'tag') {
+            update(elts[1], page)
+            return
+          }
         }
+      })
+
+      emitter.on('dateSelectionChanged', () => {
+        currentTag.value = ''
+      })
+    })
+
+    const tagClass = (ix: number): string => {
+      return tagsClasses[ix]
+    }
+
+    const update = (tag: string, page: number): void => {
+      emitter.emit('tagChanged', tag)
+      currentTag.value = tag
+      const blogContainer = document.getElementById('blogcontainer')
+      const blogTitle = document.getElementById('blogSmallTitle')
+      
+      if (blogContainer) {
+        blogContainer.innerHTML = `<blog-announces q="tag=${tag}&page=${page}"></blog-announces>`
       }
-    })
-
-    bus.$on('dateSelectionChanged', () => {
-      this.currentTag = ''
-    })
-  }
-
-  tagClass (ix: number): string {
-    return this.tagsClasses[ix]
-  }
-
-  update (tag: string, page: number): void {
-    bus.$emit('tagChanged', tag)
-    this.currentTag = tag
-    const ba = new BlogAnnounces({
-      propsData: {
-        q: `tag=${tag}&page=${page}`
+      
+      if (blogTitle) {
+        blogTitle.innerHTML = `<blog-title text="все посты по метке: ${tag}"></blog-title>`
       }
-    })
-    ba.$mount('#blogcontainer')
+    }
 
-    const bt = new BlogTitle({
-      propsData: {
-        text: `все посты по метке: ${tag}`
-      }
-    })
-    bt.$mount('#blogSmallTitle')
+    return {
+      currentTag,
+      tagClass,
+      update
+    }
   }
-}
-
+})
 </script>
 
 <style scoped lang="scss">

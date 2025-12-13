@@ -1,7 +1,7 @@
 declare module 'vue-progressbar' {
-  import { PluginFunction } from 'vue'
+  import { Plugin } from 'vue'
 
-  export const install: PluginFunction<unknown>
+  export const install: Plugin
 
   interface ProgressMethods {
     start(): void;
@@ -9,8 +9,8 @@ declare module 'vue-progressbar' {
     fail(): void;
   }
 
-  module 'vue/types/vue' {
-    interface Vue {
+  declare module '@vue/runtime-core' {
+    interface ComponentCustomProperties {
       $Progress: ProgressMethods;
     }
   }

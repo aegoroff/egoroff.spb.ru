@@ -3,11 +3,19 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator'
+import { defineComponent, PropType } from 'vue'
 
-@Component
-export default class Highlighter extends Vue {
-  @Prop() private lang!: string
-  @Prop() private content!: string
-}
+export default defineComponent({
+  name: 'Highlighter',
+  props: {
+    lang: {
+      type: String as PropType<string>,
+      required: true
+    },
+    content: {
+      type: String as PropType<string>,
+      required: true
+    }
+  }
+})
 </script>

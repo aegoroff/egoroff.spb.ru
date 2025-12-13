@@ -1,25 +1,25 @@
 <template>
   <i>
-    <font-awesome-icon v-if="!lib" v-bind:icon="icon"/>
-    <font-awesome-icon v-if="lib" v-bind:icon="[lib, icon]"/>
+    <font-awesome-icon v-if="!lib" :icon="icon"/>
+    <font-awesome-icon v-if="lib" :icon="[lib, icon]"/>
   </i>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator'
+import { defineComponent, PropType } from 'vue'
 
-@Component
-export default class AppIcon extends Vue {
-  @Prop({
-    type: String,
-    required: true
-  })
-  public icon!: string
-
-  @Prop({
-    type: String,
-    required: false
-  })
-  public lib!: string
-}
+export default defineComponent({
+  name: 'AppIcon',
+  props: {
+    icon: {
+      type: String as PropType<string>,
+      required: true
+    },
+    lib: {
+      type: String as PropType<string>,
+      required: false,
+      default: ''
+    }
+  }
+})
 </script>

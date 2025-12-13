@@ -4,18 +4,24 @@
 
 <script lang="ts">
 import moment from 'moment'
-import { Component, Prop, Vue } from 'vue-property-decorator'
+import { defineComponent, PropType } from 'vue'
 
-@Component
-export default class FromNow extends Vue {
-  @Prop({
-    type: String,
-    required: true
-  })
-  public date!: string
-
-  format (): string {
-    return moment(this.date).locale('ru').fromNow()
+export default defineComponent({
+  name: 'FromNow',
+  props: {
+    date: {
+      type: String as PropType<string>,
+      required: true
+    }
+  },
+  setup(props) {
+    const format = (): string => {
+      return moment(props.date).locale('ru').fromNow()
+    }
+    
+    return {
+      format
+    }
   }
-}
+})
 </script>

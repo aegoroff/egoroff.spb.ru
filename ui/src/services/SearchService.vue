@@ -1,7 +1,4 @@
 <script lang="ts">
-import 'reflect-metadata'
-import { injectable } from 'vue-typescript-inject'
-import { Vue } from 'vue-property-decorator'
 import axios from 'axios'
 import { toQuery } from '@/util'
 
@@ -77,7 +74,6 @@ export class Image {
 export class Label {
   public name!: string
   public displayName!: string
-  // eslint-disable-next-line camelcase
   public label_with_op!: string
 }
 
@@ -121,13 +117,17 @@ export class SearchQuery {
   public start!: number
 }
 
-@injectable()
-export default class SearchService extends Vue {
+export default class SearchService {
   public async search (q?: SearchQuery): Promise<GoogleSearch> {
-    this.$Progress.start()
-    return await axios.get<GoogleSearch>(`https://www.googleapis.com/customsearch/v1${toQuery(q)}`).then((r: any) => {
-      return r.data
-    }).finally(() => this.$Progress.finish())
+    // В Vue 3 нет глобального $Progress, нужно использовать альтернативы
+    // или удалить прогресс-бар для поиска
+    try {
+      const response = await axios.get<GoogleSearch>(`https://www.googleapis.com/customsearch/v1${toQuery(q)}`)
+      return response.data
+    } catch (error) {
+      console.error('Search request failed:', error)
+      throw error
+    }
   }
 }
 </script>

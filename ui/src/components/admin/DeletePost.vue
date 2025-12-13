@@ -1,27 +1,57 @@
 <template>
-  <b-modal scrollable id="delete-post" title="Удалить пост" @ok="onOk">
-    <p class="my-4">Действительно удалить пост?</p>
-  </b-modal>
+  <div class="modal fade" id="delete-post" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Удалить пост</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="my-4">Действительно удалить пост?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+          <button type="button" class="btn btn-danger" @click="onOk">Удалить</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator'
+import { defineComponent, PropType } from 'vue'
 import ApiService from '@/services/ApiService.vue'
-import { inject } from 'vue-typescript-inject'
-import { bus } from '@/main'
+import { emitter } from '@/main'
 
-@Component({
-  providers: [ApiService]
-})
-export default class DeletePost extends Vue {
-  @Prop() private postId!: number
-  @inject() private api!: ApiService
-
-  onOk (): void {
-    this.api.deletePost(this.postId)
-    bus.$emit('postDeleted')
+export default defineComponent({
+  name: 'DeletePost',
+  props: {
+    postId: {
+      type: Number as PropType<number>,
+      required: true
+    }
+  },
+  setup(props) {
+    const onOk = (): void => {
+      const apiService = new ApiService()
+      apiService.deletePost(props.postId)
+      emitter.emit('postDeleted')
+      
+      // Закрываем модальное окно
+      const modalElement = document.getElementById('delete-post')
+      if (modalElement) {
+        const modal = bootstrap.Modal.getInstance(modalElement)
+        if (modal) {
+          modal.hide()
+        }
+      }
+    }
+    
+    return {
+      onOk
+    }
   }
-}
+})
 </script>
 
 <style scoped>
