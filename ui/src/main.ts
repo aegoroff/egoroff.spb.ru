@@ -1,7 +1,6 @@
 import { createApp, h } from 'vue'
 import Vue3Filters from 'vue3-filters'
 import { Vue3Highlightjs } from 'vue3-highlightjs'
-import 'highlight.js/styles/googlecode.css'
 import VueSocialSharing from 'vue3-social-sharing'
 import App from './App.vue'
 import AdminApp from './AdminApp.vue'
@@ -40,7 +39,7 @@ import Social from '@/components/Social.vue'
 * Import Highlight.js theme
 * Find more: https://highlightjs.org/static/demo/
 */
-import 'highlight.js/styles/googlecode.css'
+import 'highlight.js/styles/github.css'
 import Highlighter from '@/components/Highlighter.vue'
 import Alert from '@/components/Alert.vue'
 import router from '@/router'

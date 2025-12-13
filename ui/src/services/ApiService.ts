@@ -16,12 +16,12 @@ export class ApiResult<T> {
 }
 
 export class Query {
-  public limit: string = '10'
-  public offset: string = '0'
-  public tag: string = ''
-  public year: string = ''
-  public month: string = ''
-  public page: string = '1'
+  public limit!: string
+  public offset!: string
+  public tag!: string
+  public year!: string
+  public month!: string
+  public page!: string
 }
 
 export class Nav {
