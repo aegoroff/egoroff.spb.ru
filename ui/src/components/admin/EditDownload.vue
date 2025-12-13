@@ -49,7 +49,7 @@ export default defineComponent({
       // Закрываем модальное окно
       const modalElement = document.getElementById('edit-download')
       if (modalElement) {
-        const modal = bootstrap.Modal.getInstance(modalElement)
+        const modal = (window as any).bootstrap.Modal.getInstance(modalElement)
         if (modal) {
           modal.hide()
         }

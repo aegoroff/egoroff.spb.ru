@@ -9,7 +9,7 @@
           <span itemprop="name">{{ post.id }}&nbsp;|&nbsp;{{ post.Title }}</span>
         </a>
       </dt>
-      <dd itemprop="description" v-html="post.ShortText">{{ post.ShortText }}</dd>
+      <dd itemprop="description" v-html="post.ShortText"></dd>
     </div>
   </dl>
 </template>

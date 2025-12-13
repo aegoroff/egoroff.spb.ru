@@ -1,6 +1,7 @@
 import { createApp, h } from 'vue'
 import Vue2Filters from 'vue2-filters'
-import VueHighlightJS from 'vue-highlight.js'
+import { Vue3Highlightjs } from 'vue3-highlightjs'
+import 'highlight.js/styles/googlecode.css'
 import VueSocialSharing from 'vue-social-sharing'
 import App from './App.vue'
 import AdminApp from './AdminApp.vue'
@@ -20,7 +21,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import { faGoogle, faGithub, faVk, faYandex } from '@fortawesome/free-brands-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import VueProgressBar from 'vue-progressbar'
+import {Vue3ProgressPlugin} from '@marcoschulte/vue3-progress';
 import AppIcon from './components/AppIcon.vue'
 import DateFormatter from '@/components/DateFomatter.vue'
 import FromNow from '@/components/FromNow.vue'
@@ -34,9 +35,6 @@ import BlogTitle from '@/components/BlogTitle.vue'
 import Search from '@/views/Search.vue'
 import Profile from '@/views/Profile.vue'
 import Social from '@/components/Social.vue'
-
-// Highlight.js languages (All languages)
-import 'vue-highlight.js/lib/allLanguages'
 
 /*
 * Import Highlight.js theme
@@ -89,23 +87,23 @@ if (appElement) {
   vueApp.use(Vue2Filters)
   
   // VueProgressBar конфигурация
-  const progressBarOptions = {
-    color: '#bffaf3',
-    failedColor: '#874b4b',
-    thickness: '3px',
-    transition: {
-      speed: '0.2s',
-      opacity: '0.6s',
-      termination: 300
-    },
-    autoRevert: true,
-    location: 'top',
-    inverse: false
-  }
-  
-  vueApp.use(VueProgressBar, progressBarOptions)
+const progressBarOptions = {
+  color: '#bffaf3',
+  failedColor: '#874b4b',
+  thickness: '3px',
+  transition: {
+    speed: '0.2s',
+    opacity: '0.6s',
+    termination: 300
+  },
+  autoRevert: true,
+  location: 'top',
+  inverse: false
+}
+ 
+  vueApp.use(Vue3ProgressPlugin, progressBarOptions)
   vueApp.use(VueSocialSharing)
-  vueApp.use(VueHighlightJS)
+  vueApp.use(Vue3Highlightjs)
   
   // Добавляем event bus в глобальные свойства
   vueApp.config.globalProperties.emitter = emitter
@@ -173,11 +171,11 @@ if (userProfileElement) {
 }
 
 if (document.getElementById('blogcontainer') && window.location.hash) {
-  const h = window.location.hash.substring(1)
+  const hash = window.location.hash.substring(1)
   
   const vueApp = createApp({
     render() {
-      return h(BlogAnnounces, { q: h })
+      return h(BlogAnnounces, { q: hash })
     }
   })
   vueApp.component('DateFormatter', DateFormatter)
@@ -186,7 +184,7 @@ if (document.getElementById('blogcontainer') && window.location.hash) {
   
   const blogTitleElement = document.getElementById('blogSmallTitle')
   if (blogTitleElement) {
-    const e = h.split('=')
+    const e = hash.split('=')
     const vueApp2 = createApp({
       render() {
         return h(BlogTitle, { text: 'все посты по метке: ' + e[1] })

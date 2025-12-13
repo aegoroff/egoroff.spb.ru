@@ -20,7 +20,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
-import ApiService from '@/services/ApiService.vue'
+import ApiService from '@/services/ApiService'
 import { emitter } from '@/main'
 
 export default defineComponent({
@@ -40,7 +40,7 @@ export default defineComponent({
       // Закрываем модальное окно
       const modalElement = document.getElementById('delete-post')
       if (modalElement) {
-        const modal = bootstrap.Modal.getInstance(modalElement)
+        const modal = (window as any).bootstrap.Modal.getInstance(modalElement)
         if (modal) {
           modal.hide()
         }

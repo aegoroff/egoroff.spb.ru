@@ -1,5 +1,3 @@
-// Переименуйте файл из ApiService.vue в ApiService.ts
-
 import axios from 'axios'
 import { Section } from '../components/Navigation.vue'
 import { Archive } from '@/components/BlogNavigation.vue'

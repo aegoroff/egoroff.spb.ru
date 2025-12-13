@@ -4,9 +4,9 @@ $font-family-base: $font-family-serif;
 $headings-font-family: $font-family-sans-serif;
 $breadcrumb-divider: "→";
 
-// Then import Bootstrap an BootstrapVue SCSS files (order is important)
-@import '~bootstrap';
-@import '~bootstrap-vue';
+// Импортируйте только Bootstrap (порядок важен)
+// Сначала определите кастомные переменные, потом импортируйте Bootstrap
+@import '~bootstrap/scss/bootstrap';
 
 $footer-height: ($spacer);
 
