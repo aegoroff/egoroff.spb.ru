@@ -16,7 +16,7 @@
   </div>
 </template>
 <script lang="ts">
-import { defineComponent, PropType, computed } from 'vue'
+import { defineComponent, computed } from 'vue'
 import { emitter } from '@/main'
 import { removeHash } from '@/util'
 
@@ -24,11 +24,11 @@ export default defineComponent({
   name: 'BlogPagination',
   props: {
     pages: {
-      type: Number as PropType<number>,
+      type: Number,
       required: true
     },
     page: {
-      type: Number as PropType<number>,
+      type: Number,
       required: true
     }
   },

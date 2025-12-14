@@ -17,7 +17,7 @@
   </div>
 </template>
 <script lang="ts">
-import { defineComponent, PropType, ref, onMounted, watch } from 'vue'
+import { defineComponent, ref, onMounted, watch, createApp, h } from 'vue'
 import DateFormatter from '@/components/DateFomatter.vue'
 import ApiService, { Query } from '@/services/ApiService'
 import BlogPagination from '@/components/BlogPagination.vue'
@@ -38,7 +38,7 @@ export default defineComponent({
   },
   props: {
     q: {
-      type: String as PropType<string>,
+      type: String,
       default: ''
     }
   },
@@ -49,51 +49,32 @@ export default defineComponent({
     
     const getQuery = (): Query => {
       const q = new Query()
-      if (!props.q) {
-        return q
-      }
-      
       const parts = props.q.split('&')
+
       for (const part of parts) {
         const elts = part.split('=')
-        if (elts[0] && elts[1]) {
-          ;(q as any)[elts[0]] = decodeURIComponent(elts[1])
-        }
+        Reflect.set(q, elts[0], elts[1])
       }
       return q
     }
     
-    const updatePosts = async () => {
-      const query = getQuery()
-      const apiService = new ApiService()
-      try {
-        const result = await apiService.getPosts<Post>(query)
-        posts.value = result.result
-        pages.value = result.pages
-        currentPage.value = result.page
-      } catch (error) {
-        console.error('Failed to fetch posts:', error)
-      }
-    }
-    
     onMounted(() => {
-      updatePosts()
-      
-      window.addEventListener('hashchange', () => {
-        const hash = window.location.hash.substring(1)
-        const params = new URLSearchParams(hash)
-        const tag = params.get('tag')
-        const year = params.get('year')
-        const month = params.get('month')
-        
-        if (tag || year || month) {
-          updatePosts()
-        }
+      const q = getQuery()
+      const apiService = new ApiService()
+      apiService.getPosts<Post>(q).then(x => {
+        posts.value = x.result
+
+        const pager = createApp({
+          render() {
+            return h(BlogPagination, {
+            pages: x.pages,
+            page: x.page
+          })
+          }
+        })
+
+        pager.mount('#blogPager')
       })
-    })
-    
-    watch(() => props.q, () => {
-      updatePosts()
     })
     
     return {
