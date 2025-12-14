@@ -278,10 +278,11 @@ function mountHighlighting (prefix: string, x: Element): void {
   }
   const lang = x.className.replace(prefix, '')
     .replace(';', '')
+  const text = x.textContent
   const vueApp = createApp({
     render() {
       return h(Highlighter, {
-        content: x.textContent || '',
+        content: text || '',
         lang: lang
       })
     }

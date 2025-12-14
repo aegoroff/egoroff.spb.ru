@@ -2,17 +2,17 @@
   <highlightjs :language="lang" :code="content" />
 </template>
 <script lang="ts">
-import { defineComponent, PropType } from 'vue'
+import { defineComponent } from 'vue'
 
 export default defineComponent({
   name: 'Highlighter',
   props: {
     lang: {
-      type: String as PropType<string>,
+      type: String,
       required: true
     },
     content: {
-      type: String as PropType<string>,
+      type: String,
       required: true
     }
   },
