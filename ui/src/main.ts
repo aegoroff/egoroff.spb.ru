@@ -37,7 +37,6 @@ import Highlighter from '@/components/Highlighter.vue'
 import Alert from '@/components/Alert.vue'
 import { createAdminRouter } from '@/router'
 import Downloads from '@/components/Downloads.vue'
-import { createPinia } from 'pinia'
 import mitt from 'mitt'
 import hljs from 'highlight.js/lib/core'
 import javascript from 'highlight.js/lib/languages/javascript'
@@ -70,7 +69,6 @@ hljs.registerLanguage('go', go)
 
 library.add(faBook, faBriefcase, faSearch, faHome, faUser, faCalendarAlt, faDownload, faSignInAlt, faSignOutAlt, faTools, faTrashAlt)
 library.add(faGoogle, faGithub, faVk, faYandex)
-const pinia = createPinia()
 
 export type Events = {
   pageChanged: number
@@ -102,7 +100,6 @@ if (appElement) {
   vueApp.component('Downloads', Downloads)
   vueApp.component('Search', Search)
   vueApp.component('Profile', Profile)
-  vueApp.use(pinia)
   vueApp.use(Vue3Highlightjs)
   
   const progressBarOptions = {
