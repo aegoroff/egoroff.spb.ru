@@ -58,19 +58,19 @@ class ApiService {
 
   public async getBlogArchive (): Promise<Archive> {
     const progress = useProgress().start();
-    return await axios.get<Archive>('/api/v2/blog/archive/').then((r: any) => {
+    return await axios.get<Archive>('/api/v2/blog/archive/').then((r) => {
       return r.data
     }).finally(() => progress.finish())
   }
 
   public async getUser (): Promise<User> {
-    return await axios.get<User>('/api/v2/auth/user/').then((r: any) => {
+    return await axios.get<User>('/api/v2/auth/user/').then((r) => {
       return r.data
     })
   }
 
   public async getFullUserInfo (): Promise<FullUserInfo> {
-    return await axios.get<FullUserInfo>('/api/v2/auth/userinfo/').then((r: any) => {
+    return await axios.get<FullUserInfo>('/api/v2/auth/userinfo/').then((r) => {
       return r.data
     })
   }
@@ -97,28 +97,28 @@ class ApiService {
 
   public async getDownloads<T> (q?: Query): Promise<ApiResult<T>> {
     const progress = useProgress().start();
-    return await axios.get<ApiResult<T>>(`/api/v2/admin/download/${toQuery(q)}`).then((r: any) => {
+    return await axios.get<ApiResult<T>>(`/api/v2/admin/download/${toQuery(q)}`).then((r) => {
       return r.data
     }).finally(() => progress.finish())
   }
 
   public async getPosts<T> (q?: Query): Promise<ApiResult<T>> {
     const progress = useProgress().start();
-    return await axios.get<ApiResult<T>>(`/api/v2/blog/posts/${toQuery(q)}`).then((r: any) => {
+    return await axios.get<ApiResult<T>>(`/api/v2/blog/posts/${toQuery(q)}`).then((r) => {
       return r.data
     }).finally(() => progress.finish())
   }
 
   public async getDownloadableFiles<T> (): Promise<ApiResult<T>> {
     const progress = useProgress().start();
-    return await axios.get<ApiResult<T>>('/api/v2/portfolio/files/').then((r: any) => {
+    return await axios.get<ApiResult<T>>('/api/v2/portfolio/files/').then((r) => {
       return r.data
     }).finally(() => progress.finish())
   }
 
   public async getAdminPosts<T> (q?: Query): Promise<ApiResult<T>> {
     const progress = useProgress().start();
-    return await axios.get<ApiResult<T>>(`/api/v2/admin/posts/${toQuery(q)}`).then((r: any) => {
+    return await axios.get<ApiResult<T>>(`/api/v2/admin/posts/${toQuery(q)}`).then((r) => {
       return r.data
     }).finally(() => progress.finish())
   }
