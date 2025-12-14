@@ -1,24 +1,30 @@
 <template>
-  <div id="blogPager">
-    <nav v-if="pages > 1">
-      <ul class="pagination justify-content-center">
-        <li class="page-item" :class="{ disabled: page === 1 }">
-          <a class="page-link" href="#" @click.prevent="changePage(page - 1)">&larr; новее</a>
+  <div id="blogPager" v-if="pages > 1">
+    <nav aria-label="Page navigation">
+      <ul class="pagination justify-content-center mb-0">
+        <li :class="['page-item', { disabled: page === 1 }]">
+          <a class="page-link" href="#" @click.prevent="goToPage(page - 1)">&larr; новее</a>
         </li>
-        <li class="page-item" v-for="p in pageNumbers" :key="p" :class="{ active: p === page }">
-          <a class="page-link" href="#" @click.prevent="changePage(p)">{{ p }}</a>
+
+        <li 
+          v-for="n in pages" 
+          :key="n" 
+          :class="['page-item', { active: n === page }]"
+        >
+          <a class="page-link" :href="pageLinkGenerator(n)" @click.prevent="goToPage(n)">{{ n }}</a>
         </li>
-        <li class="page-item" :class="{ disabled: page === pages }">
-          <a class="page-link" href="#" @click.prevent="changePage(page + 1)">старее &rarr;</a>
+
+        <li :class="['page-item', { disabled: page === pages }]">
+          <a class="page-link" href="#" @click.prevent="goToPage(page + 1)">старее &rarr;</a>
         </li>
       </ul>
     </nav>
   </div>
 </template>
+
 <script lang="ts">
-import { defineComponent, computed } from 'vue'
+import { defineComponent } from 'vue'
 import { emitter } from '@/main'
-import { removeHash } from '@/util'
 
 export default defineComponent({
   name: 'BlogPagination',
@@ -32,49 +38,24 @@ export default defineComponent({
       required: true
     }
   },
-  setup(props) {
-    const pageNumbers = computed(() => {
-      const numbers = []
-      const start = Math.max(1, props.page - 2)
-      const end = Math.min(props.pages, props.page + 2)
-      for (let i = start; i <= end; i++) {
-        numbers.push(i)
-      }
-      return numbers
-    })
-    
-    const changePage = (newPage: number): void => {
-      if (newPage >= 1 && newPage <= props.pages && newPage !== props.page) {
-        // Получаем текущий хэш
-        const currentHash = window.location.hash.substring(1)
-        const params = new URLSearchParams(currentHash)
-        
-        // Удаляем параметр page из параметров
-        params.delete('page')
-        
-        // Если это не первая страница, добавляем параметр page
-        if (newPage > 1) {
-          params.set('page', newPage.toString())
+  emits: ['update:page'],
+  methods: {
+    pageLinkGenerator(pageNum: number): string {
+      const parts = window.location.hash.substring(1).split('&')
+      let q = '#'
+      for (const part of parts) {
+        const elts = part.split('=')
+        if (elts[0] !== 'page') {
+          if (q !== '#') q += '&'
+          q += elts[0] + '=' + elts[1]
         }
-        
-        // Формируем новый хэш
-        const newParams = params.toString()
-        
-        if (newParams) {
-          window.location.hash = '#' + newParams
-        } else {
-          // Если нет параметров, полностью убираем хэш
-          removeHash()
-        }
-        
-        // Эмитируем событие для обновления постов
-        emitter.emit('pageChanged', newPage)
       }
-    }
-    
-    return {
-      pageNumbers,
-      changePage
+      return `/blog/${q}&page=${pageNum}`
+    },
+    goToPage(pageNum: number) {
+      if (pageNum < 1 || pageNum > this.pages) return
+      emitter.emit('pageChanged', pageNum)
+      this.$emit('update:page', pageNum)
     }
   }
 })
