@@ -4,11 +4,11 @@
       <a
         v-for="tag in tags"
         :key="tag.title"
-        :href="`/blog/#tag=${tag.title}`"
+        :href="`/blog/#tag=${encodeURIComponent(tag.title)}`"
         :class="[
           currentTag === tag.title
             ? `btn btn-dark btn-sm ${tagClass(tag.level)}`
-            : `btn btn-outline-dark btn-sm ${tagClass(tag.level)}`,
+            : `btn btn-sm ${tagClass(tag.level)}`,
         ]"
         @click.prevent="update(tag.title, 1)"
         :id="`t_${tag.title}`"
@@ -51,56 +51,33 @@ export default defineComponent({
     onMounted(() => {
       updateFromHash();
       
-      emitter.on("pageChanged", (data: any) => {
-        const page = typeof data === "number" ? data : 1;
-        updateFromHash(page);
-      });
-      
-      emitter.on("dateSelectionChanged", () => {
-        currentTag.value = "";
-      });
+      window.addEventListener('hashchange', updateFromHash);
     });
     
-    const tagClass = (ix: number): string => {
-      return tagsClasses[ix] || "tagRank10";
-    };
-    
-    const updateFromHash = (page?: number): void => {
+    const updateFromHash = (): void => {
       const hash = window.location.hash.substring(1);
       const params = new URLSearchParams(hash);
       const tag = params.get('tag');
       
       if (tag) {
-        currentTag.value = tag;
-        const pageNum = page || parseInt(params.get('page') || '1', 10);
-        updateContent(tag, pageNum);
+        currentTag.value = decodeURIComponent(tag);
       } else {
         currentTag.value = "";
       }
     };
     
-    const update = (tag: string, page: number): void => {
-      emitter.emit("tagChanged", tag);
-      currentTag.value = tag;
-      
-      const params = new URLSearchParams(window.location.hash.substring(1));
-      params.set('tag', tag);
-      params.set('page', page.toString());
-      
-      window.location.hash = '#' + params.toString();
-      updateContent(tag, page);
+    const tagClass = (ix: number): string => {
+      return tagsClasses[ix] || "tagRank10";
     };
     
-    const updateContent = (tag: string, page: number): void => {
-      const blogContainer = document.getElementById("blogcontainer");
-      const blogTitle = document.getElementById("blogSmallTitle");
+    const update = (tag: string, page: number): void => {
+      const params = new URLSearchParams();
+      params.set('tag', encodeURIComponent(tag));
+      if (page > 1) {
+        params.set('page', page.toString());
+      }
       
-      if (blogContainer) {
-        blogContainer.innerHTML = `<blog-announces q="tag=${encodeURIComponent(tag)}&page=${page}"></blog-announces>`;
-      }
-      if (blogTitle) {
-        blogTitle.innerHTML = `<blog-title text="все посты по метке: ${tag}"></blog-title>`;
-      }
+      window.location.hash = '#' + params.toString();
     };
     
     return {

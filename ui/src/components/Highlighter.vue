@@ -1,8 +1,9 @@
 <template>
-  <highlightjs :code="content" :language="lang" />
+  <highlightjs :language="lang" :code="content" />
 </template>
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
+import { Vue3Highlightjs } from 'vue3-highlightjs'
 
 export default defineComponent({
   name: 'Highlighter',

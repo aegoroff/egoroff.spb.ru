@@ -2,12 +2,12 @@
   <div class="col-lg-6">
     <h1>Загрузки</h1>
     <div v-for="folder in downloads" :key="folder.Title">
-      <h3> {{ folder.Title }}</h3>
+      <h3>{{ folder.Title }}</h3>
       <dl>
         <div v-for="f in folder.Files" :key="f.Blake3Hash">
           <dt itemscope itemtype="http://schema.org/SoftwareApplication">
             <a itemprop="downloadUrl" :href="f.Path">
-              <i class="fas fa-download"></i>&nbsp;<span itemprop="name">{{ f.Title }}</span>
+              <font-awesome-icon icon="download"/>&nbsp;<span itemprop="name">{{ f.Title }}</span>
             </a>
           </dt>
           <dd>
@@ -68,7 +68,3 @@ export default defineComponent({
   }
 })
 </script>
-
-<style scoped>
-
-</style>

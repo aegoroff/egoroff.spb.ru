@@ -17,7 +17,7 @@
   </div>
 </template>
 <script lang="ts">
-import { defineComponent, PropType, ref, onMounted } from 'vue'
+import { defineComponent, PropType, ref, onMounted, watch } from 'vue'
 import DateFormatter from '@/components/DateFomatter.vue'
 import ApiService, { Query } from '@/services/ApiService'
 import BlogPagination from '@/components/BlogPagination.vue'
@@ -49,6 +49,10 @@ export default defineComponent({
     
     const getQuery = (): Query => {
       const q = new Query()
+      if (!props.q) {
+        return q
+      }
+      
       const parts = props.q.split('&')
       for (const part of parts) {
         const elts = part.split('=')
@@ -73,6 +77,22 @@ export default defineComponent({
     }
     
     onMounted(() => {
+      updatePosts()
+      
+      window.addEventListener('hashchange', () => {
+        const hash = window.location.hash.substring(1)
+        const params = new URLSearchParams(hash)
+        const tag = params.get('tag')
+        const year = params.get('year')
+        const month = params.get('month')
+        
+        if (tag || year || month) {
+          updatePosts()
+        }
+      })
+    })
+    
+    watch(() => props.q, () => {
       updatePosts()
     })
     
