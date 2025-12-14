@@ -3,10 +3,10 @@
     <ul class="list-inline">
       <li class="list-inline-item" v-for="tag in tags" :key="tag.title">
         <a
-          v-bind:href="`/blog/#tag=${tag.title}`"
-          v-bind:class="[currentTag === tag.title ? `btn btn-outline-dark ${tagClass(tag.level)}` : `btn ${tagClass(tag.level)}`]"
+          :href="`/blog/#tag=${tag.title}`"
+          :class="[currentTag === tag.title ? `btn btn-outline-dark ${tagClass(tag.level)}` : `btn ${tagClass(tag.level)}`]"
           v-on:click="update(tag.title, 1)"
-          v-bind:id="`t_${tag.title}`">{{ tag.title }}</a>
+          :id="`t_${tag.title}`">{{ tag.title }}</a>
       </li>
     </ul>
   </div>
