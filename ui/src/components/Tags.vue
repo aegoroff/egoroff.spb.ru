@@ -12,75 +12,86 @@
   </div>
 </template>
 <script lang="ts">
-import { defineComponent, PropType, ref, onMounted } from "vue";
+import { defineComponent, createApp } from 'vue'
+import BlogAnnounces from '@/components/BlogAnnounces.vue'
+import BlogTitle from '@/components/BlogTitle.vue'
+import { emitter } from '@/main'
 
 export class Tag {
-  public title!: string;
-  public level!: number;
+  public title!: string
+  public level!: number
 }
+
 export default defineComponent({
-  name: "Tags",
+  name: 'Tags',
+
   props: {
     tags: {
-      type: Array as PropType<Tag[]>,
-      required: true,
+      type: Array as () => Tag[],
+      required: true
     },
+    currentTag: {
+      type: String,
+      required: true
+    }
   },
-  setup(props) {
-    const currentTag = ref("");
-    const tagsClasses: Record<number, string> = {
-      0: "tagRank10",
-      1: "tagRank9",
-      2: "tagRank8",
-      3: "tagRank7",
-      4: "tagRank6",
-      5: "tagRank5",
-      6: "tagRank4",
-      7: "tagRank3",
-      8: "tagRank2",
-      10: "tagRank1",
-    };
-    
-    onMounted(() => {
-      updateFromHash();
-      
-      window.addEventListener('hashchange', updateFromHash);
-    });
-    
-    const updateFromHash = (): void => {
-      const hash = window.location.hash.substring(1);
-      const params = new URLSearchParams(hash);
-      const tag = params.get('tag');
-      
-      if (tag) {
-        currentTag.value = decodeURIComponent(tag);
-      } else {
-        currentTag.value = "";
-      }
-    };
-    
-    const tagClass = (ix: number): string => {
-      return tagsClasses[ix] || "tagRank10";
-    };
-    
-    const update = (tag: string, page: number): void => {
-      const params = new URLSearchParams();
-      params.set('tag', encodeURIComponent(tag));
-      if (page > 1) {
-        params.set('page', page.toString());
-      }
-      
-      window.location.hash = '#' + params.toString();
-    };
-    
+
+  data() {
     return {
-      currentTag,
-      tagClass,
-      update,
-    };
+      tagsClasses: {
+        0: 'tagRank10',
+        1: 'tagRank9',
+        2: 'tagRank8',
+        3: 'tagRank7',
+        4: 'tagRank6',
+        5: 'tagRank5',
+        6: 'tagRank4',
+        7: 'tagRank3',
+        8: 'tagRank2',
+        10: 'tagRank1'
+      } as Record<number, string>
+    }
+  },
+
+  created() {
+    emitter.on('pageChanged', (page) => {
+      const parts = window.location.hash.substring(1).split('&')
+
+      for (const part of parts) {
+        const [key, value] = part.split('=')
+        if (key === 'tag') {
+          this.update(value, page)
+          return
+        }
+      }
+    })
+
+    emitter.on('dateSelectionChanged', () => {
+      this.$emit('update:currentTag', '')
+    })
+  },
+
+  methods: {
+    tagClass(ix: number): string {
+      return this.tagsClasses[ix]
+    },
+
+    update(tag: string, page: number): void {
+      emitter.emit('tagChanged' as any, tag)
+      this.$emit('update:currentTag', tag)
+
+      createApp(BlogAnnounces, {
+        q: `tag=${tag}&page=${page}`
+      }).mount('#blogcontainer')
+
+      createApp(BlogTitle, {
+        text: `все посты по метке: ${tag}`
+      }).mount('#blogSmallTitle')
+    }
   }
-});
+})
 </script>
+
 <style scoped lang="scss">
 .tags {
   overflow: hidden;
