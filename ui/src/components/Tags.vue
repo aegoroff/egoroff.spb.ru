@@ -4,91 +4,111 @@
       <li class="list-inline-item" v-for="tag in tags" :key="tag.title">
         <a
           :href="`/blog/#tag=${tag.title}`"
-          :class="[currentTag === tag.title ? `btn btn-outline-dark ${tagClass(tag.level)}` : tagClass(tag.level)]"
+          :class="[
+            currentTag === tag.title
+              ? `btn btn-outline-dark ${tagClass(tag.level)}`
+              : tagClass(tag.level),
+          ]"
           @click.prevent="update(tag.title, 1)"
-          :id="`t_${tag.title}`">{{ tag.title }}</a>
+          :id="`t_${tag.title}`"
+          >{{ tag.title }}</a
+        >
       </li>
     </ul>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref, onMounted } from 'vue'
-import { emitter } from '@/main'
+import { defineComponent, PropType, ref, onMounted } from "vue";
+import { emitter } from "@/main";
 
 export class Tag {
-  public title!: string
-  public level!: number
+  public title!: string;
+  public level!: number;
 }
 
 export default defineComponent({
-  name: 'Tags',
+  name: "Tags",
   props: {
     tags: {
       type: Array as PropType<Tag[]>,
-      required: true
-    }
+      required: true,
+    },
   },
   setup(props) {
-    const currentTag = ref('')
+    const currentTag = ref("");
     const tagsClasses: Record<number, string> = {
-      0: 'tagRank10',
-      1: 'tagRank9',
-      2: 'tagRank8',
-      3: 'tagRank7',
-      4: 'tagRank6',
-      5: 'tagRank5',
-      6: 'tagRank4',
-      7: 'tagRank3',
-      8: 'tagRank2',
-      10: 'tagRank1'
-    }
+      0: "tagRank10",
+      1: "tagRank9",
+      2: "tagRank8",
+      3: "tagRank7",
+      4: "tagRank6",
+      5: "tagRank5",
+      6: "tagRank4",
+      7: "tagRank3",
+      8: "tagRank2",
+      10: "tagRank1",
+    };
 
     onMounted(() => {
-      emitter.on('pageChanged', (data: any) => {
-        const page = typeof data === 'number' ? data : 1
-        const parts = window.location.hash.substring(1).split('&')
+      emitter.on("pageChanged", (data: any) => {
+        const page = typeof data === "number" ? data : 1;
+        const parts = window.location.hash.substring(1).split("&");
 
         for (const part of parts) {
-          const elts = part.split('=')
-          if (elts[0] === 'tag') {
-            update(elts[1], page)
-            return
+          const elts = part.split("=");
+          if (elts[0] === "tag") {
+            update(elts[1], page);
+            return;
           }
         }
-      })
+      });
 
-      emitter.on('dateSelectionChanged', () => {
-        currentTag.value = ''
-      })
-    })
+      emitter.on("dateSelectionChanged", () => {
+        currentTag.value = "";
+      });
+    });
 
     const tagClass = (ix: number): string => {
-      return tagsClasses[ix]
+      return tagsClasses[ix];
+    };
+
+    // Simple HTML escaping function
+    function escapeHtml(text: string): string {
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
     }
 
     const update = (tag: string, page: number): void => {
-      emitter.emit('tagChanged', tag)
-      currentTag.value = tag
-      const blogContainer = document.getElementById('blogcontainer')
-      const blogTitle = document.getElementById('blogSmallTitle')
-      
+      emitter.emit("tagChanged", tag);
+      currentTag.value = tag;
+      const blogContainer = document.getElementById("blogcontainer");
+      const blogTitle = document.getElementById("blogSmallTitle");
+
       if (blogContainer) {
-        blogContainer.innerHTML = `<blog-announces q="tag=${tag}&page=${page}"></blog-announces>`
+        blogContainer.innerHTML = `<blog-announces q="tag=${escapeHtml(
+          tag
+        )}&page=${page}"></blog-announces>`;
       }
-      
+
       if (blogTitle) {
-        blogTitle.innerHTML = `<blog-title text="все посты по метке: ${tag}"></blog-title>`
+        blogTitle.innerHTML = `<blog-title text="все посты по метке: ${escapeHtml(
+          tag
+        )}"></blog-title>`;
       }
-    }
+    };
 
     return {
       currentTag,
       tagClass,
-      update
-    }
-  }
-})
+      update,
+    };
+  },
+});
 </script>
 
 <style scoped lang="scss">
@@ -103,7 +123,8 @@ export default defineComponent({
     font-style: italic;
   }
 
-  a, span {
+  a,
+  span {
     position: relative;
     top: 0;
     left: -10px;
@@ -115,60 +136,70 @@ export default defineComponent({
     text-decoration: none;
   }
 
-  a.tagRank1, span.tagRank1 {
+  a.tagRank1,
+  span.tagRank1 {
     font-size: 2.8em;
   }
 
-  a.tagRank2, span.tagRank2 {
+  a.tagRank2,
+  span.tagRank2 {
     font-size: 2.6em;
     color: #222;
   }
 
-  a.tagRank3, span.tagRank3 {
+  a.tagRank3,
+  span.tagRank3 {
     font-size: 2.4em;
     color: #333;
   }
 
-  a.tagRank4, span.tagRank4 {
+  a.tagRank4,
+  span.tagRank4 {
     font-size: 2.2em;
     color: #444;
   }
 
-  a.tagRank5, span.tagRank5 {
+  a.tagRank5,
+  span.tagRank5 {
     font-size: 2em;
     color: #555;
   }
 
-  a.tagRank6, span.tagRank6 {
+  a.tagRank6,
+  span.tagRank6 {
     font-size: 1.8em;
     color: #666;
   }
 
-  a.tagRank7, span.tagRank7 {
+  a.tagRank7,
+  span.tagRank7 {
     font-size: 1.6em;
     color: #777;
   }
 
-  a.tagRank8, span.tagRank8 {
+  a.tagRank8,
+  span.tagRank8 {
     font-size: 1.4em;
     color: #888;
   }
 
-  a.tagRank9, span.tagRank9 {
+  a.tagRank9,
+  span.tagRank9 {
     font-size: 1.2em;
     color: #999;
   }
 
-  a.tagRank10, span.tagRank10 {
+  a.tagRank10,
+  span.tagRank10 {
     font-size: 1em;
-    color: #AAA;
+    color: #aaa;
   }
 
   a:hover {
     text-decoration: underline;
     position: relative;
     z-index: 50;
-    color: #F00;
+    color: #f00;
   }
 }
 </style>
