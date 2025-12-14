@@ -13,7 +13,6 @@
         <dd itemprop="description" v-html="post.ShortText"></dd>
       </div>
     </dl>
-    <BlogPagination v-if="pages > 1" :pages="pages" :page="currentPage" />
   </div>
 </template>
 <script lang="ts">
@@ -44,8 +43,6 @@ export default defineComponent({
   },
   setup(props) {
     const posts = ref<Array<Post>>([])
-    const pages = ref(0)
-    const currentPage = ref(1)
     
     const getQuery = (): Query => {
       const q = new Query()
@@ -78,10 +75,7 @@ export default defineComponent({
     })
     
     return {
-      posts,
-      pages,
-      currentPage,
-      getQuery
+      posts
     }
   }
 })
