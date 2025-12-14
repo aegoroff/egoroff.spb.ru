@@ -148,14 +148,14 @@ if (document.getElementById('social')) {
 }
 
 if (document.getElementById('siteSearch')) {
-  const key = document.getElementById('siteSearch')?.getAttribute('property')
+  const apiKey = document.getElementById('siteSearch')?.getAttribute('property')
   const cx = document.getElementById('siteSearch')?.getAttribute('datafld')
   const urlParams = new URLSearchParams(window.location.search)
   const q = urlParams.get('q')
   const vueApp = createApp({
     render() {
       return h(Search, {
-        key: key || '',
+        apiKey: apiKey || '',
         cx: cx || '',
         query: q || ''
       })

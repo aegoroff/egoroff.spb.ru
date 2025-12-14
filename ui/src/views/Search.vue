@@ -6,7 +6,7 @@
           <input
             id="search-control"
             class="form-control w-100"
-            v-model="query"
+            v-model="localQuery"
             placeholder="Введите текст для поиска"
             required
           >
@@ -60,7 +60,7 @@ export default defineComponent({
       type: String,
       default: ''
     },
-    key: {
+    apiKey: {
       type: String,
       default: ''
     },
@@ -108,7 +108,7 @@ export default defineComponent({
       
       const q = new SearchQuery()
       q.q = localQuery.value
-      q.key = props.key
+      q.key = props.apiKey
       q.cx = props.cx
       q.start = (page.value - 1) * ItemsPerPage + 1
       
