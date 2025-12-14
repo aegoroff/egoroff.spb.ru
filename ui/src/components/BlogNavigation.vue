@@ -1,22 +1,20 @@
 <template>
-  <div class="col-lg-3" id="blogNavigation">
-    <ul class="nav nav-tabs" role="tablist">
-      <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="tags-tab" data-bs-toggle="tab" 
-                data-bs-target="#tags-content" type="button">Метки</button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link" id="archive-tab" data-bs-toggle="tab" 
-                data-bs-target="#archive-content" type="button">Архив</button>
-      </li>
-    </ul>
-    <div class="tab-content">
-      <div class="tab-pane fade show active" id="tags-content">
-        <Tags :tags="archive.tags"/>
-      </div>
-      <div class="tab-pane fade" id="archive-content">
-        <Chrono :years="archive.years"/>
-      </div>
+  <ul class="nav nav-tabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="tags-tab" data-bs-toggle="tab" 
+              data-bs-target="#tags-content" type="button">Метки</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="archive-tab" data-bs-toggle="tab" 
+              data-bs-target="#archive-content" type="button">Архив</button>
+    </li>
+  </ul>
+  <div class="tab-content">
+    <div class="tab-pane fade show active" id="tags-content">
+      <Tags :tags="archive.tags"/>
+    </div>
+    <div class="tab-pane fade" id="archive-content">
+      <Chrono :years="archive.years"/>
     </div>
   </div>
 </template>
