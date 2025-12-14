@@ -3,7 +3,6 @@
 </template>
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
-import { Vue3Highlightjs } from 'vue3-highlightjs'
 
 export default defineComponent({
   name: 'Highlighter',

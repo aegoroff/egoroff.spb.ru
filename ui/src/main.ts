@@ -247,13 +247,14 @@ icons.forEach(x => {
 
 const dates = document.querySelectorAll('span.date[data-label]')
 dates.forEach(x => {
-  const label = x.attributes.getNamedItem('data-label')
-  const fmt = label === null ? 'LL' : label.value
+  const label = x.getAttribute('data-label')
+  const fmt = label === null ? 'LL' : label
+  const text = x.textContent?.trim() ?? ''
   if (fmt === 'from-now') {
     const vueApp = createApp({
       render() {
         return h(FromNow, {
-          date: x.innerHTML
+          date: text
         })
       }
     })
@@ -262,7 +263,7 @@ dates.forEach(x => {
     const vueApp = createApp({
       render() {
         return h(DateFormatter, {
-          date: x.innerHTML,
+          date: text,
           formatStr: fmt
         })
       }
