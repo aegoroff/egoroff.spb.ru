@@ -1,6 +1,6 @@
 <template>
   <div>
-    <dl itemscope id="blogcontainer">
+    <dl itemscope itemtype="http://schema.org/BlogPosting" id="blogcontainer">
       <div v-for="post in posts" :key="post.id">
         <dt>
           <small>
@@ -17,11 +17,10 @@
   </div>
 </template>
 <script lang="ts">
-import { defineComponent, PropType, ref, onMounted, watch } from 'vue'
+import { defineComponent, PropType, ref, onMounted } from 'vue'
 import DateFormatter from '@/components/DateFomatter.vue'
 import ApiService, { Query } from '@/services/ApiService'
 import BlogPagination from '@/components/BlogPagination.vue'
-import { removeHash } from '@/util'
 
 export class Post {
   public Key!: string
@@ -68,42 +67,14 @@ export default defineComponent({
         posts.value = result.result
         pages.value = result.pages
         currentPage.value = result.page
-        
-        // Если это первая страница и нет других параметров, убираем хэш
-        if (currentPage.value === 1 && !query.tag && !query.year && !query.month) {
-          if (window.location.hash) {
-            removeHash()
-          }
-        }
       } catch (error) {
         console.error('Failed to fetch posts:', error)
       }
     }
     
     onMounted(() => {
-      // Проверяем, есть ли хэш при загрузке
-      const hash = window.location.hash.substring(1)
-      const params = new URLSearchParams(hash)
-      const tag = params.get('tag')
-      const year = params.get('year')
-      const month = params.get('month')
-      const page = params.get('page')
-      
-      // Если есть какие-то параметры в хэше, обновляем посты
-      if (tag || year || month || page) {
-        updatePosts()
-      } else {
-        // Если нет параметров, просто загружаем первые посты
-        updatePosts()
-      }
-    })
-    
-    // Обновляем посты при изменении хэша
-    const handleHashChange = () => {
       updatePosts()
-    }
-    
-    window.addEventListener('hashchange', handleHashChange)
+    })
     
     return {
       posts,

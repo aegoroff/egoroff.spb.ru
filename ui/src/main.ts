@@ -33,19 +33,13 @@ import BlogTitle from '@/components/BlogTitle.vue'
 import Search from '@/views/Search.vue'
 import Profile from '@/views/Profile.vue'
 import Social from '@/components/Social.vue'
-/*
-* Import Highlight.js theme
-* Find more: https://highlightjs.org/static/demo/
-*/
 import 'highlight.js/styles/github.css'
 import Highlighter from '@/components/Highlighter.vue'
 import Alert from '@/components/Alert.vue'
-import { createAdminRouter } from '@/router' // Импортируем функцию создания роутера
+import { createAdminRouter } from '@/router'
 import Downloads from '@/components/Downloads.vue'
 import { createPinia } from 'pinia'
 import mitt from 'mitt'
-
-// Импорт языков для Highlight.js
 import hljs from 'highlight.js/lib/core'
 import javascript from 'highlight.js/lib/languages/javascript'
 import typescript from 'highlight.js/lib/languages/typescript'
@@ -61,7 +55,6 @@ import php from 'highlight.js/lib/languages/php'
 import sql from 'highlight.js/lib/languages/sql'
 import go from 'highlight.js/lib/languages/go'
 
-// Регистрация языков
 hljs.registerLanguage('javascript', javascript)
 hljs.registerLanguage('typescript', typescript)
 hljs.registerLanguage('xml', xml)
@@ -81,7 +74,6 @@ library.add(faGoogle, faGithub, faVk, faYandex)
 const pinia = createPinia()
 export const emitter = mitt()
 
-// Основное приложение Vue
 const appElement = document.getElementById('app')
 if (appElement) {
   const t = appElement.getAttribute('datafld')
@@ -125,19 +117,15 @@ if (appElement) {
   vueApp.use(VueSocialSharing)
   vueApp.config.globalProperties.emitter = emitter
   
-  // Монтируем основное приложение
   vueApp.mount('#app')
 }
 
-// Монтируем компоненты блога если они есть на странице
-// BlogNavigation - навигация блога (теги и архив)
 if (document.getElementById('blogNavigation')) {
   const vueApp = createApp(BlogNavigation)
   vueApp.component('font-awesome-icon', FontAwesomeIcon)
   vueApp.mount('#blogNavigation')
 }
 
-// BlogAnnounces - для отображения постов при фильтрации через хэш
 if (document.getElementById('blogcontainer') && window.location.hash) {
   const hash = window.location.hash.substring(1)
   const params = new URLSearchParams(hash)
@@ -169,7 +157,6 @@ if (document.getElementById('blogcontainer') && window.location.hash) {
     vueApp.component('font-awesome-icon', FontAwesomeIcon)
     vueApp.mount('#blogcontainer')
     
-    // Обновляем заголовок если есть тег или фильтр по дате
     const blogTitleElement = document.getElementById('blogSmallTitle')
     if (blogTitleElement) {
       let titleText = 'тут я пишу'
@@ -194,14 +181,12 @@ if (document.getElementById('blogcontainer') && window.location.hash) {
   }
 }
 
-// Downloads - загрузки в портфолио
 if (document.getElementById('portfolioDownloads')) {
   const vueApp = createApp(Downloads)
   vueApp.component('font-awesome-icon', FontAwesomeIcon)
   vueApp.mount('#portfolioDownloads')
 }
 
-// Social - кнопки соцсетей
 if (document.getElementById('social')) {
   const title = document.getElementById('social')?.getAttribute('property')
   const vueApp = createApp({
@@ -217,7 +202,6 @@ if (document.getElementById('social')) {
   vueApp.mount('#social')
 }
 
-// Search - поиск
 if (document.getElementById('siteSearch')) {
   const key = document.getElementById('siteSearch')?.getAttribute('property')
   const cx = document.getElementById('siteSearch')?.getAttribute('datafld')
@@ -236,7 +220,6 @@ if (document.getElementById('siteSearch')) {
   vueApp.mount('#siteSearch')
 }
 
-// Profile - профиль пользователя
 if (document.getElementById('userProfile')) {
   const vueApp = createApp(Profile)
   vueApp.component('font-awesome-icon', FontAwesomeIcon)
@@ -244,7 +227,6 @@ if (document.getElementById('userProfile')) {
   vueApp.mount('#userProfile')
 }
 
-// Динамическое монтирование иконок
 const icons = document.querySelectorAll('i.icon[data-label]')
 icons.forEach(x => {
   const label = x.getAttribute('data-label')
@@ -263,7 +245,6 @@ icons.forEach(x => {
   vueApp.mount(x)
 })
 
-// Динамическое монтирование форматирования дат
 const dates = document.querySelectorAll('span.date[data-label]')
 dates.forEach(x => {
   const label = x.getAttribute('data-label')
@@ -290,18 +271,6 @@ dates.forEach(x => {
   }
 })
 
-// Динамическое монтирование подсветки кода
-const langMap = new Map<string, string>()
-langMap.set('asm', 'x86asm')
-langMap.set('hq', 'cs')
-langMap.set('parser', 'parser3')
-langMap.set('php', 'parser3')
-
-function replacementLang (lang: string): string {
-  const l = langMap.get(lang)
-  return l !== undefined ? l : lang
-}
-
 function mountHighlighting (prefix: string, x: Element): void {
   if (!x.className.startsWith(prefix)) {
     return
@@ -312,7 +281,7 @@ function mountHighlighting (prefix: string, x: Element): void {
     render() {
       return h(Highlighter, {
         content: x.textContent || '',
-        lang: replacementLang(lang)
+        lang: lang
       })
     }
   })
@@ -325,7 +294,6 @@ snippets.forEach(x => {
   mountHighlighting('language-', x)
 })
 
-// Динамическое монтирование алертов
 const alerts = document.querySelectorAll('.alert')
 alerts.forEach(x => {
   const type = x.getAttribute('data-label')
@@ -341,11 +309,10 @@ alerts.forEach(x => {
   vueApp.mount(x)
 })
 
-// Админка - отдельное приложение с роутером
 if (document.getElementById('admin')) {
-  const router = createAdminRouter() // Создаем роутер только для админки
+  const router = createAdminRouter()
   const vueApp = createApp(AdminApp)
-  vueApp.use(router) // Используем роутер только в админке
+  vueApp.use(router)
   vueApp.component('font-awesome-icon', FontAwesomeIcon)
   vueApp.mount('#admin')
 }

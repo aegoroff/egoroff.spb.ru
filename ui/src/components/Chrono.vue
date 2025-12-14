@@ -35,7 +35,6 @@
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
 import { emitter } from '@/main'
-import { removeHash } from '@/util'
 
 export class Month {
   public month!: number
@@ -79,47 +78,23 @@ export default defineComponent({
     const updateYear = (year: number, page: number): void => {
       emitter.emit('dateSelectionChanged')
       
-      // Создаем параметры для хэша
-      const params = new URLSearchParams()
-      params.set('year', year.toString())
+      const params = new URLSearchParams(window.location.hash.substring(1));
+      params.set('year', year.toString());
+      params.set('page', page.toString());
       
-      // Добавляем параметр page только если это не первая страница
-      if (page > 1) {
-        params.set('page', page.toString())
-      }
-      
-      const newHash = params.toString()
-      
-      if (newHash) {
-        window.location.hash = '#' + newHash
-      } else {
-        removeHash()
-      }
-      
+      window.location.hash = '#' + params.toString();
       updateContent(year, undefined, page)
     }
 
     const updateYearMonth = (year: number, month: number, page: number): void => {
       emitter.emit('dateSelectionChanged')
       
-      // Создаем параметры для хэша
-      const params = new URLSearchParams()
-      params.set('year', year.toString())
-      params.set('month', month.toString())
+      const params = new URLSearchParams(window.location.hash.substring(1));
+      params.set('year', year.toString());
+      params.set('month', month.toString());
+      params.set('page', page.toString());
       
-      // Добавляем параметр page только если это не первая страница
-      if (page > 1) {
-        params.set('page', page.toString())
-      }
-      
-      const newHash = params.toString()
-      
-      if (newHash) {
-        window.location.hash = '#' + newHash
-      } else {
-        removeHash()
-      }
-      
+      window.location.hash = '#' + params.toString();
       updateContent(year, month, page)
     }
     
@@ -127,18 +102,13 @@ export default defineComponent({
       const blogContainer = document.getElementById('blogcontainer')
       const blogTitle = document.getElementById('blogSmallTitle')
       
-      let q = `year=${year}`
+      let q = `year=${year}&page=${page}`
       let titleText = `все посты за ${year} год`
       
       if (month) {
-        q = `year=${year}&month=${month}`
+        q = `year=${year}&month=${month}&page=${page}`
         const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
         titleText = `все посты за ${monthNames[month - 1]} ${year} года`
-      }
-      
-      // Добавляем параметр page только если это не первая страница
-      if (page > 1) {
-        q += `&page=${page}`
       }
       
       if (blogContainer) {

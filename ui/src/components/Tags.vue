@@ -20,7 +20,6 @@
 <script lang="ts">
 import { defineComponent, PropType, ref, onMounted } from "vue";
 import { emitter } from "@/main";
-import { removeHash } from '@/util';
 
 export class Tag {
   public title!: string;
@@ -50,7 +49,6 @@ export default defineComponent({
     };
     
     onMounted(() => {
-      // Проверяем текущий хэш при загрузке
       updateFromHash();
       
       emitter.on("pageChanged", (data: any) => {
@@ -85,23 +83,11 @@ export default defineComponent({
       emitter.emit("tagChanged", tag);
       currentTag.value = tag;
       
-      // Создаем параметры для хэша
-      const params = new URLSearchParams();
+      const params = new URLSearchParams(window.location.hash.substring(1));
       params.set('tag', tag);
+      params.set('page', page.toString());
       
-      // Добавляем параметр page только если это не первая страница
-      if (page > 1) {
-        params.set('page', page.toString());
-      }
-      
-      const newHash = params.toString();
-      
-      if (newHash) {
-        window.location.hash = '#' + newHash;
-      } else {
-        removeHash();
-      }
-      
+      window.location.hash = '#' + params.toString();
       updateContent(tag, page);
     };
     
