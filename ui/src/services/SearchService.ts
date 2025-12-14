@@ -2,6 +2,7 @@
 
 import axios from 'axios'
 import { toQuery } from '@/util'
+import {useProgress} from '@marcoschulte/vue3-progress'
 
 export class Url {
   public type!: string
@@ -120,13 +121,10 @@ export class SearchQuery {
 
 class SearchService {
   public async search (q?: SearchQuery): Promise<GoogleSearch> {
-    try {
-      const response = await axios.get<GoogleSearch>(`https://www.googleapis.com/customsearch/v1${toQuery(q)}`)
-      return response.data
-    } catch (error) {
-      console.error('Search request failed:', error)
-      throw error
-    }
+    const progress = useProgress().start();
+    return await axios.get<GoogleSearch>(`https://www.googleapis.com/customsearch/v1${toQuery(q)}`).then((r) => {
+      return r.data
+    }).finally(() => progress.finish())
   }
 }
 
