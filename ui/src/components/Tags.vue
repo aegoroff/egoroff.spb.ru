@@ -1,20 +1,14 @@
 <template>
-  <div class="tags mt-3">
-    <div class="d-flex flex-wrap gap-2">
-      <a
-        v-for="tag in tags"
-        :key="tag.title"
-        :href="`/blog/#tag=${encodeURIComponent(tag.title)}`"
-        :class="[
-          currentTag === tag.title
-            ? `btn btn-dark btn-sm ${tagClass(tag.level)}`
-            : `btn btn-sm ${tagClass(tag.level)}`,
-        ]"
-        @click.prevent="update(tag.title, 1)"
-        :id="`t_${tag.title}`"
-        >{{ tag.title }}</a
-      >
-    </div>
+  <div class="tags">
+    <ul class="list-inline">
+      <li class="list-inline-item" v-for="tag in tags" :key="tag.title">
+        <a
+          v-bind:href="`/blog/#tag=${tag.title}`"
+          v-bind:class="[currentTag === tag.title ? `btn btn-outline-dark ${tagClass(tag.level)}` : `btn ${tagClass(tag.level)}`]"
+          v-on:click="update(tag.title, 1)"
+          v-bind:id="`t_${tag.title}`">{{ tag.title }}</a>
+      </li>
+    </ul>
   </div>
 </template>
 <script lang="ts">
