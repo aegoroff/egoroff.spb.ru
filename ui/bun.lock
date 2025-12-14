@@ -24,7 +24,6 @@
         "vue-property-decorator": "^9.1.2",
         "vue-router": "^4.6.4",
         "vue-typescript-inject": "^0.3.1",
-        "vue3-highlightjs": "^1.0.5",
         "vue3-social-sharing": "^1.4.1",
       },
       "devDependencies": {
@@ -1747,8 +1746,6 @@
 
     "vue-typescript-inject": ["vue-typescript-inject@0.3.1", "", {}, "sha512-eGpwIEn5vibmav22PgfGwqnfJEdgsKHamML7UZrcohOl5y/zXc4DKT5uhKpQ4lsUFiqytAiPW3NtiOaQM+REaw=="],
 
-    "vue3-highlightjs": ["vue3-highlightjs@1.0.5", "", { "dependencies": { "highlight.js": "^10.3.2" }, "peerDependencies": { "vue": "^3.0.0" } }, "sha512-Q4YNPXu0X5VMBnwPVOk+IQf1Ohp9jFdMitEAmzaz8qVVefcQpN6Dx4BnDGKxja3TLDVF+EgL136wC8YzmoCX9w=="],
-
     "vue3-social-sharing": ["vue3-social-sharing@1.4.1", "", { "dependencies": { "vue": "^3.3.11" } }, "sha512-VzH3iSxvszb4628k4ZrGgQOAAXMLX0B+QJJvChdZqaiXNsW5LGoBSr2Xd2sXcGfiSwmVgcerfa+/HLM++Mozng=="],
 
     "watchpack": ["watchpack@2.4.4", "", { "dependencies": { "glob-to-regexp": "^0.4.1", "graceful-fs": "^4.1.2" } }, "sha512-c5EGNOiyxxV5qmTtAB7rbiXxi1ooX1pQKMLX/MIabJjRA0SJBQOjKF+KSVfHkr9U1cADPon0mRiVe/riyaiDUA=="],
@@ -2006,8 +2003,6 @@
     "vue-style-loader/hash-sum": ["hash-sum@1.0.2", "", {}, "sha512-fUs4B4L+mlt8/XAtSOGMUO1TXmAelItBPtJG7CyHJfYTdDjwisntGO2JQz7oUsatOY9o68+57eziUVNw/mRHmA=="],
 
     "vue-style-loader/loader-utils": ["loader-utils@1.4.2", "", { "dependencies": { "big.js": "^5.2.2", "emojis-list": "^3.0.0", "json5": "^1.0.1" } }, "sha512-I5d00Pd/jwMD2QCduo657+YM/6L3KZu++pmX9VFncxaxvHcru9jx1lBaFft+r4Mt2jK0Yhp41XlRAihzPxHNCg=="],
-
-    "vue3-highlightjs/highlight.js": ["highlight.js@10.7.3", "", {}, "sha512-tzcUFauisWKNHaRkN4Wjl/ZA07gENAjFl3J/c480dprkGTg5EQstgaNFqBfUqCq54kZRIEcreTsAgF/m2quD7A=="],
 
     "webpack/eslint-scope": ["eslint-scope@5.1.1", "", { "dependencies": { "esrecurse": "^4.3.0", "estraverse": "^4.1.1" } }, "sha512-2NxwbF/hZ0KpepYN0cNbo+FN6XoK7GaHlQhgx/hIZl6Va0bF45RQOOwhLIy8lQDbuCiadSLCBnH2CFYquit5bw=="],
 

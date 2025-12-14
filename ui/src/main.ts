@@ -1,5 +1,4 @@
 import { createApp, h } from 'vue'
-import { Vue3Highlightjs } from 'vue3-highlightjs'
 import VueSocialSharing from 'vue3-social-sharing'
 import App from './App.vue'
 import AdminApp from './AdminApp.vue'
@@ -32,40 +31,14 @@ import BlogTitle from '@/components/BlogTitle.vue'
 import Search from '@/views/Search.vue'
 import Profile from '@/views/Profile.vue'
 import Social from '@/components/Social.vue'
-import 'highlight.js/styles/github.css'
-import Highlighter from '@/components/Highlighter.vue'
 import Alert from '@/components/Alert.vue'
 import { createAdminRouter } from '@/router'
 import Downloads from '@/components/Downloads.vue'
 import mitt from 'mitt'
-import hljs from 'highlight.js/lib/core'
-import javascript from 'highlight.js/lib/languages/javascript'
-import typescript from 'highlight.js/lib/languages/typescript'
-import xml from 'highlight.js/lib/languages/xml'
-import css from 'highlight.js/lib/languages/css'
-import scss from 'highlight.js/lib/languages/scss'
-import json from 'highlight.js/lib/languages/json'
-import bash from 'highlight.js/lib/languages/bash'
-import python from 'highlight.js/lib/languages/python'
-import java from 'highlight.js/lib/languages/java'
-import csharp from 'highlight.js/lib/languages/csharp'
-import php from 'highlight.js/lib/languages/php'
-import sql from 'highlight.js/lib/languages/sql'
-import go from 'highlight.js/lib/languages/go'
 
-hljs.registerLanguage('javascript', javascript)
-hljs.registerLanguage('typescript', typescript)
-hljs.registerLanguage('xml', xml)
-hljs.registerLanguage('css', css)
-hljs.registerLanguage('scss', scss)
-hljs.registerLanguage('json', json)
-hljs.registerLanguage('bash', bash)
-hljs.registerLanguage('python', python)
-hljs.registerLanguage('java', java)
-hljs.registerLanguage('csharp', csharp)
-hljs.registerLanguage('php', php)
-hljs.registerLanguage('sql', sql)
-hljs.registerLanguage('go', go)
+import 'highlight.js/lib/common'
+import 'highlight.js/styles/github.css'
+import Highlighter from '@/components/Highlighter.vue'
 
 library.add(faBook, faBriefcase, faSearch, faHome, faUser, faCalendarAlt, faDownload, faSignInAlt, faSignOutAlt, faTools, faTrashAlt)
 library.add(faGoogle, faGithub, faVk, faYandex)
@@ -100,7 +73,6 @@ if (appElement) {
   vueApp.component('Downloads', Downloads)
   vueApp.component('Search', Search)
   vueApp.component('Profile', Profile)
-  vueApp.use(Vue3Highlightjs)
   
   const progressBarOptions = {
     color: '#bffaf3',
@@ -245,28 +217,39 @@ dates.forEach(x => {
   }
 })
 
-function mountHighlighting (prefix: string, x: Element): void {
-  if (!x.className.startsWith(prefix)) {
-    return
-  }
-  const lang = x.className.replace(prefix, '')
+const langMap = new Map<string, string>([
+  ['asm', 'x86asm'],
+  ['hq', 'cs'],
+  ['parser', 'parser3'],
+  ['php', 'parser3'],
+])
+
+function replacementLang(lang: string): string {
+  return langMap.get(lang) ?? lang
+}
+
+function mountHighlighting(prefix: string, el: Element): void {
+  if (!el.className.startsWith(prefix)) return
+
+  const lang = el.className
+    .replace(prefix, '')
     .replace(';', '')
-  const text = x.textContent
-  const vueApp = createApp({
-    render() {
-      return h(Highlighter, {
-        content: text || '',
-        lang: lang
-      })
-    }
+    .trim()
+
+  const app = createApp(Highlighter, {
+    content: el.textContent ?? '',
+    lang: replacementLang(lang),
   })
-  vueApp.mount(x)
+
+  el.textContent = ''
+  app.mount(el)
 }
 
 const snippets = document.querySelectorAll('pre, code')
-snippets.forEach(x => {
-  mountHighlighting('brush: ', x)
-  mountHighlighting('language-', x)
+
+snippets.forEach(el => {
+  mountHighlighting('brush: ', el)
+  mountHighlighting('language-', el)
 })
 
 const alerts = document.querySelectorAll('.alert')
