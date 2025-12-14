@@ -32,8 +32,7 @@ export class Post {
 export default defineComponent({
   name: 'BlogAnnounces',
   components: {
-    DateFormatter,
-    BlogPagination
+    DateFormatter
   },
   props: {
     q: {
