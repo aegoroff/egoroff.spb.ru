@@ -11,7 +11,7 @@
   </ul>
   <div class="tab-content">
     <div class="tab-pane fade show active" id="tags-content">
-      <Tags :tags="archive.tags"/>
+      <Tags :tags="archive.tags" v-model:currentTag="currentTag" />
     </div>
     <div class="tab-pane fade" id="archive-content">
       <Chrono :years="archive.years"/>
@@ -36,11 +36,13 @@ export default defineComponent({
     Tags,
     Chrono
   },
+  
   setup() {
     const archive = ref<Archive>({
       tags: [],
       years: []
     })
+    const currentTag = ref('')
     
     onMounted(async () => {
       const apiService = new ApiService()
@@ -53,7 +55,8 @@ export default defineComponent({
     })
     
     return {
-      archive
+      archive,
+      currentTag
     }
   }
 })

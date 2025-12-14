@@ -127,6 +127,17 @@ export default defineComponent({
     },
 
     updateYear(year: number, page: number) {
+      const params = new URLSearchParams(window.location.hash.slice(1))
+      params.set('year', String(year))
+      if (page > 1) {
+        params.set('page', String(page))
+      } else {
+        params.delete('page')
+      }
+      params.delete('tag')
+
+      window.location.hash = params.toString()
+
       emitter.emit('dateSelectionChanged')
 
       createApp(BlogAnnounces, {
@@ -139,6 +150,16 @@ export default defineComponent({
     },
 
     updateYearMonth(year: number, month: number, page: number) {
+      const params = new URLSearchParams(window.location.hash.slice(1))
+      params.set('year', String(year))
+      params.set('month', String(month))
+      if (page > 1) {
+        params.set('page', String(page))
+      } else {
+        params.delete('page')
+      }
+      params.delete('tag')
+
       emitter.emit('dateSelectionChanged')
 
       createApp(BlogAnnounces, {

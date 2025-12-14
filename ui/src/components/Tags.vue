@@ -5,7 +5,7 @@
         <a
           :href="`/blog/#tag=${tag.title}`"
           :class="[currentTag === tag.title ? `btn btn-outline-dark ${tagClass(tag.level)}` : `btn ${tagClass(tag.level)}`]"
-          v-on:click="update(tag.title, 1)"
+          @click.prevent="update(tag.title, 1)"
           :id="`t_${tag.title}`">{{ tag.title }}</a>
       </li>
     </ul>
@@ -77,6 +77,18 @@ export default defineComponent({
     },
 
     update(tag: string, page: number): void {
+      const params = new URLSearchParams(window.location.hash.slice(1))
+      params.set('tag', tag)
+      if (page > 1) {
+        params.set('page', String(page))
+      } else {
+        params.delete('page')
+      }
+      params.delete('year')
+      params.delete('month')
+
+      window.location.hash = params.toString()
+
       emitter.emit('tagChanged' as any, tag)
       this.$emit('update:currentTag', tag)
 
