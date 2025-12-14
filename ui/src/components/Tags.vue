@@ -27,7 +27,7 @@ export default defineComponent({
 
   props: {
     tags: {
-      type: Array as () => Tag[],
+      type: Array<Tag>,
       required: true
     },
     currentTag: {
