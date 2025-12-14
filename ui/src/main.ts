@@ -128,56 +128,26 @@ if (document.getElementById('blogNavigation')) {
 
 if (document.getElementById('blogcontainer') && window.location.hash) {
   const hash = window.location.hash.substring(1)
-  const params = new URLSearchParams(hash)
-  const tag = params.get('tag')
-  const year = params.get('year')
-  const month = params.get('month')
-  const page = params.get('page') || '1'
-  
-  let q = ''
-  if (tag) {
-    q = `tag=${encodeURIComponent(tag)}&page=${page}`
-  } else if (year) {
-    if (month) {
-      q = `year=${encodeURIComponent(year)}&month=${encodeURIComponent(month)}&page=${page}`
-    } else {
-      q = `year=${encodeURIComponent(year)}&page=${page}`
+  const vueApp = createApp({
+    render() {
+      return h(BlogAnnounces, { q: hash })
     }
-  } else if (page !== '1') {
-    q = `page=${page}`
-  }
+  })
+  vueApp.component('DateFormatter', DateFormatter)
+  vueApp.component('font-awesome-icon', FontAwesomeIcon)
+  vueApp.mount('#blogcontainer')
   
-  if (q) {
-    const vueApp = createApp({
+  const blogTitleElement = document.getElementById('blogSmallTitle')
+  if (blogTitleElement) {
+    const e = hash.split('=')
+    let titleText = `все посты по метке: ${e[1]}`
+    
+    const vueApp2 = createApp({
       render() {
-        return h(BlogAnnounces, { q: q })
+        return h(BlogTitle, { text: titleText })
       }
     })
-    vueApp.component('DateFormatter', DateFormatter)
-    vueApp.component('font-awesome-icon', FontAwesomeIcon)
-    vueApp.mount('#blogcontainer')
-    
-    const blogTitleElement = document.getElementById('blogSmallTitle')
-    if (blogTitleElement) {
-      let titleText = 'тут я пишу'
-      if (tag) {
-        titleText = `все посты по метке: ${tag}`
-      } else if (year) {
-        if (month) {
-          const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
-          titleText = `все посты за ${monthNames[parseInt(month) - 1]} ${year} года`
-        } else {
-          titleText = `все посты за ${year} год`
-        }
-      }
-      
-      const vueApp2 = createApp({
-        render() {
-          return h(BlogTitle, { text: titleText })
-        }
-      })
-      vueApp2.mount('#blogSmallTitle')
-    }
+    vueApp2.mount('#blogSmallTitle')
   }
 }
 
