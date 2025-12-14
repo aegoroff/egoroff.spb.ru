@@ -1,25 +1,27 @@
 <template>
-  <div class="tags">
-    <ul class="list-inline">
-      <li class="list-inline-item" v-for="tag in tags" :key="tag.title">
-        <a
-          :href="`/blog/#tag=${tag.title}`"
-          :class="[
-            currentTag === tag.title
-              ? `btn btn-outline-dark ${tagClass(tag.level)}`
-              : tagClass(tag.level),
-          ]"
-          @click.prevent="update(tag.title, 1)"
-          :id="`t_${tag.title}`"
-          >{{ tag.title }}</a
-        >
-      </li>
-    </ul>
+  <div class="tags mt-3">
+    <div class="d-flex flex-wrap gap-2">
+      <a
+        v-for="tag in tags"
+        :key="tag.title"
+        :href="`/blog/#tag=${tag.title}`"
+        :class="[
+          currentTag === tag.title
+            ? `btn btn-dark btn-sm ${tagClass(tag.level)}`
+            : `btn btn-outline-dark btn-sm ${tagClass(tag.level)}`,
+        ]"
+        @click.prevent="update(tag.title, 1)"
+        :id="`t_${tag.title}`"
+        >{{ tag.title }}</a
+      >
+    </div>
   </div>
 </template>
 <script lang="ts">
 import { defineComponent, PropType, ref, onMounted } from "vue";
 import { emitter } from "@/main";
+import { removeHash } from '@/util';
+
 export class Tag {
   public title!: string;
   public level!: number;
@@ -46,56 +48,81 @@ export default defineComponent({
       8: "tagRank2",
       10: "tagRank1",
     };
+    
     onMounted(() => {
+      // Проверяем текущий хэш при загрузке
+      updateFromHash();
+      
       emitter.on("pageChanged", (data: any) => {
         const page = typeof data === "number" ? data : 1;
-        const parts = window.location.hash.substring(1).split("&");
-        for (const part of parts) {
-          const elts = part.split("=");
-          if (elts[0] === "tag") {
-            update(elts[1], page);
-            return;
-          }
-        }
+        updateFromHash(page);
       });
+      
       emitter.on("dateSelectionChanged", () => {
         currentTag.value = "";
       });
     });
+    
     const tagClass = (ix: number): string => {
-      return tagsClasses[ix];
+      return tagsClasses[ix] || "tagRank10";
     };
-    // Simple HTML escaping function
-    function escapeHtml(text: string): string {
-      return text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
+    
+    const updateFromHash = (page?: number): void => {
+      const hash = window.location.hash.substring(1);
+      const params = new URLSearchParams(hash);
+      const tag = params.get('tag');
+      
+      if (tag) {
+        currentTag.value = tag;
+        const pageNum = page || parseInt(params.get('page') || '1', 10);
+        updateContent(tag, pageNum);
+      } else {
+        currentTag.value = "";
+      }
+    };
+    
     const update = (tag: string, page: number): void => {
       emitter.emit("tagChanged", tag);
       currentTag.value = tag;
+      
+      // Создаем параметры для хэша
+      const params = new URLSearchParams();
+      params.set('tag', tag);
+      
+      // Добавляем параметр page только если это не первая страница
+      if (page > 1) {
+        params.set('page', page.toString());
+      }
+      
+      const newHash = params.toString();
+      
+      if (newHash) {
+        window.location.hash = '#' + newHash;
+      } else {
+        removeHash();
+      }
+      
+      updateContent(tag, page);
+    };
+    
+    const updateContent = (tag: string, page: number): void => {
       const blogContainer = document.getElementById("blogcontainer");
       const blogTitle = document.getElementById("blogSmallTitle");
+      
       if (blogContainer) {
-        blogContainer.innerHTML = `<blog-announces q="tag=${escapeHtml(
-          tag
-        )}&page=${page}"></blog-announces>`;
+        blogContainer.innerHTML = `<blog-announces q="tag=${encodeURIComponent(tag)}&page=${page}"></blog-announces>`;
       }
       if (blogTitle) {
-        blogTitle.innerHTML = `<blog-title text="все посты по метке: ${escapeHtml(
-          tag
-        )}"></blog-title>`;
+        blogTitle.innerHTML = `<blog-title text="все посты по метке: ${tag}"></blog-title>`;
       }
     };
+    
     return {
       currentTag,
       tagClass,
       update,
     };
-  },
+  }
 });
 </script>
 <style scoped lang="scss">
@@ -104,76 +131,55 @@ export default defineComponent({
   margin: 10px auto 30px;
   padding: 20px;
   line-height: 1.6em;
-  span {
+  
+  .tagRank1 {
+    font-size: 1.4em;
     font-weight: bold;
-    font-style: italic;
   }
-  a,
-  span {
-    position: relative;
-    top: 0;
-    left: -10px;
-    z-index: 10;
-    margin: 0;
-    padding: 0 5px;
-    color: #000;
-    font-size: 1em;
-    text-decoration: none;
-  }
-  a.tagRank1,
-  span.tagRank1 {
-    font-size: 2.8em;
-  }
-  a.tagRank2,
-  span.tagRank2 {
-    font-size: 2.6em;
+  .tagRank2 {
+    font-size: 1.3em;
+    font-weight: bold;
     color: #222;
   }
-  a.tagRank3,
-  span.tagRank3 {
-    font-size: 2.4em;
+  .tagRank3 {
+    font-size: 1.2em;
+    font-weight: bold;
     color: #333;
   }
-  a.tagRank4,
-  span.tagRank4 {
-    font-size: 2.2em;
+  .tagRank4 {
+    font-size: 1.1em;
     color: #444;
   }
-  a.tagRank5,
-  span.tagRank5 {
-    font-size: 2em;
+  .tagRank5 {
+    font-size: 1em;
     color: #555;
   }
-  a.tagRank6,
-  span.tagRank6 {
-    font-size: 1.8em;
+  .tagRank6 {
+    font-size: 0.95em;
     color: #666;
   }
-  a.tagRank7,
-  span.tagRank7 {
-    font-size: 1.6em;
+  .tagRank7 {
+    font-size: 0.9em;
     color: #777;
   }
-  a.tagRank8,
-  span.tagRank8 {
-    font-size: 1.4em;
+  .tagRank8 {
+    font-size: 0.85em;
     color: #888;
   }
-  a.tagRank9,
-  span.tagRank9 {
-    font-size: 1.2em;
+  .tagRank9 {
+    font-size: 0.8em;
     color: #999;
   }
-  a.tagRank10,
-  span.tagRank10 {
-    font-size: 1em;
+  .tagRank10 {
+    font-size: 0.75em;
     color: #aaa;
   }
+  
   a:hover {
     text-decoration: underline;
     position: relative;
     z-index: 50;
-    color: #f00;
+    color: #f00 !important;
   }
 }
 </style>

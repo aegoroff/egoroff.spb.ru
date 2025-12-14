@@ -18,9 +18,9 @@ const routes: Array<RouteRecordRaw> = [
   }
 ]
 
-const router = createRouter({
-  history: createWebHashHistory(),
-  routes
-})
-
-export default router
+export function createAdminRouter() {
+  return createRouter({
+    history: createWebHashHistory(),
+    routes
+  })
+}

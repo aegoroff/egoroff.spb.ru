@@ -1,6 +1,6 @@
 import { createApp, h } from 'vue'
 import Vue3Filters from 'vue3-filters'
-import Vue3Highlightjs from 'vue3-highlightjs'
+import { Vue3Highlightjs } from 'vue3-highlightjs'
 import VueSocialSharing from 'vue3-social-sharing'
 import App from './App.vue'
 import AdminApp from './AdminApp.vue'
@@ -40,14 +40,48 @@ import Social from '@/components/Social.vue'
 import 'highlight.js/styles/github.css'
 import Highlighter from '@/components/Highlighter.vue'
 import Alert from '@/components/Alert.vue'
-import router from '@/router'
+import { createAdminRouter } from '@/router' // Импортируем функцию создания роутера
 import Downloads from '@/components/Downloads.vue'
 import { createPinia } from 'pinia'
 import mitt from 'mitt'
+
+// Импорт языков для Highlight.js
+import hljs from 'highlight.js/lib/core'
+import javascript from 'highlight.js/lib/languages/javascript'
+import typescript from 'highlight.js/lib/languages/typescript'
+import xml from 'highlight.js/lib/languages/xml'
+import css from 'highlight.js/lib/languages/css'
+import scss from 'highlight.js/lib/languages/scss'
+import json from 'highlight.js/lib/languages/json'
+import bash from 'highlight.js/lib/languages/bash'
+import python from 'highlight.js/lib/languages/python'
+import java from 'highlight.js/lib/languages/java'
+import csharp from 'highlight.js/lib/languages/csharp'
+import php from 'highlight.js/lib/languages/php'
+import sql from 'highlight.js/lib/languages/sql'
+import go from 'highlight.js/lib/languages/go'
+
+// Регистрация языков
+hljs.registerLanguage('javascript', javascript)
+hljs.registerLanguage('typescript', typescript)
+hljs.registerLanguage('xml', xml)
+hljs.registerLanguage('css', css)
+hljs.registerLanguage('scss', scss)
+hljs.registerLanguage('json', json)
+hljs.registerLanguage('bash', bash)
+hljs.registerLanguage('python', python)
+hljs.registerLanguage('java', java)
+hljs.registerLanguage('csharp', csharp)
+hljs.registerLanguage('php', php)
+hljs.registerLanguage('sql', sql)
+hljs.registerLanguage('go', go)
+
 library.add(faBook, faBriefcase, faSearch, faHome, faUser, faCalendarAlt, faDownload, faSignInAlt, faSignOutAlt, faTools, faTrashAlt)
 library.add(faGoogle, faGithub, faVk, faYandex)
 const pinia = createPinia()
 export const emitter = mitt()
+
+// Основное приложение Vue
 const appElement = document.getElementById('app')
 if (appElement) {
   const t = appElement.getAttribute('datafld')
@@ -69,42 +103,107 @@ if (appElement) {
   vueApp.component('Downloads', Downloads)
   vueApp.component('Search', Search)
   vueApp.component('Profile', Profile)
-  vueApp.component('highlightjs', Vue3Highlightjs)
   vueApp.use(pinia)
   vueApp.use(Vue3Filters, {})
-const progressBarOptions = {
-  color: '#bffaf3',
-  failedColor: '#874b4b',
-  thickness: '3px',
-  transition: {
-    speed: '0.2s',
-    opacity: '0.6s',
-    termination: 300
-  },
-  autoRevert: true,
-  location: 'top',
-  inverse: false
-}
+  vueApp.use(Vue3Highlightjs)
+  
+  const progressBarOptions = {
+    color: '#bffaf3',
+    failedColor: '#874b4b',
+    thickness: '3px',
+    transition: {
+      speed: '0.2s',
+      opacity: '0.6s',
+      termination: 300
+    },
+    autoRevert: true,
+    location: 'top',
+    inverse: false
+  }
+  
   vueApp.use(Vue3ProgressPlugin, progressBarOptions)
   vueApp.use(VueSocialSharing)
   vueApp.config.globalProperties.emitter = emitter
+  
+  // Монтируем основное приложение
   vueApp.mount('#app')
 }
-const blogNavigationElement = document.getElementById('blogNavigation')
-if (blogNavigationElement) {
+
+// Монтируем компоненты блога если они есть на странице
+// BlogNavigation - навигация блога (теги и архив)
+if (document.getElementById('blogNavigation')) {
   const vueApp = createApp(BlogNavigation)
   vueApp.component('font-awesome-icon', FontAwesomeIcon)
   vueApp.mount('#blogNavigation')
 }
-const portfolioDownloadsElement = document.getElementById('portfolioDownloads')
-if (portfolioDownloadsElement) {
+
+// BlogAnnounces - для отображения постов при фильтрации через хэш
+if (document.getElementById('blogcontainer') && window.location.hash) {
+  const hash = window.location.hash.substring(1)
+  const params = new URLSearchParams(hash)
+  const tag = params.get('tag')
+  const year = params.get('year')
+  const month = params.get('month')
+  const page = params.get('page') || '1'
+  
+  let q = ''
+  if (tag) {
+    q = `tag=${encodeURIComponent(tag)}&page=${page}`
+  } else if (year) {
+    if (month) {
+      q = `year=${encodeURIComponent(year)}&month=${encodeURIComponent(month)}&page=${page}`
+    } else {
+      q = `year=${encodeURIComponent(year)}&page=${page}`
+    }
+  } else if (page !== '1') {
+    q = `page=${page}`
+  }
+  
+  if (q) {
+    const vueApp = createApp({
+      render() {
+        return h(BlogAnnounces, { q: q })
+      }
+    })
+    vueApp.component('DateFormatter', DateFormatter)
+    vueApp.component('font-awesome-icon', FontAwesomeIcon)
+    vueApp.mount('#blogcontainer')
+    
+    // Обновляем заголовок если есть тег или фильтр по дате
+    const blogTitleElement = document.getElementById('blogSmallTitle')
+    if (blogTitleElement) {
+      let titleText = 'тут я пишу'
+      if (tag) {
+        titleText = `все посты по метке: ${tag}`
+      } else if (year) {
+        if (month) {
+          const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
+          titleText = `все посты за ${monthNames[parseInt(month) - 1]} ${year} года`
+        } else {
+          titleText = `все посты за ${year} год`
+        }
+      }
+      
+      const vueApp2 = createApp({
+        render() {
+          return h(BlogTitle, { text: titleText })
+        }
+      })
+      vueApp2.mount('#blogSmallTitle')
+    }
+  }
+}
+
+// Downloads - загрузки в портфолио
+if (document.getElementById('portfolioDownloads')) {
   const vueApp = createApp(Downloads)
   vueApp.component('font-awesome-icon', FontAwesomeIcon)
   vueApp.mount('#portfolioDownloads')
 }
-const socialElement = document.getElementById('social')
-if (socialElement) {
-  const title = socialElement.getAttribute('property')
+
+// Social - кнопки соцсетей
+if (document.getElementById('social')) {
+  const title = document.getElementById('social')?.getAttribute('property')
   const vueApp = createApp({
     render() {
       return h(Social, {
@@ -117,10 +216,11 @@ if (socialElement) {
   vueApp.component('font-awesome-icon', FontAwesomeIcon)
   vueApp.mount('#social')
 }
-const siteSearchElement = document.getElementById('siteSearch')
-if (siteSearchElement) {
-  const key = siteSearchElement.getAttribute('property')
-  const cx = siteSearchElement.getAttribute('datafld')
+
+// Search - поиск
+if (document.getElementById('siteSearch')) {
+  const key = document.getElementById('siteSearch')?.getAttribute('property')
+  const cx = document.getElementById('siteSearch')?.getAttribute('datafld')
   const urlParams = new URLSearchParams(window.location.search)
   const q = urlParams.get('q')
   const vueApp = createApp({
@@ -135,34 +235,16 @@ if (siteSearchElement) {
   vueApp.component('font-awesome-icon', FontAwesomeIcon)
   vueApp.mount('#siteSearch')
 }
-const userProfileElement = document.getElementById('userProfile')
-if (userProfileElement) {
+
+// Profile - профиль пользователя
+if (document.getElementById('userProfile')) {
   const vueApp = createApp(Profile)
   vueApp.component('font-awesome-icon', FontAwesomeIcon)
   vueApp.component('AppIcon', AppIcon)
   vueApp.mount('#userProfile')
 }
-if (document.getElementById('blogcontainer') && window.location.hash) {
-  const hash = window.location.hash.substring(1)
-  const vueApp = createApp({
-    render() {
-      return h(BlogAnnounces, { q: hash })
-    }
-  })
-  vueApp.component('DateFormatter', DateFormatter)
-  vueApp.component('font-awesome-icon', FontAwesomeIcon)
-  vueApp.mount('#blogcontainer')
-  const blogTitleElement = document.getElementById('blogSmallTitle')
-  if (blogTitleElement) {
-    const e = hash.split('=')
-    const vueApp2 = createApp({
-      render() {
-        return h(BlogTitle, { text: 'все посты по метке: ' + e[1] })
-      }
-    })
-    vueApp2.mount('#blogSmallTitle')
-  }
-}
+
+// Динамическое монтирование иконок
 const icons = document.querySelectorAll('i.icon[data-label]')
 icons.forEach(x => {
   const label = x.getAttribute('data-label')
@@ -180,6 +262,8 @@ icons.forEach(x => {
   vueApp.component('font-awesome-icon', FontAwesomeIcon)
   vueApp.mount(x)
 })
+
+// Динамическое монтирование форматирования дат
 const dates = document.querySelectorAll('span.date[data-label]')
 dates.forEach(x => {
   const label = x.getAttribute('data-label')
@@ -205,15 +289,19 @@ dates.forEach(x => {
     vueApp.mount(x)
   }
 })
+
+// Динамическое монтирование подсветки кода
 const langMap = new Map<string, string>()
 langMap.set('asm', 'x86asm')
 langMap.set('hq', 'cs')
 langMap.set('parser', 'parser3')
 langMap.set('php', 'parser3')
+
 function replacementLang (lang: string): string {
   const l = langMap.get(lang)
   return l !== undefined ? l : lang
 }
+
 function mountHighlighting (prefix: string, x: Element): void {
   if (!x.className.startsWith(prefix)) {
     return
@@ -230,11 +318,14 @@ function mountHighlighting (prefix: string, x: Element): void {
   })
   vueApp.mount(x)
 }
+
 const snippets = document.querySelectorAll('pre, code')
 snippets.forEach(x => {
   mountHighlighting('brush: ', x)
   mountHighlighting('language-', x)
 })
+
+// Динамическое монтирование алертов
 const alerts = document.querySelectorAll('.alert')
 alerts.forEach(x => {
   const type = x.getAttribute('data-label')
@@ -249,10 +340,12 @@ alerts.forEach(x => {
   })
   vueApp.mount(x)
 })
-const adminApp = document.getElementById('admin')
-if (adminApp) {
+
+// Админка - отдельное приложение с роутером
+if (document.getElementById('admin')) {
+  const router = createAdminRouter() // Создаем роутер только для админки
   const vueApp = createApp(AdminApp)
-  vueApp.use(router)
+  vueApp.use(router) // Используем роутер только в админке
   vueApp.component('font-awesome-icon', FontAwesomeIcon)
   vueApp.mount('#admin')
 }

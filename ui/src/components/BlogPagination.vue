@@ -18,6 +18,8 @@
 <script lang="ts">
 import { defineComponent, PropType, computed } from 'vue'
 import { emitter } from '@/main'
+import { removeHash } from '@/util'
+
 export default defineComponent({
   name: 'BlogPagination',
   props: {
@@ -40,28 +42,36 @@ export default defineComponent({
       }
       return numbers
     })
+    
     const changePage = (newPage: number): void => {
       if (newPage >= 1 && newPage <= props.pages && newPage !== props.page) {
-        const parts = window.location.hash.substring(1).split('&')
-        let q = '#'
-        for (const part of parts) {
-          const elts = part.split('=')
-          if (elts[0] !== 'page') {
-            if (q !== '#') {
-              q += '&'
-            }
-            q += elts[0] + '=' + elts[1]
-          }
+        // Получаем текущий хэш
+        const currentHash = window.location.hash.substring(1)
+        const params = new URLSearchParams(currentHash)
+        
+        // Удаляем параметр page из параметров
+        params.delete('page')
+        
+        // Если это не первая страница, добавляем параметр page
+        if (newPage > 1) {
+          params.set('page', newPage.toString())
         }
-        if (q === '#') {
-          q += 'page=' + newPage
+        
+        // Формируем новый хэш
+        const newParams = params.toString()
+        
+        if (newParams) {
+          window.location.hash = '#' + newParams
         } else {
-          q += '&page=' + newPage
+          // Если нет параметров, полностью убираем хэш
+          removeHash()
         }
-        window.location.hash = q
+        
+        // Эмитируем событие для обновления постов
         emitter.emit('pageChanged', newPage)
       }
     }
+    
     return {
       pageNumbers,
       changePage

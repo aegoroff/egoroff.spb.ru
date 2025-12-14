@@ -35,6 +35,7 @@
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
 import { emitter } from '@/main'
+import { removeHash } from '@/util'
 
 export class Month {
   public month!: number
@@ -77,12 +78,75 @@ export default defineComponent({
 
     const updateYear = (year: number, page: number): void => {
       emitter.emit('dateSelectionChanged')
-      window.location.hash = `year=${year}&page=${page}`
+      
+      // Создаем параметры для хэша
+      const params = new URLSearchParams()
+      params.set('year', year.toString())
+      
+      // Добавляем параметр page только если это не первая страница
+      if (page > 1) {
+        params.set('page', page.toString())
+      }
+      
+      const newHash = params.toString()
+      
+      if (newHash) {
+        window.location.hash = '#' + newHash
+      } else {
+        removeHash()
+      }
+      
+      updateContent(year, undefined, page)
     }
 
     const updateYearMonth = (year: number, month: number, page: number): void => {
       emitter.emit('dateSelectionChanged')
-      window.location.hash = `year=${year}&month=${month}&page=${page}`
+      
+      // Создаем параметры для хэша
+      const params = new URLSearchParams()
+      params.set('year', year.toString())
+      params.set('month', month.toString())
+      
+      // Добавляем параметр page только если это не первая страница
+      if (page > 1) {
+        params.set('page', page.toString())
+      }
+      
+      const newHash = params.toString()
+      
+      if (newHash) {
+        window.location.hash = '#' + newHash
+      } else {
+        removeHash()
+      }
+      
+      updateContent(year, month, page)
+    }
+    
+    const updateContent = (year: number, month?: number, page: number = 1): void => {
+      const blogContainer = document.getElementById('blogcontainer')
+      const blogTitle = document.getElementById('blogSmallTitle')
+      
+      let q = `year=${year}`
+      let titleText = `все посты за ${year} год`
+      
+      if (month) {
+        q = `year=${year}&month=${month}`
+        const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
+        titleText = `все посты за ${monthNames[month - 1]} ${year} года`
+      }
+      
+      // Добавляем параметр page только если это не первая страница
+      if (page > 1) {
+        q += `&page=${page}`
+      }
+      
+      if (blogContainer) {
+        blogContainer.innerHTML = `<blog-announces q="${q}"></blog-announces>`
+      }
+      if (blogTitle) {
+        blogTitle.innerHTML = `<blog-title text="${titleText}"></blog-title>`
+      }
     }
 
     return {
