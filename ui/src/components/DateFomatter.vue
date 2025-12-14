@@ -1,11 +1,9 @@
 <template>
   <span itemprop="datePublished" class="shortDate">{{ format() }}</span>
 </template>
-
 <script lang="ts">
 import moment from 'moment'
 import { defineComponent, PropType } from 'vue'
-
 export default defineComponent({
   name: 'DateFormatter',
   props: {
@@ -20,9 +18,12 @@ export default defineComponent({
   },
   setup(props) {
     const format = (): string => {
-      return moment(props.date).locale('ru').format(props.formatStr)
+      const date = moment(props.date)
+      if (!date.isValid()) {
+        return props.date
+      }
+      return date.locale('ru').format(props.formatStr)
     }
-    
     return {
       format
     }

@@ -15,11 +15,9 @@
     </nav>
   </div>
 </template>
-
 <script lang="ts">
 import { defineComponent, PropType, computed } from 'vue'
 import { emitter } from '@/main'
-
 export default defineComponent({
   name: 'BlogPagination',
   props: {
@@ -37,18 +35,15 @@ export default defineComponent({
       const numbers = []
       const start = Math.max(1, props.page - 2)
       const end = Math.min(props.pages, props.page + 2)
-      
       for (let i = start; i <= end; i++) {
         numbers.push(i)
       }
       return numbers
     })
-
     const changePage = (newPage: number): void => {
       if (newPage >= 1 && newPage <= props.pages && newPage !== props.page) {
         const parts = window.location.hash.substring(1).split('&')
         let q = '#'
-        
         for (const part of parts) {
           const elts = part.split('=')
           if (elts[0] !== 'page') {
@@ -58,18 +53,15 @@ export default defineComponent({
             q += elts[0] + '=' + elts[1]
           }
         }
-        
         if (q === '#') {
           q += 'page=' + newPage
         } else {
           q += '&page=' + newPage
         }
-        
         window.location.hash = q
         emitter.emit('pageChanged', newPage)
       }
     }
-
     return {
       pageNumbers,
       changePage

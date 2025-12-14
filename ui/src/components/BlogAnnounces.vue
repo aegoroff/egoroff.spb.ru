@@ -13,9 +13,9 @@
     </div>
   </dl>
 </template>
-
 <script lang="ts">
-import { defineComponent, PropType, ref, onMounted, createApp, h } from 'vue'
+import { defineComponent, PropType, ref, onMounted } from 'vue'
+import { createApp, h } from 'vue'
 import DateFormatter from '@/components/DateFomatter.vue'
 import ApiService, { Query } from '@/services/ApiService'
 import BlogPagination from '@/components/BlogPagination.vue'
@@ -41,11 +41,9 @@ export default defineComponent({
   },
   setup(props) {
     const posts = ref<Array<Post>>([])
-    
     const getQuery = (): Query => {
       const q = new Query()
       const parts = props.q.split('&')
-      
       for (const part of parts) {
         const elts = part.split('=')
         if (elts[0] && elts[1]) {
@@ -55,29 +53,44 @@ export default defineComponent({
       return q
     }
     
-    onMounted(async () => {
+    const updatePosts = async () => {
       const query = getQuery()
       const apiService = new ApiService()
-      
       try {
         const result = await apiService.getPosts<Post>(query)
         posts.value = result.result
         
-        const pagerElement = document.getElementById('blogPager')
-        if (pagerElement) {
-          const vueApp = createApp({
-            render() {
-              return h(BlogPagination, {
-                pages: result.pages,
-                page: result.page
-              })
-            }
-          })
-          vueApp.mount('#blogPager')
-        }
+        // Используем nextTick для гарантированного обновления DOM перед монтированием пагинации
+        setTimeout(() => {
+          const pagerElement = document.getElementById('blogPager')
+          if (pagerElement) {
+            pagerElement.innerHTML = ''
+            const vueApp = document.createElement('div')
+            pagerElement.appendChild(vueApp)
+            
+            const app = createApp({
+              render() {
+                return h(BlogPagination, {
+                  pages: result.pages,
+                  page: result.page
+                })
+              }
+            })
+            app.mount(vueApp)
+          }
+        }, 0)
       } catch (error) {
         console.error('Failed to fetch posts:', error)
       }
+    }
+    
+    onMounted(async () => {
+      updatePosts()
+    })
+    
+    // Обновляем посты при изменении хэша
+    window.addEventListener('hashchange', () => {
+      updatePosts()
     })
     
     return {
@@ -87,7 +100,5 @@ export default defineComponent({
   }
 })
 </script>
-
 <style scoped>
-
 </style>

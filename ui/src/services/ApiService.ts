@@ -38,27 +38,23 @@ export class User {
 }
 
 class ApiService {
-  public getNavigation(): Nav {
+  public async getNavigation(): Promise<Nav> {
     const navigation = new Nav();
     navigation.sections = [];
     navigation.breadcrumbs = [];
-
-    const q = encodeURIComponent(document.location.pathname);
-    axios
-      .get<Nav>(`/api/v2/navigation/?uri=${q}`)
-      .then((response) => {
-        navigation.sections.push(...response.data.sections);
-        if (response.data.breadcrumbs) {
-          navigation.breadcrumbs.push(...response.data.breadcrumbs);
-        }
-      })
-      .catch((error) => {
-        console.error("Failed to fetch navigation:", error);
-      });
-
+    const q = encodeURIComponent(document.location.pathname)
+    try {
+      const response = await axios.get<Nav>(`/api/v2/navigation/?uri=${q}`);
+      navigation.sections.push(...response.data.sections);
+      if (response.data.breadcrumbs) {
+        navigation.breadcrumbs.push(...response.data.breadcrumbs);
+      }
+    } catch (error) {
+      console.error("Failed to fetch navigation:", error);
+    }
     return navigation;
   }
-
+  
   public async getBlogArchive(): Promise<Archive> {
     const progress = useProgress().start();
     return await axios
@@ -68,39 +64,39 @@ class ApiService {
       })
       .finally(() => progress.finish());
   }
-
+  
   public async getUser(): Promise<User> {
     return await axios.get<User>("/api/v2/auth/user/").then((r) => {
       return r.data;
     });
   }
-
+  
   public async getFullUserInfo(): Promise<FullUserInfo> {
     return await axios.get<FullUserInfo>("/api/v2/auth/userinfo/").then((r) => {
       return r.data;
     });
   }
-
+  
   public updateFullUserInfo(u: FullUserInfo): void {
     axios.put<FullUserInfo>("/api/v2/auth/userinfo/", u);
   }
-
+  
   public editPost(p: Post): void {
     axios.put<Post>("/api/v2/admin/post", p);
   }
-
+  
   public deletePost(id: number): void {
     axios.delete(`/api/v2/admin/post/${id}`);
   }
-
+  
   public editDownload(d: Download): void {
     axios.put<Download>("/api/v2/admin/download/", d);
   }
-
+  
   public deleteDownload(id: number): void {
     axios.delete(`/api/v2/admin/download/${id}`);
   }
-
+  
   public async getDownloads<T>(q?: Query): Promise<ApiResult<T>> {
     const progress = useProgress().start();
     return await axios
@@ -110,7 +106,7 @@ class ApiService {
       })
       .finally(() => progress.finish());
   }
-
+  
   public async getPosts<T>(q?: Query): Promise<ApiResult<T>> {
     const progress = useProgress().start();
     return await axios
@@ -120,7 +116,7 @@ class ApiService {
       })
       .finally(() => progress.finish());
   }
-
+  
   public async getDownloadableFiles<T>(): Promise<ApiResult<T>> {
     const progress = useProgress().start();
     return await axios
@@ -130,7 +126,7 @@ class ApiService {
       })
       .finally(() => progress.finish());
   }
-
+  
   public async getAdminPosts<T>(q?: Query): Promise<ApiResult<T>> {
     const progress = useProgress().start();
     return await axios

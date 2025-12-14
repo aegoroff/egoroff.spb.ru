@@ -1,7 +1,6 @@
 <template>
-  <highlightjs :lang="lang"></highlightjs>
+  <highlightjs :code="content" :language="lang" autodetect></highlightjs>
 </template>
-
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
 import hljs from 'highlight.js/lib/core'
@@ -47,7 +46,8 @@ export default defineComponent({
   },
   setup(props) {
     return {
-      // Если используем прямое обращение к hljs
+      content: props.content,
+      lang: props.lang
     }
   }
 })

@@ -33,10 +33,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, onMounted } from 'vue'
-import moment from 'moment'
-import BlogAnnounces from '@/components/BlogAnnounces.vue'
-import BlogTitle from '@/components/BlogTitle.vue'
+import { defineComponent, PropType } from 'vue'
 import { emitter } from '@/main'
 
 export class Month {
@@ -58,7 +55,7 @@ export default defineComponent({
       required: true
     }
   },
-  setup(props) {
+  setup() {
     const months: Record<number, string> = {
       1: 'Январь',
       2: 'Февраль',
@@ -75,66 +72,17 @@ export default defineComponent({
     }
 
     const monthName = (month: number): string => {
-      return months[month]
+      return months[month] || ''
     }
-
-    onMounted(() => {
-      emitter.on('pageChanged', (data: any) => {
-        const page = typeof data === 'number' ? data : 1
-        const parts = window.location.hash.substring(1).split('&')
-
-        let y = 0
-        let m = 0
-        for (const part of parts) {
-          const elts = part.split('=')
-          if (elts[0] === 'year') {
-            y = parseInt(elts[1], 10)
-          }
-          if (elts[0] === 'month') {
-            m = parseInt(elts[1], 10)
-          }
-        }
-
-        if (isNaN(y) || isNaN(m)) {
-          return
-        }
-
-        if (m === 0 && y > 0) {
-          updateYear(y, page)
-        } else if (m > 0 && y > 0) {
-          updateYearMonth(y, m, page)
-        }
-      })
-    })
 
     const updateYear = (year: number, page: number): void => {
       emitter.emit('dateSelectionChanged')
-      const blogContainer = document.getElementById('blogcontainer')
-      const blogTitle = document.getElementById('blogSmallTitle')
-      
-      if (blogContainer) {
-        blogContainer.innerHTML = `<blog-announces q="year=${year}&page=${page}"></blog-announces>`
-      }
-      
-      if (blogTitle) {
-        blogTitle.innerHTML = `<blog-title text="записи за ${year} год"></blog-title>`
-      }
+      window.location.hash = `year=${year}&page=${page}`
     }
 
     const updateYearMonth = (year: number, month: number, page: number): void => {
       emitter.emit('dateSelectionChanged')
-      const blogContainer = document.getElementById('blogcontainer')
-      const blogTitle = document.getElementById('blogSmallTitle')
-      
-      if (blogContainer) {
-        blogContainer.innerHTML = `<blog-announces q="year=${year}&month=${month}&page=${page}"></blog-announces>`
-      }
-      
-      if (blogTitle) {
-        const m = month - 1
-        const mnt = moment(new Date(year, m, 1)).locale('ru')
-        blogTitle.innerHTML = `<blog-title text="записи за ${mnt.format('MMMM YYYY')}"></blog-title>`
-      }
+      window.location.hash = `year=${year}&month=${month}&page=${page}`
     }
 
     return {
