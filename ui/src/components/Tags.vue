@@ -19,7 +19,6 @@
 </template>
 <script lang="ts">
 import { defineComponent, PropType, ref, onMounted } from "vue";
-import { emitter } from "@/main";
 
 export class Tag {
   public title!: string;
