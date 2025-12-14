@@ -25,7 +25,6 @@
         "vue-property-decorator": "^9.1.2",
         "vue-router": "^4.6.4",
         "vue-typescript-inject": "^0.3.1",
-        "vue3-filters": "^3.0.1",
         "vue3-highlightjs": "^1.0.5",
         "vue3-social-sharing": "^1.4.1",
       },
@@ -1770,8 +1769,6 @@
     "vue-tsc": ["vue-tsc@3.1.8", "", { "dependencies": { "@volar/typescript": "2.4.26", "@vue/language-core": "3.1.8" }, "peerDependencies": { "typescript": ">=5.0.0" }, "bin": { "vue-tsc": "./bin/vue-tsc.js" } }, "sha512-deKgwx6exIHeZwF601P1ktZKNF0bepaSN4jBU3AsbldPx9gylUc1JDxYppl82yxgkAgaz0Y0LCLOi+cXe9HMYA=="],
 
     "vue-typescript-inject": ["vue-typescript-inject@0.3.1", "", {}, "sha512-eGpwIEn5vibmav22PgfGwqnfJEdgsKHamML7UZrcohOl5y/zXc4DKT5uhKpQ4lsUFiqytAiPW3NtiOaQM+REaw=="],
-
-    "vue3-filters": ["vue3-filters@3.0.1", "", {}, "sha512-mW/bFaOk2R525WDLM012bIga+n/M2Up8FPRs7Tfoe5hmZ817VLCeFY0Rw1njY8I3lxyh3lwK3Ahe5gCrwRsNtg=="],
 
     "vue3-highlightjs": ["vue3-highlightjs@1.0.5", "", { "dependencies": { "highlight.js": "^10.3.2" }, "peerDependencies": { "vue": "^3.0.0" } }, "sha512-Q4YNPXu0X5VMBnwPVOk+IQf1Ohp9jFdMitEAmzaz8qVVefcQpN6Dx4BnDGKxja3TLDVF+EgL136wC8YzmoCX9w=="],
 

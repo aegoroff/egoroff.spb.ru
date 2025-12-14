@@ -1,5 +1,4 @@
 import { createApp, h } from 'vue'
-import Vue3Filters from 'vue3-filters'
 import { Vue3Highlightjs } from 'vue3-highlightjs'
 import VueSocialSharing from 'vue3-social-sharing'
 import App from './App.vue'
@@ -104,7 +103,6 @@ if (appElement) {
   vueApp.component('Search', Search)
   vueApp.component('Profile', Profile)
   vueApp.use(pinia)
-  vueApp.use(Vue3Filters, {})
   vueApp.use(Vue3Highlightjs)
   
   const progressBarOptions = {
