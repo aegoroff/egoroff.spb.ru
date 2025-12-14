@@ -3,7 +3,6 @@
 </template>
 <script lang="ts">
 import moment from 'moment'
-import 'moment/locale/ru'
 import { defineComponent, PropType } from 'vue'
 export default defineComponent({
   name: 'DateFormatter',
@@ -19,11 +18,7 @@ export default defineComponent({
   },
   setup(props) {
     const format = (): string => {
-      const date = moment(props.date, moment.ISO_8601)
-      if (!date.isValid()) {
-        return props.date
-      }
-      return date.locale('ru').format(props.formatStr)
+      return moment(props.date).locale('ru').format(props.formatStr)
     }
     return {
       format

@@ -1,11 +1,10 @@
 <template>
-  <span class="date-from-now">{{ formattedDate }}</span>
+  <span class="date-from-now">{{ format() }}</span>
 </template>
 
 <script lang="ts">
 import moment from 'moment'
-import 'moment/locale/ru'
-import { defineComponent, PropType, computed } from 'vue'
+import { defineComponent, PropType } from 'vue'
 
 export default defineComponent({
   name: 'FromNow',
@@ -16,16 +15,11 @@ export default defineComponent({
     }
   },
   setup(props) {
-    const formattedDate = computed(() => {
-      const date = moment(props.date, moment.ISO_8601)
-      if (!date.isValid()) {
-        return props.date
-      }
-      return date.locale('ru').fromNow()
-    })
-    
+    const format = (): string => {
+      return moment(props.date).locale('ru').fromNow()
+    }
     return {
-      formattedDate
+      format
     }
   }
 })
