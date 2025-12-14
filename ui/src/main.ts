@@ -72,7 +72,15 @@ hljs.registerLanguage('go', go)
 library.add(faBook, faBriefcase, faSearch, faHome, faUser, faCalendarAlt, faDownload, faSignInAlt, faSignOutAlt, faTools, faTrashAlt)
 library.add(faGoogle, faGithub, faVk, faYandex)
 const pinia = createPinia()
-export const emitter = mitt()
+
+export type Events = {
+  pageChanged: number
+  dateSelectionChanged: void
+  postDeleted: void
+  downloadCreated: void
+  downloadDeleted: void
+}
+export const emitter = mitt<Events>()
 
 const appElement = document.getElementById('app')
 if (appElement) {

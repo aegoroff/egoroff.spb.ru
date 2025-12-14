@@ -1,31 +1,48 @@
 <template>
-  <div class="accordion" id="blogArchiveAccordion">
-    <div class="accordion-item" v-for="y in years" :key="y.year">
-      <h2 class="accordion-header">
-        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
-                :data-bs-target="'#collapse' + y.year">
+  <div class="accordion" id="accordion">
+    <div class="card m-2" v-for="y in years" :key="y.year">
+      <!-- Header -->
+      <div class="card-header p-1">
+        <button
+          class="btn btn-light w-100"
+          type="button"
+          data-bs-toggle="collapse"
+          :data-bs-target="'#y' + y.year"
+        >
           {{ y.year }}
         </button>
-      </h2>
-      <div :id="'collapse' + y.year" class="accordion-collapse collapse" 
-           data-bs-parent="#blogArchiveAccordion">
-        <div class="accordion-body">
-          <ul class="list-group list-group-flush">
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-              <a :href="'#year=' + y.year" @click.prevent="updateYear(y.year, 1)">
-                За весь год
-              </a>
-              <span class="badge bg-primary rounded-pill">{{ y.posts }}</span>
-            </li>
-            <li class="list-group-item d-flex justify-content-between align-items-center"
-                v-for="m in y.months" :key="m.month">
-              <a :href="'#year=' + y.year + '&month=' + m.month" 
-                 @click.prevent="updateYearMonth(y.year, m.month, 1)">
-                {{ monthName(m.month) }}
-              </a>
-              <span class="badge bg-secondary rounded-pill">{{ m.posts }}</span>
-            </li>
-          </ul>
+      </div>
+
+      <!-- Collapse -->
+      <div :id="'y' + y.year" class="collapse" data-bs-parent="#accordion">
+        <div class="card-body">
+          <div class="list-group list-group-flush">
+            <!-- Whole year -->
+            <a
+              class="list-group-item d-flex justify-content-between align-items-center"
+              :href="'#year=' + y.year"
+              @click.prevent="updateYear(y.year, 1)"
+            >
+              За весь год
+              <span class="badge bg-primary rounded-pill">
+                {{ y.posts }}
+              </span>
+            </a>
+
+            <!-- Months -->
+            <a
+              v-for="m in y.months"
+              :key="m.month"
+              class="list-group-item d-flex justify-content-between align-items-center"
+              :href="'#year=' + y.year + '&month=' + m.month"
+              @click.prevent="updateYearMonth(y.year, m.month, 1)"
+            >
+              {{ monthName(m.month) }}
+              <span class="badge bg-secondary rounded-pill">
+                {{ m.posts }}
+              </span>
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -33,7 +50,13 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from 'vue'
+import { defineComponent } from 'vue'
+import { createApp } from 'vue'
+import moment from 'moment'
+import { emitter } from '@/main'
+
+import BlogAnnounces from '@/components/BlogAnnounces.vue'
+import BlogTitle from '@/components/BlogTitle.vue'
 
 export class Month {
   public month!: number
@@ -48,57 +71,85 @@ export class Year {
 
 export default defineComponent({
   name: 'Chrono',
+
   props: {
     years: {
-      type: Array as PropType<Year[]>,
+      type: Array as () => Year[],
       required: true
     }
   },
-  setup() {
-    const months: Record<number, string> = {
-      1: 'Январь',
-      2: 'Февраль',
-      3: 'Март',
-      4: 'Апрель',
-      5: 'Май',
-      6: 'Июнь',
-      7: 'Июль',
-      8: 'Август',
-      9: 'Сентябрь',
-      10: 'Октябрь',
-      11: 'Ноябрь',
-      12: 'Декабрь'
-    }
 
-    const monthName = (month: number): string => {
-      return months[month] || ''
-    }
-
-    const updateYear = (year: number, page: number): void => {
-      const params = new URLSearchParams();
-      params.set('year', year.toString());
-      if (page > 1) {
-        params.set('page', page.toString());
-      }
-      
-      window.location.hash = '#' + params.toString();
-    }
-
-    const updateYearMonth = (year: number, month: number, page: number): void => {
-      const params = new URLSearchParams();
-      params.set('year', year.toString());
-      params.set('month', month.toString());
-      if (page > 1) {
-        params.set('page', page.toString());
-      }
-      
-      window.location.hash = '#' + params.toString();
-    }
-
+  data() {
     return {
-      monthName,
-      updateYear,
-      updateYearMonth
+      months: {
+        1: 'Январь',
+        2: 'Февраль',
+        3: 'Март',
+        4: 'Апрель',
+        5: 'Май',
+        6: 'Июнь',
+        7: 'Июль',
+        8: 'Август',
+        9: 'Сентябрь',
+        10: 'Октябрь',
+        11: 'Ноябрь',
+        12: 'Декабрь'
+      } as Record<number, string>
+    }
+  },
+
+  created() {
+    emitter.on('pageChanged', (page: number) => {
+      const parts = window.location.hash.substring(1).split('&')
+
+      let y = 0
+      let m = 0
+
+      for (const part of parts) {
+        const [key, value] = part.split('=')
+        if (key === 'year') y = Number(value)
+        if (key === 'month') m = Number(value)
+      }
+
+      if (!y) return
+
+      if (!m) {
+        this.updateYear(y, page)
+      } else {
+        this.updateYearMonth(y, m, page)
+      }
+    })
+  },
+
+  methods: {
+    monthName(month: number): string {
+      return this.months[month]
+    },
+
+    updateYear(year: number, page: number) {
+      emitter.emit('dateSelectionChanged')
+
+      createApp(BlogAnnounces, {
+        q: `year=${year}&page=${page}`
+      }).mount('#blogcontainer')
+
+      createApp(BlogTitle, {
+        text: `записи за ${year} год`
+      }).mount('#blogSmallTitle')
+    },
+
+    updateYearMonth(year: number, month: number, page: number) {
+      emitter.emit('dateSelectionChanged')
+
+      createApp(BlogAnnounces, {
+        q: `year=${year}&month=${month}&page=${page}`
+      }).mount('#blogcontainer')
+
+      const m = moment(new Date(year, month - 1, 1)).locale('ru')
+
+      createApp(BlogTitle, {
+        text: `записи за ${m.format('MMMM YYYY')}`
+      }).mount('#blogSmallTitle')
     }
   }
 })
