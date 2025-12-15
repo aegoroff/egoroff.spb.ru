@@ -4,25 +4,53 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Создать новую загрузку</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+          ></button>
         </div>
         <div class="modal-body">
           <form ref="form">
             <div class="mb-3">
-              <label for="create-download-id-input" class="form-label">Идентификатор</label>
-              <input type="number" class="form-control" id="create-download-id-input" v-model.number="download.id" required>
+              <label for="create-download-id-input" class="form-label"
+                >Идентификатор</label
+              >
+              <input
+                type="number"
+                class="form-control"
+                id="create-download-id-input"
+                v-model.number="download.id"
+                required
+              />
               <div class="invalid-feedback">ID обязателен</div>
             </div>
             <div class="mb-3">
-              <label for="create-download-title-input" class="form-label">Название</label>
-              <input type="text" class="form-control" id="create-download-title-input" v-model="download.title" required>
+              <label for="create-download-title-input" class="form-label"
+                >Название</label
+              >
+              <input
+                type="text"
+                class="form-control"
+                id="create-download-title-input"
+                v-model="download.title"
+                required
+              />
               <div class="invalid-feedback">название обязательно</div>
             </div>
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-          <button type="button" class="btn btn-primary" @click="onOk">Создать</button>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Отмена
+          </button>
+          <button type="button" class="btn btn-primary" @click="onOk">
+            Создать
+          </button>
         </div>
       </div>
     </div>
@@ -30,45 +58,42 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
-import ApiService from '@/services/ApiService'
-import { emitter } from '@/main'
-import { Download } from './EditDownload.vue'
+import { defineComponent, ref } from "vue";
+import ApiService from "@/services/ApiService";
+import { emitter } from "@/main";
+import { Download } from "./EditDownload.vue";
+import { Modal } from "bootstrap";
 
 export default defineComponent({
-  name: 'CreateDownload',
+  name: "CreateDownload",
   setup() {
     const download = ref<Download>({
       id: 0,
-      title: ''
-    })
-    
+      title: "",
+    });
+
     const onOk = (): void => {
-      const apiService = new ApiService()
-      apiService.editDownload(download.value)
-      emitter.emit('downloadCreated')
-      
+      const apiService = new ApiService();
+      apiService.editDownload(download.value);
+      emitter.emit("downloadCreated");
+
       // Закрываем модальное окно
-      const modalElement = document.getElementById('create-download')
+      const modalElement = document.getElementById("create-download");
       if (modalElement) {
-        const modal = (window as any).bootstrap.Modal.getInstance(modalElement)
-        if (modal) {
-          modal.hide()
-        }
+        const modal = Modal.getOrCreateInstance(modalElement);
+        modal.hide();
       }
-      
+
       // Сброс формы
-      download.value = { id: 0, title: '' }
-    }
-    
+      download.value = { id: 0, title: "" };
+    };
+
     return {
       download,
-      onOk
-    }
-  }
-})
+      onOk,
+    };
+  },
+});
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>
