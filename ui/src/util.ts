@@ -11,15 +11,16 @@ export function toQuery (q?: Query | SearchQuery): string {
   }
   let str = '?'
   for (const key in q) {
+    const v = Reflect.get(q, key)
+    if(!v) {
+      continue
+    }
     if (str !== '?') {
       str += '&'
     }
-    const v = (q as any)[key]
-    if (v !== undefined && v !== null) {
-      str += key + '=' + encodeURIComponent(v)
-    }
+    str += key + '=' + encodeURIComponent(v)
   }
-  return str === '?' ? '' : str
+  return str
 }
 
 export function closeModalById(id: string): void {
