@@ -5,7 +5,7 @@
     {% include "bit/notifications.html" %}
     <div class="row" itemscope itemtype="http://schema.org/BlogPosting">
         <div class="col-lg-12" itemprop="articleBody">
-            <p class="text-muted"><i class="icon" data-label="calendar-alt"></i>&nbsp;<span class="date" itemprop="datePublished" data-label="from-now">{{ main_post.created }}</span></p>
+            <p class="text-muted"><i class="icon" data-label="calendar-alt"></i>&nbsp;<span class="date" itemprop="datePublished" data-label="from-now">{{ main_post.created.to_rfc3339() }}</span></p>
             {%- if !content.is_empty() -%}
                 {{- content|typograph|safe -}}
             {%- else -%}
@@ -14,7 +14,7 @@
             <div class="card">
                 <div class="card-body d-flex justify-content-between align-items-center">
                     <div itemprop="keywords">
-                    <i class="icon" data-label="calendar-alt"></i> <span class="date" data-label="LL">{{ main_post.created }}</span>&nbsp;
+                    <i class="icon" data-label="calendar-alt"></i> <span class="date" data-label="LL">{{ main_post.created.to_rfc3339() }}</span>&nbsp;
                     {%- if !main_post.tags.is_empty() -%}
                         {%- for tag in main_post.tags ~%}<a href="/blog/#tag={{ tag }}" class="btn btn-outline-secondary btn-sm">{{ tag }}</a> {%~ endfor -%}
                     {%- endif -%}

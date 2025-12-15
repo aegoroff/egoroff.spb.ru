@@ -1,5 +1,5 @@
 <dt>
-  <small><span itemprop="datePublished" class="date" data-label="LL">{{- post.created -}}</span></small>&nbsp;<a itemprop="url" href="/blog/{{ post.id }}.html">
+  <small><span itemprop="datePublished" class="date" data-label="LL">{{- post.created.to_rfc3339() -}}</span></small>&nbsp;<a itemprop="url" href="/blog/{{ post.id }}.html">
   <span itemprop="name">{{ post.id }}&nbsp;|&nbsp;{{ post.title }}</span>
   </a>
 </dt>
