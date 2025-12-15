@@ -34,7 +34,7 @@
 import { defineComponent, PropType } from "vue";
 import ApiService from "@/services/ApiService";
 import { emitter } from "@/main";
-import { Modal } from "bootstrap";
+import { closeModalById } from "@/util";
 
 export default defineComponent({
   name: "DeletePost",
@@ -50,12 +50,7 @@ export default defineComponent({
       apiService.deletePost(props.postId);
       emitter.emit("postDeleted");
 
-      // Закрываем модальное окно
-      const modalElement = document.getElementById("delete-post");
-      if (modalElement) {
-        const modal = Modal.getOrCreateInstance(modalElement);
-        modal.hide();
-      }
+      closeModalById("delete-post");
     };
 
     return {

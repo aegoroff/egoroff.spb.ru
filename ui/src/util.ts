@@ -21,3 +21,14 @@ export function toQuery (q?: Query | SearchQuery): string {
   }
   return str === '?' ? '' : str
 }
+
+export function closeModalById(id: string): void {
+  const modal = document.getElementById(id)
+  if (!modal) return
+
+  const dismissBtn = modal.querySelector(
+    '[data-bs-dismiss="modal"]'
+  ) as HTMLButtonElement | null
+
+  dismissBtn?.click()
+}

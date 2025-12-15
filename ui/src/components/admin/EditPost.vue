@@ -132,7 +132,7 @@
 <script lang="ts">
 import { defineComponent, PropType, computed } from "vue";
 import ApiService from "@/services/ApiService";
-import { Modal } from "bootstrap";
+import { closeModalById } from "@/util";
 
 export class Post {
   public Created!: string;
@@ -162,15 +162,10 @@ export default defineComponent({
     });
 
     const onOk = (): void => {
-      const apiService = new ApiService();
-      apiService.editPost(props.post);
+      const apiService = new ApiService()
+      apiService.editPost(props.post)
 
-      // Закрываем модальное окно
-      const modalElement = document.getElementById("edit-post");
-      if (modalElement) {
-        const modal = Modal.getOrCreateInstance(modalElement);
-        modal.hide();
-      }
+      closeModalById("edit-post")
     };
 
     return {

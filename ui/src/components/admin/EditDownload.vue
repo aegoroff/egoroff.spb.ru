@@ -47,7 +47,7 @@
 <script lang="ts">
 import { defineComponent, PropType } from "vue";
 import ApiService from "@/services/ApiService";
-import { Modal } from "bootstrap";
+import { closeModalById } from "@/util";
 
 export class Download {
   public id!: number;
@@ -67,12 +67,7 @@ export default defineComponent({
       const apiService = new ApiService();
       apiService.editDownload(props.download);
 
-      // Закрываем модальное окно
-      const modalElement = document.getElementById("edit-download");
-      if (modalElement) {
-        const modal = Modal.getOrCreateInstance(modalElement);
-        modal.hide();
-      }
+      closeModalById("edit-download");
     };
 
     return {

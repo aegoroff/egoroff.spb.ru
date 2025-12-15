@@ -34,7 +34,7 @@
 import { defineComponent, PropType } from "vue";
 import ApiService from "@/services/ApiService";
 import { emitter } from "@/main";
-import { Modal } from "bootstrap";
+import { closeModalById } from "@/util";
 
 export default defineComponent({
   name: "DeleteDownload",
@@ -49,13 +49,7 @@ export default defineComponent({
       const apiService = new ApiService();
       apiService.deleteDownload(props.downloadId);
       emitter.emit("downloadDeleted");
-
-      // Закрываем модальное окно
-      const modalElement = document.getElementById("delete-download");
-      if (modalElement) {
-        const modal = Modal.getOrCreateInstance(modalElement);
-        modal.hide();
-      }
+      closeModalById("delete-download");
     };
 
     return {

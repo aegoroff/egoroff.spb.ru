@@ -62,7 +62,7 @@ import { defineComponent, ref } from "vue";
 import ApiService from "@/services/ApiService";
 import { emitter } from "@/main";
 import { Download } from "./EditDownload.vue";
-import { Modal } from "bootstrap";
+import { closeModalById } from "@/util";
 
 export default defineComponent({
   name: "CreateDownload",
@@ -77,12 +77,7 @@ export default defineComponent({
       apiService.editDownload(download.value);
       emitter.emit("downloadCreated");
 
-      // Закрываем модальное окно
-      const modalElement = document.getElementById("create-download");
-      if (modalElement) {
-        const modal = Modal.getOrCreateInstance(modalElement);
-        modal.hide();
-      }
+      closeModalById("create-download");
 
       // Сброс формы
       download.value = { id: 0, title: "" };
