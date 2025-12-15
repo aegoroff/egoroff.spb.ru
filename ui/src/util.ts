@@ -1,9 +1,5 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import { Query } from '@/services/ApiService.vue'
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import { SearchQuery } from '@/services/SearchService.vue'
+import { Query } from '@/services/ApiService'
+import { SearchQuery } from '@/services/SearchService'
 
 export function removeHash (): void {
   history.pushState('', document.title, window.location.pathname + window.location.search)
@@ -18,8 +14,21 @@ export function toQuery (q?: Query | SearchQuery): string {
     if (str !== '?') {
       str += '&'
     }
-    const v = Reflect.get(q, key)
-    str += key + '=' + encodeURIComponent(v)
+    const v = (q as any)[key]
+    if (v !== undefined && v !== null) {
+      str += key + '=' + encodeURIComponent(v)
+    }
   }
-  return str
+  return str === '?' ? '' : str
+}
+
+export function closeModalById(id: string): void {
+  const modal = document.getElementById(id)
+  if (!modal) return
+
+  const dismissBtn = modal.querySelector(
+    '[data-bs-dismiss="modal"]'
+  ) as HTMLButtonElement | null
+
+  dismissBtn?.click()
 }

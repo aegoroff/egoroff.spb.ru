@@ -1,43 +1,62 @@
 <template>
-  <div id="accordion" role="tablist">
-    <b-card class="m-2" no-body v-for="y in years" :key="y.year">
+  <div class="accordion" id="accordion">
+    <div class="card m-2" v-for="y in years" :key="y.year">
+      <!-- Header -->
+      <div class="card-header p-1">
+        <button
+          class="btn btn-light w-100"
+          type="button"
+          data-bs-toggle="collapse"
+          :data-bs-target="'#y' + y.year"
+        >
+          {{ y.year }}
+        </button>
+      </div>
 
-      <b-card-header header-tag="header" class="p-1" role="tab">
-        <b-button block v-b-toggle="'y' + y.year" variant="light">{{ y.year }}</b-button>
-      </b-card-header>
-
-      <b-collapse v-bind:id="'y' + y.year" accordion="blog-archive" role="tabpanel">
-        <b-card-body>
-          <b-list-group flush>
-            <b-list-group-item v-bind:href="'#year=' + y.year"
-                               v-on:click="updateYear(y.year, 1)"
-                               class="d-flex justify-content-between align-items-center">
+      <!-- Collapse -->
+      <div :id="'y' + y.year" class="collapse" data-bs-parent="#accordion">
+        <div class="card-body">
+          <div class="list-group list-group-flush">
+            <!-- Whole year -->
+            <a
+              class="list-group-item d-flex justify-content-between align-items-center"
+              :href="'#year=' + y.year"
+              @click.prevent="updateYear(y.year, 1)"
+            >
               За весь год
-              <b-badge variant="primary" pill>{{ y.posts }}</b-badge>
-            </b-list-group-item>
+              <span class="badge bg-primary rounded-pill">
+                {{ y.posts }}
+              </span>
+            </a>
 
-            <b-list-group-item
+            <!-- Months -->
+            <a
               v-for="m in y.months"
               :key="m.month"
-              v-on:click="updateYearMonth(y.year, m.month, 1)"
-              v-bind:href="'#year=' +y.year + '&month=' + m.month"
-              class="d-flex justify-content-between align-items-center">
+              class="list-group-item d-flex justify-content-between align-items-center"
+              :href="'#year=' + y.year + '&month=' + m.month"
+              @click.prevent="updateYearMonth(y.year, m.month, 1)"
+            >
               {{ monthName(m.month) }}
-              <b-badge variant="secondary" pill>{{ m.posts }}</b-badge>
-            </b-list-group-item>
-          </b-list-group>
-        </b-card-body>
-      </b-collapse>
-    </b-card>
+              <span class="badge bg-secondary rounded-pill">
+                {{ m.posts }}
+              </span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
+import { createApp } from 'vue'
+import moment from 'moment'
+import { emitter } from '@/main'
+
 import BlogAnnounces from '@/components/BlogAnnounces.vue'
 import BlogTitle from '@/components/BlogTitle.vue'
-import moment from 'moment'
-import { bus } from '@/main'
 
 export class Month {
   public month!: number
@@ -50,91 +69,109 @@ export class Year {
   public months!: Array<Month>
 }
 
-@Component
-export default class Chrono extends Vue {
-  @Prop() private years!: Array<Year>
-  private months: { [key: number]: string } = {
-    1: 'Январь',
-    2: 'Февраль',
-    3: 'Март',
-    4: 'Апрель',
-    5: 'Май',
-    6: 'Июнь',
-    7: 'Июль',
-    8: 'Август',
-    9: 'Сентябрь',
-    10: 'Октябрь',
-    11: 'Ноябрь',
-    12: 'Декабрь'
-  };
+export default defineComponent({
+  name: 'Chrono',
 
-  created (): void {
-    bus.$on('pageChanged', (data: number) => {
+  props: {
+    years: {
+      type: Array as () => Year[],
+      required: true
+    }
+  },
+
+  data() {
+    return {
+      months: {
+        1: 'Январь',
+        2: 'Февраль',
+        3: 'Март',
+        4: 'Апрель',
+        5: 'Май',
+        6: 'Июнь',
+        7: 'Июль',
+        8: 'Август',
+        9: 'Сентябрь',
+        10: 'Октябрь',
+        11: 'Ноябрь',
+        12: 'Декабрь'
+      } as Record<number, string>
+    }
+  },
+
+  created() {
+    emitter.on('pageChanged', (page: number) => {
       const parts = window.location.hash.substring(1).split('&')
 
       let y = 0
       let m = 0
+
       for (const part of parts) {
-        const elts = part.split('=')
-        if (elts[0] === 'year') {
-          y = parseInt(elts[1], 10)
-        }
-        if (elts[0] === 'month') {
-          m = parseInt(elts[1], 10)
-        }
+        const [key, value] = part.split('=')
+        if (key === 'year') y = Number(value)
+        if (key === 'month') m = Number(value)
       }
 
-      if (isNaN(y) || isNaN(m)) {
-        return
-      }
+      if (!y) return
 
-      if (m === 0 && y > 0) {
-        this.updateYear(y, data)
-      } else if (m > 0 && y > 0) {
-        this.updateYearMonth(y, m, data)
+      if (!m) {
+        this.updateYear(y, page)
+      } else {
+        this.updateYearMonth(y, m, page)
       }
     })
-  }
+  },
 
-  monthName (month: number): string {
-    return this.months[month]
-  }
+  methods: {
+    monthName(month: number): string {
+      return this.months[month]
+    },
 
-  updateYear (year: number, page: number): void {
-    bus.$emit('dateSelectionChanged')
-    const ba = new BlogAnnounces({
-      propsData: {
+    updateYear(year: number, page: number) {
+      const params = new URLSearchParams(window.location.hash.slice(1))
+      params.set('year', String(year))
+      if (page > 1) {
+        params.set('page', String(page))
+      } else {
+        params.delete('page')
+      }
+      params.delete('tag')
+
+      window.location.hash = params.toString()
+
+      emitter.emit('dateSelectionChanged')
+
+      createApp(BlogAnnounces, {
         q: `year=${year}&page=${page}`
-      }
-    })
-    ba.$mount('#blogcontainer')
+      }).mount('#blogcontainer')
 
-    const bt = new BlogTitle({
-      propsData: {
+      createApp(BlogTitle, {
         text: `записи за ${year} год`
-      }
-    })
-    bt.$mount('#blogSmallTitle')
-  }
+      }).mount('#blogSmallTitle')
+    },
 
-  updateYearMonth (year: number, month: number, page: number): void {
-    bus.$emit('dateSelectionChanged')
-    const ba = new BlogAnnounces({
-      propsData: {
+    updateYearMonth(year: number, month: number, page: number) {
+      const params = new URLSearchParams(window.location.hash.slice(1))
+      params.set('year', String(year))
+      params.set('month', String(month))
+      if (page > 1) {
+        params.set('page', String(page))
+      } else {
+        params.delete('page')
+      }
+      params.delete('tag')
+
+      emitter.emit('dateSelectionChanged')
+
+      createApp(BlogAnnounces, {
         q: `year=${year}&month=${month}&page=${page}`
-      }
-    })
-    ba.$mount('#blogcontainer')
+      }).mount('#blogcontainer')
 
-    const m = month - 1
-    const mnt = moment(new Date(year, m, 1)).locale('ru')
-    const bt = new BlogTitle({
-      propsData: {
-        text: `записи за ${mnt.format('MMMM YYYY')}`
-      }
-    })
-    bt.$mount('#blogSmallTitle')
+      const m = moment(new Date(year, month - 1, 1)).locale('ru')
+
+      createApp(BlogTitle, {
+        text: `записи за ${m.format('MMMM YYYY')}`
+      }).mount('#blogSmallTitle')
+    }
   }
-}
-
+})
 </script>

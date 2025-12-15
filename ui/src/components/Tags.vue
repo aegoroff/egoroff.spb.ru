@@ -3,84 +3,105 @@
     <ul class="list-inline">
       <li class="list-inline-item" v-for="tag in tags" :key="tag.title">
         <a
-          v-bind:href="`/blog/#tag=${tag.title}`"
-          v-bind:class="[currentTag === tag.title ? `btn btn-outline-dark ${tagClass(tag.level)}` : tagClass(tag.level)]"
-          v-on:click="update(tag.title, 1)"
-          v-bind:id="`t_${tag.title}`">{{ tag.title }}</a>
+          :href="`/blog/#tag=${tag.title}`"
+          :class="[currentTag === tag.title ? `btn btn-outline-dark ${tagClass(tag.level)}` : `btn ${tagClass(tag.level)}`]"
+          @click.prevent="update(tag.title, 1)"
+          :id="`t_${tag.title}`">{{ tag.title }}</a>
       </li>
     </ul>
   </div>
 </template>
-
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator'
+import { defineComponent, createApp } from 'vue'
 import BlogAnnounces from '@/components/BlogAnnounces.vue'
 import BlogTitle from '@/components/BlogTitle.vue'
-import { bus } from '@/main'
+import { emitter } from '@/main'
 
 export class Tag {
   public title!: string
   public level!: number
 }
 
-@Component
-export default class Tags extends Vue {
-  @Prop() private tags!: Array<Tag>
-  @Prop() private currentTag!: string
-  private tagsClasses: { [key: number]: string } = {
-    0: 'tagRank10',
-    1: 'tagRank9',
-    2: 'tagRank8',
-    3: 'tagRank7',
-    4: 'tagRank6',
-    5: 'tagRank5',
-    6: 'tagRank4',
-    7: 'tagRank3',
-    8: 'tagRank2',
-    10: 'tagRank1'
-  };
+export default defineComponent({
+  name: 'Tags',
 
-  created (): void {
-    bus.$on('pageChanged', (data: number) => {
+  props: {
+    tags: {
+      type: Array<Tag>,
+      required: true
+    },
+    currentTag: {
+      type: String,
+      required: true
+    }
+  },
+
+  data() {
+    return {
+      tagsClasses: {
+        0: 'tagRank10',
+        1: 'tagRank9',
+        2: 'tagRank8',
+        3: 'tagRank7',
+        4: 'tagRank6',
+        5: 'tagRank5',
+        6: 'tagRank4',
+        7: 'tagRank3',
+        8: 'tagRank2',
+        10: 'tagRank1'
+      } as Record<number, string>
+    }
+  },
+
+  created() {
+    emitter.on('pageChanged', (page) => {
       const parts = window.location.hash.substring(1).split('&')
 
       for (const part of parts) {
-        const elts = part.split('=')
-        if (elts[0] === 'tag') {
-          this.update(elts[1], data)
+        const [key, value] = part.split('=')
+        if (key === 'tag') {
+          this.update(value, page)
           return
         }
       }
     })
 
-    bus.$on('dateSelectionChanged', () => {
-      this.currentTag = ''
+    emitter.on('dateSelectionChanged', () => {
+      this.$emit('update:currentTag', '')
     })
-  }
+  },
 
-  tagClass (ix: number): string {
-    return this.tagsClasses[ix]
-  }
+  methods: {
+    tagClass(ix: number): string {
+      return this.tagsClasses[ix]
+    },
 
-  update (tag: string, page: number): void {
-    bus.$emit('tagChanged', tag)
-    this.currentTag = tag
-    const ba = new BlogAnnounces({
-      propsData: {
+    update(tag: string, page: number): void {
+      const params = new URLSearchParams(window.location.hash.slice(1))
+      params.set('tag', tag)
+      if (page > 1) {
+        params.set('page', String(page))
+      } else {
+        params.delete('page')
+      }
+      params.delete('year')
+      params.delete('month')
+
+      window.location.hash = params.toString()
+
+      emitter.emit('tagChanged' as any, tag)
+      this.$emit('update:currentTag', tag)
+
+      createApp(BlogAnnounces, {
         q: `tag=${tag}&page=${page}`
-      }
-    })
-    ba.$mount('#blogcontainer')
+      }).mount('#blogcontainer')
 
-    const bt = new BlogTitle({
-      propsData: {
+      createApp(BlogTitle, {
         text: `все посты по метке: ${tag}`
-      }
-    })
-    bt.$mount('#blogSmallTitle')
+      }).mount('#blogSmallTitle')
+    }
   }
-}
-
+})
 </script>
 
 <style scoped lang="scss">

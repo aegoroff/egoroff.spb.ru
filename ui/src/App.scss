@@ -1,17 +1,16 @@
-$font-family-sans-serif: 'Open Sans', Verdana, "Helvetica Neue", Helvetica, Arial, sans-serif;
-$font-family-serif: 'Noto Serif', Georgia, "Times New Roman", Times, serif;
+$font-family-sans-serif: "Open Sans", Verdana, "Helvetica Neue", Helvetica,
+  Arial, sans-serif;
+$font-family-serif: "Noto Serif", Georgia, "Times New Roman", Times, serif;
 $font-family-base: $font-family-serif;
 $headings-font-family: $font-family-sans-serif;
 $breadcrumb-divider: "→";
 
-// Then import Bootstrap an BootstrapVue SCSS files (order is important)
-@import '~bootstrap';
-@import '~bootstrap-vue';
+@import "~bootstrap/scss/bootstrap";
+@import "@marcoschulte/vue3-progress/style";
 
 $footer-height: ($spacer);
 
 body {
-
   > .container {
     padding-top: $spacer;
     padding-bottom: $spacer;
@@ -23,6 +22,14 @@ body {
   }
 
   margin-bottom: $footer-height * 2.5;
+}
+
+a {
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
 }
 
 .card {
@@ -41,7 +48,10 @@ body {
   display: block;
 }
 
-.nav, .navbar, .breadcrumb, .text-muted {
+.nav,
+.navbar,
+.breadcrumb,
+.text-muted {
   font-family: $font-family-sans-serif;
 }
 
@@ -56,7 +66,7 @@ html {
   display: table;
   width: 100%;
   height: $footer-height;
-  border-top: 1px solid $hr-border-color;
+  border-top: 1px solid #ddd;
   color: $text-muted;
   background-color: #f5f5f5;
   text-align: center;
@@ -83,8 +93,18 @@ td {
   }
 }
 
-h1, h2, h3, h4, h5, h6,
-.h1, .h2, .h3, .h4, .h5, .h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.h1,
+.h2,
+.h3,
+.h4,
+.h5,
+.h6 {
   small,
   .small {
     color: $gray-500;
@@ -116,6 +136,9 @@ $bs-height-xs: floor($btn-line-height + $btn-padding-x-sm * 2);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+
+  display: flex;
+  gap: 0.5rem;
 
   > :first-child {
     position: absolute;
@@ -213,6 +236,19 @@ $bs-height-xs: floor($btn-line-height + $btn-padding-x-sm * 2);
   }
 }
 
+.btn-google {
+  background-color: #dd4b39;
+  color: white;
+}
+.btn-github {
+  background-color: #333;
+  color: white;
+}
+.btn-yandex {
+  background-color: #f00;
+  color: white;
+}
+
 @mixin btn-social($color-bg, $color: null) {
   @if $color {
     color: $color;
@@ -235,7 +271,8 @@ $bs-height-xs: floor($btn-line-height + $btn-padding-x-sm * 2);
 
 // Apache
 
-pre.code, code {
+pre.code,
+code {
   color: #0d0d97;
 }
 
@@ -254,7 +291,10 @@ pre.code {
 
 /* Tables */
 
-div.table, div.breadcrumbs, div.bottomMenuContainer, div.directive {
+div.table,
+div.breadcrumbs,
+div.bottomMenuContainer,
+div.directive {
   height: 0;
 }
 
@@ -263,7 +303,10 @@ div.tr {
 }
 
 /* не для IE */
-div.table[class], div.breadcrumbs[class], div.bottomMenuContainer[class], div.directive[class] {
+div.table[class],
+div.breadcrumbs[class],
+div.bottomMenuContainer[class],
+div.directive[class] {
   height: auto;
   display: table;
 }
@@ -273,12 +316,14 @@ div.tr[class] {
   display: table-row;
 }
 
-div.td[class], div.th[class] {
+div.td[class],
+div.th[class] {
   float: none;
   display: table-cell;
 }
 
-div.td, div.th {
+div.td,
+div.th {
   height: 100%;
   float: left;
 }
@@ -294,7 +339,9 @@ div.example {
   width: 50%;
   background-color: #e5ecf3;
 
-  p, pre, table {
+  p,
+  pre,
+  table {
     padding: 0;
     margin: 0;
   }
@@ -304,7 +351,8 @@ div.example {
   }
 }
 
-div.note, div.warning {
+div.note,
+div.warning {
   background-color: #eee;
   color: #036;
   padding: 0.5em;
@@ -323,7 +371,8 @@ div.note, div.warning {
 }
 
 div.directive {
-  div.td, div.th {
+  div.td,
+  div.th {
     padding: 3px;
   }
 }
@@ -337,4 +386,14 @@ table {
   div.example {
     margin-right: 1em;
   }
+}
+
+.breadcrumb {
+  --bs-breadcrumb-bg: #e9ecef;
+  padding: 0.75rem 1rem;
+}
+
+:root {
+  --vue3-progress-bar-height: 4px;
+  --vue3-progress-bar-color: #32a6db;
 }

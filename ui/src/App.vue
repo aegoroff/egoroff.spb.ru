@@ -1,45 +1,51 @@
 <template>
   <div id="app">
-    <vue-progress-bar></vue-progress-bar>
-    <Navigation v-bind:navigation="navigation" v-bind:user="user"/>
-    <Breadcrumbs v-bind:breadcrumbs="breadcrumbs" v-bind:title="title"/>
+    <vue3-progress-bar></vue3-progress-bar>
+    <Navigation :navigation="navigation" :user="user"/>
+    <Breadcrumbs :breadcrumbs="breadcrumbs" :title="title"/>
   </div>
 </template>
-
 <script lang="ts">
-import 'reflect-metadata'
-import { Component, Prop, Vue } from 'vue-property-decorator'
+import { defineComponent, ref, onMounted } from 'vue'
 import Navigation, { Section } from '@/components/Navigation.vue'
-import ApiService, { User } from '@/services/ApiService.vue'
-import { inject } from 'vue-typescript-inject'
+import ApiService, { User as ApiUser } from '@/services/ApiService'
 import Breadcrumbs from '@/components/Breadcrumbs.vue'
-
-@Component({
+export default defineComponent({
+  name: 'App',
   components: {
     Navigation,
     Breadcrumbs
   },
-  providers: [ApiService]
-})
-export default class App extends Vue {
-  private navigation!: Array<Section>
-  private breadcrumbs!: Array<Section>
-  @Prop() private user!: User
-  @Prop() public title!: string
-  @inject() private api!: ApiService
-
-  constructor () {
-    super()
-    const nav = this.api.getNavigation()
-    this.navigation = nav.sections
-    this.breadcrumbs = nav.breadcrumbs
-    this.api.getUser().then(r => {
-      this.user = r
+  props: {
+    title: {
+      type: String,
+      required: true
+    }
+  },
+  setup(props) {
+    const navigation = ref<Array<Section>>([])
+    const breadcrumbs = ref<Array<Section>>([])
+    const user = ref<ApiUser | null>(null)
+    onMounted(async () => {
+      const apiService = new ApiService()
+      const nav = await apiService.getNavigation()
+      navigation.value = nav.sections
+      breadcrumbs.value = nav.breadcrumbs
+      try {
+        const userData = await apiService.getUser()
+        user.value = userData
+      } catch (error) {
+        console.error('Failed to fetch user:', error)
+      }
     })
+    return {
+      navigation,
+      breadcrumbs,
+      user
+    }
   }
-}
+})
 </script>
-
 <style lang="scss">
 #app {
   -webkit-font-smoothing: antialiased;

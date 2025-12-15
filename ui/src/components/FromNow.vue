@@ -1,21 +1,26 @@
 <template>
-  <span class="date-from-now">{{ format() }}</span>
+  <span class="date-from-now">{{ formatted }}</span>
 </template>
 
 <script lang="ts">
 import moment from 'moment'
-import { Component, Prop, Vue } from 'vue-property-decorator'
+import { computed, defineComponent } from 'vue'
 
-@Component
-export default class FromNow extends Vue {
-  @Prop({
-    type: String,
-    required: true
-  })
-  public date!: string
-
-  format (): string {
-    return moment(this.date).locale('ru').fromNow()
+export default defineComponent({
+  name: 'FromNow',
+  props: {
+    date: {
+      type: String,
+      required: true
+    }
+  },
+  setup(props) {
+    const formatted = computed(() =>
+      moment(props.date).locale('ru').fromNow()
+    )
+    return {
+      formatted
+    }
   }
-}
+})
 </script>

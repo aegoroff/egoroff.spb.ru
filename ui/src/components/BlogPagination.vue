@@ -1,48 +1,62 @@
 <template>
-  <div id="blogPager">
-    <b-pagination-nav
-      v-if="pages > 1"
-      v-bind:number-of-pages="pages"
-      v-model="page"
-      hide-goto-end-buttons
-      :link-gen="pageLinkGenerator"
-      @change="update"
-      align="center"
-    >
-      <template #prev-text>&larr; новее</template>
-      <template #next-text>старее &rarr;</template>
-    </b-pagination-nav>
+  <div id="blogPager" v-if="pages > 1">
+    <nav aria-label="Page navigation">
+      <ul class="pagination justify-content-center mb-0">
+        <li :class="['page-item', { disabled: page === 1 }]">
+          <a class="page-link" href="#" @click.prevent="goToPage(page - 1)">&larr; новее</a>
+        </li>
+
+        <li 
+          v-for="n in pages" 
+          :key="n" 
+          :class="['page-item', { active: n === page }]"
+        >
+          <a class="page-link" :href="pageLinkGenerator(n)" @click.prevent="goToPage(n)">{{ n }}</a>
+        </li>
+
+        <li :class="['page-item', { disabled: page === pages }]">
+          <a class="page-link" href="#" @click.prevent="goToPage(page + 1)">старее &rarr;</a>
+        </li>
+      </ul>
+    </nav>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator'
-import { bus } from '@/main'
+import { defineComponent } from 'vue'
+import { emitter } from '@/main'
 
-@Component
-export default class BlogPagination extends Vue {
-  @Prop() private pages!: number
-  @Prop() private page!: number
-
-  pageLinkGenerator (pageNum: number): string {
-    const parts = window.location.hash.substring(1).split('&')
-
-    let q = '#'
-    for (const part of parts) {
-      const elts = part.split('=')
-      if (elts[0] !== 'page') {
-        if (q !== '#') {
-          q += '&'
-        }
-        q += elts[0] + '=' + elts[1]
-      }
+export default defineComponent({
+  name: 'BlogPagination',
+  props: {
+    pages: {
+      type: Number,
+      required: true
+    },
+    page: {
+      type: Number,
+      required: true
     }
-
-    return `/blog/${q}&page=${pageNum}`
+  },
+  emits: ['update:page'],
+  methods: {
+    pageLinkGenerator(pageNum: number): string {
+      const parts = window.location.hash.substring(1).split('&')
+      let q = '#'
+      for (const part of parts) {
+        const elts = part.split('=')
+        if (elts[0] !== 'page') {
+          if (q !== '#') q += '&'
+          q += elts[0] + '=' + elts[1]
+        }
+      }
+      return `/blog/${q}&page=${pageNum}`
+    },
+    goToPage(pageNum: number) {
+      if (pageNum < 1 || pageNum > this.pages) return
+      emitter.emit('pageChanged', pageNum)
+      this.$emit('update:page', pageNum)
+    }
   }
-
-  update (page: number): void {
-    bus.$emit('pageChanged', page)
-  }
-}
+})
 </script>

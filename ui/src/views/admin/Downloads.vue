@@ -1,97 +1,151 @@
 <template>
   <div>
-    <b-button block variant="primary" v-b-modal.create-download href="#">Создать загрузку</b-button>
-    <b-pagination-nav
-      id="downloads-pager"
-      aria-controls="downloads-table"
-      v-if="pages > 1"
-      v-bind:number-of-pages="pages"
-      v-model="page"
-      @page-click="onChange"
-      align="center"
-      :link-gen="pageLinkGenerator"
-      use-router
-    ></b-pagination-nav>
+    <button class="btn btn-primary w-100 mb-3" data-bs-toggle="modal" data-bs-target="#create-download">
+      Создать загрузку
+    </button>
+    
+    <nav v-if="pages > 1">
+      <ul class="pagination justify-content-center" id="downloads-pager">
+        <li class="page-item" :class="{ disabled: page === 1 }">
+          <router-link :to="`/downloads/${page - 1}`" class="page-link">Назад</router-link>
+        </li>
+        <li class="page-item" v-for="p in pageNumbers" :key="p" :class="{ active: p === page }">
+          <router-link :to="`/downloads/${p}`" class="page-link">{{ p }}</router-link>
+        </li>
+        <li class="page-item" :class="{ disabled: page === pages }">
+          <router-link :to="`/downloads/${page + 1}`" class="page-link">Вперед</router-link>
+        </li>
+      </ul>
+    </nav>
+    
     <EditDownload id="edit-download" :download="selectedDownload"></EditDownload>
     <CreateDownload id="create-download"></CreateDownload>
     <DeleteDownload id="delete-download" :downloadId="selectedDownloadId"></DeleteDownload>
-    <b-table-lite responsive small striped hover :items="downloads" :fields="fields" id="downloads-table">
-      <template #cell(title)="data">
-        <a v-b-modal.edit-download href="#" @click="onSelect(data.item)">{{ data.value }}</a>
-      </template>
-      <template #cell(-)="data">
-        <a v-b-modal.delete-download href="#" @click="onSelect(data.item)">
-          <AppIcon icon="trash-alt"></AppIcon>
-        </a>
-      </template>
-    </b-table-lite>
+    
+    <div class="table-responsive" id="downloads-table">
+      <table class="table table-striped table-hover table-sm">
+        <thead>
+          <tr>
+            <th scope="col">-</th>
+            <th scope="col">ID</th>
+            <th scope="col">Название</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="item in downloads" :key="item.id">
+            <td>
+              <a href="#" data-bs-toggle="modal" data-bs-target="#delete-download" @click="onSelect(item)">
+                <AppIcon icon="trash-alt"></AppIcon>
+              </a>
+            </td>
+            <td>{{ item.id }}</td>
+            <td>
+              <a href="#" data-bs-toggle="modal" data-bs-target="#edit-download" @click="onSelect(item)">
+                {{ item.title }}
+              </a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator'
-import ApiService, { Query } from '@/services/ApiService.vue'
-import { inject } from 'vue-typescript-inject'
-import { BvEvent } from 'bootstrap-vue'
+import { defineComponent, ref, computed, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import ApiService, { Query } from '@/services/ApiService'
 import AppIcon from '@/components/AppIcon.vue'
-import { bus } from '@/main'
+import { emitter } from '@/main'
 import EditDownload, { Download } from '@/components/admin/EditDownload.vue'
 import DeleteDownload from '@/components/admin/DeleteDownload.vue'
 import CreateDownload from '@/components/admin/CreateDownload.vue'
 
-@Component({
+export default defineComponent({
+  name: 'Downloads',
   components: {
     EditDownload,
     DeleteDownload,
     CreateDownload,
     AppIcon
   },
-  providers: [ApiService]
+  setup() {
+    const route = useRoute()
+    
+    const downloads = ref<Array<Download>>([])
+    const page = ref(1)
+    const pages = ref(1)
+    const selectedDownload = ref<Download>({
+      id: 0,
+      title: ''
+    })
+    const selectedDownloadId = ref(0)
+    
+    const pageNumbers = computed(() => {
+      const numbers = []
+      const start = Math.max(1, page.value - 2)
+      const end = Math.min(pages.value, page.value + 2)
+      
+      for (let i = start; i <= end; i++) {
+        numbers.push(i)
+      }
+      return numbers
+    })
+    
+    const update = async (pageNum: number): Promise<void> => {
+      const q = new Query()
+      q.page = pageNum.toString()
+      q.limit = '10'
+      
+      const apiService = new ApiService()
+      try {
+        const result = await apiService.getDownloads<Download>(q)
+        downloads.value = result.result
+        pages.value = result.pages
+        page.value = result.page
+      } catch (error) {
+        console.error('Failed to fetch downloads:', error)
+      }
+    }
+    
+    const onSelect = (d: Download): void => {
+      selectedDownload.value = d
+      selectedDownloadId.value = d.id
+    }
+    
+    onMounted(() => {
+      // Инициализация из роута
+      const routePage = parseInt(route.params.page as string) || 1
+      update(routePage)
+      
+      // Подписываемся на события
+      emitter.on('downloadDeleted', () => {
+        update(page.value)
+      })
+      
+      emitter.on('downloadCreated', () => {
+        update(page.value)
+      })
+    })
+    
+    // Отслеживаем изменения роута
+    watch(() => route.params.page, (newPage) => {
+      const pageNum = parseInt(newPage as string) || 1
+      update(pageNum)
+    })
+    
+    return {
+      downloads,
+      page,
+      pages,
+      selectedDownload,
+      selectedDownloadId,
+      pageNumbers,
+      update,
+      onSelect
+    }
+  }
 })
-export default class Downloads extends Vue {
-  @inject() private api!: ApiService
-  @Prop() private downloads!: Array<Download>
-  @Prop() private page!: number
-  @Prop() private pages!: number
-  @Prop() private selectedDownload!: Download
-  @Prop() private selectedDownloadId!: number
-  private fields = ['-', 'id', 'title']
-
-  constructor () {
-    super()
-    this.update(1)
-    bus.$on('downloadDeleted', () => {
-      this.update(this.page)
-    })
-    bus.$on('downloadCreated', () => {
-      this.update(this.page)
-    })
-  }
-
-  update (page: number): void {
-    const q = new Query()
-    q.page = page.toString()
-    q.limit = '10'
-    this.api.getDownloads<Download>(q).then(x => {
-      this.downloads = x.result
-      this.pages = x.pages
-      this.page = x.page
-    })
-  }
-
-  onChange (evt: BvEvent, page: number): void {
-    this.update(page)
-  }
-
-  onSelect (d: Download): void {
-    this.selectedDownload = d
-    this.selectedDownloadId = d.id
-  }
-
-  pageLinkGenerator (pageNum: number): string {
-    return `/downloads/${pageNum}`
-  }
-}
 </script>
 
 <style scoped lang="scss">

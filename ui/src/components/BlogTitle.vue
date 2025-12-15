@@ -3,10 +3,15 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator'
+import { defineComponent, PropType } from 'vue'
 
-@Component
-export default class BlogTitle extends Vue {
-  @Prop() private text!: string
-}
+export default defineComponent({
+  name: 'BlogTitle',
+  props: {
+    text: {
+      type: String as PropType<string>,
+      required: true
+    }
+  }
+})
 </script>

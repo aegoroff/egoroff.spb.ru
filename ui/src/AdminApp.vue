@@ -1,31 +1,30 @@
 <template>
   <div class="container">
-    <b-row>
-      <b-col cols="2">
+    <div class="row">
+      <div class="col-2">
         <main-menu/>
-      </b-col>
-      <b-col>
+      </div>
+      <div class="col">
         <div class="main-panel">
           <div class="content-wrapper">
             <router-view></router-view>
           </div>
         </div>
-      </b-col>
-    </b-row>
+      </div>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import MainMenu from '@/components/admin/MainMenu.vue'
 
-@Component({
+export default defineComponent({
+  name: 'AdminApp',
   components: {
     MainMenu
   }
 })
-export default class AdminApp extends Vue {
-}
 </script>
 
 <style scoped>

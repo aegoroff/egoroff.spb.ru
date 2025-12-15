@@ -1,49 +1,63 @@
 <template>
-  <div class="col-lg-3" id="blogNavigation">
-    <b-tabs>
-      <b-tab title="Метки" active>
-        <Tags v-bind:tags="archive.tags"/>
-      </b-tab>
-      <b-tab title="Архив">
-        <Chrono v-bind:years="archive.years"/>
-      </b-tab>
-    </b-tabs>
+  <ul class="nav nav-tabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="tags-tab" data-bs-toggle="tab" 
+              data-bs-target="#tags-content" type="button">Метки</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="archive-tab" data-bs-toggle="tab" 
+              data-bs-target="#archive-content" type="button">Архив</button>
+    </li>
+  </ul>
+  <div class="tab-content">
+    <div class="tab-pane fade show active" id="tags-content">
+      <Tags :tags="archive.tags" v-model:currentTag="currentTag" />
+    </div>
+    <div class="tab-pane fade" id="archive-content">
+      <Chrono :years="archive.years"/>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
-import 'reflect-metadata'
-import { Component, Prop, Vue } from 'vue-property-decorator'
-import ApiService from '@/services/ApiService.vue'
+import { defineComponent, ref, onMounted } from 'vue'
+import ApiService from '@/services/ApiService'
 import Tags, { Tag } from '@/components/Tags.vue'
 import Chrono, { Year } from '@/components/Chrono.vue'
-import { inject } from 'vue-typescript-inject'
 
 export class Archive {
   public tags!: Array<Tag>
   public years!: Array<Year>
 }
 
-@Component({
+export default defineComponent({
+  name: 'BlogNavigation',
   components: {
     Tags,
     Chrono
   },
-  providers: [ApiService]
-})
-export default class BlogNavigation extends Vue {
-  @Prop() private archive: Archive
-  @inject() private api!: ApiService
-
-  constructor () {
-    super()
-    this.archive = new Archive()
-  }
-
-  mounted (): void {
-    this.api.getBlogArchive().then(x => {
-      this.archive = x
+  
+  setup() {
+    const archive = ref<Archive>({
+      tags: [],
+      years: []
     })
+    const currentTag = ref('')
+    
+    onMounted(async () => {
+      const apiService = new ApiService()
+      try {
+        const archiveData = await apiService.getBlogArchive()
+        archive.value = archiveData
+      } catch (error) {
+        console.error('Failed to fetch blog archive:', error)
+      }
+    })
+    
+    return {
+      archive,
+      currentTag
+    }
   }
-}
+})
 </script>

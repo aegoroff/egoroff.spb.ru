@@ -1,13 +1,42 @@
 <template>
-  <highlight-code :lang="lang">{{ content }}</highlight-code>
+    <code ref="codeEl" :class="`language-${lang}`">
+      <slot>{{ content }}</slot>
+    </code>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator'
+import { defineComponent, onMounted, ref, watch } from 'vue'
+import hljs from 'highlight.js'
 
-@Component
-export default class Highlighter extends Vue {
-  @Prop() private lang!: string
-  @Prop() private content!: string
-}
+export default defineComponent({
+  name: 'Highlighter',
+
+  props: {
+    lang: {
+      type: String,
+      required: true,
+    },
+    content: {
+      type: String,
+      required: true,
+    },
+  },
+
+  setup(props) {
+    const codeEl = ref<HTMLElement | null>(null)
+
+    const highlight = () => {
+      if (!codeEl.value) return
+      codeEl.value.textContent = props.content
+      hljs.highlightElement(codeEl.value)
+    }
+
+    onMounted(highlight)
+    watch(() => props.content, highlight)
+
+    return {
+      codeEl,
+    }
+  },
+})
 </script>

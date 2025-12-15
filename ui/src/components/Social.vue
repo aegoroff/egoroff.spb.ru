@@ -1,24 +1,57 @@
 <template>
   <div>
-    <ShareNetwork class="btn btn-sm" v-for="net in networks" :key="net" v-bind:network="net" v-bind:url="url"
-                  v-bind:title="title">
-      <font-awesome-icon v-bind:icon="['fab', net]"></font-awesome-icon>
-    </ShareNetwork>
+    <!-- Замените ShareNetwork на обычные ссылки -->
+    <a v-for="net in networks" :key="net" 
+       :href="getShareUrl(net)" 
+       class="btn btn-sm" 
+       target="_blank">
+      <font-awesome-icon :icon="['fab', net]"></font-awesome-icon>
+    </a>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator'
+import { defineComponent, PropType } from 'vue'
 
-@Component
-export default class Social extends Vue {
-  @Prop() private url!: string
-  @Prop() private title!: string
-  @Prop() private networks!: Array<string>
-
-  mounted (): void {
-    this.networks = new Array<string>()
-    this.networks.push('vk')
+export default defineComponent({
+  name: 'Social',
+  props: {
+    url: {
+      type: String as PropType<string>,
+      required: true
+    },
+    title: {
+      type: String as PropType<string>,
+      required: true
+    }
+  },
+  setup(props) {
+    const networks = ['vk', 'telegram', 'whatsapp']
+    
+    const getShareUrl = (network: string): string => {
+      const encodedUrl = encodeURIComponent(props.url)
+      const encodedTitle = encodeURIComponent(props.title)
+      
+      switch(network) {
+        case 'vk':
+          return `https://vk.com/share.php?url=${encodedUrl}&title=${encodedTitle}`
+        case 'telegram':
+          return `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}`
+        case 'whatsapp':
+          return `https://api.whatsapp.com/send?text=${encodedTitle}%20${encodedUrl}`
+        case 'facebook':
+          return `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`
+        case 'twitter':
+          return `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`
+        default:
+          return '#'
+      }
+    }
+    
+    return {
+      networks,
+      getShareUrl
+    }
   }
-}
+})
 </script>

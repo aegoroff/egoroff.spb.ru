@@ -1,27 +1,28 @@
 <template>
-  <span itemprop="datePublished" class="shortDate">{{ format() }}</span>
+  <span itemprop="datePublished" class="shortDate">{{ formatted }}</span>
 </template>
-
 <script lang="ts">
 import moment from 'moment'
-import { Component, Prop, Vue } from 'vue-property-decorator'
-
-@Component
-export default class DateFormatter extends Vue {
-  @Prop({
-    type: String,
-    required: true
-  })
-  public date!: string
-
-  @Prop({
-    type: String,
-    required: true
-  })
-  public formatStr!: string
-
-  format (): string {
-    return moment(this.date).locale('ru').format(this.formatStr)
+import { computed, defineComponent } from 'vue'
+export default defineComponent({
+  name: 'DateFormatter',
+  props: {
+    date: {
+      type: String,
+      required: true
+    },
+    formatStr: {
+      type: String,
+      required: true
+    }
+  },
+  setup(props) {
+    const formatted = computed(() =>
+      moment(props.date).locale('ru').format(props.formatStr)
+    )
+    return {
+      formatted
+    }
   }
-}
+})
 </script>
