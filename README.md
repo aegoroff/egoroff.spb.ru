@@ -44,8 +44,8 @@ The project consists of several components:
 - **Serde** for serialization
 
 ### Frontend
-- **Vue.js 2** with TypeScript
-- **Bootstrap 4** for styling
+- **Vue.js 3** with TypeScript
+- **Bootstrap 5** for styling
 - **FontAwesome** for icons
 - **Axios** for HTTP requests
 - **Vue Router** for navigation
@@ -53,7 +53,7 @@ The project consists of several components:
 ### DevOps
 - **Docker** for containerization
 - **Python** build scripts for documentation processing
-- **Node.js** for frontend build process
+- **Bun** for frontend build process
 
 ## Prerequisites
 
