@@ -37,9 +37,11 @@
 
         <div class="col">
           <div class="mb-3" v-if="user.avatarUrl">
-            <label for="avatar" class="form-label">Аватар:</label>
-            <img class="img-thumbnail" id="avatar" :src="user.avatarUrl" width="180">
-            <p class="text-muted">
+            <label for="avatar" class="form-label d-block">Аватар:</label>
+
+            <img class="img-thumbnail mb-2" id="avatar" :src="user.avatarUrl" width="180"/>
+
+            <p class="text-muted mb-0">
               Изменить на
               <a href="//gravatar.com" target="_blank">Gravatar</a>
             </p>
@@ -56,7 +58,6 @@
         </div>
       </div>
     </form>
-
   </div>
 </template>
 
