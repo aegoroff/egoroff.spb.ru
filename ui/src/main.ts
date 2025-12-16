@@ -25,7 +25,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { Vue3ProgressPlugin } from "@marcoschulte/vue3-progress";
 import AppIcon from "./components/AppIcon.vue";
-import DateFormatter from "@/components/DateFomatter.vue";
+import DateFormatter from "@/components/DateFormatter.vue";
 import FromNow from "@/components/FromNow.vue";
 import BlogNavigation from "@/components/BlogNavigation.vue";
 import "./App.scss";

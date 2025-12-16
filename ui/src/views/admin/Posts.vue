@@ -59,7 +59,7 @@
 import { defineComponent, ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ApiService, { Query } from '@/services/ApiService'
-import DateFormatter from '@/components/DateFomatter.vue'
+import DateFormatter from '@/components/DateFormatter.vue'
 import EditPost, { Post } from '@/components/admin/EditPost.vue'
 import DeletePost from '@/components/admin/DeletePost.vue'
 import AppIcon from '@/components/AppIcon.vue'

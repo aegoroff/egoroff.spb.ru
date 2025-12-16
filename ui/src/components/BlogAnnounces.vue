@@ -15,7 +15,7 @@
 </template>
 <script lang="ts">
 import { defineComponent, ref, onMounted, createApp, h } from 'vue'
-import DateFormatter from '@/components/DateFomatter.vue'
+import DateFormatter from '@/components/DateFormatter.vue'
 import ApiService, { Query } from '@/services/ApiService'
 import BlogPagination from '@/components/BlogPagination.vue'
 
