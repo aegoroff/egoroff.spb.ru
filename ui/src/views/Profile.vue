@@ -62,7 +62,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from 'vue'
+import {defineComponent, onMounted, ref} from 'vue'
 import ApiService from '@/services/ApiService'
 import AppIcon from '@/components/AppIcon.vue'
 
@@ -94,33 +94,32 @@ export default defineComponent({
       provider: ''
     })
     const newAvatarUrl = ref('')
-    
+
     const readProfile = async (): Promise<void> => {
       const apiService = new ApiService()
       try {
-        const userData = await apiService.getFullUserInfo()
-        user.value = userData
+        user.value = await apiService.getFullUserInfo()
       } catch (error) {
         console.error('Failed to fetch user info:', error)
       }
     }
-    
+
     onMounted(() => {
       readProfile()
     })
-    
+
     const update = (): void => {
       if (newAvatarUrl.value) {
         user.value.avatarUrl = newAvatarUrl.value
       }
-      
+
       const apiService = new ApiService()
       apiService.updateFullUserInfo(user.value)
-      
+
       // Сброс поля для нового аватара
       newAvatarUrl.value = ''
     }
-    
+
     return {
       user,
       newAvatarUrl,
