@@ -51,8 +51,8 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref, computed, onMounted, watch } from 'vue'
+<script setup lang="ts">
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import ApiService, { Query } from '@/services/ApiService'
 import AppIcon from '@/components/AppIcon.vue'
@@ -61,90 +61,68 @@ import EditDownload, { Download } from '@/components/admin/EditDownload.vue'
 import DeleteDownload from '@/components/admin/DeleteDownload.vue'
 import CreateDownload from '@/components/admin/CreateDownload.vue'
 
-export default defineComponent({
-  name: 'Downloads',
-  components: {
-    EditDownload,
-    DeleteDownload,
-    CreateDownload,
-    AppIcon
-  },
-  setup() {
-    const route = useRoute()
-    
-    const downloads = ref<Array<Download>>([])
-    const page = ref(1)
-    const pages = ref(1)
-    const selectedDownload = ref<Download>({
-      id: 0,
-      title: ''
-    })
-    const selectedDownloadId = ref(0)
-    
-    const pageNumbers = computed(() => {
-      const numbers = []
-      const start = Math.max(1, page.value - 2)
-      const end = Math.min(pages.value, page.value + 2)
-      
-      for (let i = start; i <= end; i++) {
-        numbers.push(i)
-      }
-      return numbers
-    })
-    
-    const update = async (pageNum: number): Promise<void> => {
-      const q = new Query()
-      q.page = pageNum.toString()
-      q.limit = '10'
-      
-      const apiService = new ApiService()
-      try {
-        const result = await apiService.getDownloads<Download>(q)
-        downloads.value = result.result
-        pages.value = result.pages
-        page.value = result.page
-      } catch (error) {
-        console.error('Failed to fetch downloads:', error)
-      }
-    }
-    
-    const onSelect = (d: Download): void => {
-      selectedDownload.value = d
-      selectedDownloadId.value = d.id
-    }
-    
-    onMounted(() => {
-      // Инициализация из роута
-      const routePage = parseInt(route.params.page as string) || 1
-      update(routePage)
-      
-      // Подписываемся на события
-      emitter.on('downloadDeleted', () => {
-        update(page.value)
-      })
-      
-      emitter.on('downloadCreated', () => {
-        update(page.value)
-      })
-    })
-    
-    // Отслеживаем изменения роута
-    watch(() => route.params.page, (newPage) => {
-      const pageNum = parseInt(newPage as string) || 1
-      update(pageNum)
-    })
-    
-    return {
-      downloads,
-      page,
-      pages,
-      selectedDownload,
-      selectedDownloadId,
-      pageNumbers,
-      update,
-      onSelect
-    }
+const route = useRoute()
+
+const downloads = ref<Array<Download>>([])
+const page = ref(1)
+const pages = ref(1)
+const selectedDownload = ref<Download>({
+  id: 0,
+  title: ''
+})
+const selectedDownloadId = ref(0)
+
+const pageNumbers = computed(() => {
+  const numbers = []
+  const start = Math.max(1, page.value - 2)
+  const end = Math.min(pages.value, page.value + 2)
+  
+  for (let i = start; i <= end; i++) {
+    numbers.push(i)
   }
+  return numbers
+})
+
+const update = async (pageNum: number): Promise<void> => {
+  const q = new Query()
+  q.page = pageNum.toString()
+  q.limit = '10'
+  
+  const apiService = new ApiService()
+  try {
+    const result = await apiService.getDownloads<Download>(q)
+    downloads.value = result.result
+    pages.value = result.pages
+    page.value = result.page
+  } catch (error) {
+    console.error('Failed to fetch downloads:', error)
+  }
+}
+
+const onSelect = (d: Download): void => {
+  selectedDownload.value = d
+  selectedDownloadId.value = d.id
+}
+
+onMounted(() => {
+  // Инициализация из роута
+  const routePage = parseInt(route.params.page as string) || 1
+  update(routePage)
+  
+  // Подписываемся на события
+  emitter.on('downloadDeleted', () => {
+    update(page.value)
+  })
+  
+  emitter.on('downloadCreated', () => {
+    update(page.value)
+  })
+})
+
+// Отслеживаем изменения роута
+watch(() => route.params.page, (newPage) => {
+  const pageNum = parseInt(newPage as string) || 1
+  update(pageNum)
 })
 </script>
 

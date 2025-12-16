@@ -42,104 +42,79 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref, computed, onMounted } from 'vue'
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
 import SearchService, { GoogleSearch, SearchQuery } from '@/services/SearchService'
 import SearchResulter from '@/components/SearchResulter.vue'
 import { removeHash } from '@/util'
 
 const ItemsPerPage = 10
 
-export default defineComponent({
-  name: 'Search',
-  components: { SearchResulter },
-  props: {
-    query: {
-      type: String,
-      default: ''
-    },
-    apiKey: {
-      type: String,
-      default: ''
-    },
-    cx: {
-      type: String,
-      default: ''
+const props = defineProps<{
+  query?: string
+  apiKey?: string
+  cx?: string
+}>()
+
+const searchResult = ref<GoogleSearch | null>(null)
+const localQuery = ref(props.query || '')
+const pages = ref(0)
+const page = ref(1)
+
+const pageNumbers = computed(() => {
+  const numbers = []
+  const start = Math.max(1, page.value - 2)
+  const end = Math.min(pages.value, page.value + 2)
+
+  for (let i = start; i <= end; i++) {
+    numbers.push(i)
+  }
+  return numbers
+})
+
+const newSearch = (): void => {
+  removeHash()
+  page.value = 1
+  search()
+}
+
+const search = async (): Promise<void> => {
+  if (document.location.hash) {
+    const hashPage = parseInt(document.location.hash.substring(1), 10)
+    if (!isNaN(hashPage) && hashPage > 0) {
+      page.value = hashPage
     }
-  },
-  setup(props) {
-    const searchResult = ref<GoogleSearch | null>(null)
-    const localQuery = ref(props.query)
-    const pages = ref(0)
-    const page = ref(1)
+  }
 
-    const pageNumbers = computed(() => {
-      const numbers = []
-      const start = Math.max(1, page.value - 2)
-      const end = Math.min(pages.value, page.value + 2)
+  const q = new SearchQuery()
+  q.q = localQuery.value
+  q.key = props.apiKey || ''
+  q.cx = props.cx || ''
+  q.start = (page.value - 1) * ItemsPerPage + 1
 
-      for (let i = start; i <= end; i++) {
-        numbers.push(i)
-      }
-      return numbers
-    })
+  const service = new SearchService()
+  try {
+    const result = await service.search(q)
+    searchResult.value = result
 
-    onMounted(() => {
-      if (localQuery.value) {
-        search()
-      }
-    })
+    const totalResults = parseInt(result.searchInformation.totalResults, 10)
+    pages.value = Math.ceil(totalResults / ItemsPerPage)
+  } catch (error) {
+    console.error('Search failed:', error)
+  }
+}
 
-    const newSearch = (): void => {
-      removeHash()
-      page.value = 1
-      search()
-    }
+const changePage = (newPage: number): void => {
+  if (newPage >= 1 && newPage <= pages.value && newPage !== page.value) {
+    page.value = newPage
+    document.location.hash = `#${newPage}`
+    search()
+  }
+}
 
-    const search = async (): Promise<void> => {
-      if (document.location.hash) {
-        const hashPage = parseInt(document.location.hash.substring(1), 10)
-        if (!isNaN(hashPage) && hashPage > 0) {
-          page.value = hashPage
-        }
-      }
-
-      const q = new SearchQuery()
-      q.q = localQuery.value
-      q.key = props.apiKey
-      q.cx = props.cx
-      q.start = (page.value - 1) * ItemsPerPage + 1
-
-      const service = new SearchService()
-      try {
-        const result = await service.search(q)
-        searchResult.value = result
-
-        const totalResults = parseInt(result.searchInformation.totalResults, 10)
-        pages.value = Math.ceil(totalResults / ItemsPerPage)
-      } catch (error) {
-        console.error('Search failed:', error)
-      }
-    }
-
-    const changePage = (newPage: number): void => {
-      if (newPage >= 1 && newPage <= pages.value && newPage !== page.value) {
-        page.value = newPage
-        document.location.hash = `#${newPage}`
-        search()
-      }
-    }
-
-    return {
-      searchResult,
-      localQuery,
-      pages,
-      page,
-      pageNumbers,
-      newSearch,
-      search,
-      changePage
-    }
+onMounted(() => {
+  if (localQuery.value) {
+    search()
   }
 })
 </script>
