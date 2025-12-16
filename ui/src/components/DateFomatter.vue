@@ -2,7 +2,12 @@
   <span itemprop="datePublished" class="shortDate">{{ formatted }}</span>
 </template>
 <script lang="ts">
-import moment from 'moment'
+import dayjs from 'dayjs';
+import localizedFormat from 'dayjs/plugin/localizedFormat' 
+import 'dayjs/locale/ru';
+dayjs.extend(localizedFormat);
+dayjs.locale('ru');
+
 import { computed, defineComponent } from 'vue'
 export default defineComponent({
   name: 'DateFormatter',
@@ -18,7 +23,7 @@ export default defineComponent({
   },
   setup(props) {
     const formatted = computed(() =>
-      moment(props.date).locale('ru').format(props.formatStr)
+      dayjs(props.date).format(props.formatStr)
     )
     return {
       formatted

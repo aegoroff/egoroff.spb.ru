@@ -3,7 +3,11 @@
 </template>
 
 <script lang="ts">
-import moment from 'moment'
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import 'dayjs/locale/ru';
+dayjs.extend(relativeTime);
+dayjs.locale('ru');
 import { computed, defineComponent } from 'vue'
 
 export default defineComponent({
@@ -16,7 +20,7 @@ export default defineComponent({
   },
   setup(props) {
     const formatted = computed(() =>
-      moment(props.date).locale('ru').fromNow()
+      dayjs(props.date).fromNow()
     )
     return {
       formatted

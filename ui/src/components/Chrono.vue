@@ -52,8 +52,10 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { createApp } from 'vue'
-import moment from 'moment'
 import { emitter } from '@/main'
+import dayjs from 'dayjs';
+import 'dayjs/locale/ru';
+dayjs.locale('ru');
 
 import BlogAnnounces from '@/components/BlogAnnounces.vue'
 import BlogTitle from '@/components/BlogTitle.vue'
@@ -166,7 +168,7 @@ export default defineComponent({
         q: `year=${year}&month=${month}&page=${page}`
       }).mount('#blogcontainer')
 
-      const m = moment(new Date(year, month - 1, 1)).locale('ru')
+      const m = dayjs(new Date(year, month - 1, 1))
 
       createApp(BlogTitle, {
         text: `записи за ${m.format('MMMM YYYY')}`
