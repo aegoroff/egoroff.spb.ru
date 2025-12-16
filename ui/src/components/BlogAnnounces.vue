@@ -1,19 +1,17 @@
 <template>
-  <div>
-    <dl itemscope itemtype="http://schema.org/BlogPosting" id="blogcontainer">
-      <div v-for="post in posts" :key="post.id">
-        <dt>
-          <small>
-            <DateFormatter :date="post.Created" format-str="LL"></DateFormatter>
-          </small>&nbsp;
-          <a itemprop="url" :href="'/blog/' + post.id + '.html'">
-            <span itemprop="name">{{ post.id }}&nbsp;|&nbsp;{{ post.Title }}</span>
-          </a>
-        </dt>
-        <dd itemprop="description" v-html="post.ShortText"></dd>
-      </div>
-    </dl>
-  </div>
+  <dl itemscope itemtype="http://schema.org/BlogPosting" id="blogcontainer">
+    <div v-for="post in posts" :key="post.id">
+      <dt>
+        <small>
+          <DateFormatter :date="post.Created" format-str="LL"></DateFormatter>
+        </small>&nbsp;
+        <a itemprop="url" :href="'/blog/' + post.id + '.html'">
+          <span itemprop="name">{{ post.id }}&nbsp;|&nbsp;{{ post.Title }}</span>
+        </a>
+      </dt>
+      <dd itemprop="description" v-html="post.ShortText"></dd>
+    </div>
+  </dl>
 </template>
 <script lang="ts">
 import { defineComponent, ref, onMounted, createApp, h } from 'vue'
@@ -42,7 +40,7 @@ export default defineComponent({
   },
   setup(props) {
     const posts = ref<Array<Post>>([])
-    
+
     const getQuery = (): Query => {
       const q = new Query()
       const parts = props.q.split('&')
@@ -53,7 +51,7 @@ export default defineComponent({
       }
       return q
     }
-    
+
     onMounted(() => {
       const q = getQuery()
       const apiService = new ApiService()
@@ -72,7 +70,7 @@ export default defineComponent({
         pager.mount('#blogPager')
       })
     })
-    
+
     return {
       posts
     }
