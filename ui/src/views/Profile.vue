@@ -124,7 +124,6 @@ export default defineComponent({
     return {
       user,
       newAvatarUrl,
-      readProfile,
       update
     }
   }
