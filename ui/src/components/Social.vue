@@ -1,6 +1,5 @@
 <template>
   <div>
-    <!-- Замените ShareNetwork на обычные ссылки -->
     <a v-for="net in networks" :key="net" 
        :href="getShareUrl(net)" 
        class="btn btn-sm" 
@@ -10,48 +9,31 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType } from 'vue'
+<script setup lang="ts">
+const props = defineProps<{
+  url: string
+  title: string
+}>()
 
-export default defineComponent({
-  name: 'Social',
-  props: {
-    url: {
-      type: String as PropType<string>,
-      required: true
-    },
-    title: {
-      type: String as PropType<string>,
-      required: true
-    }
-  },
-  setup(props) {
-    const networks = ['vk', 'telegram', 'whatsapp']
+const networks = ['vk', 'telegram', 'whatsapp']
     
-    const getShareUrl = (network: string): string => {
-      const encodedUrl = encodeURIComponent(props.url)
-      const encodedTitle = encodeURIComponent(props.title)
-      
-      switch(network) {
-        case 'vk':
-          return `https://vk.com/share.php?url=${encodedUrl}&title=${encodedTitle}`
-        case 'telegram':
-          return `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}`
-        case 'whatsapp':
-          return `https://api.whatsapp.com/send?text=${encodedTitle}%20${encodedUrl}`
-        case 'facebook':
-          return `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`
-        case 'twitter':
-          return `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`
-        default:
-          return '#'
-      }
-    }
-    
-    return {
-      networks,
-      getShareUrl
-    }
+const getShareUrl = (network: string): string => {
+  const encodedUrl = encodeURIComponent(props.url)
+  const encodedTitle = encodeURIComponent(props.title)
+  
+  switch(network) {
+    case 'vk':
+      return `https://vk.com/share.php?url=${encodedUrl}&title=${encodedTitle}`
+    case 'telegram':
+      return `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}`
+    case 'whatsapp':
+      return `https://api.whatsapp.com/send?text=${encodedTitle}%20${encodedUrl}`
+    case 'facebook':
+      return `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`
+    case 'twitter':
+      return `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`
+    default:
+      return '#'
   }
-})
+}
 </script>

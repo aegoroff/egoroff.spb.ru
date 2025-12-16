@@ -7,35 +7,21 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType, computed } from 'vue'
+<script setup lang="ts">
+import { computed } from 'vue'
 
-export default defineComponent({
-  name: 'Alert',
-  props: {
-    type: {
-      type: String as PropType<string>,
-      default: 'success'
-    },
-    content: {
-      type: String as PropType<string>,
-      required: true
-    }
-  },
-  setup(props) {
-    const alertClass = computed(() => {
-      const typeMap: Record<string, string> = {
-        success: 'alert-success',
-        danger: 'alert-danger',
-        warning: 'alert-warning',
-        info: 'alert-info'
-      }
-      return `alert ${typeMap[props.type] || 'alert-success'} alert-dismissible fade show`
-    })
+const props = defineProps<{
+  type?: string
+  content: string
+}>()
 
-    return {
-      alertClass
-    }
+const alertClass = computed(() => {
+  const typeMap: Record<string, string> = {
+    success: 'alert-success',
+    danger: 'alert-danger',
+    warning: 'alert-warning',
+    info: 'alert-info'
   }
+  return `alert ${typeMap[props.type || 'success']} alert-dismissible fade show`
 })
 </script>

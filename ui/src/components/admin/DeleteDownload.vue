@@ -30,33 +30,21 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType } from "vue";
+<script setup lang="ts">
 import ApiService from "@/services/ApiService";
 import { emitter } from "@/main";
 import { closeModalById } from "@/util";
 
-export default defineComponent({
-  name: "DeleteDownload",
-  props: {
-    downloadId: {
-      type: Number as PropType<number>,
-      required: true,
-    },
-  },
-  setup(props) {
-    const onOk = (): void => {
-      const apiService = new ApiService();
-      apiService.deleteDownload(props.downloadId);
-      emitter.emit("downloadDeleted");
-      closeModalById("delete-download");
-    };
+const props = defineProps<{
+  downloadId: number
+}>()
 
-    return {
-      onOk,
-    };
-  },
-});
+const onOk = (): void => {
+  const apiService = new ApiService();
+  apiService.deleteDownload(props.downloadId);
+  emitter.emit("downloadDeleted");
+  closeModalById("delete-download");
+};
 </script>
 
 <style scoped></style>

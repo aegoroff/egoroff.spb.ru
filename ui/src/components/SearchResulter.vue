@@ -10,17 +10,10 @@
   </dl>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType } from 'vue'
+<script setup lang="ts">
 import { SearchResult } from '@/services/SearchService'
 
-export default defineComponent({
-  name: 'SearchResulter',
-  props: {
-    items: {
-      type: Array as PropType<SearchResult[]>,
-      required: true
-    }
-  }
-})
+defineProps<{
+  items: SearchResult[]
+}>()
 </script>

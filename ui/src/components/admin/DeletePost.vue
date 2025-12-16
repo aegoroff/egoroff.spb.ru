@@ -30,34 +30,22 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType } from "vue";
+<script setup lang="ts">
 import ApiService from "@/services/ApiService";
 import { emitter } from "@/main";
 import { closeModalById } from "@/util";
 
-export default defineComponent({
-  name: "DeletePost",
-  props: {
-    postId: {
-      type: Number as PropType<number>,
-      required: true,
-    },
-  },
-  setup(props) {
-    const onOk = (): void => {
-      const apiService = new ApiService();
-      apiService.deletePost(props.postId);
-      emitter.emit("postDeleted");
+const props = defineProps<{
+  postId: number
+}>()
 
-      closeModalById("delete-post");
-    };
+const onOk = (): void => {
+  const apiService = new ApiService();
+  apiService.deletePost(props.postId);
+  emitter.emit("postDeleted");
 
-    return {
-      onOk,
-    };
-  },
-});
+  closeModalById("delete-post");
+};
 </script>
 
 <style scoped></style>

@@ -18,23 +18,13 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType } from 'vue'
+<script setup lang="ts">
 import { Section } from './Navigation.vue'
 
-export default defineComponent({
-  name: 'Breadcrumbs',
-  props: {
-    breadcrumbs: {
-      type: Array as PropType<Section[]>,
-      required: true
-    },
-    title: {
-      type: String as PropType<string>,
-      required: true
-    }
-  }
-})
+defineProps<{
+  breadcrumbs: Section[]
+  title: string
+}>()
 </script>
 
 <style scoped lang="scss">

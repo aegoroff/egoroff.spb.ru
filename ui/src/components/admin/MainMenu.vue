@@ -14,10 +14,5 @@
   </nav>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
-
-export default defineComponent({
-  name: 'MainMenu'
-})
+<script setup lang="ts">
 </script>

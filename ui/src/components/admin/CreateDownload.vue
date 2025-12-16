@@ -57,38 +57,28 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref } from "vue";
+<script setup lang="ts">
+import { ref } from "vue";
 import ApiService from "@/services/ApiService";
 import { emitter } from "@/main";
 import { Download } from "./EditDownload.vue";
 import { closeModalById } from "@/util";
 
-export default defineComponent({
-  name: "CreateDownload",
-  setup() {
-    const download = ref<Download>({
-      id: 0,
-      title: "",
-    });
-
-    const onOk = (): void => {
-      const apiService = new ApiService();
-      apiService.editDownload(download.value);
-      emitter.emit("downloadCreated");
-
-      closeModalById("create-download");
-
-      // Сброс формы
-      download.value = { id: 0, title: "" };
-    };
-
-    return {
-      download,
-      onOk,
-    };
-  },
+const download = ref<Download>({
+  id: 0,
+  title: "",
 });
+
+const onOk = (): void => {
+  const apiService = new ApiService();
+  apiService.editDownload(download.value);
+  emitter.emit("downloadCreated");
+
+  closeModalById("create-download");
+
+  // Сброс формы
+  download.value = { id: 0, title: "" };
+};
 </script>
 
 <style scoped></style>
