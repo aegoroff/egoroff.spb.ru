@@ -19,50 +19,28 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref, onMounted } from 'vue'
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import ApiService from '@/services/ApiService'
+import { FilesContainer } from '@/models/portfolio'
 
-export class Downloadable {
-  public Title!: string
-  public Path!: string
-  public FileName!: string
-  public Blake3Hash!: string
-  public Size!: number
+const downloads = ref<Array<FilesContainer>>([])
+
+const formatBytes = (bytes: number): string => {
+  if (bytes === 0) return '0 Bytes'
+  const k = 1024
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
-export class FilesContainer {
-  public Title!: string
-  public Files!: Array<Downloadable>
-}
-
-export default defineComponent({
-  name: 'Downloads',
-  setup() {
-    const downloads = ref<Array<FilesContainer>>([])
-
-    onMounted(async () => {
-      const apiService = new ApiService()
-      try {
-        const result = await apiService.getDownloadableFiles<FilesContainer>()
-        downloads.value = result.result
-      } catch (error) {
-        console.error('Failed to fetch downloads:', error)
-      }
-    })
-
-    const formatBytes = (bytes: number): string => {
-      if (bytes === 0) return '0 Bytes'
-      const k = 1024
-      const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB']
-      const i = Math.floor(Math.log(bytes) / Math.log(k))
-      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-    }
-
-    return {
-      downloads,
-      formatBytes
-    }
+onMounted(async () => {
+  const apiService = new ApiService()
+  try {
+    const result = await apiService.getDownloadableFiles<FilesContainer>()
+    downloads.value = result.result
+  } catch (error) {
+    console.error('Failed to fetch downloads:', error)
   }
 })
 </script>

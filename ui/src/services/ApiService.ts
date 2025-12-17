@@ -4,7 +4,7 @@ import { Archive } from "@/models/blog";
 import { toQuery } from "@/util";
 import { FullUserInfo } from "@/views/Profile.vue";
 import { Post } from "@/components/admin/EditPost.vue";
-import { Download } from "@/components/admin/EditDownload.vue";
+import { Download } from "@/models/portfolio";
 import { useProgress } from "@marcoschulte/vue3-progress";
 
 export class ApiResult<T> {

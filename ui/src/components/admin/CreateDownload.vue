@@ -61,7 +61,7 @@
 import { ref } from "vue";
 import ApiService from "@/services/ApiService";
 import { emitter } from "@/main";
-import { Download } from "./EditDownload.vue";
+import { Download } from "@/models/portfolio"
 import { closeModalById } from "@/util";
 
 const download = ref<Download>({

@@ -44,37 +44,21 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType } from "vue";
+<script setup lang="ts">
 import ApiService from "@/services/ApiService";
 import { closeModalById } from "@/util";
+import { Download } from '@/models/portfolio'
 
-export class Download {
-  public id!: number;
-  public title!: string;
-}
+const props = defineProps<{
+  download: Download
+}>()
 
-export default defineComponent({
-  name: "EditDownload",
-  props: {
-    download: {
-      type: Object as PropType<Download>,
-      required: true,
-    },
-  },
-  setup(props) {
-    const onOk = (): void => {
-      const apiService = new ApiService();
-      apiService.editDownload(props.download);
+const onOk = (): void => {
+  const apiService = new ApiService();
+  apiService.editDownload(props.download);
 
-      closeModalById("edit-download");
-    };
-
-    return {
-      onOk,
-    };
-  },
-});
+  closeModalById("edit-download");
+};
 </script>
 
 <style scoped></style>
