@@ -25,7 +25,7 @@ The project consists of several components:
 - **migrate**: Data migration utilities
 
 ### Frontend (Vue.js)
-- **ui**: Vue 2 application with TypeScript
+- **ui**: Vue 3 application with TypeScript
 - Modern UI with Bootstrap and FontAwesome icons
 - Admin interface for content management
 - Responsive design
