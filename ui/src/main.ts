@@ -26,7 +26,6 @@ import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { Vue3ProgressPlugin } from "@marcoschulte/vue3-progress";
 import AppIcon from "./components/AppIcon.vue";
 import DateFormatter from "@/components/DateFormatter.vue";
-import FromNow from "@/components/FromNow.vue";
 import BlogNavigation from "@/components/BlogNavigation.vue";
 import "./App.scss";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -76,7 +75,6 @@ if (appElement) {
   vueApp.component("font-awesome-icon", FontAwesomeIcon);
   vueApp.component("AppIcon", AppIcon);
   vueApp.component("DateFormatter", DateFormatter);
-  vueApp.component("FromNow", FromNow);
   vueApp.component("BlogNavigation", BlogNavigation);
   vueApp.component("BlogAnnounces", BlogAnnounces);
   vueApp.component("BlogTitle", BlogTitle);
@@ -173,13 +171,8 @@ dates.forEach((x) => {
   const label = x.getAttribute("data-label");
   const fmt = label === null ? "LL" : label;
   const text = x.textContent?.trim() ?? "";
-  if (fmt === "from-now") {
-    const vueApp = createApp(FromNow, { date: text });
-    vueApp.mount(x);
-  } else {
-    const vueApp = createApp(DateFormatter, { date: text, formatStr: fmt });
-    vueApp.mount(x);
-  }
+  const vueApp = createApp(DateFormatter, { date: text, formatStr: fmt });
+  vueApp.mount(x);
 });
 
 function mountHighlighting(prefix: string, el: Element): void {
