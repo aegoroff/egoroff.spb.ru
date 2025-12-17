@@ -98,6 +98,7 @@ async fn serve_index(
         flashed_messages: vec![],
         poster: &poster,
         request: &request,
+        year: get_year(),
     };
 
     let title = format!("{page}-я страница");
@@ -185,6 +186,7 @@ pub async fn serve_document(
                 main_post: &post,
                 content: &c,
                 meta_description,
+                year: get_year(),
             }
             .into_response()
         }

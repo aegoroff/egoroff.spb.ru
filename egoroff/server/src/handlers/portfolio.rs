@@ -44,6 +44,7 @@ pub async fn serve_index(State(page_context): State<Arc<PageContext<'_>>>) -> im
         meta_description: &section.descr,
         flashed_messages: vec![],
         apache_docs: vec![],
+        year: get_year(),
     };
 
     match read_apache_documents(&page_context.base_path) {
@@ -95,6 +96,7 @@ pub async fn serve_apache_document(
             meta_description: &doc.description,
             flashed_messages: vec![],
             content: &content,
+            year: get_year(),
         }
         .into_response()
     } else {

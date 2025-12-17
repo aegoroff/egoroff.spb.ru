@@ -10,6 +10,7 @@ use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
 };
+use chrono::{Datelike, Utc};
 use futures::{Stream, TryStreamExt};
 use futures_util::StreamExt;
 use kernel::graph::SiteSection;
@@ -106,6 +107,7 @@ pub async fn serve_index(State(page_context): State<Arc<PageContext<'_>>>) -> im
                     posts: blog_posts.result,
                     apache_docs: docs,
                     flashed_messages: vec![],
+                    year: get_year(),
                 }
                 .into_response()
             } else {
@@ -129,6 +131,7 @@ pub async fn serve_search(State(page_context): State<Arc<PageContext<'_>>>) -> i
             meta_description: &section.descr,
             flashed_messages: vec![],
             config: &page_context.site_config,
+            year: get_year(),
         }
         .into_response()
     } else {
@@ -249,6 +252,11 @@ pub async fn serve_storage(
     }
 }
 
+pub fn get_year() -> u32 {
+    let now = Utc::now();
+    now.year() as u32
+}
+
 fn get_keywords(section: &SiteSection) -> &str {
     section.keywords.as_ref().map_or("", |v| v)
 }
@@ -348,6 +356,7 @@ fn error_page_response(code: &str) -> Response {
         meta_description: "",
         error,
         flashed_messages: vec![],
+        year: get_year(),
     }
     .into_response()
 }

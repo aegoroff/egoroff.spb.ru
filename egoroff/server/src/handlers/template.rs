@@ -53,6 +53,7 @@ pub struct ErrorPage<'a> {
     pub meta_description: &'a str,
     pub flashed_messages: Vec<Message>,
     pub error: Error,
+    pub year: u32,
 }
 
 impl IntoResponse for ErrorPage<'_> {
@@ -72,6 +73,7 @@ pub struct Index<'a> {
     pub posts: Vec<SmallPost>,
     pub apache_docs: Vec<crate::domain::Apache>,
     pub flashed_messages: Vec<Message>,
+    pub year: u32,
 }
 
 impl IntoResponse for Index<'_> {
@@ -90,6 +92,7 @@ pub struct Search<'a> {
     pub meta_description: &'a str,
     pub flashed_messages: Vec<Message>,
     pub config: &'a Config,
+    pub year: u32,
 }
 
 impl IntoResponse for Search<'_> {
@@ -108,6 +111,7 @@ pub struct ApacheDocument<'a> {
     pub meta_description: &'a str,
     pub flashed_messages: Vec<Message>,
     pub content: &'a str,
+    pub year: u32,
 }
 
 impl IntoResponse for ApacheDocument<'_> {
@@ -126,6 +130,7 @@ pub struct Portfolio<'a> {
     pub meta_description: &'a str,
     pub flashed_messages: Vec<Message>,
     pub apache_docs: Vec<Apache>,
+    pub year: u32,
 }
 
 impl IntoResponse for Portfolio<'_> {
@@ -145,6 +150,7 @@ pub struct BlogIndex<'a> {
     pub flashed_messages: Vec<Message>,
     pub poster: &'a Poster<SmallPost>,
     pub request: &'a BlogRequest,
+    pub year: u32,
 }
 
 impl IntoResponse for BlogIndex<'_> {
@@ -164,6 +170,7 @@ pub struct BlogPost<'a> {
     pub flashed_messages: Vec<Message>,
     pub main_post: &'a Post,
     pub content: &'a str,
+    pub year: u32,
 }
 
 impl IntoResponse for BlogPost<'_> {
@@ -184,6 +191,7 @@ pub struct Signin<'a> {
     pub google_signin_url: &'a str,
     pub github_signin_url: &'a str,
     pub yandex_signin_url: &'a str,
+    pub year: u32,
 }
 
 impl IntoResponse for Signin<'_> {
@@ -201,6 +209,7 @@ pub struct Profile<'a> {
     pub keywords: &'a str,
     pub meta_description: &'a str,
     pub flashed_messages: Vec<Message>,
+    pub year: u32,
 }
 
 impl IntoResponse for Profile<'_> {
@@ -217,6 +226,7 @@ pub struct Admin<'a> {
     pub title_path: &'a str,
     pub keywords: &'a str,
     pub meta_description: &'a str,
+    pub year: u32,
 }
 
 impl IntoResponse for Admin<'_> {

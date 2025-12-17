@@ -37,6 +37,7 @@ pub async fn serve_login(
     session: Session,
 ) -> impl IntoResponse {
     let mut context = Signin::default();
+    context.year = get_year();
 
     let google_url = google_authorizer.generate_authorize_url();
     let github_url = gitgub_authorizer.generate_authorize_url();
@@ -84,6 +85,7 @@ pub async fn serve_logout(mut auth: AuthSession) -> impl IntoResponse {
 pub async fn serve_profile() -> impl IntoResponse {
     Profile {
         title: "Редактирование профиля",
+        year: get_year(),
         ..Default::default()
     }
     .into_response()
