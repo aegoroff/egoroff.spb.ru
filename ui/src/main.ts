@@ -91,20 +91,6 @@ if (appElement) {
   vueApp.component("Search", Search);
   vueApp.component("Profile", Profile);
 
-  const progressBarOptions = {
-    color: "#bffaf3",
-    failedColor: "#874b4b",
-    thickness: "3px",
-    transition: {
-      speed: "0.2s",
-      opacity: "0.6s",
-      termination: 300,
-    },
-    autoRevert: true,
-    location: "top",
-    inverse: false,
-  };
-
   vueApp.use(Vue3ProgressPlugin);
   vueApp.use(VueSocialSharing);
   vueApp.config.globalProperties.emitter = emitter;
@@ -236,17 +222,6 @@ dates.forEach((x) => {
   }
 });
 
-const langMap = new Map<string, string>([
-  ["asm", "x86asm"],
-  ["hq", "cs"],
-  ["parser", "parser3"],
-  ["php", "parser3"],
-]);
-
-function replacementLang(lang: string): string {
-  return langMap.get(lang) ?? lang;
-}
-
 function mountHighlighting(prefix: string, el: Element): void {
   if (!el.className.startsWith(prefix)) return;
 
@@ -254,7 +229,7 @@ function mountHighlighting(prefix: string, el: Element): void {
 
   const app = createApp(Highlighter, {
     content: el.textContent ?? "",
-    lang: replacementLang(lang),
+    lang: lang,
   });
 
   el.textContent = "";
