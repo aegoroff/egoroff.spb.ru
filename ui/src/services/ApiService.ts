@@ -2,7 +2,7 @@ import axios from "axios";
 import { Section } from "../components/Navigation.vue";
 import { Archive } from "@/models/blog";
 import { toQuery } from "@/util";
-import { FullUserInfo } from "@/views/Profile.vue";
+import { FullUserInfo } from '@/models/access';
 import { Post } from "@/components/admin/EditPost.vue";
 import { Download } from "@/models/portfolio";
 import { useProgress } from "@marcoschulte/vue3-progress";

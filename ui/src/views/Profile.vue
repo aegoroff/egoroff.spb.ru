@@ -61,72 +61,49 @@
   </div>
 </template>
 
-<script lang="ts">
-import {defineComponent, onMounted, ref} from 'vue'
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import ApiService from '@/services/ApiService'
 import AppIcon from '@/components/AppIcon.vue'
+import { FullUserInfo } from '@/models/access'
 
-export class FullUserInfo {
-  public id!: number
-  public admin!: boolean
-  public created!: string
-  public avatarUrl!: string
-  public email!: string
-  public name!: string
-  public username!: string
-  public verified!: boolean
-  public provider!: string
+const user = ref<FullUserInfo>({
+  id: 0,
+  admin: false,
+  created: '',
+  avatarUrl: '',
+  email: '',
+  name: '',
+  username: '',
+  verified: false,
+  provider: ''
+})
+const newAvatarUrl = ref('')
+
+const readProfile = async (): Promise<void> => {
+  const apiService = new ApiService()
+  try {
+    user.value = await apiService.getFullUserInfo()
+  } catch (error) {
+    console.error('Failed to fetch user info:', error)
+  }
 }
 
-export default defineComponent({
-  name: 'Profile',
-  components: { AppIcon },
-  setup() {
-    const user = ref<FullUserInfo>({
-      id: 0,
-      admin: false,
-      created: '',
-      avatarUrl: '',
-      email: '',
-      name: '',
-      username: '',
-      verified: false,
-      provider: ''
-    })
-    const newAvatarUrl = ref('')
-
-    const readProfile = async (): Promise<void> => {
-      const apiService = new ApiService()
-      try {
-        user.value = await apiService.getFullUserInfo()
-      } catch (error) {
-        console.error('Failed to fetch user info:', error)
-      }
-    }
-
-    onMounted(() => {
-      readProfile()
-    })
-
-    const update = (): void => {
-      if (newAvatarUrl.value) {
-        user.value.avatarUrl = newAvatarUrl.value
-      }
-
-      const apiService = new ApiService()
-      apiService.updateFullUserInfo(user.value)
-
-      // Сброс поля для нового аватара
-      newAvatarUrl.value = ''
-    }
-
-    return {
-      user,
-      newAvatarUrl,
-      update
-    }
-  }
+onMounted(() => {
+  readProfile()
 })
+
+const update = (): void => {
+  if (newAvatarUrl.value) {
+    user.value.avatarUrl = newAvatarUrl.value
+  }
+
+  const apiService = new ApiService()
+  apiService.updateFullUserInfo(user.value)
+
+  // Сброс поля для нового аватара
+  newAvatarUrl.value = ''
+}
 </script>
 
 <style scoped>
