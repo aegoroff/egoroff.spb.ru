@@ -12,7 +12,7 @@ import Navigation, {Section} from '@/components/Navigation.vue'
 import ApiService, {User as ApiUser} from '@/services/ApiService'
 import Breadcrumbs from '@/components/Breadcrumbs.vue'
 
-const props = defineProps<{
+defineProps<{
   title: string
 }>()
 
