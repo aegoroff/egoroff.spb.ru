@@ -1,6 +1,6 @@
 import axios from "axios";
 import { Section } from "../components/Navigation.vue";
-import { Archive } from "@/components/BlogNavigation.vue";
+import { Archive } from "@/models/blog";
 import { toQuery } from "@/util";
 import { FullUserInfo } from "@/views/Profile.vue";
 import { Post } from "@/components/admin/EditPost.vue";

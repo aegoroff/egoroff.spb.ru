@@ -49,8 +49,8 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
+<script setup lang="ts">
+import { onMounted } from 'vue'
 import { createApp } from 'vue'
 import { emitter } from '@/main'
 import dayjs from 'dayjs';
@@ -59,121 +59,98 @@ dayjs.locale('ru');
 
 import BlogAnnounces from '@/components/BlogAnnounces.vue'
 import BlogTitle from '@/components/BlogTitle.vue'
+import { Year } from '@/models/blog'
 
-export class Month {
-  public month!: number
-  public posts!: number
+const props = defineProps<{
+  years: Year[]
+}>()
+
+const months: Record<number, string> = {
+  1: 'Январь',
+  2: 'Февраль',
+  3: 'Март',
+  4: 'Апрель',
+  5: 'Май',
+  6: 'Июнь',
+  7: 'Июль',
+  8: 'Август',
+  9: 'Сентябрь',
+  10: 'Октябрь',
+  11: 'Ноябрь',
+  12: 'Декабрь'
 }
 
-export class Year {
-  public year!: number
-  public posts!: number
-  public months!: Array<Month>
+const monthName = (month: number): string => {
+  return months[month]
 }
 
-export default defineComponent({
-  name: 'Chrono',
-
-  props: {
-    years: {
-      type: Array as () => Year[],
-      required: true
-    }
-  },
-
-  data() {
-    return {
-      months: {
-        1: 'Январь',
-        2: 'Февраль',
-        3: 'Март',
-        4: 'Апрель',
-        5: 'Май',
-        6: 'Июнь',
-        7: 'Июль',
-        8: 'Август',
-        9: 'Сентябрь',
-        10: 'Октябрь',
-        11: 'Ноябрь',
-        12: 'Декабрь'
-      } as Record<number, string>
-    }
-  },
-
-  created() {
-    emitter.on('pageChanged', (page: number) => {
-      const parts = window.location.hash.substring(1).split('&')
-
-      let y = 0
-      let m = 0
-
-      for (const part of parts) {
-        const [key, value] = part.split('=')
-        if (key === 'year') y = Number(value)
-        if (key === 'month') m = Number(value)
-      }
-
-      if (!y) return
-
-      if (!m) {
-        this.updateYear(y, page)
-      } else {
-        this.updateYearMonth(y, m, page)
-      }
-    })
-  },
-
-  methods: {
-    monthName(month: number): string {
-      return this.months[month]
-    },
-
-    updateYear(year: number, page: number) {
-      const params = new URLSearchParams(window.location.hash.slice(1))
-      params.set('year', String(year))
-      if (page > 1) {
-        params.set('page', String(page))
-      } else {
-        params.delete('page')
-      }
-      params.delete('tag')
-
-      window.location.hash = params.toString()
-
-      emitter.emit('dateSelectionChanged')
-
-      createApp(BlogAnnounces, {
-        q: `year=${year}&page=${page}`
-      }).mount('#blogcontainer')
-
-      createApp(BlogTitle, {
-        text: `записи за ${year} год`
-      }).mount('#blogSmallTitle')
-    },
-
-    updateYearMonth(year: number, month: number, page: number) {
-      const params = new URLSearchParams(window.location.hash.slice(1))
-      params.set('year', String(year))
-      params.set('month', String(month))
-      if (page > 1) {
-        params.set('page', String(page))
-      } else {
-        params.delete('page')
-      }
-      params.delete('tag')
-
-      emitter.emit('dateSelectionChanged')
-
-      createApp(BlogAnnounces, {
-        q: `year=${year}&month=${month}&page=${page}`
-      }).mount('#blogcontainer')
-
-      const m = dayjs(new Date(year, month - 1, 1))
-
-      createApp(BlogTitle, {
-        text: `записи за ${m.format('MMMM YYYY')}`
-      }).mount('#blogSmallTitle')
-    }
+const updateYear = (year: number, page: number) => {
+  const params = new URLSearchParams(window.location.hash.slice(1))
+  params.set('year', String(year))
+  if (page > 1) {
+    params.set('page', String(page))
+  } else {
+    params.delete('page')
   }
+  params.delete('tag')
+
+  window.location.hash = params.toString()
+
+  emitter.emit('dateSelectionChanged')
+
+  createApp(BlogAnnounces, {
+    q: `year=${year}&page=${page}`
+  }).mount('#blogcontainer')
+
+  createApp(BlogTitle, {
+    text: `записи за ${year} год`
+  }).mount('#blogSmallTitle')
+}
+
+const updateYearMonth = (year: number, month: number, page: number) => {
+  const params = new URLSearchParams(window.location.hash.slice(1))
+  params.set('year', String(year))
+  params.set('month', String(month))
+  if (page > 1) {
+    params.set('page', String(page))
+  } else {
+    params.delete('page')
+  }
+  params.delete('tag')
+
+  emitter.emit('dateSelectionChanged')
+
+  createApp(BlogAnnounces, {
+    q: `year=${year}&month=${month}&page=${page}`
+  }).mount('#blogcontainer')
+
+  const m = dayjs(new Date(year, month - 1, 1))
+
+  createApp(BlogTitle, {
+    text: `записи за ${m.format('MMMM YYYY')}`
+  }).mount('#blogSmallTitle')
+}
+
+onMounted(() => {
+  emitter.on('pageChanged', (page: number) => {
+    const parts = window.location.hash.substring(1).split('&')
+
+    let y = 0
+    let m = 0
+
+    for (const part of parts) {
+      const [key, value] = part.split('=')
+      if (key === 'year') y = Number(value)
+      if (key === 'month') m = Number(value)
+    }
+
+    if (!y) return
+
+    if (!m) {
+      updateYear(y, page)
+    } else {
+      updateYearMonth(y, m, page)
+    }
+  })
 })
 </script>

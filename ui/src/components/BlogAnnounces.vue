@@ -13,62 +13,46 @@
     </div>
   </dl>
 </template>
-<script lang="ts">
-import { defineComponent, ref, onMounted, createApp } from 'vue'
+
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import DateFormatter from '@/components/DateFormatter.vue'
 import ApiService, { Query } from '@/services/ApiService'
 import BlogPagination from '@/components/BlogPagination.vue'
+import { Post } from '@/models/blog'
+import { createApp } from 'vue'
 
-export class Post {
-  public Key!: string
-  public Created!: string
-  public id!: number
-  public Title!: string
-  public ShortText!: string
+const props = withDefaults(defineProps<{
+  q?: string
+}>(), {
+  q: ''
+})
+
+const posts = ref<Array<Post>>([])
+
+const getQuery = (): Query => {
+  const q = new Query()
+  const parts = props.q.split('&')
+
+  for (const part of parts) {
+    const elts = part.split('=')
+    Reflect.set(q, elts[0], elts[1])
+  }
+  return q
 }
 
-export default defineComponent({
-  name: 'BlogAnnounces',
-  components: {
-    DateFormatter
-  },
-  props: {
-    q: {
-      type: String,
-      default: ''
-    }
-  },
-  setup(props) {
-    const posts = ref<Array<Post>>([])
+onMounted(() => {
+  const q = getQuery()
+  const apiService = new ApiService()
+  apiService.getPosts<Post>(q).then(x => {
+    posts.value = x.result
 
-    const getQuery = (): Query => {
-      const q = new Query()
-      const parts = props.q.split('&')
+    const pager = createApp(BlogPagination, { pages: x.pages, page: x.page })
 
-      for (const part of parts) {
-        const elts = part.split('=')
-        Reflect.set(q, elts[0], elts[1])
-      }
-      return q
-    }
-
-    onMounted(() => {
-      const q = getQuery()
-      const apiService = new ApiService()
-      apiService.getPosts<Post>(q).then(x => {
-        posts.value = x.result
-
-        const pager = createApp(BlogPagination, { pages: x.pages, page: x.page })
-
-        pager.mount('#blogPager')
-      })
-    })
-
-    return {
-      posts
-    }
-  }
+    pager.mount('#blogPager')
+  })
 })
 </script>
+
 <style scoped>
 </style>

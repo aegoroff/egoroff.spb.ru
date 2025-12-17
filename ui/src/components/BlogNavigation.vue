@@ -19,44 +19,25 @@
   </div>
 </template>
 
-<script lang="ts">
-import {defineComponent, onMounted, ref} from 'vue'
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import ApiService from '@/services/ApiService'
-import Tags, {Tag} from '@/components/Tags.vue'
-import Chrono, {Year} from '@/components/Chrono.vue'
+import Tags from '@/components/Tags.vue'
+import Chrono from '@/components/Chrono.vue'
+import { Archive } from '@/models/blog'
 
-export class Archive {
-  public tags!: Array<Tag>
-  public years!: Array<Year>
-}
+const archive = ref<Archive>({
+  tags: [],
+  years: []
+})
+const currentTag = ref('')
 
-export default defineComponent({
-  name: 'BlogNavigation',
-  components: {
-    Tags,
-    Chrono
-  },
-
-  setup() {
-    const archive = ref<Archive>({
-      tags: [],
-      years: []
-    })
-    const currentTag = ref('')
-
-    onMounted(async () => {
-      const apiService = new ApiService()
-      try {
-        archive.value = await apiService.getBlogArchive()
-      } catch (error) {
-        console.error('Failed to fetch blog archive:', error)
-      }
-    })
-
-    return {
-      archive,
-      currentTag
-    }
+onMounted(async () => {
+  const apiService = new ApiService()
+  try {
+    archive.value = await apiService.getBlogArchive()
+  } catch (error) {
+    console.error('Failed to fetch blog archive:', error)
   }
 })
 </script>

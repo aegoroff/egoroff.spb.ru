@@ -11,96 +11,82 @@
     </ul>
   </div>
 </template>
-<script lang="ts">
-import { defineComponent, createApp } from 'vue'
+
+<script setup lang="ts">
+import { onMounted } from 'vue'
+import { createApp } from 'vue'
 import BlogAnnounces from '@/components/BlogAnnounces.vue'
 import BlogTitle from '@/components/BlogTitle.vue'
 import { emitter } from '@/main'
+import { Tag } from '@/models/blog'
 
-export class Tag {
-  public title!: string
-  public level!: number
+const props = defineProps<{
+  tags: Tag[]
+  currentTag: string
+}>()
+
+const emit = defineEmits<{
+  'update:currentTag': [value: string]
+}>()
+
+const tagsClasses: Record<number, string> = {
+  0: 'tagRank10',
+  1: 'tagRank9',
+  2: 'tagRank8',
+  3: 'tagRank7',
+  4: 'tagRank6',
+  5: 'tagRank5',
+  6: 'tagRank4',
+  7: 'tagRank3',
+  8: 'tagRank2',
+  10: 'tagRank1'
 }
 
-export default defineComponent({
-  name: 'Tags',
+const tagClass = (ix: number): string => {
+  return tagsClasses[ix]
+}
 
-  props: {
-    tags: {
-      type: Array<Tag>,
-      required: true
-    },
-    currentTag: {
-      type: String,
-      required: true
-    }
-  },
-
-  data() {
-    return {
-      tagsClasses: {
-        0: 'tagRank10',
-        1: 'tagRank9',
-        2: 'tagRank8',
-        3: 'tagRank7',
-        4: 'tagRank6',
-        5: 'tagRank5',
-        6: 'tagRank4',
-        7: 'tagRank3',
-        8: 'tagRank2',
-        10: 'tagRank1'
-      } as Record<number, string>
-    }
-  },
-
-  created() {
-    emitter.on('pageChanged', (page) => {
-      const parts = window.location.hash.substring(1).split('&')
-
-      for (const part of parts) {
-        const [key, value] = part.split('=')
-        if (key === 'tag') {
-          this.update(value, page)
-          return
-        }
-      }
-    })
-
-    emitter.on('dateSelectionChanged', () => {
-      this.$emit('update:currentTag', '')
-    })
-  },
-
-  methods: {
-    tagClass(ix: number): string {
-      return this.tagsClasses[ix]
-    },
-
-    update(tag: string, page: number): void {
-      const params = new URLSearchParams(window.location.hash.slice(1))
-      params.set('tag', tag)
-      if (page > 1) {
-        params.set('page', String(page))
-      } else {
-        params.delete('page')
-      }
-      params.delete('year')
-      params.delete('month')
-
-      window.location.hash = params.toString()
-
-      emitter.emit('tagChanged' as any, tag)
-      this.$emit('update:currentTag', tag)
-
-      createApp(BlogAnnounces, {
-        q: `tag=${tag}&page=${page}`
-      }).mount('#blogcontainer')
-
-      createApp(BlogTitle, {
-        text: `все посты по метке: ${tag}`
-      }).mount('#blogSmallTitle')
-    }
+const update = (tag: string, page: number): void => {
+  const params = new URLSearchParams(window.location.hash.slice(1))
+  params.set('tag', tag)
+  if (page > 1) {
+    params.set('page', String(page))
+  } else {
+    params.delete('page')
   }
+  params.delete('year')
+  params.delete('month')
+
+  window.location.hash = params.toString()
+
+  emitter.emit('tagChanged' as any, tag)
+  emit('update:currentTag', tag)
+
+  createApp(BlogAnnounces, {
+    q: `tag=${tag}&page=${page}`
+  }).mount('#blogcontainer')
+
+  createApp(BlogTitle, {
+    text: `все посты по метке: ${tag}`
+  }).mount('#blogSmallTitle')
+}
+
+onMounted(() => {
+  emitter.on('pageChanged', (page: number) => {
+    const parts = window.location.hash.substring(1).split('&')
+
+    for (const part of parts) {
+      const [key, value] = part.split('=')
+      if (key === 'tag') {
+        update(value, page)
+        return
+      }
+    }
+  })
+
+  emitter.on('dateSelectionChanged', () => {
+    emit('update:currentTag', '')
+  })
 })
 </script>
 
