@@ -19,7 +19,8 @@
 </template>
 
 <script setup lang="ts">
-import { Section } from './Navigation.vue'
+import { Section } from '@/models/navigation';
+
 
 defineProps<{
   breadcrumbs: Section[]

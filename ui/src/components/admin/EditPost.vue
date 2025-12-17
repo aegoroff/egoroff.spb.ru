@@ -129,51 +129,29 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType, computed } from "vue";
+<script setup lang="ts">
+import { computed } from "vue";
 import ApiService from "@/services/ApiService";
 import { closeModalById } from "@/util";
+import { EditablePost } from "@/models/blog";
 
-export class Post {
-  public Created!: string;
-  public id!: number;
-  public Title!: string;
-  public IsPublic!: boolean;
-  public Markdown!: boolean;
-  public Tags!: Array<string>;
-  public Text!: string;
-  public ShortText!: string;
-}
+const props = defineProps<{
+  post: EditablePost;
+}>();
 
-export default defineComponent({
-  name: "EditPost",
-  props: {
-    post: {
-      type: Object as PropType<Post>,
-      required: true,
-    },
-  },
-  setup(props) {
-    const tagsString = computed({
-      get: () => props.post.Tags.join(", "),
-      set: (value: string) => {
-        props.post.Tags = value.split(/[,;\s]+/).filter((tag) => tag.trim());
-      },
-    });
-
-    const onOk = (): void => {
-      const apiService = new ApiService()
-      apiService.editPost(props.post)
-
-      closeModalById("edit-post")
-    };
-
-    return {
-      tagsString,
-      onOk,
-    };
+const tagsString = computed({
+  get: () => props.post.Tags.join(", "),
+  set: (value: string) => {
+    props.post.Tags = value.split(/[,;\s]+/).filter((tag) => tag.trim());
   },
 });
+
+const onOk = (): void => {
+  const apiService = new ApiService()
+  apiService.editPost(props.post)
+
+  closeModalById("edit-post")
+};
 </script>
 
 <style scoped></style>

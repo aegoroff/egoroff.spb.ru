@@ -54,13 +54,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import ApiService, { Query } from '@/services/ApiService'
+import ApiService from '@/services/ApiService'
 import AppIcon from '@/components/AppIcon.vue'
 import { emitter } from '@/main'
 import EditDownload from '@/components/admin/EditDownload.vue'
 import { Download } from '@/models/portfolio'
 import DeleteDownload from '@/components/admin/DeleteDownload.vue'
 import CreateDownload from '@/components/admin/CreateDownload.vue'
+import { Query } from '@/models/blog'
 
 const route = useRoute()
 

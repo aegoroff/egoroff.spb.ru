@@ -58,19 +58,20 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import ApiService, { Query } from '@/services/ApiService'
+import ApiService from '@/services/ApiService'
 import DateFormatter from '@/components/DateFormatter.vue'
-import EditPost, { Post } from '@/components/admin/EditPost.vue'
+import EditPost from '@/components/admin/EditPost.vue'
 import DeletePost from '@/components/admin/DeletePost.vue'
 import AppIcon from '@/components/AppIcon.vue'
 import { emitter } from '@/main'
+import { EditablePost, Query } from '@/models/blog'
 
 const route = useRoute()
 
-const posts = ref<Array<Post>>([])
+const posts = ref<Array<EditablePost>>([])
 const page = ref(1)
 const pages = ref(1)
-const selectedPost = ref<Post>({
+const selectedPost = ref<EditablePost>({
   Created: '',
   id: 0,
   Title: '',
@@ -100,7 +101,7 @@ const update = async (pageNum: number): Promise<void> => {
 
   const apiService = new ApiService()
   try {
-    const result = await apiService.getAdminPosts<Post>(q)
+    const result = await apiService.getAdminPosts<EditablePost>(q)
     posts.value = result.result
     pages.value = result.pages
     page.value = result.page
@@ -109,7 +110,7 @@ const update = async (pageNum: number): Promise<void> => {
   }
 }
 
-const onSelect = (p: Post): void => {
+const onSelect = (p: EditablePost): void => {
   selectedPost.value = p
   selectedPostId.value = p.id
 }

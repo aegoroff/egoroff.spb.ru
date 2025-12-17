@@ -8,9 +8,11 @@
 
 <script setup lang="ts">
 import {onMounted, ref} from 'vue'
-import Navigation, {Section} from '@/components/Navigation.vue'
-import ApiService, {User as ApiUser} from '@/services/ApiService'
+import Navigation from '@/components/Navigation.vue'
+import ApiService from '@/services/ApiService'
+import {User as ApiUser} from '@/models/access'
 import Breadcrumbs from '@/components/Breadcrumbs.vue'
+import { Section } from './models/navigation';
 
 defineProps<{
   title: string

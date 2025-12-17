@@ -17,9 +17,9 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import DateFormatter from '@/components/DateFormatter.vue'
-import ApiService, { Query } from '@/services/ApiService'
+import ApiService from '@/services/ApiService'
 import BlogPagination from '@/components/BlogPagination.vue'
-import { Post } from '@/models/blog'
+import { Post, Query } from '@/models/blog'
 import { createApp } from 'vue'
 
 const props = withDefaults(defineProps<{

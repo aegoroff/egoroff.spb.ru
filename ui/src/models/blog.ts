@@ -19,10 +19,30 @@ export class Tag {
   public level!: number
 }
 
+export class Query {
+  public limit!: string;
+  public offset!: string;
+  public tag!: string;
+  public year!: string;
+  public month!: string;
+  public page!: string;
+}
+
 export class Post {
   public Key!: string
   public Created!: string
   public id!: number
   public Title!: string
   public ShortText!: string
+}
+
+export class EditablePost {
+  public Created!: string;
+  public id!: number;
+  public Title!: string;
+  public IsPublic!: boolean;
+  public Markdown!: boolean;
+  public Tags!: Array<string>;
+  public Text!: string;
+  public ShortText!: string;
 }

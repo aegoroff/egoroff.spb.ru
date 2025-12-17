@@ -1,11 +1,11 @@
 import axios from "axios";
-import { Section } from "../components/Navigation.vue";
-import { Archive } from "@/models/blog";
+import { Archive, Query } from "@/models/blog";
 import { toQuery } from "@/util";
-import { FullUserInfo } from '@/models/access';
-import { Post } from "@/components/admin/EditPost.vue";
+import { FullUserInfo, User } from '@/models/access';
+import { EditablePost } from "@/models/blog";
 import { Download } from "@/models/portfolio";
 import { useProgress } from "@marcoschulte/vue3-progress";
+import { Nav } from "@/models/navigation";
 
 export class ApiResult<T> {
   public status!: string;
@@ -14,27 +14,6 @@ export class ApiResult<T> {
   public pages!: number;
   public row!: string;
   public result!: Array<T>;
-}
-
-export class Query {
-  public limit!: string;
-  public offset!: string;
-  public tag!: string;
-  public year!: string;
-  public month!: string;
-  public page!: string;
-}
-
-export class Nav {
-  public sections!: Array<Section>;
-  public breadcrumbs!: Array<Section>;
-}
-
-export class User {
-  public loginOrName!: string;
-  public provider!: string;
-  public authenticated!: boolean;
-  public admin!: boolean;
 }
 
 class ApiService {
@@ -81,8 +60,8 @@ class ApiService {
     axios.put<FullUserInfo>("/api/v2/auth/userinfo/", u);
   }
 
-  public editPost(p: Post): void {
-    axios.put<Post>("/api/v2/admin/post", p);
+  public editPost(p: EditablePost): void {
+    axios.put<EditablePost>("/api/v2/admin/post", p);
   }
 
   public deletePost(id: number): void {
