@@ -12,7 +12,7 @@ base_path=./home
 [[ -d "$base_path" ]] && rm -r "$base_path"
 
 (
-  cd ./ui/
+  cd ./ui/ || exit
   bun run build
 )
 
@@ -26,8 +26,8 @@ for local in "${LOCALS[@]}"; do
 done
 
 (
-  cd ./egoroff/
+  cd ./egoroff/ || exit
   cargo clean
   cargo b --workspace $ADDITIONAL_OPTIONS
-  ./target/$CONFIGURATION/egoroff server
+  ./target/"$CONFIGURATION"/egoroff server
 )
