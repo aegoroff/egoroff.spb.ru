@@ -57,7 +57,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import ApiService, { Query } from '@/services/ApiService'
 import DateFormatter from '@/components/DateFormatter.vue'
 import EditPost, { Post } from '@/components/admin/EditPost.vue'
