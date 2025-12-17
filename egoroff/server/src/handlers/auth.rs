@@ -36,9 +36,10 @@ pub async fn serve_login(
     Extension(yandex_authorizer): Extension<Arc<YandexAuthorizer>>,
     session: Session,
 ) -> impl IntoResponse {
-    let mut context = Signin::default();
-    context.year = get_year();
-
+    let mut context = Signin {
+        year: get_year(),
+        ..Default::default()
+    };
     let google_url = google_authorizer.generate_authorize_url();
     let github_url = gitgub_authorizer.generate_authorize_url();
     let yandex_url = yandex_authorizer.generate_authorize_url();
