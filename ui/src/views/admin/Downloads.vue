@@ -3,7 +3,7 @@
     <button class="btn btn-primary w-100 mb-3" data-bs-toggle="modal" data-bs-target="#create-download">
       Создать загрузку
     </button>
-    
+
     <nav v-if="pages > 1">
       <ul class="pagination justify-content-center" id="downloads-pager">
         <li class="page-item" :class="{ disabled: page === 1 }">
@@ -17,11 +17,11 @@
         </li>
       </ul>
     </nav>
-    
+
     <EditDownload id="edit-download" :download="selectedDownload"></EditDownload>
     <CreateDownload id="create-download"></CreateDownload>
     <DeleteDownload id="delete-download" :downloadId="selectedDownloadId"></DeleteDownload>
-    
+
     <div class="table-responsive" id="downloads-table">
       <table class="table table-striped table-hover table-sm">
         <thead>
@@ -76,7 +76,7 @@ const pageNumbers = computed(() => {
   const numbers = []
   const start = Math.max(1, page.value - 2)
   const end = Math.min(pages.value, page.value + 2)
-  
+
   for (let i = start; i <= end; i++) {
     numbers.push(i)
   }
@@ -87,7 +87,7 @@ const update = async (pageNum: number): Promise<void> => {
   const q = new Query()
   q.page = pageNum.toString()
   q.limit = '10'
-  
+
   const apiService = new ApiService()
   try {
     const result = await apiService.getDownloads<Download>(q)
@@ -105,15 +105,13 @@ const onSelect = (d: Download): void => {
 }
 
 onMounted(() => {
-  // Инициализация из роута
   const routePage = parseInt(route.params.page as string) || 1
   update(routePage)
-  
-  // Подписываемся на события
+
   emitter.on('downloadDeleted', () => {
     update(page.value)
   })
-  
+
   emitter.on('downloadCreated', () => {
     update(page.value)
   })

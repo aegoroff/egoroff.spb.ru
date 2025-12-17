@@ -7,9 +7,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import Navigation, { Section } from '@/components/Navigation.vue'
-import ApiService, { User as ApiUser } from '@/services/ApiService'
+import {onMounted, ref} from 'vue'
+import Navigation, {Section} from '@/components/Navigation.vue'
+import ApiService, {User as ApiUser} from '@/services/ApiService'
 import Breadcrumbs from '@/components/Breadcrumbs.vue'
 
 const props = defineProps<{
@@ -26,8 +26,7 @@ onMounted(async () => {
   navigation.value = nav.sections
   breadcrumbs.value = nav.breadcrumbs
   try {
-    const userData = await apiService.getUser()
-    user.value = userData
+    user.value = await apiService.getUser()
   } catch (error) {
     console.error('Failed to fetch user:', error)
   }

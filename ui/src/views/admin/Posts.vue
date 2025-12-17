@@ -13,10 +13,10 @@
         </li>
       </ul>
     </nav>
-    
+
     <EditPost id="edit-post" :post="selectedPost"></EditPost>
     <DeletePost id="delete-post" :postId="selectedPostId"></DeletePost>
-    
+
     <div class="table-responsive" id="posts-table">
       <table class="table table-striped table-hover table-sm">
         <thead>
@@ -66,7 +66,6 @@ import AppIcon from '@/components/AppIcon.vue'
 import { emitter } from '@/main'
 
 const route = useRoute()
-const router = useRouter()
 
 const posts = ref<Array<Post>>([])
 const page = ref(1)
@@ -87,7 +86,7 @@ const pageNumbers = computed(() => {
   const numbers = []
   const start = Math.max(1, page.value - 2)
   const end = Math.min(pages.value, page.value + 2)
-  
+
   for (let i = start; i <= end; i++) {
     numbers.push(i)
   }
@@ -98,7 +97,7 @@ const update = async (pageNum: number): Promise<void> => {
   const q = new Query()
   q.page = pageNum.toString()
   q.limit = '10'
-  
+
   const apiService = new ApiService()
   try {
     const result = await apiService.getAdminPosts<Post>(q)
@@ -116,11 +115,9 @@ const onSelect = (p: Post): void => {
 }
 
 onMounted(() => {
-  // Инициализация из роута
   const routePage = parseInt(route.params.page as string) || 1
   update(routePage)
-  
-  // Подписываемся на события
+
   emitter.on('postDeleted', () => {
     update(page.value)
   })

@@ -14,7 +14,7 @@
   </dl>
 </template>
 <script lang="ts">
-import { defineComponent, ref, onMounted, createApp, h } from 'vue'
+import { defineComponent, ref, onMounted, createApp } from 'vue'
 import DateFormatter from '@/components/DateFormatter.vue'
 import ApiService, { Query } from '@/services/ApiService'
 import BlogPagination from '@/components/BlogPagination.vue'
@@ -58,14 +58,7 @@ export default defineComponent({
       apiService.getPosts<Post>(q).then(x => {
         posts.value = x.result
 
-        const pager = createApp({
-          render() {
-            return h(BlogPagination, {
-            pages: x.pages,
-            page: x.page
-          })
-          }
-        })
+        const pager = createApp(BlogPagination, { pages: x.pages, page: x.page })
 
         pager.mount('#blogPager')
       })

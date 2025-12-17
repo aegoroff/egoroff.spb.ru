@@ -1,4 +1,4 @@
-import { createApp, h } from "vue";
+import { createApp } from "vue";
 import VueSocialSharing from "vue3-social-sharing";
 import App from "./App.vue";
 import AdminApp from "./AdminApp.vue";
@@ -72,11 +72,7 @@ export const emitter = mitt<Events>();
 const appElement = document.getElementById("app");
 if (appElement) {
   const t = appElement.getAttribute("datafld");
-  const vueApp = createApp({
-    render() {
-      return h(App, { title: t || "" });
-    },
-  });
+  const vueApp = createApp(App, { title: t || "" });
   vueApp.component("font-awesome-icon", FontAwesomeIcon);
   vueApp.component("AppIcon", AppIcon);
   vueApp.component("DateFormatter", DateFormatter);
@@ -106,11 +102,7 @@ if (document.getElementById("blogNavigation")) {
 
 if (document.getElementById("blogcontainer") && window.location.hash) {
   const hash = window.location.hash.substring(1);
-  const vueApp = createApp({
-    render() {
-      return h(BlogAnnounces, { q: hash });
-    },
-  });
+  const vueApp = createApp(BlogAnnounces, { q: hash });
   vueApp.component("DateFormatter", DateFormatter);
   vueApp.component("font-awesome-icon", FontAwesomeIcon);
   vueApp.mount("#blogcontainer");
@@ -120,11 +112,7 @@ if (document.getElementById("blogcontainer") && window.location.hash) {
     const e = hash.split("=");
     let titleText = `все посты по метке: ${e[1]}`;
 
-    const vueApp2 = createApp({
-      render() {
-        return h(BlogTitle, { text: titleText });
-      },
-    });
+    const vueApp2 = createApp(BlogTitle, { text: titleText });
     vueApp2.mount("#blogSmallTitle");
   }
 }
@@ -137,14 +125,10 @@ if (document.getElementById("portfolioDownloads")) {
 
 if (document.getElementById("social")) {
   const title = document.getElementById("social")?.getAttribute("property");
-  const vueApp = createApp({
-    render() {
-      return h(Social, {
-        title: title || "",
-        url: window.location.href,
-        networks: ["vk"],
-      });
-    },
+  const vueApp = createApp(Social, {
+    title: title || "",
+    url: window.location.href,
+    networks: ["vk"],
   });
   vueApp.component("font-awesome-icon", FontAwesomeIcon);
   vueApp.mount("#social");
@@ -157,14 +141,10 @@ if (document.getElementById("siteSearch")) {
   const cx = document.getElementById("siteSearch")?.getAttribute("datafld");
   const urlParams = new URLSearchParams(window.location.search);
   const q = urlParams.get("q");
-  const vueApp = createApp({
-    render() {
-      return h(Search, {
-        apiKey: apiKey || "",
-        cx: cx || "",
-        query: q || "",
-      });
-    },
+  const vueApp = createApp(Search, {
+    apiKey: apiKey || "",
+    cx: cx || "",
+    query: q || "",
   });
   vueApp.component("font-awesome-icon", FontAwesomeIcon);
   vueApp.mount("#siteSearch");
@@ -183,14 +163,7 @@ icons.forEach((x) => {
   const type = x.getAttribute("datatype");
   const icon = label || "";
   const lib = type || "";
-  const vueApp = createApp({
-    render() {
-      return h(AppIcon, {
-        icon: icon,
-        lib: lib,
-      });
-    },
-  });
+  const vueApp = createApp(AppIcon, { icon: icon, lib: lib });
   vueApp.component("font-awesome-icon", FontAwesomeIcon);
   vueApp.mount(x);
 });
@@ -201,23 +174,10 @@ dates.forEach((x) => {
   const fmt = label === null ? "LL" : label;
   const text = x.textContent?.trim() ?? "";
   if (fmt === "from-now") {
-    const vueApp = createApp({
-      render() {
-        return h(FromNow, {
-          date: text,
-        });
-      },
-    });
+    const vueApp = createApp(FromNow, { date: text });
     vueApp.mount(x);
   } else {
-    const vueApp = createApp({
-      render() {
-        return h(DateFormatter, {
-          date: text,
-          formatStr: fmt,
-        });
-      },
-    });
+    const vueApp = createApp(DateFormatter, { date: text, formatStr: fmt });
     vueApp.mount(x);
   }
 });
@@ -226,12 +186,7 @@ function mountHighlighting(prefix: string, el: Element): void {
   if (!el.className.startsWith(prefix)) return;
 
   const lang = el.className.replace(prefix, "").replace(";", "").trim();
-
-  const app = createApp(Highlighter, {
-    content: el.textContent ?? "",
-    lang: lang,
-  });
-
+  const app = createApp(Highlighter, { content: el.textContent ?? "", lang: lang, });
   el.textContent = "";
   app.mount(el);
 }
@@ -247,14 +202,7 @@ const alerts = document.querySelectorAll(".alert");
 alerts.forEach((x) => {
   const type = x.getAttribute("data-label");
   const alert = type || "success";
-  const vueApp = createApp({
-    render() {
-      return h(Alert, {
-        content: x.textContent || "",
-        type: alert,
-      });
-    },
-  });
+  const vueApp = createApp(Alert, { content: x.textContent || "", type: alert });
   vueApp.mount(x);
 });
 
