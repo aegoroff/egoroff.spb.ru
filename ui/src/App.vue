@@ -10,9 +10,9 @@
 import {onMounted, ref} from 'vue'
 import Navigation from '@/components/Navigation.vue'
 import ApiService from '@/services/ApiService'
-import {User as ApiUser} from '@/models/access'
+import {User as ApiUser} from '@/models/common'
 import Breadcrumbs from '@/components/Breadcrumbs.vue'
-import { Section } from './models/navigation';
+import { Section } from './models/common';
 
 defineProps<{
   title: string

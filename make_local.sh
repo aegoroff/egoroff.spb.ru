@@ -13,7 +13,7 @@ base_path=./home
 
 (
   cd ./ui/ || exit
-  bun run build
+  bun run build || exit
 )
 
 mkdir "$base_path"

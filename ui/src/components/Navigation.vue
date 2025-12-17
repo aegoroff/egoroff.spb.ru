@@ -60,8 +60,8 @@
 </template>
 
 <script setup lang="ts">
-import { User } from '@/models/access';
-import { Section } from '@/models/navigation';
+import { User } from '@/models/common';
+import { Section } from '@/models/common';
 
 defineProps<{
   navigation: Section[]

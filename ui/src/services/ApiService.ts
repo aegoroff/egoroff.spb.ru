@@ -1,11 +1,11 @@
 import axios from "axios";
 import { Archive, Query } from "@/models/blog";
 import { toQuery } from "@/util";
-import { FullUserInfo, User } from '@/models/access';
+import { FullUserInfo, User } from '@/models/common';
 import { EditablePost } from "@/models/blog";
 import { Download } from "@/models/portfolio";
 import { useProgress } from "@marcoschulte/vue3-progress";
-import { Nav } from "@/models/navigation";
+import { Nav } from "@/models/common";
 
 export class ApiResult<T> {
   public status!: string;

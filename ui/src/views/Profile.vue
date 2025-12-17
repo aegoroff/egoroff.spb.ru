@@ -65,7 +65,7 @@
 import { ref, onMounted } from 'vue'
 import ApiService from '@/services/ApiService'
 import AppIcon from '@/components/AppIcon.vue'
-import { FullUserInfo } from '@/models/access'
+import { FullUserInfo } from '@/models/common'
 
 const user = ref<FullUserInfo>({
   id: 0,
