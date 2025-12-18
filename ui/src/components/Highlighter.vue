@@ -28,13 +28,7 @@ const langMap = new Map<string, string>([
   ["php", "parser3"],
 ]);
 
-function replacementLang(lang: string): string {
-  return langMap.get(lang) ?? lang;
-}
-
-const language = computed(() =>
-  replacementLang(props.lang)
-)
+const language = computed(() => langMap.get(props.lang) ?? props.lang)
 
 onMounted(highlight)
 watch(() => props.content, highlight)
