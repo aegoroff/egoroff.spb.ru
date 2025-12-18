@@ -20,20 +20,14 @@ const props = defineProps<{
   formatStr: string
 }>()
 
+function formatnow(): boolean {
+  return props.formatStr === "from-now";
+}
 
 const formatted = computed(() => {
-  if (props.formatStr === "from-now") {
-    return dayjs(props.date).fromNow();
-  } else {
-    return dayjs(props.date).format(props.formatStr);
-  }
+  const d = dayjs(props.date);
+  return formatnow() ? d.fromNow() : d.format(props.formatStr);
 })
 
-const cssClass = computed(() => {
-  if (props.formatStr === "from-now") {
-    return "date-from-now";
-  } else {
-    return "shortDate";
-  }
-})
+const cssClass = computed(() => formatnow() ? "date-from-now" : "shortDate")
 </script>
