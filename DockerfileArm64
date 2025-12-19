@@ -10,7 +10,6 @@ RUN bun install
 COPY ui/src/ ./src/
 COPY static/img/ /static/img/
 COPY static/map.json /static/
-COPY static/config.json /static/
 COPY static/robots.txt /static/
 COPY ui/vue.config.js ./
 COPY ui/tsconfig.json ./
