@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { Section } from '@/models/navigation';
+import { Section } from '@/models/common';
 
 
 defineProps<{

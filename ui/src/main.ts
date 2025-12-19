@@ -89,33 +89,37 @@ if (appElement) {
   vueApp.use(VueSocialSharing as any);
   vueApp.config.globalProperties.emitter = emitter;
 
-  vueApp.mount("#app");
+  vueApp.mount(appElement);
 }
 
-if (document.getElementById("blogNavigation")) {
+const blogNav = document.getElementById("blogNavigation");
+if (blogNav) {
   const vueApp = createApp(BlogNavigation);
-  vueApp.mount("#blogNavigation");
+  vueApp.mount(blogNav);
 }
 
-if (document.getElementById("blogcontainer") && window.location.hash) {
+const blogContainer = document.getElementById("blogcontainer");
+if (blogContainer && window.location.hash) {
   const hash = window.location.hash.substring(1);
   const vueApp = createApp(BlogAnnounces, { q: hash });
   vueApp.component("DateFormatter", DateFormatter);
-  vueApp.mount("#blogcontainer");
+  vueApp.mount(blogContainer);
 
-  if (document.getElementById("blogSmallTitle")) {
+  const blogTitle = document.getElementById("blogSmallTitle");
+  if (blogTitle) {
     const e = hash.split("=");
     let titleText = `все посты по метке: ${e[1]}`;
 
     const vueApp2 = createApp(BlogTitle, { text: titleText });
-    vueApp2.mount("#blogSmallTitle");
+    vueApp2.mount(blogTitle);
   }
 }
 
-if (document.getElementById("portfolioDownloads")) {
+const portfolioDownloads = document.getElementById("portfolioDownloads");
+if (portfolioDownloads) {
   const vueApp = createApp(Downloads);
   vueApp.component("font-awesome-icon", FontAwesomeIcon);
-  vueApp.mount("#portfolioDownloads");
+  vueApp.mount(portfolioDownloads);
 }
 
 const social = document.getElementById("social");
@@ -127,7 +131,7 @@ if (social) {
     networks: ["vk"],
   });
   vueApp.component("font-awesome-icon", FontAwesomeIcon);
-  vueApp.mount("#social");
+  vueApp.mount(social);
 }
 
 const search = document.getElementById("siteSearch");
@@ -141,14 +145,15 @@ if (search) {
     cx: cx || "",
     query: q || "",
   });
-  vueApp.mount("#siteSearch");
+  vueApp.mount(search);
 }
 
-if (document.getElementById("userProfile")) {
+const userProfile = document.getElementById("userProfile");
+if (userProfile) {
   const vueApp = createApp(Profile);
   vueApp.component("font-awesome-icon", FontAwesomeIcon);
   vueApp.component("AppIcon", AppIcon);
-  vueApp.mount("#userProfile");
+  vueApp.mount(userProfile);
 }
 
 document.querySelectorAll("i.icon[data-label]").forEach((x) => {
@@ -190,10 +195,11 @@ document.querySelectorAll(".alert").forEach((x) => {
   vueApp.mount(x);
 });
 
-if (document.getElementById("admin")) {
+const admin = document.getElementById("admin");
+if (admin) {
   const router = createAdminRouter();
   const vueApp = createApp(AdminApp);
   vueApp.use(router);
   vueApp.component("font-awesome-icon", FontAwesomeIcon);
-  vueApp.mount("#admin");
+  vueApp.mount(admin);
 }
