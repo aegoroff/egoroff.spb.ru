@@ -26,3 +26,4 @@ egoroffspbrupub.pem
 egoroff/egoroff_spb_ru.crt
 egoroff/egoroff_spb_ru.key.pem
 home/
+target/rust-analyzer/
