@@ -159,18 +159,15 @@ if (userProfile) {
 document.querySelectorAll("i.icon[data-label]").forEach((x) => {
   const label = x.getAttribute("data-label");
   const type = x.getAttribute("datatype");
-  const icon = label || "";
-  const lib = type || "";
-  const vueApp = createApp(AppIcon, { icon: icon, lib: lib });
+  const vueApp = createApp(AppIcon, { icon: label || "", lib: type || "" });
   vueApp.component("font-awesome-icon", FontAwesomeIcon);
   vueApp.mount(x);
 });
 
 document.querySelectorAll("span.date[data-label]").forEach((x) => {
   const label = x.getAttribute("data-label");
-  const fmt = label === null ? "LL" : label;
   const text = x.textContent?.trim() ?? "";
-  const vueApp = createApp(DateFormatter, { date: text, formatStr: fmt });
+  const vueApp = createApp(DateFormatter, { date: text, formatStr: label || "LL" });
   vueApp.mount(x);
 });
 
@@ -190,8 +187,7 @@ document.querySelectorAll("pre, code").forEach((el) => {
 
 document.querySelectorAll(".alert").forEach((x) => {
   const type = x.getAttribute("data-label");
-  const alert = type || "success";
-  const vueApp = createApp(Alert, { content: x.textContent || "", type: alert });
+  const vueApp = createApp(Alert, { content: x.textContent || "", type: type || "success" });
   vueApp.mount(x);
 });
 
