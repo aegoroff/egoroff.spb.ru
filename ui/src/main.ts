@@ -86,7 +86,7 @@ if (appElement) {
   vueApp.component("Profile", Profile);
 
   vueApp.use(Vue3ProgressPlugin);
-  vueApp.use(VueSocialSharing);
+  vueApp.use(VueSocialSharing as any);
   vueApp.config.globalProperties.emitter = emitter;
 
   vueApp.mount("#app");
