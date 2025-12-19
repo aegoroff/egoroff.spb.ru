@@ -93,12 +93,11 @@ pub async fn run() -> Result<()> {
     };
     tracing::debug!("Data path {}", data_path.to_str().unwrap_or_default());
 
-    let config_path = BASE_PATH.join("static/config.json");
-    let file = File::open(config_path).with_context(|| "config.json open error")?;
-    let reader = BufReader::new(file);
-
-    let site_config: Config = serde_json::from_reader(reader)
-        .with_context(|| "config.json cannot be converted into object")?;
+    let site_config: Config = Config {
+        search_api_key: env::var("EGOROFF_SEARCH_API_KEY").unwrap_or_default(),
+        google_site_id: env::var("EGOROFF_SITE_ID").unwrap_or_default(),
+        analytics_id: env::var("EGOROFF_ANALYTYCS_ID").unwrap_or_default(),
+    };
 
     let root = SITE_MAP
         .as_ref()
