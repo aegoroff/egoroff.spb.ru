@@ -147,6 +147,7 @@ if (document.getElementById("siteSearch")) {
 
 if (document.getElementById("userProfile")) {
   const vueApp = createApp(Profile);
+  vueApp.component("font-awesome-icon", FontAwesomeIcon);
   vueApp.component("AppIcon", AppIcon);
   vueApp.mount("#userProfile");
 }
@@ -199,5 +200,6 @@ if (document.getElementById("admin")) {
   const router = createAdminRouter();
   const vueApp = createApp(AdminApp);
   vueApp.use(router);
+  vueApp.component("font-awesome-icon", FontAwesomeIcon);
   vueApp.mount("#admin");
 }
