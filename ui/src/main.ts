@@ -103,8 +103,7 @@ if (document.getElementById("blogcontainer") && window.location.hash) {
   vueApp.component("DateFormatter", DateFormatter);
   vueApp.mount("#blogcontainer");
 
-  const blogTitleElement = document.getElementById("blogSmallTitle");
-  if (blogTitleElement) {
+  if (document.getElementById("blogSmallTitle")) {
     const e = hash.split("=");
     let titleText = `все посты по метке: ${e[1]}`;
 
@@ -119,8 +118,9 @@ if (document.getElementById("portfolioDownloads")) {
   vueApp.mount("#portfolioDownloads");
 }
 
-if (document.getElementById("social")) {
-  const title = document.getElementById("social")?.getAttribute("property");
+const social = document.getElementById("social");
+if (social) {
+  const title = social.getAttribute("property");
   const vueApp = createApp(Social, {
     title: title || "",
     url: window.location.href,
@@ -130,11 +130,10 @@ if (document.getElementById("social")) {
   vueApp.mount("#social");
 }
 
-if (document.getElementById("siteSearch")) {
-  const apiKey = document
-    .getElementById("siteSearch")
-    ?.getAttribute("property");
-  const cx = document.getElementById("siteSearch")?.getAttribute("datafld");
+const search = document.getElementById("siteSearch");
+if (search) {
+  const apiKey = search.getAttribute("property");
+  const cx = search.getAttribute("datafld");
   const urlParams = new URLSearchParams(window.location.search);
   const q = urlParams.get("q");
   const vueApp = createApp(Search, {
@@ -152,8 +151,7 @@ if (document.getElementById("userProfile")) {
   vueApp.mount("#userProfile");
 }
 
-const icons = document.querySelectorAll("i.icon[data-label]");
-icons.forEach((x) => {
+document.querySelectorAll("i.icon[data-label]").forEach((x) => {
   const label = x.getAttribute("data-label");
   const type = x.getAttribute("datatype");
   const icon = label || "";
@@ -163,8 +161,7 @@ icons.forEach((x) => {
   vueApp.mount(x);
 });
 
-const dates = document.querySelectorAll("span.date[data-label]");
-dates.forEach((x) => {
+document.querySelectorAll("span.date[data-label]").forEach((x) => {
   const label = x.getAttribute("data-label");
   const fmt = label === null ? "LL" : label;
   const text = x.textContent?.trim() ?? "";
@@ -181,15 +178,12 @@ function mountHighlighting(prefix: string, el: Element): void {
   app.mount(el);
 }
 
-const snippets = document.querySelectorAll("pre, code");
-
-snippets.forEach((el) => {
+document.querySelectorAll("pre, code").forEach((el) => {
   mountHighlighting("brush: ", el);
   mountHighlighting("language-", el);
 });
 
-const alerts = document.querySelectorAll(".alert");
-alerts.forEach((x) => {
+document.querySelectorAll(".alert").forEach((x) => {
   const type = x.getAttribute("data-label");
   const alert = type || "success";
   const vueApp = createApp(Alert, { content: x.textContent || "", type: alert });
