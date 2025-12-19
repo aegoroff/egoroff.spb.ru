@@ -94,7 +94,6 @@ if (appElement) {
 
 if (document.getElementById("blogNavigation")) {
   const vueApp = createApp(BlogNavigation);
-  vueApp.component("font-awesome-icon", FontAwesomeIcon);
   vueApp.mount("#blogNavigation");
 }
 
@@ -102,7 +101,6 @@ if (document.getElementById("blogcontainer") && window.location.hash) {
   const hash = window.location.hash.substring(1);
   const vueApp = createApp(BlogAnnounces, { q: hash });
   vueApp.component("DateFormatter", DateFormatter);
-  vueApp.component("font-awesome-icon", FontAwesomeIcon);
   vueApp.mount("#blogcontainer");
 
   const blogTitleElement = document.getElementById("blogSmallTitle");
@@ -144,13 +142,11 @@ if (document.getElementById("siteSearch")) {
     cx: cx || "",
     query: q || "",
   });
-  vueApp.component("font-awesome-icon", FontAwesomeIcon);
   vueApp.mount("#siteSearch");
 }
 
 if (document.getElementById("userProfile")) {
   const vueApp = createApp(Profile);
-  vueApp.component("font-awesome-icon", FontAwesomeIcon);
   vueApp.component("AppIcon", AppIcon);
   vueApp.mount("#userProfile");
 }
@@ -203,6 +199,5 @@ if (document.getElementById("admin")) {
   const router = createAdminRouter();
   const vueApp = createApp(AdminApp);
   vueApp.use(router);
-  vueApp.component("font-awesome-icon", FontAwesomeIcon);
   vueApp.mount("#admin");
 }
