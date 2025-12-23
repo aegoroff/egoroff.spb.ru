@@ -26,7 +26,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tracing = "0.1"
 tower = { version = "0.5", features = ["util", "timeout"] }
 tower-http = { version = "0.6", features = ["add-extension", "trace", "cors", "limit", "compression-gzip", "validate-request", "auth"] }
-askama = { version = "0.14.0", default-features = false, features = ["config", "alloc", "derive"] }
+askama = { version = "0.15", default-features = false, features = ["config", "alloc", "derive"] }
 rust-embed = { version = "8", features = ["include-exclude"] }
 anyhow = { workspace = true }
 chrono = { workspace = true, default-features = false, features = ["serde", "clock", "std"]}

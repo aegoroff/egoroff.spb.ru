@@ -236,14 +236,15 @@ impl IntoResponse for Admin<'_> {
 }
 
 mod filters {
-    use kernel::typograph;
+    use kernel::typograph as kernel_typograph;
 
+    #[askama::filter_fn]
     pub fn typograph<T: std::fmt::Display>(
         s: T,
         _: &dyn askama::Values,
     ) -> ::askama::Result<String> {
         let s = s.to_string();
-        match typograph::typograph(&s) {
+        match kernel_typograph::typograph(&s) {
             Ok(s) => Ok(s),
             Err(_) => Err(::askama::Error::Fmt),
         }
