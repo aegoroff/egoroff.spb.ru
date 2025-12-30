@@ -237,9 +237,9 @@ async fn exchange_code(
     code: String,
     pkce_code_verifier: Option<PkceCodeVerifier>,
 ) -> Result<StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>> {
-    let http_client = reqwest::ClientBuilder::new()
+    let http_client = oauth2::reqwest::ClientBuilder::new()
         // Following redirects opens the client up to SSRF vulnerabilities.
-        .redirect(reqwest::redirect::Policy::none())
+        .redirect(oauth2::reqwest::redirect::Policy::none())
         .build()?;
 
     let result = match pkce_code_verifier {
