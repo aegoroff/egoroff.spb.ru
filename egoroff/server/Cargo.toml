@@ -46,7 +46,7 @@ uuid = { version = "1.19.0", features = [
 ]}
 hyper = { version = "1.8.1", features = [] }
 hyper-util = { workspace = true, features = ["tokio", "server-auto", "http1"] }
-unicase = "2.8.1"
+unicase = "2.9.0"
 
 [dev-dependencies]
 rstest = "0.26.1"
