@@ -35,7 +35,7 @@ async-trait = { workspace = true }
 reqwest = { workspace = true, features = ["json", "multipart", "stream", "rustls" ] }
 jsonwebtoken = { version = "10.2.0", features = [ "rust_crypto" ]}
 url = { workspace = true }
-thiserror = "2.0.17"
+thiserror = "2.0.18"
 utoipa = { workspace = true, features = ["chrono", "time", "axum_extras"] }
 utoipa-swagger-ui = { version = "=9.0.2", features = ["axum"] }
 rand = { version = "0.9.2" }
