@@ -21,7 +21,7 @@
     "highlight.js": "^11.11.1",
     "mitt": "^3.0.1",
     "vue": "^3.5.27",
-    "vue-router": "^5.0.0",
+    "vue-router": "^5.0.1",
     "vue3-social-sharing": "^1.4.1"
   },
   "devDependencies": {
