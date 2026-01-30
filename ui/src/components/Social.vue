@@ -15,7 +15,7 @@ const props = defineProps<{
   title: string
 }>()
 
-const networks = ['vk', 'telegram', 'whatsapp']
+const networks = ['vk', 'telegram']
     
 const getShareUrl = (network: string): string => {
   const encodedUrl = encodeURIComponent(props.url)
@@ -26,12 +26,6 @@ const getShareUrl = (network: string): string => {
       return `https://vk.com/share.php?url=${encodedUrl}&title=${encodedTitle}`
     case 'telegram':
       return `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}`
-    case 'whatsapp':
-      return `https://api.whatsapp.com/send?text=${encodedTitle}%20${encodedUrl}`
-    case 'facebook':
-      return `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`
-    case 'twitter':
-      return `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`
     default:
       return '#'
   }
