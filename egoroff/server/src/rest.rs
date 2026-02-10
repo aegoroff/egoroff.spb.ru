@@ -18,7 +18,7 @@ use kernel::domain::{ApiResult, SmallPost};
 use kernel::graph::SiteGraph;
 use kernel::session::SqliteSessionStore;
 use kernel::sqlite::{Mode, Sqlite};
-use rand::Rng;
+use rand::RngExt;
 use std::collections::HashSet;
 use std::path::Path;
 use std::path::PathBuf;
