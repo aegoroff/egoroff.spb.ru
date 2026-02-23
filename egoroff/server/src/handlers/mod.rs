@@ -226,6 +226,13 @@ pub async fn serve_storage(
         ));
     };
 
+    // to prevent path traversal attacks
+    if bucket.contains("..") || bucket.contains("/") || path.contains("..") || path.contains("/") {
+        return internal_server_error_response(String::from(
+            "Invalid bucket or path",
+        ));
+    }
+
     resource
         .append_path("api")
         .append_path(&bucket)
