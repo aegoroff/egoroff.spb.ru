@@ -228,7 +228,9 @@ pub async fn serve_storage(
 
     // to prevent path traversal attacks
     if !is_safe_path_segment(&bucket) || !is_safe_path_segment(&path) {
-        return internal_server_error_response(String::from("Invalid bucket or path"));
+        return bad_request_error_response(format!(
+            "invalid bucket: '{bucket}' or path: '{path}' detected."
+        ));
     }
 
     resource
