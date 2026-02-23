@@ -335,7 +335,11 @@ pub async fn serve_navigation(
 }
 
 fn is_safe_path_segment(segment: &str) -> bool {
-    if segment.is_empty() || segment.contains("..") || segment.contains('/') || segment.contains(':') {
+    if segment.is_empty()
+        || segment.contains("..")
+        || segment.contains('/')
+        || segment.contains(':')
+    {
         return false;
     }
 
@@ -492,6 +496,10 @@ mod tests {
     #[case("123", true)]
     #[case("ab", true)]
     #[case("ab12", true)]
+    #[case("ab-12", true)]
+    #[case("ab_12", true)]
+    #[case("ab_12.exe", true)]
+    #[case("ab_1-2.exe", true)]
     #[case("ab12.", true)]
     #[case("ab12..", false)]
     #[case("ab..12", false)]
