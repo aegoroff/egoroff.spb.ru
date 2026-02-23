@@ -227,10 +227,8 @@ pub async fn serve_storage(
     };
 
     // to prevent path traversal attacks
-    if bucket.contains("..") || bucket.contains("/") || path.contains("..") || path.contains("/") {
-        return internal_server_error_response(String::from(
-            "Invalid bucket or path",
-        ));
+    if !is_safe_path_segment(&bucket) || !is_safe_path_segment(&path) {
+        return internal_server_error_response(String::from("Invalid bucket or path"));
     }
 
     resource
@@ -332,6 +330,16 @@ pub async fn serve_navigation(
         sections: root.clone_children(current),
         breadcrumbs: optional_breadcrumbs,
     })
+}
+
+fn is_safe_path_segment(segment: &str) -> bool {
+    if segment.is_empty() || segment == ".." || segment.contains('/') || segment.contains(':') {
+        return false;
+    }
+
+    segment
+        .chars()
+        .all(|c| c.is_ascii_alphanumeric() || matches!(c, '-' | '_' | '.'))
 }
 
 fn not_found_page() -> Response {
