@@ -335,7 +335,7 @@ pub async fn serve_navigation(
 }
 
 fn is_safe_path_segment(segment: &str) -> bool {
-    if segment.is_empty() || segment == ".." || segment.contains('/') || segment.contains(':') {
+    if segment.is_empty() || segment.contains("..") || segment.contains('/') || segment.contains(':') {
         return false;
     }
 
@@ -486,5 +486,26 @@ mod tests {
 
         // assert
         assert_eq!(Some(123), actual);
+    }
+
+    #[rstest]
+    #[case("123", true)]
+    #[case("ab", true)]
+    #[case("ab12", true)]
+    #[case("ab12.", true)]
+    #[case("ab12..", false)]
+    #[case("ab..12", false)]
+    #[case("ab/12", false)]
+    #[case("", false)]
+    #[case("qq:/", false)]
+    #[case("qq:", false)]
+    #[trace]
+    fn is_safe_path_segment_tests(#[case] test_data: &str, #[case] expected: bool) {
+        // arrange
+        // act
+        let actual = is_safe_path_segment(test_data);
+
+        // assert
+        assert_eq!(expected, actual);
     }
 }
