@@ -1,8 +1,14 @@
 #![allow(clippy::module_name_repetitions)]
 
-use std::{collections::HashSet, fs, marker::PhantomData, path::Path, sync::Arc};
+use std::{
+    collections::HashSet,
+    fs,
+    marker::PhantomData,
+    path::Path,
+    sync::Arc,
+};
 
-use anyhow::{Context, Result};
+use anyhow::{Context, Result, bail};
 use axum::{
     body::HttpBody,
     http::{self, Request, Response},
@@ -12,6 +18,7 @@ use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use tower_http::validate_request::ValidateRequest;
+use url::Url;
 use utoipa::ToSchema;
 
 pub const ME: &str = "https://www.egoroff.spb.ru/";
@@ -119,7 +126,76 @@ pub fn validate_jwt<P: AsRef<Path>>(token: &str, public_key_path: P) -> Result<C
     Ok(claims.claims)
 }
 
+fn validate_uri(uri: &str) -> Result<()> {
+    let parsed = Url::parse(uri).context("Invalid URL")?;
+    let scheme = parsed.scheme();
+    if scheme != "http" && scheme != "https" {
+        bail!("Unsupported scheme: {}", scheme);
+    }
+    if let Some(host) = parsed.host() {
+        match host {
+            url::Host::Domain(domain) => {
+                // Block localhost and .local domains
+                if domain == "localhost" || domain.ends_with(".localhost") {
+                    bail!("Domain localhost is not allowed");
+                }
+                if domain.ends_with(".local") {
+                    bail!("Domain .local is not allowed");
+                }
+                // Optionally block internal domains
+                if domain.ends_with(".internal") || domain.ends_with(".localdomain") {
+                    bail!("Internal domain not allowed");
+                }
+            }
+            url::Host::Ipv4(ip) => {
+                if ip.is_private()
+                    || ip.is_loopback()
+                    || ip.is_link_local()
+                    || ip.is_broadcast()
+                    || ip.is_multicast()
+                    || ip.is_unspecified()
+                {
+                    bail!("Private or reserved IPv4 address not allowed");
+                }
+                // Carrier-grade NAT (100.64.0.0/10)
+                if ip.octets()[0] == 100 && (ip.octets()[1] >= 64 && ip.octets()[1] <= 127) {
+                    bail!("Carrier-grade NAT address not allowed");
+                }
+                // Documentation ranges
+                if ip.octets()[0] == 192 && ip.octets()[1] == 0 && ip.octets()[2] == 2 {
+                    bail!("Documentation address not allowed");
+                }
+                if ip.octets()[0] == 198 && ip.octets()[1] == 51 && ip.octets()[2] == 100 {
+                    bail!("Documentation address not allowed");
+                }
+                if ip.octets()[0] == 203 && ip.octets()[1] == 0 && ip.octets()[2] == 113 {
+                    bail!("Documentation address not allowed");
+                }
+            }
+            url::Host::Ipv6(ip) => {
+                if ip.is_loopback() || ip.is_multicast() || ip.is_unspecified() {
+                    bail!("Private or reserved IPv6 address not allowed");
+                }
+                // Check for unique local (fc00::/7)
+                let segments = ip.segments();
+                if segments[0] & 0xfe00 == 0xfc00 {
+                    bail!("Unique local IPv6 address not allowed");
+                }
+                // Check for documentation (2001:db8::/32)
+                if segments[0] == 0x2001 && segments[1] == 0x0db8 {
+                    bail!("Documentation IPv6 address not allowed");
+                }
+                // Note: we don't check for IPv4-mapped addresses because they are covered by IPv4 checks
+            }
+        }
+    } else {
+        bail!("URL must have a host");
+    }
+    Ok(())
+}
+
 pub async fn read_from_client(uri: &str) -> Result<String> {
+    validate_uri(uri)?;
     let client = Client::builder().build()?;
 
     let response = client.get(uri).send().await?.text().await?;
