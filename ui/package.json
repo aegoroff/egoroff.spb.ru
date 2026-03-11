@@ -40,7 +40,7 @@
     "eslint-plugin-promise": "^7.2.1",
     "eslint-plugin-standard": "^5.0.0",
     "eslint-plugin-vue": "^10.8.0",
-    "sass": "^1.97.3",
+    "sass": "^1.98.0",
     "sass-loader": "^16.0.7",
     "typescript": "~5.9.3",
     "vue-tsc": "^3.2.5"
