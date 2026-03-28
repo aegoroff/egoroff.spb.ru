@@ -25,6 +25,8 @@
     "vue3-social-sharing": "^1.4.1"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "jiti": "^2.6.1",
     "@typescript-eslint/eslint-plugin": "^8.57.2",
     "@typescript-eslint/parser": "^8.57.2",
     "@vue/cli-plugin-eslint": "~5.0.9",
@@ -40,9 +42,11 @@
     "eslint-plugin-promise": "^7.2.1",
     "eslint-plugin-standard": "^5.0.0",
     "eslint-plugin-vue": "^10.8.0",
+    "globals": "^17.4.0",
     "sass": "^1.98.0",
     "sass-loader": "^16.0.7",
     "typescript": "~6.0.2",
+    "typescript-eslint": "^8.57.2",
     "vue-tsc": "^3.2.6"
   },
   "browserslist": [

@@ -108,7 +108,7 @@ if (blogContainer && window.location.hash) {
   const blogTitle = document.getElementById("blogSmallTitle");
   if (blogTitle) {
     const e = hash.split("=");
-    let titleText = `все посты по метке: ${e[1]}`;
+    const titleText = `все посты по метке: ${e[1]}`;
 
     const vueApp2 = createApp(BlogTitle, { text: titleText });
     vueApp2.mount(blogTitle);
