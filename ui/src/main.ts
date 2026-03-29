@@ -32,17 +32,17 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import BlogAnnounces from "@/components/BlogAnnounces.vue";
 import BlogTitle from "@/components/BlogTitle.vue";
-import Search from "@/views/Search.vue";
-import Profile from "@/views/Profile.vue";
-import Social from "@/components/Social.vue";
-import Alert from "@/components/Alert.vue";
+import SearchView from "@/views/SearchView.vue";
+import ProfileView from "@/views/ProfileView.vue";
+import SocialButtons from "@/components/SocialButtons.vue";
+import AlertWindow from "@/components/AlertWindow.vue";
 import { createAdminRouter } from "@/router";
-import Downloads from "@/components/Downloads.vue";
+import DownloadsList from "@/components/DownloadsList.vue";
 import mitt from "mitt";
 
 import "highlight.js/lib/common";
 import "highlight.js/styles/github.css";
-import Highlighter from "@/components/Highlighter.vue";
+import CodeHighlighter from "@/components/CodeHighlighter.vue";
 
 library.add(
   faBook,
@@ -78,12 +78,12 @@ if (appElement) {
   vueApp.component("BlogNavigation", BlogNavigation);
   vueApp.component("BlogAnnounces", BlogAnnounces);
   vueApp.component("BlogTitle", BlogTitle);
-  vueApp.component("Highlighter", Highlighter);
-  vueApp.component("Alert", Alert);
-  vueApp.component("Social", Social);
-  vueApp.component("Downloads", Downloads);
-  vueApp.component("Search", Search);
-  vueApp.component("Profile", Profile);
+  vueApp.component("CodeHighlighter", CodeHighlighter);
+  vueApp.component("AlertWindow", AlertWindow);
+  vueApp.component("SocialButtons", SocialButtons);
+  vueApp.component("DownloadsList", DownloadsList);
+  vueApp.component("SearchView", SearchView);
+  vueApp.component("ProfileView", ProfileView);
 
   vueApp.use(Vue3ProgressPlugin);
   vueApp.use(VueSocialSharing as any);
@@ -117,7 +117,7 @@ if (blogContainer && window.location.hash) {
 
 const portfolioDownloads = document.getElementById("portfolioDownloads");
 if (portfolioDownloads) {
-  const vueApp = createApp(Downloads);
+  const vueApp = createApp(DownloadsList);
   vueApp.component("font-awesome-icon", FontAwesomeIcon);
   vueApp.mount(portfolioDownloads);
 }
@@ -125,7 +125,7 @@ if (portfolioDownloads) {
 const social = document.getElementById("social");
 if (social) {
   const title = social.getAttribute("property");
-  const vueApp = createApp(Social, {
+  const vueApp = createApp(SocialButtons, {
     title: title || "",
     url: window.location.href,
     networks: ["vk"],
@@ -140,7 +140,7 @@ if (search) {
   const cx = search.getAttribute("datafld");
   const urlParams = new URLSearchParams(window.location.search);
   const q = urlParams.get("q");
-  const vueApp = createApp(Search, {
+  const vueApp = createApp(SearchView, {
     apiKey: apiKey || "",
     cx: cx || "",
     query: q || "",
@@ -150,7 +150,7 @@ if (search) {
 
 const userProfile = document.getElementById("userProfile");
 if (userProfile) {
-  const vueApp = createApp(Profile);
+  const vueApp = createApp(ProfileView);
   vueApp.component("font-awesome-icon", FontAwesomeIcon);
   vueApp.component("AppIcon", AppIcon);
   vueApp.mount(userProfile);
@@ -175,7 +175,7 @@ function mountHighlighting(prefix: string, el: Element): void {
   if (!el.className.startsWith(prefix)) return;
 
   const lang = el.className.replace(prefix, "").replace(";", "").trim();
-  const app = createApp(Highlighter, { content: el.textContent ?? "", lang: lang, });
+  const app = createApp(CodeHighlighter, { content: el.textContent ?? "", lang: lang, });
   el.textContent = "";
   app.mount(el);
 }
@@ -187,7 +187,7 @@ document.querySelectorAll("pre, code").forEach((el) => {
 
 document.querySelectorAll(".alert").forEach((x) => {
   const type = x.getAttribute("data-label");
-  const vueApp = createApp(Alert, { content: x.textContent || "", type: type || "success" });
+  const vueApp = createApp(AlertWindow, { content: x.textContent || "", type: type || "success" });
   vueApp.mount(x);
 });
 

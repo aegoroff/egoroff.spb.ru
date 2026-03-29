@@ -4,17 +4,17 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/posts/:page?',
     name: 'Блог',
-    component: () => import(/* webpackChunkName: "posts" */ '../views/admin/Posts.vue')
+    component: () => import(/* webpackChunkName: "posts" */ '../views/admin/PostsView.vue')
   },
   {
     path: '/downloads/:page?',
     name: 'Загрузки',
-    component: () => import(/* webpackChunkName: "users" */ '../views/admin/Downloads.vue')
+    component: () => import(/* webpackChunkName: "users" */ '../views/admin/DownloadsView.vue')
   },
   {
     path: '/users',
     name: 'Пользователи',
-    component: () => import(/* webpackChunkName: "users" */ '../views/admin/Users.vue')
+    component: () => import(/* webpackChunkName: "users" */ '../views/admin/UsersView.vue')
   }
 ]
 

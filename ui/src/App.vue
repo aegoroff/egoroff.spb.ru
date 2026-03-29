@@ -1,17 +1,17 @@
 <template>
   <div id="app">
     <vue3-progress-bar></vue3-progress-bar>
-    <Navigation :navigation="navigation" :user="user"/>
-    <Breadcrumbs :breadcrumbs="breadcrumbs" :title="title"/>
+    <NavigationBar :navigation="navigation" :user="user"/>
+    <BreadcrumbsBar :breadcrumbs="breadcrumbs" :title="title"/>
   </div>
 </template>
 
 <script setup lang="ts">
 import {onMounted, ref} from 'vue'
-import Navigation from '@/components/Navigation.vue'
+import NavigationBar from '@/components/NavigationBar.vue'
 import ApiService from '@/services/ApiService'
 import {User as ApiUser} from '@/models/common'
-import Breadcrumbs from '@/components/Breadcrumbs.vue'
+import BreadcrumbsBar from '@/components/BreadcrumbsBar.vue'
 import { Section } from './models/common';
 
 defineProps<{

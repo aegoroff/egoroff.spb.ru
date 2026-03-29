@@ -11,10 +11,10 @@
   </ul>
   <div class="tab-content">
     <div class="tab-pane fade show active" id="tags-content">
-      <Tags :tags="archive.tags" v-model:currentTag="currentTag" />
+      <TagsControl :tags="archive.tags" v-model:currentTag="currentTag" />
     </div>
     <div class="tab-pane fade" id="archive-content">
-      <Chrono :years="archive.years"/>
+      <ChronoControl :years="archive.years"/>
     </div>
   </div>
 </template>
@@ -22,8 +22,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import ApiService from '@/services/ApiService'
-import Tags from '@/components/Tags.vue'
-import Chrono from '@/components/Chrono.vue'
+import TagsControl from '@/components/TagsControl.vue'
+import ChronoControl from '@/components/ChronoControl.vue'
 import { Archive } from '@/models/blog'
 
 const archive = ref<Archive>({
