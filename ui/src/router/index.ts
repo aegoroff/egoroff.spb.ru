@@ -9,7 +9,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/downloads/:page?',
     name: 'Загрузки',
-    component: () => import(/* webpackChunkName: "users" */ '../views/admin/DownloadsView.vue')
+    component: () => import(/* webpackChunkName: "downloads" */ '../views/admin/DownloadsView.vue')
   },
   {
     path: '/users',
