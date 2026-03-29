@@ -86,6 +86,7 @@ if (appElement) {
   vueApp.component("ProfileView", ProfileView);
 
   vueApp.use(Vue3ProgressPlugin);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   vueApp.use(VueSocialSharing as any);
   vueApp.config.globalProperties.emitter = emitter;
 
