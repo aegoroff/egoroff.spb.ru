@@ -13,13 +13,13 @@
     "allowSyntheticDefaultImports": true,
     "noUncheckedSideEffectImports": false,
     "sourceMap": true,
-    "baseUrl": ".",
+    "rootDir": ".",
     "types": [
       "webpack-env"
     ],
     "paths": {
       "@/*": [
-        "src/*"
+        "./src/*"
       ]
     },
     "lib": [

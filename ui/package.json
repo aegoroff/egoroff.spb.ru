@@ -35,7 +35,7 @@
     "@vue/compiler-sfc": "^3.5.31",
     "@vue/eslint-config-standard": "^9.0.1",
     "@vue/eslint-config-typescript": "^14.7.0",
-    "esbuild-loader": "^4.4.2",
+    "esbuild-loader": "^4.4.3",
     "eslint": "^10.1.0",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-node": "^11.1.0",
