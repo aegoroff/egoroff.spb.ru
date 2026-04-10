@@ -1,6 +1,7 @@
 use std::iter;
 
 use anyhow::Result;
+use anyhow::anyhow;
 use chrono::SecondsFormat;
 use kernel::{domain::SmallPost, xml::Builder};
 
@@ -33,7 +34,10 @@ pub fn from_small_posts(posts: Vec<SmallPost>) -> Result<String> {
 
     builder.write_element("id", "https://www.egoroff.spb.ru/blog/recent.atom")?;
 
-    let updated = posts[0].created.to_rfc3339_opts(SecondsFormat::Secs, true);
+    let first_post = posts.first().ok_or(anyhow!("No posts passed"))?;
+    let updated = first_post
+        .created
+        .to_rfc3339_opts(SecondsFormat::Secs, true);
     builder.write_element("updated", &updated)?;
 
     builder.write_empty_attributed_element(
@@ -129,5 +133,17 @@ mod tests {
         assert!(actual.is_ok());
         let result = actual.unwrap();
         assert!(!result.is_empty());
+    }
+
+    #[test]
+    fn from_empty_posts_test() {
+        // arrange
+        let posts = vec![];
+
+        // act
+        let actual = from_small_posts(posts);
+
+        // assert
+        assert!(actual.is_err());
     }
 }
