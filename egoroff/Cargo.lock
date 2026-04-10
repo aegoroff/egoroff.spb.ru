@@ -2996,6 +2996,7 @@ dependencies = [
  "kernel",
  "mime_guess",
  "oauth2",
+ "percent-encoding",
  "rand 0.10.0",
  "reqwest 0.13.2",
  "rstest",
