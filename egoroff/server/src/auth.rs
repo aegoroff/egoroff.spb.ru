@@ -338,11 +338,12 @@ impl Authorizer<GoogleUser> for GoogleAuthorizer {
 impl Authorizer<GithubUser> for GithubAuthorizer {
     fn generate_authorize_url(&self) -> GeneratedUrl {
         let request = make_auth_request(&self.client, &self.provider);
-        let (authorize_url, csrf_state) = request.url();
+        let (pkce_code_challenge, pkce_code_verifier) = PkceCodeChallenge::new_random_sha256();
+        let (authorize_url, csrf_state) = request.set_pkce_challenge(pkce_code_challenge).url();
         GeneratedUrl {
             url: authorize_url,
             csrf_state,
-            verifier: None,
+            verifier: Some(pkce_code_verifier),
         }
     }
 
@@ -383,11 +384,12 @@ impl Authorizer<GithubUser> for GithubAuthorizer {
 impl Authorizer<YandexUser> for YandexAuthorizer {
     fn generate_authorize_url(&self) -> GeneratedUrl {
         let request = make_auth_request(&self.client, &self.provider);
-        let (authorize_url, csrf_state) = request.url();
+        let (pkce_code_challenge, pkce_code_verifier) = PkceCodeChallenge::new_random_sha256();
+        let (authorize_url, csrf_state) = request.set_pkce_challenge(pkce_code_challenge).url();
         GeneratedUrl {
             url: authorize_url,
             csrf_state,
-            verifier: None,
+            verifier: Some(pkce_code_verifier),
         }
     }
 
