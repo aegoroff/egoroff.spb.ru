@@ -109,7 +109,10 @@ pub async fn serve_token_generate(
     match validate_jwt(&req.code, public_key_path) {
         Ok(_claims) => {
             let mut cache = page_context.cache.lock().await;
-            cache.remove(&req.code);
+            if !cache.remove(&req.code) {
+                tracing::warn!("Authorization code reuse attempt detected");
+                return unauthorized_response("Authorization code already used");
+            }
         }
         Err(e) => {
             tracing::error!("validate jwt token error: {e:#?}");
