@@ -24,7 +24,11 @@ pub fn archive(storage: MutexGuard<Sqlite>) -> Result<Archive> {
     let tags = aggregated_tags
         .iter()
         .map(|tag| {
-            let ix = (tag.count as f32 / total_posts as f32 * 10.0) as usize;
+            let ix = if total_posts > 0 {
+                (tag.count as f32 / total_posts as f32 * 10.0) as usize
+            } else {
+                0
+            };
             Tag {
                 title: tag.title.clone(),
                 level: ix,
