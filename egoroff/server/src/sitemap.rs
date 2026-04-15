@@ -41,16 +41,16 @@ pub fn make_site_map(
     };
     write_url(&mut builder, &blog)?;
 
-    let porfolio = Url {
-        location: &format!("{SITE}porfolio/"),
+    let portfolio = Url {
+        location: &format!("{SITE}portfolio/"),
         changefreq: "weekly",
         priority: "0.7",
     };
-    write_url(&mut builder, &porfolio)?;
+    write_url(&mut builder, &portfolio)?;
 
     for doc in apache_docs {
         let d = Url {
-            location: &format!("{SITE}porfolio/{}.html", doc.id),
+            location: &format!("{SITE}portfolio/{}.html", doc.id),
             changefreq: "yearly",
             priority: "1.0",
         };
