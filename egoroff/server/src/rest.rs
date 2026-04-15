@@ -8,6 +8,7 @@ use axum::{Router, routing::get};
 use axum_prometheus::PrometheusMetricLayer;
 
 use axum_login::{AuthManagerLayerBuilder, login_required, permission_required};
+use hyper::{Method, header};
 use tower_sessions::cookie::{SameSite, time::Duration};
 use tower_sessions::{Expiry, SessionManagerLayer};
 
@@ -27,7 +28,7 @@ use tower::ServiceBuilder;
 use tower_http::classify::ServerErrorsFailureClass;
 use tower_http::compression::predicate::NotForContentType;
 use tower_http::compression::{CompressionLayer, DefaultPredicate, Predicate};
-use tower_http::cors::{Any, CorsLayer};
+use tower_http::cors::{AllowOrigin, CorsLayer};
 use tower_http::limit::RequestBodyLimitLayer;
 use tower_http::trace::TraceLayer;
 use tracing::Span;
@@ -118,7 +119,13 @@ pub fn create_routes(
                 tracing::error!("Server error: {error}");
             },
         ))
-        .layer(CorsLayer::new().allow_origin(Any).allow_methods(Any))
+        .layer(
+            CorsLayer::new()
+                .allow_origin(AllowOrigin::exact("https://www.egoroff.spb.ru".parse()?))
+                .allow_methods([Method::GET, Method::POST, Method::PUT, Method::DELETE])
+                .allow_headers([header::CONTENT_TYPE, header::AUTHORIZATION])
+                .allow_credentials(true),
+        )
         .layer(AuthManagerLayerBuilder::new(auth_backend, session_layer).build())
         .into_inner();
 
