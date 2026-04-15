@@ -21,6 +21,7 @@ use kernel::session::SqliteSessionStore;
 use kernel::sqlite::{Mode, Sqlite};
 use rand::RngExt;
 use std::collections::HashSet;
+use std::env;
 use std::path::Path;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -108,10 +109,15 @@ pub fn create_routes(
     let session_store = SqliteSessionStore::open(sessions_path, &secret)?;
     session_store.cleanup()?;
     let session_expiry = Expiry::OnInactivity(Duration::seconds(86400 * 14));
+
+    let is_production = env::var("EGOROFF_ENV")
+        .map(|v| v == "production")
+        .unwrap_or(false);
+
     let session_layer = SessionManagerLayer::new(session_store)
-        .with_secure(false)
+        .with_secure(is_production) // true in production
         .with_expiry(session_expiry)
-        .with_same_site(SameSite::Lax);
+        .with_same_site(SameSite::Strict);
 
     let session_service = ServiceBuilder::new()
         .layer(TraceLayer::new_for_http().on_failure(
