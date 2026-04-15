@@ -7,7 +7,9 @@ use crate::{
     handlers::template::Signin,
 };
 use oauth2::{CsrfToken, PkceCodeVerifier, TokenResponse};
+use serde::Deserialize;
 use tower_sessions::Session;
+use url::Url;
 
 use crate::{
     auth::{AuthBackend, Authorizer, GithubAuthorizer, GoogleAuthorizer},
@@ -20,8 +22,14 @@ const GOOGLE_CSRF_KEY: &str = "google_csrf_state";
 const GITHUB_CSRF_KEY: &str = "github_csrf_state";
 const YANDEX_CSRF_KEY: &str = "yandex_csrf_state";
 const PKCE_CODE_VERIFIER_KEY: &str = "pkce_code_verifier";
+const REDIRECT_TO_KEY: &str = "redirect_uri";
 pub const PROFILE_URI: &str = "/profile/";
 pub const LOGIN_URI: &str = "/login";
+
+#[derive(Debug, Deserialize)]
+pub struct LoginQuery {
+    pub next: Option<String>,
+}
 
 macro_rules! register_url {
     ($context:ident, $session:ident, $url:ident, $key:ident, $context_param:ident) => {{
@@ -30,12 +38,45 @@ macro_rules! register_url {
     }};
 }
 
+/// Extract the `redirect_uri` query parameter from a `next` URL string.
+/// The `next` parameter is expected to be a URL like `/auth?me=...&redirect_uri=...`
+fn extract_redirect_uri_from_next(next: &str) -> Option<String> {
+    // Try to parse as a URL
+    let uri = if let Ok(parsed) = Url::parse(next) {
+        // If parsing succeeds (absolute URL), extract redirect_uri
+        parsed
+    } else {
+        // If parsing fails, try to parse as a relative URL by adding a dummy base
+        let base = Url::parse("http://dummy.example").ok()?;
+        base.join(next).ok()?
+    };
+    uri.query_pairs()
+        .find(|(key, _)| key == "redirect_uri")
+        .map(|(_, value)| value.into_owned())
+}
+
 pub async fn serve_login(
+    Query(query): Query<LoginQuery>,
     Extension(google_authorizer): Extension<Arc<GoogleAuthorizer>>,
     Extension(gitgub_authorizer): Extension<Arc<GithubAuthorizer>>,
     Extension(yandex_authorizer): Extension<Arc<YandexAuthorizer>>,
     session: Session,
 ) -> impl IntoResponse {
+    if let Some(next) = query.next {
+        // Try to parse the next URL to extract redirect_uri parameter
+        let extracted_redirect_uri = extract_redirect_uri_from_next(&next);
+        if let Some(redirect_uri) = &extracted_redirect_uri {
+            tracing::debug!("Extracted redirect_uri from next parameter: {redirect_uri}");
+            if let Err(e) = session.insert(REDIRECT_TO_KEY, redirect_uri).await {
+                tracing::error!("error inserting extracted redirect_uri: {e:#?}");
+            }
+        } else {
+            tracing::debug!("No redirect_uri found in next parameter");
+        }
+    } else {
+        tracing::debug!("Next parameter not found");
+    }
+
     let mut context = Signin {
         year: get_year(),
         ..Default::default()
@@ -164,6 +205,10 @@ pub async fn google_oauth_callback(
     mut auth: AuthSession,
 ) -> impl IntoResponse {
     validate_csrf!(GOOGLE_CSRF_KEY, session, query);
+
+    // Get redirect_to from session before it might be dropped
+    let redirect_to = session.get::<String>(REDIRECT_TO_KEY).await.unwrap_or(None);
+
     if let Ok(pkce_code_verifier) = session
         .get::<PkceCodeVerifier>(PKCE_CODE_VERIFIER_KEY)
         .await
@@ -173,7 +218,14 @@ pub async fn google_oauth_callback(
             .await;
         let mut storage = page_context.storage.lock().await;
         login_user_using_token!(token, session, storage, auth, google_authorizer);
-        Redirect::to(PROFILE_URI)
+
+        if let Some(redirect_url) = &redirect_to {
+            tracing::debug!("OAuth callback redirecting to: {}", redirect_url);
+            Redirect::to(redirect_url)
+        } else {
+            tracing::debug!("No redirect destination found, redirecting to profile");
+            Redirect::to(PROFILE_URI)
+        }
     } else {
         tracing::error!("No code verifier from session");
         Redirect::to(LOGIN_URI)
@@ -188,10 +240,21 @@ pub async fn github_oauth_callback(
     mut auth: AuthSession,
 ) -> impl IntoResponse {
     validate_csrf!(GITHUB_CSRF_KEY, session, query);
+
+    // Get redirect_to from session before it might be dropped
+    let redirect_to = session.get::<String>(REDIRECT_TO_KEY).await.unwrap_or(None);
+
     let token = github_authorizer.exchange_code(query.code, None).await;
     let mut storage = page_context.storage.lock().await;
     login_user_using_token!(token, session, storage, auth, github_authorizer);
-    Redirect::to(PROFILE_URI)
+
+    if let Some(redirect_url) = redirect_to {
+        tracing::debug!("OAuth callback redirecting to: {}", redirect_url);
+        Redirect::to(&redirect_url)
+    } else {
+        tracing::debug!("No redirect destination found, redirecting to profile");
+        Redirect::to(PROFILE_URI)
+    }
 }
 
 pub async fn yandex_oauth_callback(
@@ -202,10 +265,21 @@ pub async fn yandex_oauth_callback(
     mut auth: AuthSession,
 ) -> impl IntoResponse {
     validate_csrf!(YANDEX_CSRF_KEY, session, query);
+
+    // Get redirect_to from session before it might be dropped
+    let redirect_to = session.get::<String>(REDIRECT_TO_KEY).await.unwrap_or(None);
+
     let token = yandex_authorizer.exchange_code(query.code, None).await;
     let mut storage = page_context.storage.lock().await;
     login_user_using_token!(token, session, storage, auth, yandex_authorizer);
-    Redirect::to(PROFILE_URI)
+
+    if let Some(redirect_url) = redirect_to {
+        tracing::debug!("OAuth callback redirecting to: {}", redirect_url);
+        Redirect::to(&redirect_url)
+    } else {
+        tracing::debug!("No redirect destination found, redirecting to profile");
+        Redirect::to(PROFILE_URI)
+    }
 }
 
 pub async fn serve_user_api_call(auth: AuthSession) -> impl IntoResponse {
