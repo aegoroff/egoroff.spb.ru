@@ -92,8 +92,6 @@ pub enum Role {
 
 #[derive(Error, Debug)]
 pub enum UserStoreError {
-    #[error("invalid provider")]
-    InvalidProvider,
     #[error("invalid id")]
     InvalidId,
     #[error("SQL error: {0:?}")]
@@ -485,11 +483,8 @@ where
     ) -> std::result::Result<Option<Self::User>, Self::Error> {
         match Sqlite::open(self.db_path.as_path(), Mode::ReadOnly) {
             Ok(storage) => {
-                let mut id_parts = user_id.split('_');
-                let provider = id_parts
-                    .next()
-                    .ok_or_else(|| UserStoreError::InvalidProvider)?;
-                let federated_id = id_parts.next().ok_or_else(|| UserStoreError::InvalidId)?;
+                let (provider, federated_id) =
+                    user_id.split_once('_').ok_or(UserStoreError::InvalidId)?;
                 let user = storage.get_user(federated_id, provider);
                 match user {
                     Ok(user) => Ok(Some(AppUser::new(user))),
