@@ -79,7 +79,9 @@ pub async fn serve_login(
 }
 
 pub async fn serve_logout(mut auth: AuthSession) -> impl IntoResponse {
-    auth.logout().await.unwrap_or_default();
+    if let Err(e) = auth.logout().await {
+        tracing::error!("Logout failed: {e:#?}");
+    }
     Redirect::to(LOGIN_URI)
 }
 
