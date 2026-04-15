@@ -109,10 +109,7 @@ pub async fn serve_token_generate(
     match validate_jwt(&req.code, public_key_path) {
         Ok(_claims) => {
             let mut cache = page_context.cache.lock().await;
-            if !cache.remove(&req.code) {
-                tracing::warn!("Authorization code reuse attempt detected");
-                return unauthorized_response("Authorization code already used");
-            }
+            cache.remove(&req.code);
         }
         Err(e) => {
             tracing::error!("validate jwt token error: {e:#?}");
@@ -124,11 +121,19 @@ pub async fn serve_token_generate(
     let redirect_uri = req.redirect_uri;
     let now = Utc::now();
     let issued = now.timestamp() as usize;
+
+    let Some(lifetime) = TimeDelta::try_days(90) else {
+        return internal_server_error_response("invalid Indie token lifetime".to_string());
+    };
+    let expired = now
+        .checked_add_signed(lifetime)
+        .map(|dt| dt.timestamp() as usize);
+
     let claims = Claims {
         client_id,
         redirect_uri: Some(redirect_uri),
         aud: None,
-        exp: None,
+        exp: expired,
         iat: Some(issued),
         iss: Some(ME.to_string()),
         nbf: None,
