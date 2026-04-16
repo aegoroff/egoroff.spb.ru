@@ -110,9 +110,7 @@ pub fn create_routes(
     session_store.cleanup()?;
     let session_expiry = Expiry::OnInactivity(Duration::seconds(86400 * 14));
 
-    let is_production = env::var("EGOROFF_ENV")
-        .map(|v| v == "production")
-        .unwrap_or(false);
+    let is_production = env::var("EGOROFF_ENV").is_ok_and(|v| v == "production");
 
     let session_layer = SessionManagerLayer::new(session_store)
         .with_secure(is_production) // true in production
