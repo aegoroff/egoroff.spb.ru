@@ -33,14 +33,20 @@ pub struct LoginQuery {
     pub next: Option<String>,
 }
 
-macro_rules! register_url {
-    ($context:ident, $session:ident, $url:ident, $key:ident, $context_param:ident) => {{
-        $context.$context_param = $url.url.as_str();
-        let r = $session.insert($key, $url.csrf_state).await;
-        if let Err(e) = r {
-            tracing::error!("error register url: {e:#?}");
-        };
-    }};
+async fn register_auth_url(
+    session: &Session,
+    csrf_key: &'static str,
+    pkce_key: &'static str,
+    csrf_token: CsrfToken,
+    verifier: PkceCodeVerifier,
+) {
+    if let Err(e) = session.insert(csrf_key, csrf_token).await {
+        tracing::error!("error register url (csrf): {e:#?}");
+    }
+
+    if let Err(e) = session.insert(pkce_key, verifier).await {
+        tracing::error!("error inserting {} pkce_code_verifier: {e:#?}", pkce_key);
+    }
 }
 
 /// Extract the `redirect_uri` query parameter from a `next` URL string.
@@ -82,60 +88,45 @@ pub async fn serve_login(
         tracing::debug!("Next parameter not found");
     }
 
-    let mut context = Signin {
-        year: get_year(),
-        ..Default::default()
-    };
     let google_url = google_authorizer.generate_authorize_url();
     let github_url = gitgub_authorizer.generate_authorize_url();
     let yandex_url = yandex_authorizer.generate_authorize_url();
 
-    register_url!(
-        context,
-        session,
-        google_url,
+    register_auth_url(
+        &session,
         GOOGLE_CSRF_KEY,
-        google_signin_url
-    );
+        PKCE_CODE_VERIFIER_KEY_GOOGLE,
+        google_url.csrf_state,
+        google_url.verifier,
+    )
+    .await;
 
-    if let Err(e) = session
-        .insert(PKCE_CODE_VERIFIER_KEY_GOOGLE, google_url.verifier)
-        .await
-    {
-        tracing::error!("error inserting Google pkce_code_verifier: {e:#?}");
-    }
-
-    register_url!(
-        context,
-        session,
-        github_url,
+    register_auth_url(
+        &session,
         GITHUB_CSRF_KEY,
-        github_signin_url
-    );
+        PKCE_CODE_VERIFIER_KEY_GITHUB,
+        github_url.csrf_state,
+        github_url.verifier,
+    )
+    .await;
 
-    if let Err(e) = session
-        .insert(PKCE_CODE_VERIFIER_KEY_GITHUB, github_url.verifier)
-        .await
-    {
-        tracing::error!("error inserting GitHub pkce_code_verifier: {e:#?}");
-    }
-
-    register_url!(
-        context,
-        session,
-        yandex_url,
+    register_auth_url(
+        &session,
         YANDEX_CSRF_KEY,
-        yandex_signin_url
-    );
+        PKCE_CODE_VERIFIER_KEY_YANDEX,
+        yandex_url.csrf_state,
+        yandex_url.verifier,
+    )
+    .await;
 
-    if let Err(e) = session
-        .insert(PKCE_CODE_VERIFIER_KEY_YANDEX, yandex_url.verifier)
-        .await
-    {
-        tracing::error!("error inserting Yandex pkce_code_verifier: {e:#?}");
-    }
-
-    context.title = "Авторизация";
+    let context = Signin {
+        year: get_year(),
+        google_signin_url: google_url.url.as_str(),
+        github_signin_url: github_url.url.as_str(),
+        yandex_signin_url: yandex_url.url.as_str(),
+        title: "Авторизация",
+        ..Default::default()
+    };
 
     context.into_response()
 }
