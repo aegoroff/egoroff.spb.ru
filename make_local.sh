@@ -29,5 +29,5 @@ done
   cd ./egoroff/ || exit
   cargo clean
   cargo b --workspace $ADDITIONAL_OPTIONS
-  ./target/"$CONFIGURATION"/egoroff server
+  RUST_LOG="server=debug,axum=info,hyper=info,tower=info,axum_login=info" ./target/"$CONFIGURATION"/egoroff server
 )

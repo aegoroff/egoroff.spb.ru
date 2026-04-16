@@ -35,8 +35,11 @@ pub struct LoginQuery {
 
 macro_rules! register_url {
     ($context:ident, $session:ident, $url:ident, $key:ident, $context_param:ident) => {{
-        $session.insert($key, $url.csrf_state).await.unwrap();
         $context.$context_param = $url.url.as_str();
+        let r = $session.insert($key, $url.csrf_state).await;
+        if let Err(e) = r {
+            tracing::error!("error register url: {e:#?}");
+        };
     }};
 }
 
