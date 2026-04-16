@@ -98,8 +98,9 @@ pub async fn serve_login(
         google_signin_url
     );
 
-    if let Some(v) = google_url.verifier
-        && let Err(e) = session.insert(PKCE_CODE_VERIFIER_KEY_GOOGLE, v).await
+    if let Err(e) = session
+        .insert(PKCE_CODE_VERIFIER_KEY_GOOGLE, google_url.verifier)
+        .await
     {
         tracing::error!("error inserting Google pkce_code_verifier: {e:#?}");
     }
@@ -112,8 +113,9 @@ pub async fn serve_login(
         github_signin_url
     );
 
-    if let Some(v) = github_url.verifier
-        && let Err(e) = session.insert(PKCE_CODE_VERIFIER_KEY_GITHUB, v).await
+    if let Err(e) = session
+        .insert(PKCE_CODE_VERIFIER_KEY_GITHUB, github_url.verifier)
+        .await
     {
         tracing::error!("error inserting GitHub pkce_code_verifier: {e:#?}");
     }
@@ -126,8 +128,9 @@ pub async fn serve_login(
         yandex_signin_url
     );
 
-    if let Some(v) = yandex_url.verifier
-        && let Err(e) = session.insert(PKCE_CODE_VERIFIER_KEY_YANDEX, v).await
+    if let Err(e) = session
+        .insert(PKCE_CODE_VERIFIER_KEY_YANDEX, yandex_url.verifier)
+        .await
     {
         tracing::error!("error inserting Yandex pkce_code_verifier: {e:#?}");
     }
@@ -153,23 +156,63 @@ pub async fn serve_profile() -> impl IntoResponse {
     .into_response()
 }
 
-macro_rules! login_user_using_token {
-    ($token:expr, $session:ident, $storage:ident, $auth:ident, $authorizer:ident) => {{
-        match $token {
+async fn oauth_callback<T: auth::ToUser, U: Authorizer<T>>(
+    query: AuthRequest,
+    authorizer: Arc<U>,
+    page_context: Arc<PageContext<'static>>,
+    session: Session,
+    pkce_code_verifier_key: &str,
+    csrf_key: &str,
+    mut auth: AuthSession,
+) -> impl IntoResponse {
+    match session.get::<CsrfToken>(csrf_key).await {
+        Ok(original_csrf_state) => {
+            if let Some(state) = original_csrf_state {
+                if state.secret() == query.state.secret() {
+                    tracing::info!("authorized");
+                } else {
+                    tracing::error!("unauthorized: secret mismatch");
+                    return Redirect::to(LOGIN_URI);
+                }
+            } else {
+                tracing::error!("unauthorized: no original_csrf_state");
+                return Redirect::to(LOGIN_URI);
+            }
+        }
+        Err(e) => {
+            tracing::error!("No state from session: {}", e);
+            return Redirect::to(LOGIN_URI);
+        }
+    }
+
+    // Get redirect_to from session before it might be dropped
+    let redirect_to = session.get::<String>(REDIRECT_TO_KEY).await.unwrap_or(None);
+
+    if let Ok(pkce_code_verifier) = session
+        .get::<PkceCodeVerifier>(pkce_code_verifier_key)
+        .await
+        && let Some(pkce_code_verifier) = pkce_code_verifier
+    {
+        let token = authorizer
+            .exchange_code(query.code.clone(), pkce_code_verifier)
+            .await;
+        let mut storage = page_context.storage.lock().await;
+
+        match token {
             Ok(token) => {
-                let user = $authorizer.get_user(token.access_token()).await;
+                let user = authorizer.get_user(token.access_token()).await;
                 match user {
                     Ok(u) => {
-                        drop($session);
+                        drop(session);
                         let user = u.to_user();
-                        if let Err(e) = $storage.upsert_user(&user) {
+                        if let Err(e) = storage.upsert_user(&user) {
                             tracing::error!("login error: {e:#?}");
                             return Redirect::to(LOGIN_URI);
                         }
                         tracing::info!("User updated");
 
                         let u = AppUser::new(user);
-                        match $auth.login(&u).await {
+                        match auth.login(&u).await {
                             Ok(()) => tracing::info!("login success"),
                             Err(e) => {
                                 tracing::error!("login error: {e:#?}");
@@ -188,54 +231,6 @@ macro_rules! login_user_using_token {
                 return Redirect::to(LOGIN_URI);
             }
         }
-    }};
-}
-
-macro_rules! validate_csrf {
-    ($key:expr, $session:ident, $query:ident) => {{
-        match $session.get::<CsrfToken>($key).await {
-            Ok(original_csrf_state) => {
-                if let Some(state) = original_csrf_state {
-                    if state.secret() == $query.state.secret() {
-                        tracing::info!("authorized");
-                    } else {
-                        tracing::error!("unauthorized: secret mismatch");
-                        return Redirect::to(LOGIN_URI);
-                    }
-                } else {
-                    tracing::error!("unauthorized: no original_csrf_state");
-                    return Redirect::to(LOGIN_URI);
-                }
-            }
-            Err(e) => {
-                tracing::error!("No state from session: {}", e);
-                return Redirect::to(LOGIN_URI);
-            }
-        }
-    }};
-}
-
-pub async fn google_oauth_callback(
-    Query(query): Query<AuthRequest>,
-    Extension(google_authorizer): Extension<Arc<GoogleAuthorizer>>,
-    State(page_context): State<Arc<PageContext<'_>>>,
-    session: Session,
-    mut auth: AuthSession,
-) -> impl IntoResponse {
-    validate_csrf!(GOOGLE_CSRF_KEY, session, query);
-
-    // Get redirect_to from session before it might be dropped
-    let redirect_to = session.get::<String>(REDIRECT_TO_KEY).await.unwrap_or(None);
-
-    if let Ok(pkce_code_verifier) = session
-        .get::<PkceCodeVerifier>(PKCE_CODE_VERIFIER_KEY_GOOGLE)
-        .await
-    {
-        let token = google_authorizer
-            .exchange_code(query.code, pkce_code_verifier)
-            .await;
-        let mut storage = page_context.storage.lock().await;
-        login_user_using_token!(token, session, storage, auth, google_authorizer);
 
         if let Some(redirect_url) = &redirect_to {
             tracing::debug!("OAuth callback redirecting to: {}", redirect_url);
@@ -250,74 +245,64 @@ pub async fn google_oauth_callback(
     }
 }
 
+#[axum::debug_handler]
+pub async fn google_oauth_callback(
+    Query(query): Query<AuthRequest>,
+    Extension(google_authorizer): Extension<Arc<GoogleAuthorizer>>,
+    State(page_context): State<Arc<PageContext<'static>>>,
+    session: Session,
+    auth: AuthSession,
+) -> impl IntoResponse {
+    oauth_callback(
+        query,
+        google_authorizer,
+        page_context,
+        session,
+        PKCE_CODE_VERIFIER_KEY_GOOGLE,
+        GOOGLE_CSRF_KEY,
+        auth,
+    )
+    .await
+}
+
+#[axum::debug_handler]
 pub async fn github_oauth_callback(
     Query(query): Query<AuthRequest>,
     Extension(github_authorizer): Extension<Arc<GithubAuthorizer>>,
-    State(page_context): State<Arc<PageContext<'_>>>,
+    State(page_context): State<Arc<PageContext<'static>>>,
     session: Session,
-    mut auth: AuthSession,
+    auth: AuthSession,
 ) -> impl IntoResponse {
-    validate_csrf!(GITHUB_CSRF_KEY, session, query);
-
-    // Get redirect_to from session before it might be dropped
-    let redirect_to = session.get::<String>(REDIRECT_TO_KEY).await.unwrap_or(None);
-
-    if let Ok(pkce_code_verifier) = session
-        .get::<PkceCodeVerifier>(PKCE_CODE_VERIFIER_KEY_GITHUB)
-        .await
-    {
-        let token = github_authorizer
-            .exchange_code(query.code, pkce_code_verifier)
-            .await;
-        let mut storage = page_context.storage.lock().await;
-        login_user_using_token!(token, session, storage, auth, github_authorizer);
-
-        if let Some(redirect_url) = redirect_to {
-            tracing::debug!("OAuth callback redirecting to: {}", redirect_url);
-            Redirect::to(&redirect_url)
-        } else {
-            tracing::debug!("No redirect destination found, redirecting to profile");
-            Redirect::to(PROFILE_URI)
-        }
-    } else {
-        tracing::error!("No code verifier from session");
-        Redirect::to(LOGIN_URI)
-    }
+    oauth_callback(
+        query,
+        github_authorizer,
+        page_context,
+        session,
+        PKCE_CODE_VERIFIER_KEY_GITHUB,
+        GITHUB_CSRF_KEY,
+        auth,
+    )
+    .await
 }
 
+#[axum::debug_handler]
 pub async fn yandex_oauth_callback(
     Query(query): Query<AuthRequest>,
     Extension(yandex_authorizer): Extension<Arc<YandexAuthorizer>>,
-    State(page_context): State<Arc<PageContext<'_>>>,
+    State(page_context): State<Arc<PageContext<'static>>>,
     session: Session,
-    mut auth: AuthSession,
+    auth: AuthSession,
 ) -> impl IntoResponse {
-    validate_csrf!(YANDEX_CSRF_KEY, session, query);
-
-    // Get redirect_to from session before it might be dropped
-    let redirect_to = session.get::<String>(REDIRECT_TO_KEY).await.unwrap_or(None);
-
-    if let Ok(pkce_code_verifier) = session
-        .get::<PkceCodeVerifier>(PKCE_CODE_VERIFIER_KEY_YANDEX)
-        .await
-    {
-        let token = yandex_authorizer
-            .exchange_code(query.code, pkce_code_verifier)
-            .await;
-        let mut storage = page_context.storage.lock().await;
-        login_user_using_token!(token, session, storage, auth, yandex_authorizer);
-
-        if let Some(redirect_url) = redirect_to {
-            tracing::debug!("OAuth callback redirecting to: {}", redirect_url);
-            Redirect::to(&redirect_url)
-        } else {
-            tracing::debug!("No redirect destination found, redirecting to profile");
-            Redirect::to(PROFILE_URI)
-        }
-    } else {
-        tracing::error!("No code verifier from session");
-        Redirect::to(LOGIN_URI)
-    }
+    oauth_callback(
+        query,
+        yandex_authorizer,
+        page_context,
+        session,
+        PKCE_CODE_VERIFIER_KEY_YANDEX,
+        YANDEX_CSRF_KEY,
+        auth,
+    )
+    .await
 }
 
 pub async fn serve_user_api_call(auth: AuthSession) -> impl IntoResponse {

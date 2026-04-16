@@ -1,12 +1,6 @@
 #![allow(clippy::module_name_repetitions)]
 
-use std::{
-    collections::HashSet,
-    fs,
-    marker::PhantomData,
-    path::Path,
-    sync::Arc,
-};
+use std::{collections::HashSet, fs, marker::PhantomData, path::Path, sync::Arc};
 
 use anyhow::{Context, Result, bail};
 use axum::{
@@ -130,7 +124,7 @@ fn validate_uri(uri: &str) -> Result<()> {
     let parsed = Url::parse(uri).context("Invalid URL")?;
     let scheme = parsed.scheme();
     if scheme != "http" && scheme != "https" {
-        bail!("Unsupported scheme: {}", scheme);
+        bail!("Unsupported scheme: {scheme}");
     }
     if let Some(host) = parsed.host() {
         match host {
