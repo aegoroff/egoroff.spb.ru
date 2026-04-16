@@ -117,7 +117,7 @@ pub fn create_routes(
     let session_layer = SessionManagerLayer::new(session_store)
         .with_secure(is_production) // true in production
         .with_expiry(session_expiry)
-        .with_same_site(SameSite::Strict);
+        .with_same_site(SameSite::Lax);
 
     let session_service = ServiceBuilder::new()
         .layer(TraceLayer::new_for_http().on_failure(
