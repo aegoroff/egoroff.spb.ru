@@ -15,7 +15,7 @@
     "@fortawesome/vue-fontawesome": "^3.2.0",
     "@marcoschulte/vue3-progress": "^0.0.9",
     "@popperjs/core": "^2.11.8",
-    "axios": "^1.15.0",
+    "axios": "^1.15.1",
     "bootstrap": "^5.3.8",
     "dayjs": "^1.11.20",
     "highlight.js": "^11.11.1",
@@ -47,7 +47,7 @@
     "sass-loader": "^16.0.7",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.58.2",
-    "vue-tsc": "^3.2.6"
+    "vue-tsc": "^3.2.7"
   },
   "browserslist": [
     "> 1%",
