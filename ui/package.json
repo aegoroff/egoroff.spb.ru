@@ -28,7 +28,7 @@
     "@eslint/js": "^10.0.1",
     "jiti": "^2.6.1",
     "@typescript-eslint/eslint-plugin": "^8.59.0",
-    "@typescript-eslint/parser": "^8.58.2",
+    "@typescript-eslint/parser": "^8.59.0",
     "@vue/cli-plugin-eslint": "~5.0.9",
     "@vue/cli-plugin-typescript": "~5.0.9",
     "@vue/cli-service": "^5.0.9",
