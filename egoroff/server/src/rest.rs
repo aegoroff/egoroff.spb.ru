@@ -125,10 +125,7 @@ pub fn create_routes(
         ))
         .layer(
             CorsLayer::new()
-                .allow_origin(AllowOrigin::list(vec![
-                    "https://www.egoroff.spb.ru".parse()?,
-                    "https://validator.swagger.io".parse()?,
-                ]))
+                .allow_origin(AllowOrigin::exact("https://www.egoroff.spb.ru".parse()?))
                 .allow_methods([Method::GET, Method::POST, Method::PUT, Method::DELETE])
                 .allow_headers([header::CONTENT_TYPE, header::AUTHORIZATION])
                 .allow_credentials(true),
