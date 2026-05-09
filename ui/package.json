@@ -44,7 +44,7 @@
     "eslint-plugin-vue": "^10.9.1",
     "globals": "^17.6.0",
     "sass": "^1.99.0",
-    "sass-loader": "^16.0.7",
+    "sass-loader": "^16.0.8",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.59.2",
     "vue-tsc": "^3.2.8"
