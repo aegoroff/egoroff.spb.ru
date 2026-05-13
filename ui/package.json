@@ -47,7 +47,7 @@
     "sass-loader": "^16.0.8",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.59.3",
-    "vue-tsc": "^3.2.8"
+    "vue-tsc": "^3.2.9"
   },
   "browserslist": [
     "> 1%",
