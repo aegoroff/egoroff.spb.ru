@@ -450,6 +450,32 @@ impl Storage for Sqlite {
         let mut stmt = self.conn.prepare("SELECT COUNT(1) FROM file")?;
         stmt.query_row([], |row| row.get(0))
     }
+
+    fn get_users(&self) -> Result<Vec<User>, Self::Err> {
+        let mut stmt = self.conn.prepare(
+            "SELECT created, email, name, login, avatar_url, federated_id, admin, verified, provider FROM user ORDER BY created DESC"
+        )?;
+        let users_query = stmt.query_map([], |row| {
+            let user = User {
+                created: datetime_from_row!(row, 0),
+                email: row.get(1)?,
+                name: row.get(2)?,
+                login: row.get(3)?,
+                avatar_url: row.get(4)?,
+                federated_id: row.get(5)?,
+                admin: row.get(6)?,
+                verified: row.get(7)?,
+                provider: row.get(8)?,
+            };
+            Ok(user)
+        })?;
+        Ok(users_query.filter_map(std::result::Result::ok).collect())
+    }
+
+    fn count_users(&self) -> Result<i32, Self::Err> {
+        let mut stmt = self.conn.prepare("SELECT COUNT(1) FROM user")?;
+        stmt.query_row([], |row| row.get(0))
+    }
 }
 
 impl Sqlite {

@@ -316,6 +316,8 @@ pub trait Storage {
     fn delete_download(&mut self, id: i64) -> Result<usize, Self::Err>;
     fn get_downloads(&self, limit: i32, offset: i32) -> Result<Vec<Download>, Self::Err>;
     fn count_downloads(&self) -> Result<i32, Self::Err>;
+    fn get_users(&self) -> Result<Vec<User>, Self::Err>;
+    fn count_users(&self) -> Result<i32, Self::Err>;
 }
 
 #[cfg(test)]

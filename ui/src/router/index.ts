@@ -2,6 +2,11 @@ import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router'
 
 const routes: Array<RouteRecordRaw> = [
   {
+    path: '/',
+    name: 'Дашборд',
+    component: () => import(/* webpackChunkName: "dashboard" */ '../views/admin/DashboardView.vue')
+  },
+  {
     path: '/posts/:page?',
     name: 'Блог',
     component: () => import(/* webpackChunkName: "posts" */ '../views/admin/PostsView.vue')

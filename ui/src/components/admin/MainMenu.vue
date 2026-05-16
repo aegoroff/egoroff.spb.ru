@@ -2,6 +2,9 @@
   <nav>
     <ul class="nav nav-pills flex-column">
       <li class="nav-item">
+        <router-link class="nav-link" :class="{ active: $route.path === '/' }" to="/">Дашборд</router-link>
+      </li>
+      <li class="nav-item">
         <router-link class="nav-link" :class="{ active: $route.path.startsWith('/posts') }" to="/posts">Блог</router-link>
       </li>
       <li class="nav-item">

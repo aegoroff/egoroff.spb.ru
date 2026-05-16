@@ -45,8 +45,8 @@
               </a>
             </td>
             <td>
-              <span v-if="item.IsPublic">Да</span>
-              <span v-else>Нет</span>
+              <span v-if="item.IsPublic" class="badge bg-success">Да</span>
+              <span v-else class="badge bg-secondary">Нет</span>
             </td>
           </tr>
         </tbody>

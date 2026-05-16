@@ -6,6 +6,7 @@ import { EditablePost } from "@/models/blog";
 import { Download } from "@/models/portfolio";
 import { useProgress } from "@marcoschulte/vue3-progress";
 import { Nav } from "@/models/common";
+import { DashboardStats } from "@/models/dashboard";
 
 export class ApiResult<T> {
   public status!: string;
@@ -110,6 +111,26 @@ class ApiService {
     const progress = useProgress().start();
     return await axios
       .get<ApiResult<T>>(`/api/v2/admin/posts/${toQuery(q)}`)
+      .then((r) => {
+        return r.data;
+      })
+      .finally(() => progress.finish());
+  }
+
+  public async getDashboardStats(): Promise<DashboardStats> {
+    const progress = useProgress().start();
+    return await axios
+      .get<DashboardStats>("/api/v2/admin/dashboard/")
+      .then((r) => {
+        return r.data;
+      })
+      .finally(() => progress.finish());
+  }
+
+  public async getUsers<T>(): Promise<ApiResult<T>> {
+    const progress = useProgress().start();
+    return await axios
+      .get<ApiResult<T>>("/api/v2/admin/users/")
       .then((r) => {
         return r.data;
       })
