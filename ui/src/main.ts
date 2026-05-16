@@ -28,7 +28,9 @@ import AppIcon from "./components/AppIcon.vue";
 import DateFormatter from "@/components/DateFormatter.vue";
 import BlogNavigation from "@/components/BlogNavigation.vue";
 import "./App.scss";
+// Import Bootstrap CSS
 import "bootstrap/dist/css/bootstrap.min.css";
+// Import Bootstrap JS bundle (includes modal, dropdown, collapse, tab)
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import BlogAnnounces from "@/components/BlogAnnounces.vue";
 import BlogTitle from "@/components/BlogTitle.vue";

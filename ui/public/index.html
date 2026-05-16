@@ -18,8 +18,15 @@
     <link href="https://www.egoroff.spb.ru/auth" rel="authorization_endpoint"/>
     <link href="https://www.egoroff.spb.ru/token" rel="token_endpoint"/>
     <link href="https://www.egoroff.spb.ru/micropub/" rel="micropub"/>
-    <link href='https://fonts.googleapis.com/css?family=Noto+Serif:400,700,400italic,700italic&subset=latin,cyrillic' rel='stylesheet' type='text/css'/>
-    <link href='https://fonts.googleapis.com/css?family=Open+Sans:700,400&subset=latin,cyrillic' rel='stylesheet' type='text/css'/>
+    
+    <!-- Google Fonts optimization (CSP-compatible) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Load fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Serif:400,700,400italic,700italic&subset=latin,cyrillic">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:700,400&subset=latin,cyrillic">
+    
     <title>{{title}}{% if !title_path.is_empty() %}{{" | "}}{{title_path}}{% endif %}</title>
     <link href="/blog/recent.atom"
           rel="alternate"
