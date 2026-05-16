@@ -38,6 +38,7 @@ export class Post {
 
 export class EditablePost {
   public Created!: string;
+  public Modified!: string;
   public id!: number;
   public Title!: string;
   public IsPublic!: boolean;

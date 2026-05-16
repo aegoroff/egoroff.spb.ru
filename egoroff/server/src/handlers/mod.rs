@@ -428,6 +428,15 @@ fn updated_response<T, E: Display>(result: Result<T, E>) -> impl IntoResponse {
     }
 }
 
+fn created_response<T, E: Display>(result: Result<T, E>) -> impl IntoResponse {
+    if let Err(e) = result {
+        let error = format!("{e}");
+        internal_server_error_response(Json(OperationResult { result: &error }))
+    } else {
+        success_response(Json(OperationResult { result: "created" }))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     #![allow(clippy::unwrap_in_result)]

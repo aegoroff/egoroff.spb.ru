@@ -1,5 +1,17 @@
 <template>
   <div>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2>Посты</h2>
+      <button
+        type="button"
+        class="btn btn-primary"
+        data-bs-toggle="modal"
+        data-bs-target="#create-post"
+      >
+        Создать пост
+      </button>
+    </div>
+
     <nav v-if="pages > 1">
       <ul class="pagination justify-content-center" id="posts-pager">
         <li class="page-item" :class="{ disabled: page === 1 }">
@@ -14,6 +26,7 @@
       </ul>
     </nav>
 
+    <CreatePost id="create-post"></CreatePost>
     <EditPost id="edit-post" :post="selectedPost"></EditPost>
     <DeletePost id="delete-post" :postId="selectedPostId"></DeletePost>
 
@@ -60,6 +73,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import ApiService from '@/services/ApiService'
 import DateFormatter from '@/components/DateFormatter.vue'
+import CreatePost from '@/components/admin/CreatePost.vue'
 import EditPost from '@/components/admin/EditPost.vue'
 import DeletePost from '@/components/admin/DeletePost.vue'
 import AppIcon from '@/components/AppIcon.vue'
@@ -73,6 +87,7 @@ const page = ref(1)
 const pages = ref(1)
 const selectedPost = ref<EditablePost>({
   Created: '',
+  Modified: '',
   id: 0,
   Title: '',
   IsPublic: false,
@@ -115,9 +130,13 @@ const onSelect = (p: EditablePost): void => {
   selectedPostId.value = p.id
 }
 
-onMounted(() => {
+  onMounted(() => {
   const routePage = parseInt(route.params.page as string) || 1
   update(routePage)
+
+  emitter.on('postCreated', () => {
+    update(page.value)
+  })
 
   emitter.on('postDeleted', () => {
     update(page.value)

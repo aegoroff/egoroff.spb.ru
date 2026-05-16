@@ -61,6 +61,10 @@ class ApiService {
     axios.put<FullUserInfo>("/api/v2/auth/userinfo/", u);
   }
 
+  public async createPost(p: EditablePost): Promise<void> {
+    await axios.post("/api/v2/admin/post", p);
+  }
+
   public editPost(p: EditablePost): void {
     axios.put<EditablePost>("/api/v2/admin/post", p);
   }

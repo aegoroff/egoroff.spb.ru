@@ -191,7 +191,10 @@ pub fn create_routes(
 fn admin_api() -> Router<Arc<PageContext<'static>>> {
     Router::new()
         .route("/posts/", get(handlers::blog::serve_posts_admin_api))
-        .route("/post", put(handlers::blog::serve_post_update))
+        .route(
+            "/post",
+            put(handlers::blog::serve_post_update).post(handlers::blog::serve_post_create),
+        )
         .route("/post/{id}", delete(handlers::blog::serve_post_delete))
         .route(
             "/download/",
