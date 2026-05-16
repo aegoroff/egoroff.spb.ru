@@ -27,12 +27,19 @@ ui/               # Vue 3 frontend
 - Use async/await with tokio runtime
 - Follow workspace dependencies versions
 - Run `cargo clippy` before committing
+- Create tests for a new functionality
+- Write tests in AAA pattern
+- If tests can be parameterized use `test-case` crate
+- Code must be pass all clippy pedantic validations
+- Result code must be formatted using cargo fmt
+- Write code comments only in English
 
 ### TypeScript/Vue
 - Use TypeScript strict mode
 - Follow ESLint configuration (vue-cli-service lint)
 - Use Composition API for new components
 - Import types explicitly
+- Write code comments only in English
 
 ## Commands
 
@@ -63,3 +70,10 @@ bun run lint         # ESLint check
 2. Ensure imports are updated
 3. Run linters (clippy/ESLint)
 4. Verify workspace compiles after changes
+
+## Things NOT to do
+- Dont use unsafe code
+- Dont use unwrap or expect to get Option or Result
+- Dont search performmance, copy/paste, architecture problems in tests
+- Dont suppress clippy warnings using procedure macro like #[allow(clippy::unused_self)]
+- Dont write trivial code comments 
