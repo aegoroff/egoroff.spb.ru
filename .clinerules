@@ -41,16 +41,16 @@ ui/               # Vue 3 frontend
 cd egoroff
 cargo build          # Build workspace
 cargo test           # Run tests
-cargo clippy         # Lint
+cargo clippy --workspace --all-features -- -W clippy::pedantic         # Lint
 cargo run            # Run main CLI
 ```
 
 ### Frontend
 ```bash
 cd ui
-npm run serve        # Development server
-npm run build        # Production build
-npm run lint         # ESLint check
+bun run serve        # Development server
+bun run build        # Production build
+bun run lint         # ESLint check
 ```
 
 ## Important Notes
