@@ -78,3 +78,4 @@ bun run lint         # ESLint check
 - Dont search performmance, copy/paste, architecture problems in tests
 - Dont suppress clippy warnings using procedure macro like #[allow(clippy::unused_self)]
 - Dont write trivial code comments 
+- Dont write comments in russian
