@@ -24,13 +24,18 @@ const user = ref<ApiUser | null>(null)
 
 onMounted(async () => {
   const apiService = new ApiService()
-  const nav = await apiService.getNavigation()
-  navigation.value = nav.sections
-  breadcrumbs.value = nav.breadcrumbs
-  try {
-    user.value = await apiService.getUser()
-  } catch (error) {
-    console.error('Failed to fetch user:', error)
+  const [nav, userResult] = await Promise.allSettled([
+    apiService.getNavigation(),
+    apiService.getUser()
+  ])
+  
+  if (nav.status === 'fulfilled') {
+    navigation.value = nav.value.sections
+    breadcrumbs.value = nav.value.breadcrumbs
+  }
+  
+  if (userResult.status === 'fulfilled') {
+    user.value = userResult.value
   }
 })
 </script>
