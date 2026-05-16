@@ -61,7 +61,7 @@ import BlogAnnounces from '@/components/BlogAnnounces.vue'
 import BlogTitle from '@/components/BlogTitle.vue'
 import { Year } from '@/models/blog'
 
-const props = defineProps<{
+defineProps<{
   years: Year[]
 }>()
 

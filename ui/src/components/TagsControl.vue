@@ -20,7 +20,7 @@ import BlogTitle from '@/components/BlogTitle.vue'
 import { emitter } from '@/main'
 import { Tag } from '@/models/blog'
 
-const props = defineProps<{
+defineProps<{
   tags: Tag[]
   currentTag: string
 }>()
@@ -59,7 +59,7 @@ const update = (tag: string, page: number): void => {
 
   window.location.hash = params.toString()
 
-  emitter.emit('tagChanged' as any, tag)
+  emitter.emit('tagChanged', tag)
   emit('update:currentTag', tag)
 
   createApp(BlogAnnounces, {

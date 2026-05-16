@@ -3,7 +3,7 @@
     <div class="modal-dialog modal-xl">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">{{ download.title }}</h5>
+          <h5 class="modal-title">{{ localDownload.title }}</h5>
           <button
             type="button"
             class="btn-close"
@@ -20,7 +20,7 @@
                 type="text"
                 class="form-control"
                 id="download-title-input"
-                v-model="download.title"
+                v-model="localDownload.title"
                 required
               />
               <div class="invalid-feedback">название обязательно</div>
@@ -48,14 +48,21 @@
 import ApiService from "@/services/ApiService";
 import { closeModalById } from "@/util";
 import { Download } from '@/models/portfolio'
+import { ref, watch } from 'vue'
 
 const props = defineProps<{
   download: Download
 }>()
 
+const localDownload = ref<Download>({ ...props.download })
+
+watch(() => props.download, (newDownload) => {
+  localDownload.value = { ...newDownload }
+}, { deep: true })
+
 const onOk = (): void => {
   const apiService = new ApiService();
-  apiService.editDownload(props.download);
+  apiService.editDownload(localDownload.value);
 
   closeModalById("edit-download");
 };

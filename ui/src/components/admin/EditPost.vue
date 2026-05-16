@@ -3,7 +3,7 @@
     <div class="modal-dialog modal-xl">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">{{ post.Title }}</h5>
+          <h5 class="modal-title">{{ localPost.Title }}</h5>
           <button
             type="button"
             class="btn-close"
@@ -12,7 +12,7 @@
         </div>
         <div class="modal-body">
           <form ref="form">
-            <ul class="nav nav-tabs" role="tablist">
+            <ul class="nav nav-tabs" role="presentation">
               <li class="nav-item" role="presentation">
                 <button
                   class="nav-link active"
@@ -46,7 +46,7 @@
                     type="text"
                     class="form-control"
                     id="post-title-input"
-                    v-model="post.Title"
+                    v-model="localPost.Title"
                     required
                   />
                   <div class="invalid-feedback">название обязательно</div>
@@ -68,7 +68,7 @@
                   <textarea
                     class="form-control"
                     id="post-short-text"
-                    v-model="post.ShortText"
+                    v-model="localPost.ShortText"
                     rows="3"
                     max-rows="6"
                   ></textarea>
@@ -78,7 +78,7 @@
                     class="form-check-input"
                     type="checkbox"
                     id="post-public"
-                    v-model="post.IsPublic"
+                    v-model="localPost.IsPublic"
                   />
                   <label class="form-check-label" for="post-public">
                     Опубликовано
@@ -89,7 +89,7 @@
                     class="form-check-input"
                     type="checkbox"
                     id="post-markdown"
-                    v-model="post.Markdown"
+                    v-model="localPost.Markdown"
                   />
                   <label class="form-check-label" for="post-markdown">
                     Markdown
@@ -104,7 +104,7 @@
                   <textarea
                     class="form-control"
                     id="post-text"
-                    v-model="post.Text"
+                    v-model="localPost.Text"
                     rows="20"
                   ></textarea>
                 </div>
@@ -130,7 +130,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
 import ApiService from "@/services/ApiService";
 import { closeModalById } from "@/util";
 import { EditablePost } from "@/models/blog";
@@ -139,16 +139,22 @@ const props = defineProps<{
   post: EditablePost;
 }>();
 
+const localPost = ref<EditablePost>({ ...props.post })
+
+watch(() => props.post, (newPost) => {
+  localPost.value = { ...newPost }
+}, { deep: true })
+
 const tagsString = computed({
-  get: () => props.post.Tags.join(", "),
+  get: () => localPost.value.Tags.join(", "),
   set: (value: string) => {
-    props.post.Tags = value.split(/[,;\s]+/).filter((tag) => tag.trim());
+    localPost.value.Tags = value.split(/[,;\s]+/).filter((tag) => tag.trim());
   },
 });
 
 const onOk = (): void => {
   const apiService = new ApiService()
-  apiService.editPost(props.post)
+  apiService.editPost(localPost.value)
 
   closeModalById("edit-post")
 };
