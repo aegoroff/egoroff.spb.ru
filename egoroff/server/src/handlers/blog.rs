@@ -273,17 +273,14 @@ pub async fn serve_post_create(
         Ok(id) => id,
         Err(e) => {
             tracing::error!("Failed to generate post ID: {e:#?}");
-            return internal_server_error_response(Json(crate::domain::OperationResult {
-                result: "failed to generate id",
-            }))
-            .into_response();
+            return created_response(Err(e));
         }
     };
     
     post.id = new_id;
     
     let result = storage.upsert_post(post);
-    created_response(result).into_response()
+    created_response(result)
 }
 
 pub async fn serve_post_update(
