@@ -65,6 +65,7 @@ export type Events = {
   postDeleted: void;
   downloadCreated: void;
   downloadDeleted: void;
+  tagChanged: string;
 };
 export const emitter = mitt<Events>();
 
