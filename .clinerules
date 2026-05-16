@@ -1,0 +1,65 @@
+# Egoroff.spb.ru Project Rules
+
+## Project Overview
+Personal website/blog with IndieAuth/Micropub support.
+
+## Tech Stack
+- **Backend**: Rust (workspace with 4 crates: egoroff, kernel, server, migrate)
+- **Frontend**: Vue 3 + TypeScript + Bootstrap 5
+- **Database**: SQLite
+- **Build**: Cargo (Rust), Vue CLI (TypeScript)
+
+## Project Structure
+```
+egoroff/
+├── egoroff/      # Main CLI application
+├── kernel/       # Core logic (SQLite, archive)
+├── server/       # HTTP server (handlers, auth, micropub)
+└── migrate/      # Database migrations
+ui/               # Vue 3 frontend
+```
+
+## Coding Standards
+
+### Rust
+- Use `unsafe_code = "forbid"` (workspace lints)
+- Prefer `Result<T, anyhow::Error>` for error handling
+- Use async/await with tokio runtime
+- Follow workspace dependencies versions
+- Run `cargo clippy` before committing
+
+### TypeScript/Vue
+- Use TypeScript strict mode
+- Follow ESLint configuration (vue-cli-service lint)
+- Use Composition API for new components
+- Import types explicitly
+
+## Commands
+
+### Backend
+```bash
+cd egoroff
+cargo build          # Build workspace
+cargo test           # Run tests
+cargo clippy         # Lint
+cargo run            # Run main CLI
+```
+
+### Frontend
+```bash
+cd ui
+npm run serve        # Development server
+npm run build        # Production build
+npm run lint         # ESLint check
+```
+
+## Important Notes
+- Workspace uses resolver = "3" (Cargo 2024 edition)
+- Release profile: LTO enabled, strip symbols, panic=abort
+- Frontend uses esbuild-loader for optimization
+
+## When Making Changes
+1. Check related files in the same module
+2. Ensure imports are updated
+3. Run linters (clippy/ESLint)
+4. Verify workspace compiles after changes
