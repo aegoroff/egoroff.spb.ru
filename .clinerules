@@ -64,6 +64,7 @@ bun run lint         # ESLint check
 - Workspace uses resolver = "3" (Cargo 2024 edition)
 - Release profile: LTO enabled, strip symbols, panic=abort
 - Frontend uses esbuild-loader for optimization
+- Frontend uses bun as package manager
 
 ## When Making Changes
 1. Check related files in the same module
