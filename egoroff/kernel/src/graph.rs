@@ -35,7 +35,7 @@ impl SiteSection {
                     icon: s.icon.clone(),
                     title: s.title.clone(),
                     descr: s.descr.clone(),
-                    active: Some(s.id == active),
+                    active: Some(s.id.as_str() == active),
                     ..Default::default()
                 })
                 .collect()

@@ -167,7 +167,7 @@ impl MicropubFormBuilder {
             MicropubPropertyValue::Values(vals) => {
                 vals.first()
                     .iter()
-                    .for_each(|s| self.set_content((**s).clone()));
+                    .for_each(|s| self.set_content(s.to_string()));
             }
             MicropubPropertyValue::VecMap(vecmap) => {
                 // we may get {"content": [{"html": "blah"}]}
@@ -194,7 +194,7 @@ impl MicropubFormBuilder {
         if let MicropubPropertyValue::Values(vals) = val {
             vals.first()
                 .iter()
-                .for_each(|s| self.set_name((**s).clone()));
+                .for_each(|s| self.set_name(s.to_string()));
         } else {
             tracing::error!("unexpected name type");
         }
@@ -206,8 +206,8 @@ impl MicropubFormBuilder {
                 self.add_category(c);
             }
             MicropubPropertyValue::Values(cs) => {
-                for c in &cs {
-                    self.add_category(c.clone());
+                for c in cs {
+                    self.add_category(c);
                 }
             }
             _ => tracing::error!("unexpected category type"),
@@ -216,11 +216,11 @@ impl MicropubFormBuilder {
 
     fn handle_published(&mut self, val: MicropubPropertyValue) {
         if let MicropubPropertyValue::Values(dates) = val {
-            if dates.len() != 1 {
+            if dates.is_empty() {
                 tracing::error!("unexpected published dates length");
                 return;
             }
-            self.set_created_at(dates[0].clone());
+            self.set_created_at(dates.into_iter().next().unwrap_or_default());
         } else {
             tracing::error!("unexpected published type");
         }
@@ -229,11 +229,11 @@ impl MicropubFormBuilder {
     fn handle_slug(&mut self, val: MicropubPropertyValue) {
         match val {
             MicropubPropertyValue::Values(slugs) => {
-                if slugs.len() != 1 {
+                if slugs.is_empty() {
                     tracing::error!("unexpected slugs length");
                     return;
                 }
-                self.set_slug(slugs[0].clone());
+                self.set_slug(slugs.into_iter().next().expect("slugs is not empty"));
             }
             MicropubPropertyValue::Value(slug) => self.set_slug(slug),
             _ => tracing::error!("unexpected slug type"),

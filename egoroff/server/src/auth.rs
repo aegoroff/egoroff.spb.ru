@@ -147,8 +147,8 @@ impl ToUser for GoogleUser {
             created,
             email: self.email.clone().unwrap_or_default(),
             name: self.name.clone().unwrap_or_default(),
-            login: self.email.clone().unwrap_or_default(),
-            avatar_url: self.picture.clone().unwrap_or_default(),
+            login: self.email.as_deref().unwrap_or_default().to_string(),
+            avatar_url: self.picture.as_deref().unwrap_or_default().to_string(),
             federated_id: self.sub.clone(),
             admin: false,
             verified: true,
@@ -162,10 +162,10 @@ impl ToUser for GithubUser {
         let created = Utc::now();
         User {
             created,
-            email: self.email.clone().unwrap_or_default(),
-            name: self.name.clone().unwrap_or_default(),
+            email: self.email.as_deref().unwrap_or_default().to_string(),
+            name: self.name.as_deref().unwrap_or_default().to_string(),
             login: self.login.clone(),
-            avatar_url: self.avatar_url.clone().unwrap_or_default(),
+            avatar_url: self.avatar_url.as_deref().unwrap_or_default().to_string(),
             federated_id: format!("{}", self.id),
             admin: false,
             verified: true,
@@ -179,10 +179,10 @@ impl ToUser for YandexUser {
         let created = Utc::now();
         User {
             created,
-            email: self.default_email.clone().unwrap_or_default(),
-            name: self.display_name.clone().unwrap_or_default(),
+            email: self.default_email.as_deref().unwrap_or_default().to_string(),
+            name: self.display_name.as_deref().unwrap_or_default().to_string(),
             login: self.login.clone(),
-            avatar_url: self.default_avatar_id.clone().unwrap_or_default(),
+            avatar_url: self.default_avatar_id.as_deref().unwrap_or_default().to_string(),
             federated_id: self.id.clone(),
             admin: false,
             verified: true,
