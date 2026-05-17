@@ -6,6 +6,7 @@ use crate::{
     domain::AuthorizedUser,
     handlers::template::Signin,
 };
+use kernel::domain::{ApiResult, User};
 use oauth2::{CsrfToken, PkceCodeVerifier, TokenResponse};
 use serde::Deserialize;
 use tower_sessions::Session;
@@ -145,6 +146,31 @@ pub async fn serve_profile() -> impl IntoResponse {
         ..Default::default()
     }
     .into_response()
+}
+
+pub async fn serve_users_api(
+    State(page_context): State<Arc<PageContext<'_>>>,
+) -> impl IntoResponse {
+    let storage = page_context.storage.lock().await;
+
+    let users = match storage.get_users() {
+        Ok(u) => u,
+        Err(e) => {
+            tracing::error!("Failed to get users: {e:#?}");
+            return make_json_response::<ApiResult<User>>(Err(anyhow::anyhow!(e)));
+        }
+    };
+    let users_count = users.len() as i32;
+
+    let result = ApiResult {
+        result: users,
+        pages: 1,
+        page: 1,
+        count: users_count,
+        status: "success",
+    };
+
+    make_json_response(Ok(result))
 }
 
 async fn oauth_callback<T: auth::ToUser, U: Authorizer<T>>(

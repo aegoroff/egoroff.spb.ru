@@ -205,7 +205,7 @@ fn admin_api() -> Router<Arc<PageContext<'static>>> {
             delete(handlers::portfolio::serve_download_delete),
         )
         .route("/dashboard/", get(handlers::admin::serve_dashboard_api))
-        .route("/users/", get(handlers::admin::serve_users_api))
+        .route("/users/", get(handlers::auth::serve_users_api))
 }
 
 fn public_api() -> Router<Arc<PageContext<'static>>> {
