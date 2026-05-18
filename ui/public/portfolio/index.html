@@ -1,5 +1,9 @@
 {% extends "../index.html" %}
 
+{% block meta %}
+<meta name="robots" content="index, follow"/>
+{% endblock %}
+
 {%- block content -%}
 <div class="container">
     {% include "bit/notifications.html" %}
