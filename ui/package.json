@@ -26,9 +26,9 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/node": "^25.8.0",
+    "@types/node": "^25.9.0",
     "@typescript-eslint/eslint-plugin": "^8.59.4",
-    "@typescript-eslint/parser": "^8.59.3",
+    "@typescript-eslint/parser": "^8.59.4",
     "@vue/cli-plugin-eslint": "~5.0.9",
     "@vue/cli-plugin-typescript": "~5.0.9",
     "@vue/cli-service": "^5.0.9",
@@ -47,7 +47,7 @@
     "sass": "^1.99.0",
     "sass-loader": "^16.0.8",
     "typescript": "~6.0.3",
-    "typescript-eslint": "^8.59.3",
+    "typescript-eslint": "^8.59.4",
     "vue-tsc": "^3.3.0"
   },
   "browserslist": [
