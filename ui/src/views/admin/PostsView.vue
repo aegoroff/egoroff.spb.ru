@@ -8,7 +8,7 @@
         data-bs-toggle="modal"
         data-bs-target="#create-post"
       >
-        Создать пост
+        Новый пост
       </button>
     </div>
 

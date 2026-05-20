@@ -3,7 +3,7 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h2>Загрузки</h2>
       <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#create-download">
-        Создать загрузку
+        Новая загрузка
       </button>
     </div>
 
