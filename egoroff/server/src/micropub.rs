@@ -220,7 +220,9 @@ impl MicropubFormBuilder {
                 tracing::error!("unexpected published dates length");
                 return;
             }
-            self.set_created_at(dates.into_iter().next().unwrap_or_default());
+            if let Some(date) = dates.into_iter().next() {
+                self.set_created_at(date);
+            }
         } else {
             tracing::error!("unexpected published type");
         }
