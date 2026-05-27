@@ -2,8 +2,7 @@
 
 use itertools::Itertools;
 use petgraph::prelude::*;
-use std::collections::hash_map::RandomState;
-use std::{collections::HashMap, iter::once};
+use std::{collections::HashMap, iter::once, ops::AddAssign};
 
 pub const SEP: &str = "/";
 
@@ -31,24 +30,33 @@ impl SiteSection {
             sections
                 .iter()
                 .map(|s| SiteSection {
-                    id: s.id.clone(),
-                    icon: s.icon.clone(),
-                    title: s.title.clone(),
-                    descr: s.descr.clone(),
                     active: Some(s.id.as_str() == active),
-                    ..Default::default()
+                    keywords: None,
+                    children: None,
+                    ..s.clone()
                 })
                 .collect()
         })
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+struct NodeId(i32);
+
+impl AddAssign<i32> for NodeId {
+    fn add_assign(&mut self, rhs: i32) {
+        self.0 += rhs;
+    }
+}
+
+const ROOT_NODE: NodeId = NodeId(1);
+
 #[derive(Debug)]
 pub struct SiteGraph<'a> {
-    g: DiGraphMap<i32, ()>,
-    next_id: i32,
-    map: HashMap<i32, &'a SiteSection>,
-    search: HashMap<String, i32>,
+    g: DiGraphMap<NodeId, ()>,
+    next_id: NodeId,
+    map: HashMap<NodeId, &'a SiteSection>,
+    search: HashMap<String, NodeId>,
 }
 
 impl<'a> SiteGraph<'a> {
@@ -56,43 +64,30 @@ impl<'a> SiteGraph<'a> {
     pub fn new(root: &'a SiteSection) -> Self {
         let mut g = SiteGraph {
             g: DiGraphMap::new(),
-            next_id: 1,
+            next_id: ROOT_NODE,
             map: HashMap::new(),
             search: HashMap::new(),
         };
-        let root_id = g.new_node(root, None);
-        g.new_edges(root_id);
+        g.build(root, None);
         g
     }
 
-    fn new_node(&mut self, s: &'a SiteSection, root_id: Option<i32>) -> i32 {
+    fn register(&mut self, s: &'a SiteSection, parent: Option<NodeId>) -> NodeId {
         let id = self.next_id;
         self.next_id += 1;
         self.search.insert(s.id.clone(), id);
         self.map.insert(id, s);
         self.g.add_node(id);
-        if let Some(root_id) = root_id {
-            self.g.add_edge(root_id, id, ());
+        if let Some(parent_id) = parent {
+            self.g.add_edge(parent_id, id, ());
         }
         id
     }
 
-    fn new_edges(&mut self, root_id: i32) {
-        let Some(root) = self.map.get(&root_id) else {
-            return;
-        };
-
-        let Some(ref children) = root.children else {
-            return;
-        };
-
-        if children.is_empty() {
-            return;
-        }
-
-        for child in children {
-            let child_id = self.new_node(child, Some(root_id));
-            self.new_edges(child_id);
+    fn build(&mut self, section: &'a SiteSection, parent: Option<NodeId>) {
+        let id = self.register(section, parent);
+        for child in section.children.iter().flatten() {
+            self.build(child, Some(id));
         }
     }
 
@@ -105,30 +100,33 @@ impl<'a> SiteGraph<'a> {
     #[must_use]
     pub fn full_path(&self, id: &str) -> String {
         let node_id = match self.search.get(id) {
-            Some(x) => *x,
+            Some(&x) => x,
             None => return String::new(),
         };
-
-        let ways = petgraph::algo::all_simple_paths::<Vec<_>, _, RandomState>(
-            &self.g, 1, node_id, 0, None,
-        )
-        .collect::<Vec<_>>();
-        if ways.is_empty() {
-            if id == SEP {
-                String::from(SEP)
-            } else {
-                String::new()
-            }
-        } else {
-            let way = &ways[0];
-            let path = way
-                .iter()
-                .filter_map(|s| self.map.get(s))
-                .map(|x| x.id.as_str())
-                .filter(|x| *x != SEP)
-                .join(SEP);
-            format!("{SEP}{path}{SEP}")
+        if id == SEP {
+            return String::from(SEP);
         }
+
+        let mut path = vec![node_id];
+        let mut current = node_id;
+        while let Some(parent) = self
+            .g
+            .neighbors_directed(current, Direction::Incoming)
+            .next()
+        {
+            path.push(parent);
+            current = parent;
+        }
+
+        let result = path
+            .iter()
+            .rev()
+            .filter_map(|n| self.map.get(n))
+            .map(|s| s.id.as_str())
+            .filter(|x| *x != SEP)
+            .join(SEP);
+
+        format!("{SEP}{result}{SEP}")
     }
 
     #[must_use]
@@ -137,8 +135,7 @@ impl<'a> SiteGraph<'a> {
 
         let mut parent_sections = path.collect_vec();
 
-        let current_ix = usize::from(parent_sections.len() != 1);
-        let current = &parent_sections[current_ix].id;
+        let current = &parent_sections.get(1).unwrap_or(&parent_sections[0]).id;
         if parent_sections.len() > 1 && uri.ends_with(SEP) {
             // dont add section root itself to breadcrumbs
             let last = parent_sections[parent_sections.len() - 1];
