@@ -99,9 +99,8 @@ impl<'a> SiteGraph<'a> {
 
     #[must_use]
     pub fn full_path(&self, id: &str) -> String {
-        let node_id = match self.search.get(id) {
-            Some(&x) => x,
-            None => return String::new(),
+        let Some(&node_id) = self.search.get(id) else {
+            return String::new();
         };
         if id == SEP {
             return String::from(SEP);

@@ -167,7 +167,7 @@ impl MicropubFormBuilder {
             MicropubPropertyValue::Values(vals) => {
                 vals.first()
                     .iter()
-                    .for_each(|s| self.set_content(s.to_string()));
+                    .for_each(|s| self.set_content((*s).clone()));
             }
             MicropubPropertyValue::VecMap(vecmap) => {
                 // we may get {"content": [{"html": "blah"}]}
@@ -194,7 +194,7 @@ impl MicropubFormBuilder {
         if let MicropubPropertyValue::Values(vals) = val {
             vals.first()
                 .iter()
-                .for_each(|s| self.set_name(s.to_string()));
+                .for_each(|s| self.set_name((*s).clone()));
         } else {
             tracing::error!("unexpected name type");
         }
