@@ -1,6 +1,13 @@
 #![allow(clippy::module_name_repetitions)]
 
-use std::{collections::HashSet, fs, marker::PhantomData, path::Path, sync::Arc};
+use std::{
+    collections::HashSet,
+    fs,
+    marker::PhantomData,
+    net::{Ipv4Addr, Ipv6Addr},
+    path::Path,
+    sync::Arc,
+};
 
 use anyhow::{Context, Result, bail};
 use axum::{
@@ -12,7 +19,7 @@ use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use tower_http::validate_request::ValidateRequest;
-use url::Url;
+use url::{Host, Url};
 use utoipa::ToSchema;
 
 pub const ME: &str = "https://www.egoroff.spb.ru/";
@@ -122,70 +129,112 @@ pub fn validate_jwt<P: AsRef<Path>>(token: &str, public_key_path: P) -> Result<C
 
 fn validate_uri(uri: &str) -> Result<()> {
     let parsed = Url::parse(uri).context("Invalid URL")?;
-    let scheme = parsed.scheme();
-    if scheme != "http" && scheme != "https" {
-        bail!("Unsupported scheme: {scheme}");
+
+    validate_scheme(parsed.scheme())?;
+
+    match parsed.host() {
+        Some(Host::Domain(d)) => validate_domain(d)?,
+        Some(Host::Ipv4(ip)) => validate_ipv4(ip)?,
+        Some(Host::Ipv6(ip)) => validate_ipv6(ip)?,
+        None => bail!("URL must have a host"),
     }
-    if let Some(host) = parsed.host() {
-        match host {
-            url::Host::Domain(domain) => {
-                // Block localhost and .local domains
-                if domain == "localhost" || domain.ends_with(".localhost") {
-                    bail!("Domain localhost is not allowed");
-                }
-                if domain.ends_with(".local") {
-                    bail!("Domain .local is not allowed");
-                }
-                // Optionally block internal domains
-                if domain.ends_with(".internal") || domain.ends_with(".localdomain") {
-                    bail!("Internal domain not allowed");
-                }
-            }
-            url::Host::Ipv4(ip) => {
-                if ip.is_private()
-                    || ip.is_loopback()
-                    || ip.is_link_local()
-                    || ip.is_broadcast()
-                    || ip.is_multicast()
-                    || ip.is_unspecified()
-                {
-                    bail!("Private or reserved IPv4 address not allowed");
-                }
-                // Carrier-grade NAT (100.64.0.0/10)
-                if ip.octets()[0] == 100 && (ip.octets()[1] >= 64 && ip.octets()[1] <= 127) {
-                    bail!("Carrier-grade NAT address not allowed");
-                }
-                // Documentation ranges
-                if ip.octets()[0] == 192 && ip.octets()[1] == 0 && ip.octets()[2] == 2 {
-                    bail!("Documentation address not allowed");
-                }
-                if ip.octets()[0] == 198 && ip.octets()[1] == 51 && ip.octets()[2] == 100 {
-                    bail!("Documentation address not allowed");
-                }
-                if ip.octets()[0] == 203 && ip.octets()[1] == 0 && ip.octets()[2] == 113 {
-                    bail!("Documentation address not allowed");
-                }
-            }
-            url::Host::Ipv6(ip) => {
-                if ip.is_loopback() || ip.is_multicast() || ip.is_unspecified() {
-                    bail!("Private or reserved IPv6 address not allowed");
-                }
-                // Check for unique local (fc00::/7)
-                let segments = ip.segments();
-                if segments[0] & 0xfe00 == 0xfc00 {
-                    bail!("Unique local IPv6 address not allowed");
-                }
-                // Check for documentation (2001:db8::/32)
-                if segments[0] == 0x2001 && segments[1] == 0x0db8 {
-                    bail!("Documentation IPv6 address not allowed");
-                }
-                // Note: we don't check for IPv4-mapped addresses because they are covered by IPv4 checks
-            }
+
+    validate_port(&parsed)?;
+
+    Ok(())
+}
+
+fn validate_scheme(scheme: &str) -> Result<()> {
+    match scheme {
+        "http" | "https" => Ok(()),
+        _ => bail!("Unsupported scheme: {scheme}"),
+    }
+}
+
+fn validate_domain(domain: &str) -> Result<()> {
+    const BLOCKED_SUFFIXES: &[&str] = &[".localhost", ".local", ".internal", ".localdomain"];
+    if domain == "localhost" {
+        bail!("Domain 'localhost' is not allowed");
+    }
+    for suffix in BLOCKED_SUFFIXES {
+        if domain.ends_with(suffix) {
+            bail!("Domain with suffix '{suffix}' is not allowed");
         }
-    } else {
-        bail!("URL must have a host");
     }
     Ok(())
+}
+
+fn validate_port(parsed: &Url) -> Result<()> {
+    // url::Url нормализует порт — Some только если нестандартный
+    if let Some(port) = parsed.port() {
+        // Можно разрешить только 80/443, или заблокировать внутренние
+        if port < 1024 && port != 80 && port != 443 {
+            bail!("Port {port} is not allowed");
+        }
+    }
+    Ok(())
+}
+
+fn validate_ipv6(ip: Ipv6Addr) -> Result<()> {
+    if ip.is_loopback() || ip.is_multicast() || ip.is_unspecified() {
+        bail!("Reserved IPv6 address not allowed: {ip}");
+    }
+
+    let seg = ip.segments();
+
+    // Unique local fc00::/7
+    if seg[0] & 0xfe00 == 0xfc00 {
+        bail!("Unique local IPv6 address not allowed");
+    }
+
+    // Documentation 2001:db8::/32
+    if seg[0] == 0x2001 && seg[1] == 0x0db8 {
+        bail!("Documentation IPv6 address not allowed");
+    }
+
+    // Link-local fe80::/10
+    if seg[0] & 0xffc0 == 0xfe80 {
+        bail!("Link-local IPv6 address not allowed");
+    }
+
+    // IPv4-mapped ::ffff:0:0/96 — нужно проверять явно!
+    if let Some(ipv4) = ip.to_ipv4_mapped() {
+        return validate_ipv4(ipv4);
+    }
+
+    Ok(())
+}
+
+fn validate_ipv4(ip: Ipv4Addr) -> Result<()> {
+    const BLOCKED_RANGES: &[(u8, u8, u8, u8, u8)] = &[
+        (100, 64, 0, 0, 10),   // CG-NAT  100.64.0.0/10
+        (192, 0, 2, 0, 24),    // TEST-NET-1
+        (198, 51, 100, 0, 24), // TEST-NET-2
+        (203, 0, 113, 0, 24),  // TEST-NET-3
+    ];
+
+    if ip.is_private()
+        || ip.is_loopback()
+        || ip.is_link_local()
+        || ip.is_broadcast()
+        || ip.is_multicast()
+        || ip.is_unspecified()
+    {
+        bail!("Reserved IPv4 address not allowed: {ip}");
+    }
+
+    for &(a, b, c, d, prefix) in BLOCKED_RANGES {
+        if ip_in_range(ip, Ipv4Addr::new(a, b, c, d), prefix) {
+            bail!("Blocked IP range address: {ip}");
+        }
+    }
+
+    Ok(())
+}
+
+fn ip_in_range(ip: Ipv4Addr, network: Ipv4Addr, prefix: u8) -> bool {
+    let mask = !0u32 << (32 - prefix);
+    (u32::from(ip) & mask) == (u32::from(network) & mask)
 }
 
 pub async fn read_from_client(uri: &str) -> Result<String> {
