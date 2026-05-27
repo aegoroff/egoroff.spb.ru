@@ -179,10 +179,18 @@ impl ToUser for YandexUser {
         let created = Utc::now();
         User {
             created,
-            email: self.default_email.as_deref().unwrap_or_default().to_string(),
+            email: self
+                .default_email
+                .as_deref()
+                .unwrap_or_default()
+                .to_string(),
             name: self.display_name.as_deref().unwrap_or_default().to_string(),
             login: self.login.clone(),
-            avatar_url: self.default_avatar_id.as_deref().unwrap_or_default().to_string(),
+            avatar_url: self
+                .default_avatar_id
+                .as_deref()
+                .unwrap_or_default()
+                .to_string(),
             federated_id: self.id.clone(),
             admin: false,
             verified: true,

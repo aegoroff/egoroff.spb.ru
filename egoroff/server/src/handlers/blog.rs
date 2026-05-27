@@ -267,7 +267,7 @@ pub async fn serve_post_create(
     Json(mut post): Json<Post>,
 ) -> impl IntoResponse {
     let mut storage = page_context.storage.lock().await;
-    
+
     // Get next ID for the post
     let new_id = match storage.next_post_id() {
         Ok(id) => id,
@@ -276,9 +276,9 @@ pub async fn serve_post_create(
             return created_response(Err(e));
         }
     };
-    
+
     post.id = new_id;
-    
+
     let result = storage.upsert_post(post);
     created_response(result)
 }

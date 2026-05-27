@@ -1,4 +1,4 @@
-use std::{collections::HashMap, path::Path};
+use std::{collections::HashMap, path::Path, time::Duration};
 
 use chrono::{DateTime, Utc};
 use itertools::Itertools;
@@ -297,31 +297,12 @@ impl Storage for Sqlite {
         Ok(provider)
     }
 
-    fn get_user(
-        &self,
-        federated_id: &str,
-        provider: &str,
-    ) -> Result<crate::domain::User, Self::Err> {
-        let mut stmt = self
-            .conn
-            .prepare("SELECT created, email, name, login, avatar_url, federated_id, admin, verified, provider FROM user WHERE federated_id=?1 AND provider=?2")?;
-        let user: User = stmt.query_row([federated_id, provider], |row| {
-            let user = User {
-                created: datetime_from_row!(row, 0),
-                email: row.get(1)?,
-                name: row.get(2)?,
-                login: row.get(3)?,
-                avatar_url: row.get(4)?,
-                federated_id: row.get(5)?,
-                admin: row.get(6)?,
-                verified: row.get(7)?,
-                provider: row.get(8)?,
-            };
-
-            Ok(user)
-        })?;
-
-        Ok(user)
+    fn get_user(&self, federated_id: &str, provider: &str) -> Result<User, Self::Err> {
+        let mut stmt = self.conn.prepare(
+        "SELECT created, email, name, login, avatar_url, federated_id, admin, verified, provider \
+         FROM user WHERE federated_id=?1 AND provider=?2"
+    )?;
+        stmt.query_row([federated_id, provider], Sqlite::map_user_row)
     }
 
     fn upsert_user(&mut self, user: &crate::domain::User) -> Result<(), Self::Err> {
@@ -453,23 +434,11 @@ impl Storage for Sqlite {
 
     fn get_users(&self) -> Result<Vec<User>, Self::Err> {
         let mut stmt = self.conn.prepare(
-            "SELECT created, email, name, login, avatar_url, federated_id, admin, verified, provider FROM user ORDER BY created DESC"
-        )?;
-        let users_query = stmt.query_map([], |row| {
-            let user = User {
-                created: datetime_from_row!(row, 0),
-                email: row.get(1)?,
-                name: row.get(2)?,
-                login: row.get(3)?,
-                avatar_url: row.get(4)?,
-                federated_id: row.get(5)?,
-                admin: row.get(6)?,
-                verified: row.get(7)?,
-                provider: row.get(8)?,
-            };
-            Ok(user)
-        })?;
-        Ok(users_query.filter_map(std::result::Result::ok).collect())
+        "SELECT created, email, name, login, avatar_url, federated_id, admin, verified, provider \
+         FROM user ORDER BY created DESC"
+    )?;
+        let rows = stmt.query_map([], Sqlite::map_user_row)?;
+        Ok(rows.filter_map(Result::ok).collect())
     }
 
     fn count_users(&self) -> Result<i32, Self::Err> {
@@ -496,6 +465,46 @@ impl Sqlite {
             markdown: row.get(4)?,
         };
         Ok(post)
+    }
+
+    fn map_user_row(row: &Row<'_>) -> Result<User, Error> {
+        Ok(User {
+            created: datetime_from_row!(row, 0),
+            email: row.get(1)?,
+            name: row.get(2)?,
+            login: row.get(3)?,
+            avatar_url: row.get(4)?,
+            federated_id: row.get(5)?,
+            admin: row.get(6)?,
+            verified: row.get(7)?,
+            provider: row.get(8)?,
+        })
+    }
+
+    fn enable_foreign_keys(&self) -> Result<(), Error> {
+        self.pragma_update("foreign_keys", "ON")
+    }
+
+    fn pragma_update(&self, name: &str, value: &str) -> Result<(), Error> {
+        self.conn.pragma_update(None, name, value)
+    }
+
+    fn execute_with_retry<T, F>(mut action: F) -> Result<T, Error>
+    where
+        F: FnMut() -> Result<T, Error>,
+    {
+        let mut attempts = 0u32;
+        loop {
+            match action() {
+                Err(Error::SqliteFailure(e, _))
+                    if e.code == ErrorCode::DatabaseBusy && attempts < 5 =>
+                {
+                    std::thread::sleep(Duration::from_millis(50 * 2u64.pow(attempts)));
+                    attempts += 1;
+                }
+                other => return other,
+            }
+        }
     }
 
     fn upsert_post(tx: &Transaction, p: &Post) -> Result<usize, Error> {
@@ -569,32 +578,5 @@ impl Sqlite {
 
             Ok(result)
         })
-    }
-
-    fn enable_foreign_keys(&self) -> Result<(), Error> {
-        self.pragma_update("foreign_keys", "ON")
-    }
-
-    fn pragma_update(&self, name: &str, value: &str) -> Result<(), Error> {
-        self.conn.pragma_update(None, name, value)
-    }
-
-    fn execute_with_retry<T, F>(mut action: F) -> Result<T, Error>
-    where
-        F: FnMut() -> Result<T, Error>,
-    {
-        loop {
-            let result = action();
-            if let Err(err) = result {
-                if let Error::SqliteFailure(e, _) = err {
-                    if e.code == ErrorCode::DatabaseBusy {
-                        continue;
-                    }
-                    return Err(err);
-                }
-                return Err(err);
-            }
-            return result;
-        }
     }
 }

@@ -50,44 +50,45 @@ async fn from_files(files_path: &str, db_path: &str) {
         let path = path.as_path();
 
         if let Some(e) = path.extension()
-            && let Some(ext) = e.to_str() {
-                if ext != "txt" {
-                    continue;
-                }
-                let title = path
-                    .file_name()
-                    .unwrap()
-                    .to_str()
-                    .unwrap()
-                    .strip_suffix(".txt")
-                    .unwrap();
-                let title = String::from(title);
-
-                let contents = fs::read(entry.path()).await.unwrap();
-                let contents = String::from_utf8(contents).unwrap();
-                let mut parts = contents.split(
-                    "--------------------------------------------------------------------------",
-                );
-                let id: i64 = parts.next().unwrap().trim().parse().unwrap();
-                let date = parts.next().unwrap().trim();
-                let datetime = DateTime::parse_from_rfc3339(date).unwrap();
-                let short_text = parts.next().unwrap().trim();
-                let text = parts.next().unwrap().trim();
-                let tags = parts.next().unwrap().trim();
-                let tags: Tags = serde_json::from_str(tags).unwrap();
-                let post = Post {
-                    created: datetime.with_timezone(&Utc),
-                    modified: datetime.with_timezone(&Utc),
-                    id,
-                    title,
-                    short_text: short_text.to_string(),
-                    text: text.to_string(),
-                    markdown: true,
-                    is_public: true,
-                    tags: tags.values.iter().map(|v| v.string_value.clone()).collect(),
-                };
-                storage.upsert_post(post).unwrap();
+            && let Some(ext) = e.to_str()
+        {
+            if ext != "txt" {
+                continue;
             }
+            let title = path
+                .file_name()
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .strip_suffix(".txt")
+                .unwrap();
+            let title = String::from(title);
+
+            let contents = fs::read(entry.path()).await.unwrap();
+            let contents = String::from_utf8(contents).unwrap();
+            let mut parts = contents.split(
+                "--------------------------------------------------------------------------",
+            );
+            let id: i64 = parts.next().unwrap().trim().parse().unwrap();
+            let date = parts.next().unwrap().trim();
+            let datetime = DateTime::parse_from_rfc3339(date).unwrap();
+            let short_text = parts.next().unwrap().trim();
+            let text = parts.next().unwrap().trim();
+            let tags = parts.next().unwrap().trim();
+            let tags: Tags = serde_json::from_str(tags).unwrap();
+            let post = Post {
+                created: datetime.with_timezone(&Utc),
+                modified: datetime.with_timezone(&Utc),
+                id,
+                title,
+                short_text: short_text.to_string(),
+                text: text.to_string(),
+                markdown: true,
+                is_public: true,
+                tags: tags.values.iter().map(|v| v.string_value.clone()).collect(),
+            };
+            storage.upsert_post(post).unwrap();
+        }
     }
 }
 
