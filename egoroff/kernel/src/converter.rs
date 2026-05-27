@@ -38,41 +38,50 @@ pub fn xml2html(input: &str) -> Result<String> {
     let mut reader = Reader::from_str(input);
     let mut writer = Writer::new(Cursor::new(Vec::with_capacity(input.len())));
 
-    let mut parent = String::new();
+    let mut parents: Vec<String> = Vec::new();
     loop {
         match reader.read_event() {
             Ok(Event::Start(e)) if REPLACES_MAP.contains_key(e.name().as_ref()) => {
-                let replace = REPLACES_MAP.get(e.name().as_ref()).unwrap_or(&"");
+                let Some(replace) = REPLACES_MAP.get(e.name().as_ref()) else {
+                    continue;
+                };
                 if PARENTS_SET.contains(e.name().as_ref()) {
-                    parent = String::from(*replace);
+                    parents.push((*replace).to_string());
                     continue;
                 }
 
                 let mut elem = if *replace == "h" {
-                    BytesStart::new(format!("h{parent}"))
+                    BytesStart::new(format!(
+                        "h{}",
+                        parents.last().map(String::as_str).unwrap_or("1")
+                    ))
                 } else {
                     BytesStart::new(*replace)
                 };
 
                 let original_attributes = e.attributes().filter_map(std::result::Result::ok);
                 if *replace == "a" {
-                    let mut href = String::new();
-                    original_attributes.for_each(|a| {
+                    let mut href: Option<Cow<'static, str>> = None;
+
+                    for a in original_attributes {
                         let attr = a.key.local_name();
                         let id = str::from_utf8(attr.as_ref()).unwrap_or("");
                         let val = str::from_utf8(a.value.as_ref()).unwrap_or("");
+
                         href = match id {
                             "id" => match val {
-                                "1" | "53" | "62" => "/portfolio/".to_string(),
-                                "2" => "/blog/".to_string(),
-                                _ => "/".to_string(),
+                                "1" | "53" | "62" => Some(Cow::Borrowed("/portfolio/")),
+                                "2" => Some(Cow::Borrowed("/blog/")),
+                                _ => Some(Cow::Borrowed("/")),
                             },
-                            "hame" => format!("/blog/{val}.html"),
-                            _ => String::new(),
+
+                            "hame" => Some(Cow::Owned(format!("/blog/{val}.html"))),
+
+                            _ => href,
                         };
-                    });
-                    if !href.is_empty() {
-                        elem.push_attribute(("href", href.as_str()));
+                    }
+                    if let Some(href) = href {
+                        elem.push_attribute(("href", href.as_ref()));
                     }
                     elem.push_attribute(("itemprop", "url"));
                 } else {
@@ -90,12 +99,16 @@ pub fn xml2html(input: &str) -> Result<String> {
             }
             Ok(Event::End(e)) if REPLACES_MAP.contains_key(e.name().as_ref()) => {
                 if PARENTS_SET.contains(e.name().as_ref()) {
+                    parents.pop();
                     continue;
                 }
 
                 let replace = REPLACES_MAP.get(e.name().as_ref()).unwrap_or(&"");
                 let elem = if *replace == "h" {
-                    BytesEnd::new(format!("h{parent}"))
+                    BytesEnd::new(format!(
+                        "h{}",
+                        parents.last().map(String::as_str).unwrap_or("1")
+                    ))
                 } else {
                     BytesEnd::new(*replace)
                 };
@@ -184,6 +197,14 @@ mod tests {
 
     #[rstest]
     #[case("<p>test \"a - b\"cd</p>", "<p>test \"a - b\"cd</p>")]
+    #[case(
+        "<?xml version=\"1.0\"?><div1><head>A</head><div2><head>B</head><div3><head>C</head></div3></div2></div1>",
+        "<?xml version=\"1.0\"?><h2>A</h2><h3>B</h3><h4>C</h4>"
+    )]
+    #[case(
+        "<?xml version=\"1.0\"?><div1><head>A</head><div2><head>B</head></div2><head>C</head></div1>",
+        "<?xml version=\"1.0\"?><h2>A</h2><h3>B</h3><h2>C</h2>"
+    )]
     #[case(
         "<?xml version=\"1.0\"?><p>test \"a - b\"cd</p>",
         "<?xml version=\"1.0\"?><p>test \"a - b\"cd</p>"
