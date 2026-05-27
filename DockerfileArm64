@@ -22,6 +22,7 @@ RUN rustup toolchain uninstall stable-x86_64-unknown-linux-gnu && \
     rustup toolchain install stable-x86_64-unknown-linux-gnu && \
     rustup update stable && \
     rustup target add aarch64-unknown-linux-musl
+RUN rustup -V
 WORKDIR /egoroff
 COPY --from=node-build /static /static
 COPY apache/ /apache/
