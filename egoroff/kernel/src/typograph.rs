@@ -1,9 +1,9 @@
 use anyhow::Result;
 use lol_html::html_content::Element;
+use std::borrow::Cow;
 use std::cell::RefCell;
 use std::collections::HashSet;
 use std::rc::Rc;
-use std::{borrow::Cow, iter};
 
 use lol_html::{
     ElementContentHandlers, HtmlRewriter, Selector, Settings, element,
@@ -17,92 +17,78 @@ const ALLOWED_TAGS: &[&str] = &[
     "h4", "h5", "h6", "td", "th",
 ];
 
-// Combine similar patterns for optimization
-static TYPOGRAPH_RE: std::sync::LazyLock<Result<Vec<Regex>, regex::Error>> =
+type Rule = (&'static str, &'static str);
+
+static RULES: &[Rule] = &[
+    (r"(\w)-(\s+)", "$1 -$2"),
+    (r"\+-", "&plusmn;"),
+    (r"(\s+)(--?|—|-)(\s|\u00a0)", "&nbsp;&mdash;$3"),
+    (r"(^)(--?|—|-)(\s|\u00a0)", "&mdash;$3"),
+    (r"\.{2,}", "&hellip;"),
+    (r"(\d)-(\d)", "$1&minus;$2"),
+    (r#"["»](\S)"#, "«$1"),
+    (r#"(\S)["«]"#, "$1»"),
+];
+
+static TYPOGRAPH_RE: std::sync::LazyLock<Vec<(Regex, &'static str)>> =
     std::sync::LazyLock::new(|| {
-        Ok(vec![
-            // Replace spaces before hyphens
-            Regex::new(r"(\w)-(\s+)")?,
-            // Replace plus-minus
-            Regex::new(r"\+-")?,
-            // Replace dashes with spaces
-            Regex::new(r"(\s+)(--?|—|-)(\s|\u00a0)")?,
-            // Replace dash at the beginning of a line
-            Regex::new(r"(^)(--?|—|-)(\s|\u00a0)")?,
-            // Replace ellipsis
-            Regex::new(r"\.{2,}")?,
-            // Replace minus between digits
-            Regex::new(r"(\d)-(\d)")?,
-            // Replace opening quotes
-            Regex::new(r#"["»](\S)"#)?,
-            // Replace closing quotes
-            Regex::new(r#"(\S)["«]"#)?,
-        ])
+        RULES
+            .iter()
+            .map(|(pat, repl)| (Regex::new(pat).expect("invalid regex"), *repl))
+            .collect()
     });
 
 static ALLOWED_SET: std::sync::LazyLock<HashSet<&'static str>> =
     std::sync::LazyLock::new(|| ALLOWED_TAGS.iter().copied().collect());
 
 pub fn typograph(html: &str) -> Result<String> {
-    let stack = Rc::new(RefCell::new(Vec::<String>::with_capacity(32)));
+    let forbidden_depth: Rc<RefCell<u32>> = Rc::new(RefCell::new(0));
 
     let text_handler = |t: &mut TextChunk| {
         if t.text_type() != TextType::Data {
             return Ok(());
         }
 
-        if let Some(tag) = stack.borrow().last()
-            && !ALLOWED_SET.contains(tag.as_str())
-        {
+        if *forbidden_depth.borrow() > 0 {
             return Ok(());
         }
 
         let mut text = t.as_str().to_string();
 
         // Apply all replacements in one pass
-        if let Ok(regexes) = TYPOGRAPH_RE.as_ref() {
-            for (i, re) in regexes.iter().enumerate() {
-                text = match i {
-                    0 => re.replace_all(&text, "$1 -$2").into_owned(),
-                    1 => re.replace_all(&text, "&plusmn;").into_owned(),
-                    2 => re.replace_all(&text, "&nbsp;&mdash;$3").into_owned(),
-                    3 => re.replace_all(&text, "&mdash;$3").into_owned(),
-                    4 => re.replace_all(&text, "&hellip;").into_owned(),
-                    5 => re.replace_all(&text, "$1&minus;$2").into_owned(),
-                    6 => re.replace_all(&text, "«$1").into_owned(),
-                    7 => re.replace_all(&text, "$1»").into_owned(),
-                    _ => text,
-                };
-            }
+        for (re, replacement) in TYPOGRAPH_RE.iter() {
+            text = re.replace_all(&text, *replacement).into_owned();
         }
 
-        t.replace(&text, ContentType::Html);
+        if text != t.as_str() {
+            t.replace(&text, ContentType::Html);
+        }
         Ok(())
     };
 
     let element_handler: (Cow<Selector>, ElementContentHandlers) =
         element!("*", |e: &mut Element| {
             let tag_name = e.tag_name();
-            stack.borrow_mut().push(tag_name);
+            let is_forbidden = !ALLOWED_SET.contains(tag_name.as_str());
 
-            if let Some(handlers) = e.end_tag_handlers() {
-                let stack = stack.clone();
-                handlers.push(Box::new(move |_end| {
-                    stack.borrow_mut().pop();
+            if is_forbidden && let Some(handlers) = e.end_tag_handlers() {
+                *forbidden_depth.borrow_mut() += 1;
+                let depth = forbidden_depth.clone();
+                handlers.push(Box::new(move |_| {
+                    *depth.borrow_mut() -= 1;
                     Ok(())
                 }));
-            } else {
-                stack.borrow_mut().pop();
+                // self-closing (<br/>, <img/> и т.д.) — ignore
             }
 
             Ok(())
         });
 
-    let handlers: Vec<(Cow<Selector>, ElementContentHandlers)> = ALLOWED_TAGS
+    let mut handlers: Vec<(Cow<Selector>, ElementContentHandlers)> = ALLOWED_TAGS
         .iter()
         .map(|t| text!(*t, text_handler))
-        .chain(iter::once(element_handler))
         .collect();
+    handlers.push(element_handler);
 
     let mut result = Vec::with_capacity(html.len() * 2); // Pre-allocate more memory
 
