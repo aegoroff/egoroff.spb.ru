@@ -39,7 +39,7 @@ pub fn xml2html(input: &str) -> Result<String> {
     let mut reader = Reader::from_str(input);
     let mut writer = Writer::new(Cursor::new(Vec::with_capacity(input.len())));
 
-    let mut parents: Vec<String> = Vec::new();
+    let mut parents: Vec<&'static str> = Vec::new();
     loop {
         match reader.read_event() {
             Ok(Event::Start(e)) if REPLACES_MAP.contains_key(e.name().as_ref()) => {
@@ -47,15 +47,13 @@ pub fn xml2html(input: &str) -> Result<String> {
                     continue;
                 };
                 if PARENTS_SET.contains(e.name().as_ref()) {
-                    parents.push((*replace).to_string());
+                    parents.push(*replace);
                     continue;
                 }
 
                 let mut elem = if *replace == "h" {
-                    BytesStart::new(format!(
-                        "h{}",
-                        parents.last().map(String::as_str).unwrap_or("1")
-                    ))
+                    let level = parents.last().copied().unwrap_or("1");
+                    BytesStart::new(format!("h{level}"))
                 } else {
                     BytesStart::new(*replace)
                 };
@@ -106,10 +104,8 @@ pub fn xml2html(input: &str) -> Result<String> {
 
                 let replace = REPLACES_MAP.get(e.name().as_ref()).unwrap_or(&"");
                 let elem = if *replace == "h" {
-                    BytesEnd::new(format!(
-                        "h{}",
-                        parents.last().map(String::as_str).unwrap_or("1")
-                    ))
+                    let level = parents.last().copied().unwrap_or("1");
+                    BytesEnd::new(format!("h{level}"))
                 } else {
                     BytesEnd::new(*replace)
                 };
