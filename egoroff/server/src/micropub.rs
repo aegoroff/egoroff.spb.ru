@@ -258,7 +258,7 @@ impl MicropubFormBuilder {
                         .expect("bookmark_urls len was checked as 1"),
                 );
             }
-            _ => eprintln!("unexpected bookmark_of property type"),
+            _ => tracing::warn!("unexpected bookmark_of property type"),
         }
     }
 
