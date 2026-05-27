@@ -26,6 +26,7 @@ url = { workspace = true }
 futures = { workspace = true }
 utoipa = { workspace = true, features = ["chrono", "time"] }
 rusqlite = { version = "0.40", features = ["bundled", "chrono"] }
+scraper = "0.27.0"
 
 [dev-dependencies]
 rstest = "0.26.1"

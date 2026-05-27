@@ -6,12 +6,13 @@ use std::{
 };
 
 use anyhow::Result;
-use lol_html::{ElementContentHandlers, HtmlRewriter, Selector, Settings, element, text};
+use lol_html::{ElementContentHandlers, HtmlRewriter, Selector, Settings, element};
 use pulldown_cmark::{Options, Parser, html};
 use quick_xml::{
     Reader, Writer,
     events::{BytesEnd, BytesStart, Event},
 };
+use scraper::Html;
 
 const REPLACES: &[(&[u8], &str)] = &[
     (b"example", "pre"),
@@ -166,26 +167,15 @@ pub fn markdown2html(input: &str) -> Result<String> {
 }
 
 pub fn html2text(html: &str) -> Result<String> {
-    let mut text = Vec::with_capacity(64);
+    let document = Html::parse_fragment(html);
 
-    let mut rewriter = HtmlRewriter::new(
-        Settings {
-            element_content_handlers: vec![text!("*", |t| {
-                if !t.as_str().is_empty() {
-                    text.push(t.as_str().to_string());
-                }
-
-                Ok(())
-            })],
-            ..Settings::default()
-        },
-        |_: &[u8]| {},
-    );
-
-    rewriter.write(html.as_bytes())?;
-    rewriter.end()?;
-
-    Ok(text.join(" "))
+    Ok(document
+        .root_element()
+        .text()
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+        .collect::<Vec<_>>()
+        .join(" "))
 }
 
 #[cfg(test)]
@@ -317,7 +307,7 @@ mod tests {
 
     #[rstest]
     #[case("<h1>a</h1>\n<p>b</p>\n", "a b")]
-    #[case("a<h1>b</h1>\n<p>c</p>d\n", "b c")]
+    #[case("a<h1>b</h1>\n<p>c</p>d\n", "a b c d")]
     fn html2text_tests(#[case] test_data: &str, #[case] expected: &str) {
         // arrange
 
