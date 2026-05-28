@@ -51,11 +51,10 @@ impl ServerConfig {
             .parse::<u16>()
             .context("EGOROFF_HTTP_PORT must be a valid port number (0–65535)")?;
 
-        let data_path = match env::var("EGOROFF_DATA_DIR") {
-            Ok(d) => PathBuf::from(d),
-            Err(_) => {
-                env::current_dir().context("Cannot determine current directory for data path")?
-            }
+        let data_path = if let Ok(d) = env::var("EGOROFF_DATA_DIR") {
+            PathBuf::from(d)
+        } else {
+            env::current_dir().context("Cannot determine current directory for data path")?
         };
 
         Ok(Self {
@@ -110,13 +109,7 @@ pub async fn run() -> Result<()> {
     let cfg = ServerConfig::from_env()?;
 
     tracing::debug!("Base path {}", BASE_PATH.to_str().unwrap_or_default());
-
-    let data_path = if let Ok(d) = env::var("EGOROFF_DATA_DIR") {
-        PathBuf::from(d)
-    } else {
-        std::env::current_dir().unwrap_or_default()
-    };
-    tracing::debug!("Data path {}", data_path.to_str().unwrap_or_default());
+    tracing::debug!("Data path {}", cfg.data_path.to_str().unwrap_or_default());
 
     let site_config: Config = Config {
         search_api_key: env::var("EGOROFF_SEARCH_API_KEY").unwrap_or_default(),
