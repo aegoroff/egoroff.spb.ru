@@ -34,6 +34,42 @@ pub const SESSIONS_DATABASE: &str = "egoroff_sessions.db";
 static BASE_PATH: std::sync::LazyLock<PathBuf> = std::sync::LazyLock::new(base_path);
 static SITE_MAP: std::sync::LazyLock<Option<SiteSection>> = std::sync::LazyLock::new(make_site_map);
 
+pub struct ServerConfig {
+    pub http_port: u16,
+    pub store_uri: String,
+    pub certs_path: String,
+    pub data_path: PathBuf,
+    pub search_api_key: String,
+    pub google_site_id: String,
+    pub analytics_id: String,
+}
+
+impl ServerConfig {
+    pub fn from_env() -> Result<Self> {
+        let http_port = env::var("EGOROFF_HTTP_PORT")
+            .unwrap_or_else(|_| String::from("4200"))
+            .parse::<u16>()
+            .context("EGOROFF_HTTP_PORT must be a valid port number (0–65535)")?;
+
+        let data_path = match env::var("EGOROFF_DATA_DIR") {
+            Ok(d) => PathBuf::from(d),
+            Err(_) => {
+                env::current_dir().context("Cannot determine current directory for data path")?
+            }
+        };
+
+        Ok(Self {
+            http_port,
+            store_uri: env::var("EGOROFF_STORE_URI").unwrap_or_default(),
+            certs_path: env::var("EGOROFF_CERT_DIR").unwrap_or_default(),
+            data_path,
+            search_api_key: env::var("EGOROFF_SEARCH_API_KEY").unwrap_or_default(),
+            google_site_id: env::var("EGOROFF_SITE_ID").unwrap_or_default(),
+            analytics_id: env::var("EGOROFF_ANALYTYCS_ID").unwrap_or_default(),
+        })
+    }
+}
+
 fn base_path() -> PathBuf {
     if let Ok(d) = env::var("EGOROFF_HOME_DIR") {
         PathBuf::from(d)
@@ -71,9 +107,7 @@ pub async fn run() -> Result<()> {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    let http_port = env::var("EGOROFF_HTTP_PORT").unwrap_or_else(|_| String::from("4200"));
-    let store_uri = env::var("EGOROFF_STORE_URI").unwrap_or_default();
-    let certs_path = env::var("EGOROFF_CERT_DIR").unwrap_or_default();
+    let cfg = ServerConfig::from_env()?;
 
     tracing::debug!("Base path {}", BASE_PATH.to_str().unwrap_or_default());
 
@@ -99,22 +133,15 @@ pub async fn run() -> Result<()> {
         BASE_PATH.to_path_buf(),
         site_graph,
         site_config,
-        &data_path,
-        store_uri,
-        certs_path.clone(),
+        &cfg.data_path,
+        cfg.store_uri,
+        cfg.certs_path,
     )
-    .with_context(|| "Routes creation error")?;
+    .context("Routes creation error")?;
 
-    let port: u16 = http_port
-        .parse()
-        .with_context(|| format!("Invalid port: {http_port}"))?;
-
-    let http = tokio::spawn(http_server(port, app));
-
-    // Ignore errors.
-    http.await
-        .with_context(|| "Failed to start http server")??;
-    Ok(())
+    http_server(cfg.http_port, app)
+        .await
+        .context("Failed to start http server")
 }
 
 async fn http_server(port: u16, app: Router) -> Result<()> {
