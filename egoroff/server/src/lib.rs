@@ -19,11 +19,6 @@ use crate::domain::Config;
 #[macro_use]
 extern crate async_trait;
 
-#[derive(Clone, Copy)]
-struct Ports {
-    http: u16,
-}
-
 mod atom;
 mod auth;
 mod body;
@@ -110,12 +105,11 @@ pub async fn run() -> Result<()> {
     )
     .with_context(|| "Routes creation error")?;
 
-    let http: u16 = http_port
+    let port: u16 = http_port
         .parse()
         .with_context(|| format!("Invalid port: {http_port}"))?;
-    let ports = Ports { http };
 
-    let http = tokio::spawn(http_server(ports, app));
+    let http = tokio::spawn(http_server(port, app));
 
     // Ignore errors.
     http.await
@@ -123,11 +117,11 @@ pub async fn run() -> Result<()> {
     Ok(())
 }
 
-async fn http_server(ports: Ports, app: Router) -> Result<()> {
-    let listen_socket = SocketAddr::from(([0, 0, 0, 0], ports.http));
+async fn http_server(port: u16, app: Router) -> Result<()> {
+    let listen_socket = SocketAddr::from(([0, 0, 0, 0], port));
     let listener = tokio::net::TcpListener::bind(listen_socket)
         .await
-        .with_context(|| format!("Failed to bind to port {}", ports.http))?;
+        .with_context(|| format!("Failed to bind to port {}", port))?;
 
     axum::serve(listener, app)
         .with_graceful_shutdown(shutdown_signal())
