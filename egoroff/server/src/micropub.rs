@@ -243,22 +243,21 @@ impl MicropubFormBuilder {
     }
 
     fn handle_bookmark(&mut self, val: MicropubPropertyValue) {
-        match val {
-            MicropubPropertyValue::Values(mut bookmark_urls) => {
-                if bookmark_urls.len() != 1 {
-                    // TODO log
-                    return;
-                }
-                // TODO is there a different entry type we should set here? Should an extra
-                // post type column be added? Seems others (and clients) still set
-                // entry_type as h-entry so maybe the latter?
-                self.set_bookmark_of(
-                    bookmark_urls
-                        .pop()
-                        .expect("bookmark_urls len was checked as 1"),
-                );
+        if let MicropubPropertyValue::Values(mut bookmark_urls) = val {
+            if bookmark_urls.len() != 1 {
+                // TODO log
+                return;
             }
-            _ => tracing::warn!("unexpected bookmark_of property type"),
+            // TODO is there a different entry type we should set here? Should an extra
+            // post type column be added? Seems others (and clients) still set
+            // entry_type as h-entry so maybe the latter?
+            self.set_bookmark_of(
+                bookmark_urls
+                    .pop()
+                    .expect("bookmark_urls len was checked as 1"),
+            );
+        } else {
+            tracing::warn!("unexpected bookmark_of property type");
         }
     }
 

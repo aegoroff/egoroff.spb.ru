@@ -16,8 +16,6 @@ use tracing_subscriber::prelude::__tracing_subscriber_SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 
 use crate::domain::Config;
-#[macro_use]
-extern crate async_trait;
 
 mod atom;
 mod auth;
@@ -73,7 +71,10 @@ fn base_path() -> PathBuf {
     if let Ok(d) = env::var("EGOROFF_HOME_DIR") {
         PathBuf::from(d)
     } else {
-        std::env::current_dir().unwrap_or_default()
+        env::current_dir().unwrap_or_else(|e| {
+            tracing::warn!("Cannot determine current dir for base path: {e}");
+            PathBuf::default()
+        })
     }
 }
 
@@ -108,13 +109,13 @@ pub async fn run() -> Result<()> {
 
     let cfg = ServerConfig::from_env()?;
 
-    tracing::debug!("Base path {}", BASE_PATH.to_str().unwrap_or_default());
-    tracing::debug!("Data path {}", cfg.data_path.to_str().unwrap_or_default());
+    tracing::debug!("Base path {}", BASE_PATH.display());
+    tracing::debug!("Data path {}", cfg.data_path.display());
 
-    let site_config: Config = Config {
-        search_api_key: env::var("EGOROFF_SEARCH_API_KEY").unwrap_or_default(),
-        google_site_id: env::var("EGOROFF_SITE_ID").unwrap_or_default(),
-        analytics_id: env::var("EGOROFF_ANALYTYCS_ID").unwrap_or_default(),
+    let site_config = Config {
+        search_api_key: cfg.search_api_key,
+        google_site_id: cfg.google_site_id,
+        analytics_id: cfg.analytics_id,
     };
 
     let root = SITE_MAP
@@ -141,7 +142,7 @@ async fn http_server(port: u16, app: Router) -> Result<()> {
     let listen_socket = SocketAddr::from(([0, 0, 0, 0], port));
     let listener = tokio::net::TcpListener::bind(listen_socket)
         .await
-        .with_context(|| format!("Failed to bind to port {}", port))?;
+        .with_context(|| format!("Failed to bind to port {port}"))?;
 
     axum::serve(listener, app)
         .with_graceful_shutdown(shutdown_signal())

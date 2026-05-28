@@ -262,7 +262,7 @@ pub async fn serve_storage(
 
 pub fn get_year() -> u32 {
     let now = Utc::now();
-    now.year() as u32
+    now.year().cast_unsigned()
 }
 
 fn get_keywords(section: &SiteSection) -> &str {

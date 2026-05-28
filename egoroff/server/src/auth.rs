@@ -7,6 +7,7 @@ use std::{
 };
 
 use anyhow::{Context, Result};
+use async_trait::async_trait;
 use axum::{Json, response};
 use axum_login::{AuthUser, AuthnBackend, AuthzBackend};
 use chrono::Utc;
