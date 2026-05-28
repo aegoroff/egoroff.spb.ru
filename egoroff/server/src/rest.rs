@@ -87,7 +87,7 @@ pub fn create_routes(
     let storage_path = data_path.join(kernel::sqlite::DATABASE);
     let sessions_path = data_path.join(crate::SESSIONS_DATABASE);
 
-    let auth_backend = AuthBackend::from(Arc::new(storage_path.clone()));
+    let auth_backend = AuthBackend::from(storage_path.clone());
 
     let storage = Sqlite::open(&storage_path, Mode::ReadWrite)?;
     let storage = Arc::new(Mutex::new(storage));

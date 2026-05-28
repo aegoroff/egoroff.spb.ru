@@ -1,9 +1,9 @@
 #![allow(clippy::module_name_repetitions)]
 
+use std::marker::PhantomData;
 use std::{
     collections::HashSet,
     path::{Path, PathBuf},
-    sync::Arc,
 };
 
 use anyhow::{Context, Result};
@@ -67,13 +67,24 @@ impl response::IntoResponse for AppUser {
     }
 }
 
+// Одна структура вместо трёх
+pub struct OAuthAuthorizer<T> {
+    client: SpecialClient,
+    provider: OAuthProvider,
+    _phantom: PhantomData<T>,
+}
+
+pub type GoogleAuthorizer = OAuthAuthorizer<GoogleUser>;
+pub type GithubAuthorizer = OAuthAuthorizer<GithubUser>;
+pub type YandexAuthorizer = OAuthAuthorizer<YandexUser>;
+
 #[derive(Clone)]
 pub struct AuthBackend {
-    db_path: Arc<PathBuf>,
+    db_path: PathBuf,
 }
 
 impl AuthBackend {
-    pub fn from(db_path: Arc<PathBuf>) -> Self {
+    pub fn from(db_path: PathBuf) -> Self {
         Self { db_path }
     }
 }
@@ -201,6 +212,68 @@ impl ToUser for YandexUser {
 }
 
 #[async_trait]
+pub trait FetchUser: Sized + Send + Sync {
+    async fn fetch(token: &AccessToken) -> Result<Self>;
+}
+
+#[async_trait]
+impl FetchUser for GoogleUser {
+    async fn fetch(token: &AccessToken) -> Result<Self> {
+        Ok(send_user_request(
+            "https://www.googleapis.com/oauth2/v3/userinfo",
+            &format!("Bearer {}", token.secret()),
+        )
+        .await?
+        .json()
+        .await?)
+    }
+}
+
+#[async_trait]
+impl FetchUser for GithubUser {
+    async fn fetch(token: &AccessToken) -> Result<Self> {
+        Ok(send_user_request(
+            "https://api.github.com/user",
+            &format!("Bearer {}", token.secret()),
+        )
+        .await?
+        .json()
+        .await?)
+    }
+}
+
+#[async_trait]
+impl FetchUser for YandexUser {
+    async fn fetch(token: &AccessToken) -> Result<Self> {
+        Ok(send_user_request(
+            "https://login.yandex.ru/info?format=json",
+            &format!("OAuth {}", token.secret()),
+        )
+        .await?
+        .json()
+        .await?)
+    }
+}
+
+async fn send_user_request(url: &str, auth_header: &str) -> Result<reqwest::Response> {
+    let response = Client::builder()
+        .build()?
+        .get(url)
+        .header("Authorization", auth_header)
+        .header("User-Agent", "egoroff.spb.ru API auth request")
+        .send()
+        .await?;
+    tracing::debug!("Get user status: {}", response.status());
+    if response.status() == StatusCode::OK {
+        Ok(response)
+    } else {
+        Err(anyhow::Error::msg(
+            response.text().await.unwrap_or_default(),
+        ))
+    }
+}
+
+#[async_trait]
 pub trait Authorizer<T> {
     fn generate_authorize_url(&self) -> GeneratedUrl;
     async fn exchange_code(
@@ -211,58 +284,8 @@ pub trait Authorizer<T> {
     async fn get_user(&self, token: &AccessToken) -> Result<T>;
 }
 
-pub struct GoogleAuthorizer {
-    client: SpecialClient,
-    provider: OAuthProvider,
-}
-
-pub struct GithubAuthorizer {
-    client: SpecialClient,
-    provider: OAuthProvider,
-}
-
-pub struct YandexAuthorizer {
-    client: SpecialClient,
-    provider: OAuthProvider,
-}
-
-fn generate_authorize_url(client: &SpecialClient, provider: &OAuthProvider) -> GeneratedUrl {
-    let request = client.authorize_url(CsrfToken::new_random).add_scopes(
-        provider
-            .scopes
-            .iter()
-            .map(|scope| Scope::new(scope.clone())),
-    );
-    let (pkce_code_challenge, pkce_code_verifier) = PkceCodeChallenge::new_random_sha256();
-    let (authorize_url, csrf_state) = request.set_pkce_challenge(pkce_code_challenge).url();
-    GeneratedUrl {
-        url: authorize_url,
-        csrf_state,
-        verifier: pkce_code_verifier,
-    }
-}
-
-async fn exchange_code(
-    client: &SpecialClient,
-    code: String,
-    pkce_code_verifier: PkceCodeVerifier,
-) -> Result<StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>> {
-    let http_client = oauth2::reqwest::ClientBuilder::new()
-        // Following redirects opens the client up to SSRF vulnerabilities.
-        .redirect(oauth2::reqwest::redirect::Policy::none())
-        .build()?;
-
-    let result = client
-        .exchange_code(AuthorizationCode::new(code))
-        .set_pkce_verifier(pkce_code_verifier)
-        .request_async(&http_client)
-        .await
-        .with_context(|| "Failed to exchange OAuth code with pkce verifier")?;
-    Ok(result)
-}
-
-impl GoogleAuthorizer {
-    pub fn new<P: AsRef<Path>>(db_path: P) -> Result<GoogleAuthorizer> {
+impl OAuthAuthorizer<GoogleUser> {
+    pub fn new<P: AsRef<Path>>(db_path: P) -> Result<Self> {
         let (client, provider) = create_client_and_provider(
             db_path,
             "google",
@@ -270,12 +293,16 @@ impl GoogleAuthorizer {
             "https://www.googleapis.com/oauth2/v3/token",
         )
         .with_context(|| "Failed to create Google authorizer")?;
-        Ok(Self { client, provider })
+        Ok(Self {
+            client,
+            provider,
+            _phantom: PhantomData,
+        })
     }
 }
 
-impl GithubAuthorizer {
-    pub fn new<P: AsRef<Path>>(db_path: P) -> Result<GithubAuthorizer> {
+impl OAuthAuthorizer<GithubUser> {
+    pub fn new<P: AsRef<Path>>(db_path: P) -> Result<Self> {
         let (client, provider) = create_client_and_provider(
             db_path,
             "github",
@@ -283,12 +310,16 @@ impl GithubAuthorizer {
             "https://github.com/login/oauth/access_token",
         )
         .with_context(|| "Failed to create GitHub authorizer")?;
-        Ok(Self { client, provider })
+        Ok(Self {
+            client,
+            provider,
+            _phantom: PhantomData,
+        })
     }
 }
 
-impl YandexAuthorizer {
-    pub fn new<P: AsRef<Path>>(db_path: P) -> Result<YandexAuthorizer> {
+impl OAuthAuthorizer<YandexUser> {
+    pub fn new<P: AsRef<Path>>(db_path: P) -> Result<Self> {
         let (client, provider) = create_client_and_provider(
             db_path,
             "yandex",
@@ -296,117 +327,54 @@ impl YandexAuthorizer {
             "https://oauth.yandex.ru/token",
         )
         .with_context(|| "Failed to create Yandex authorizer")?;
-        Ok(Self { client, provider })
+        Ok(Self {
+            client,
+            provider,
+            _phantom: PhantomData,
+        })
     }
 }
 
 #[async_trait]
-impl Authorizer<GoogleUser> for GoogleAuthorizer {
+impl<T: FetchUser> Authorizer<T> for OAuthAuthorizer<T> {
     fn generate_authorize_url(&self) -> GeneratedUrl {
-        generate_authorize_url(&self.client, &self.provider)
-    }
-
-    async fn exchange_code(
-        &self,
-        code: String,
-        pkce_code_verifier: PkceCodeVerifier,
-    ) -> Result<StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>> {
-        exchange_code(&self.client, code, pkce_code_verifier).await
-    }
-
-    async fn get_user(&self, token: &AccessToken) -> Result<GoogleUser> {
-        let uri = "https://www.googleapis.com/oauth2/v3/userinfo";
-
-        let auth_value = format!("Bearer {}", token.secret());
-
-        let client = Client::builder().build()?;
-
-        let response = client
-            .get(uri)
-            .header("Authorization", auth_value)
-            .send()
-            .await?;
-        tracing::debug!("Get user status: {}", response.status());
-        let user = response.json::<GoogleUser>().await?;
-        Ok(user)
-    }
-}
-
-#[async_trait]
-impl Authorizer<GithubUser> for GithubAuthorizer {
-    fn generate_authorize_url(&self) -> GeneratedUrl {
-        generate_authorize_url(&self.client, &self.provider)
-    }
-
-    async fn exchange_code(
-        &self,
-        code: String,
-        pkce_code_verifier: PkceCodeVerifier,
-    ) -> Result<StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>> {
-        exchange_code(&self.client, code, pkce_code_verifier).await
-    }
-
-    async fn get_user(&self, token: &AccessToken) -> Result<GithubUser> {
-        let uri = "https://api.github.com/user";
-
-        let auth_value = format!("Bearer {}", token.secret());
-
-        let client = Client::builder().build()?;
-
-        let response = client
-            .get(uri)
-            .header("Authorization", auth_value)
-            .header("User-Agent", "egoroff.spb.ru API auth request")
-            .send()
-            .await?;
-        tracing::debug!("Get user status: {}", response.status());
-        if response.status() == StatusCode::OK {
-            let user = response.json::<GithubUser>().await?;
-            Ok(user)
-        } else {
-            let error = response.text().await.unwrap_or_default();
-            let err = anyhow::Error::msg(error);
-            Err(err)
+        let request = self.client.authorize_url(CsrfToken::new_random).add_scopes(
+            self.provider
+                .scopes
+                .iter()
+                .map(|scope| Scope::new(scope.clone())),
+        );
+        let (pkce_code_challenge, pkce_code_verifier) = PkceCodeChallenge::new_random_sha256();
+        let (authorize_url, csrf_state) = request.set_pkce_challenge(pkce_code_challenge).url();
+        GeneratedUrl {
+            url: authorize_url,
+            csrf_state,
+            verifier: pkce_code_verifier,
         }
     }
-}
-
-#[async_trait]
-impl Authorizer<YandexUser> for YandexAuthorizer {
-    fn generate_authorize_url(&self) -> GeneratedUrl {
-        generate_authorize_url(&self.client, &self.provider)
-    }
 
     async fn exchange_code(
         &self,
         code: String,
         pkce_code_verifier: PkceCodeVerifier,
     ) -> Result<StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>> {
-        exchange_code(&self.client, code, pkce_code_verifier).await
+        let http_client = oauth2::reqwest::ClientBuilder::new()
+            // Following redirects opens the client up to SSRF vulnerabilities.
+            .redirect(oauth2::reqwest::redirect::Policy::none())
+            .build()?;
+
+        let result = self
+            .client
+            .exchange_code(AuthorizationCode::new(code))
+            .set_pkce_verifier(pkce_code_verifier)
+            .request_async(&http_client)
+            .await
+            .with_context(|| "Failed to exchange OAuth code with pkce verifier")?;
+        Ok(result)
     }
 
-    async fn get_user(&self, token: &AccessToken) -> Result<YandexUser> {
-        let uri = "https://login.yandex.ru/info?format=json";
-
-        let auth_value = format!("OAuth {}", token.secret());
-
-        let client = Client::builder().build()?;
-
-        let response = client
-            .get(uri)
-            .header("Authorization", auth_value)
-            .header("User-Agent", "egoroff.spb.ru API auth request")
-            .send()
-            .await?;
-        tracing::debug!("Get user status: {}", response.status());
-        if response.status() == StatusCode::OK {
-            let user = response.json::<YandexUser>().await?;
-            Ok(user)
-        } else {
-            let error = response.text().await.unwrap_or_default();
-            let err = anyhow::Error::msg(error);
-            Err(err)
-        }
+    async fn get_user(&self, token: &AccessToken) -> Result<T> {
+        T::fetch(token).await
     }
 }
 
