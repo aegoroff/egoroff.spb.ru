@@ -110,32 +110,29 @@ pub async fn run() -> Result<()> {
     )
     .with_context(|| "Routes creation error")?;
 
-    let ports = Ports {
-        http: http_port.parse().unwrap_or_default(),
-    };
+    let http: u16 = http_port
+        .parse()
+        .with_context(|| format!("Invalid port: {http_port}"))?;
+    let ports = Ports { http };
 
     let http = tokio::spawn(http_server(ports, app));
 
     // Ignore errors.
-    let http_r = http.await;
-    http_r.with_context(|| "Failed to start http server")?;
+    http.await
+        .with_context(|| "Failed to start http server")??;
     Ok(())
 }
 
-async fn http_server(ports: Ports, app: Router) {
+async fn http_server(ports: Ports, app: Router) -> Result<()> {
     let listen_socket = SocketAddr::from(([0, 0, 0, 0], ports.http));
-    tracing::debug!("HTTP listening on {listen_socket}");
+    let listener = tokio::net::TcpListener::bind(listen_socket)
+        .await
+        .with_context(|| format!("Failed to bind to port {}", ports.http))?;
 
-    if let Ok(listener) = tokio::net::TcpListener::bind(listen_socket).await {
-        if let Err(e) = axum::serve(listener, app)
-            .with_graceful_shutdown(shutdown_signal())
-            .await
-        {
-            tracing::error!("Sever run failed with: {}", e);
-        }
-    } else {
-        tracing::error!("Failed to start server at 0.0.0.0:{}", ports.http);
-    }
+    axum::serve(listener, app)
+        .with_graceful_shutdown(shutdown_signal())
+        .await
+        .context("Server error")
 }
 
 async fn shutdown_signal() {
