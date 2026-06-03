@@ -11,7 +11,7 @@
         "@fortawesome/vue-fontawesome": "^3.2.0",
         "@marcoschulte/vue3-progress": "^0.0.9",
         "@popperjs/core": "^2.11.8",
-        "axios": "^1.16.1",
+        "axios": "^1.17.0",
         "bootstrap": "^5.3.8",
         "dayjs": "^1.11.21",
         "highlight.js": "^11.11.1",
@@ -569,7 +569,7 @@
 
     "available-typed-arrays": ["available-typed-arrays@1.0.7", "", { "dependencies": { "possible-typed-array-names": "^1.0.0" } }, "sha512-wvUjBtSGN7+7SjNpq/9M2Tg350UZD3q62IFZLbRAR1bSMlCo1ZaeW+BJ+D090e4hIIZLBcTDWe4Mh4jvUDajzQ=="],
 
-    "axios": ["axios@1.16.1", "", { "dependencies": { "follow-redirects": "^1.16.0", "form-data": "^4.0.5", "https-proxy-agent": "^5.0.1", "proxy-from-env": "^2.1.0" } }, "sha512-caYkukvroVPO8KrzuJEb50Hm07KwfBZPEC3VeFHTsqWHvKTsy54hjJz9BS/cdaypROE2rH6xvm9mHX4fgWkr3A=="],
+    "axios": ["axios@1.17.0", "", { "dependencies": { "follow-redirects": "^1.16.0", "form-data": "^4.0.5", "https-proxy-agent": "^5.0.1", "proxy-from-env": "^2.1.0" } }, "sha512-J8SwNxprqqpbfenehxWYXE7CW+wM1BB4w3+N+g+/Wx40xM4rsLrfPmHHxSWIxJLYDgSY/HqlFPIYb2/S3rxafw=="],
 
     "babel-loader": ["babel-loader@8.4.1", "", { "dependencies": { "find-cache-dir": "^3.3.1", "loader-utils": "^2.0.4", "make-dir": "^3.1.0", "schema-utils": "^2.6.5" }, "peerDependencies": { "@babel/core": "^7.0.0", "webpack": ">=2" } }, "sha512-nXzRChX+Z1GoE6yWavBQg6jDslyFF3SDjl2paADuoQtQW10JqShJt62R6eJQ5m/pjJFDT8xgKIWSP85OY8eXeA=="],
 
