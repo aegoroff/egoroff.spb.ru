@@ -84,19 +84,15 @@ pub fn typograph(html: &str) -> Result<String> {
             Ok(())
         });
 
-    let mut handlers: Vec<(Cow<Selector>, ElementContentHandlers)> = ALLOWED_TAGS
-        .iter()
-        .map(|t| text!(*t, text_handler))
-        .collect();
-    handlers.push(element_handler);
+    let mut settings = Settings::new();
+    for t in ALLOWED_TAGS {
+        settings = settings.append_element_content_handler(text!(*t, text_handler));
+    }
 
     let mut result = Vec::with_capacity(html.len() * 2); // Pre-allocate more memory
 
     let mut rewriter = HtmlRewriter::new(
-        Settings {
-            element_content_handlers: handlers,
-            ..Settings::default()
-        },
+        settings.append_element_content_handler(element_handler),
         |c: &[u8]| result.extend(c),
     );
 

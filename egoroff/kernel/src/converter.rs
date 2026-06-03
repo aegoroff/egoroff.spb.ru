@@ -147,10 +147,7 @@ pub fn markdown2html(input: &str) -> Result<String> {
 
     let mut result = Vec::with_capacity(html.len());
     let mut rewriter = HtmlRewriter::new(
-        Settings {
-            element_content_handlers: vec![table_handler],
-            ..Settings::default()
-        },
+        Settings::new().append_element_content_handler(table_handler),
         |c: &[u8]| {
             result.extend(c);
         },
