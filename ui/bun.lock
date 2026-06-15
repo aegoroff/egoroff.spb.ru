@@ -15,6 +15,7 @@
         "bootstrap": "^5.3.8",
         "dayjs": "^1.11.21",
         "highlight.js": "^11.11.1",
+        "highlightjs-zig": "^1.0.2",
         "mitt": "^3.0.1",
         "vue": "^3.5.38",
         "vue-router": "^5.1.0",
@@ -1016,6 +1017,8 @@
     "he": ["he@1.2.0", "", { "bin": { "he": "bin/he" } }, "sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw=="],
 
     "highlight.js": ["highlight.js@11.11.1", "", {}, "sha512-Xwwo44whKBVCYoliBQwaPvtd/2tYFkRQtXDWj1nackaV2JPXx3L0+Jvd8/qCJ2p+ML0/XVkJ2q+Mr+UVdpJK5w=="],
+
+    "highlightjs-zig": ["highlightjs-zig@1.0.2", "", {}, "sha512-ZPSQfyiUMmux685sTNzTXuvXAXH6Gqzc+WSRzhYiknCRELjma1FOdTJ/zs8L9KutmX+YOtdlkmS+NypOxInpqA=="],
 
     "hookable": ["hookable@5.5.3", "", {}, "sha512-Yc+BQe8SvoXH1643Qez1zqLRmbA5rCL+sSmk6TVos0LWVfNIB7PGncdlId77WzLGSIB5KaWgTaNTs2lNVEI6VQ=="],
 
