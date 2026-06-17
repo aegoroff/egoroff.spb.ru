@@ -18,7 +18,7 @@ regex = "1.12.4"
 quick-xml = "0.40.1"
 pulldown-cmark = "0.13.4"
 anyhow = { workspace = true }
-itertools = "0.14.0"
+itertools = "0.15.0"
 tower-sessions = { workspace = true }
 async-trait = { workspace = true }
 base64 = "0.22.1"
