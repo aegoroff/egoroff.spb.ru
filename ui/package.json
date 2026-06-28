@@ -9,10 +9,10 @@
     "lint": "eslint --config eslint.config.mts src/"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "^7.2.0",
-    "@fortawesome/free-brands-svg-icons": "^7.2.0",
-    "@fortawesome/free-solid-svg-icons": "^7.2.0",
-    "@fortawesome/vue-fontawesome": "^3.2.0",
+    "@fortawesome/fontawesome-svg-core": "^7.3.0",
+    "@fortawesome/free-brands-svg-icons": "^7.3.0",
+    "@fortawesome/free-solid-svg-icons": "^7.3.0",
+    "@fortawesome/vue-fontawesome": "^3.3.0",
     "@marcoschulte/vue3-progress": "^0.0.9",
     "@popperjs/core": "^2.11.8",
     "axios": "^1.18.1",
@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/node": "^26.0.0",
+    "@types/node": "^26.0.1",
     "@typescript-eslint/eslint-plugin": "^8.62.0",
     "@typescript-eslint/parser": "^8.62.0",
     "@vue/cli-plugin-eslint": "~5.0.9",
@@ -37,7 +37,7 @@
     "@vue/eslint-config-standard": "^9.0.1",
     "@vue/eslint-config-typescript": "^14.9.0",
     "esbuild-loader": "^4.5.0",
-    "eslint": "^10.5.0",
+    "eslint": "^10.6.0",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^7.3.0",

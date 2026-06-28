@@ -1,4 +1,4 @@
-import { createApp } from "vue";
+import { createApp, Component } from "vue";
 import VueSocialSharing from "vue3-social-sharing";
 import App from "./App.vue";
 import AdminApp from "./AdminApp.vue";
@@ -76,7 +76,7 @@ const appElement = document.getElementById("app");
 if (appElement) {
   const t = appElement.getAttribute("datafld");
   const vueApp = createApp(App, { title: t || "" });
-  vueApp.component("font-awesome-icon", FontAwesomeIcon);
+  vueApp.component("font-awesome-icon", FontAwesomeIcon as Component);
   vueApp.component("AppIcon", AppIcon);
   vueApp.component("DateFormatter", DateFormatter);
   vueApp.component("BlogNavigation", BlogNavigation);
@@ -123,7 +123,7 @@ if (blogContainer && window.location.hash) {
 const portfolioDownloads = document.getElementById("portfolioDownloads");
 if (portfolioDownloads) {
   const vueApp = createApp(DownloadsList);
-  vueApp.component("font-awesome-icon", FontAwesomeIcon);
+  vueApp.component("font-awesome-icon", FontAwesomeIcon as Component);
   vueApp.mount(portfolioDownloads);
 }
 
@@ -135,7 +135,7 @@ if (social) {
     url: window.location.href,
     networks: ["vk"],
   });
-  vueApp.component("font-awesome-icon", FontAwesomeIcon);
+  vueApp.component("font-awesome-icon", FontAwesomeIcon as Component);
   vueApp.mount(social);
 }
 
@@ -156,7 +156,7 @@ if (search) {
 const userProfile = document.getElementById("userProfile");
 if (userProfile) {
   const vueApp = createApp(ProfileView);
-  vueApp.component("font-awesome-icon", FontAwesomeIcon);
+  vueApp.component("font-awesome-icon", FontAwesomeIcon as Component);
   vueApp.component("AppIcon", AppIcon);
   vueApp.mount(userProfile);
 }
@@ -165,14 +165,17 @@ document.querySelectorAll("i.icon[data-label]").forEach((x) => {
   const label = x.getAttribute("data-label");
   const type = x.getAttribute("datatype");
   const vueApp = createApp(AppIcon, { icon: label || "", lib: type || "" });
-  vueApp.component("font-awesome-icon", FontAwesomeIcon);
+  vueApp.component("font-awesome-icon", FontAwesomeIcon as Component);
   vueApp.mount(x);
 });
 
 document.querySelectorAll("span.date[data-label]").forEach((x) => {
   const label = x.getAttribute("data-label");
   const text = x.textContent?.trim() ?? "";
-  const vueApp = createApp(DateFormatter, { date: text, formatStr: label || "LL" });
+  const vueApp = createApp(DateFormatter, {
+    date: text,
+    formatStr: label || "LL",
+  });
   vueApp.mount(x);
 });
 
@@ -180,7 +183,10 @@ function mountHighlighting(prefix: string, el: Element): void {
   if (!el.className.startsWith(prefix)) return;
 
   const lang = el.className.replace(prefix, "").replace(";", "").trim();
-  const app = createApp(CodeHighlighter, { content: el.textContent ?? "", lang: lang, });
+  const app = createApp(CodeHighlighter, {
+    content: el.textContent ?? "",
+    lang: lang,
+  });
   el.textContent = "";
   app.mount(el);
 }
@@ -192,7 +198,10 @@ document.querySelectorAll("pre, code").forEach((el) => {
 
 document.querySelectorAll(".alert").forEach((x) => {
   const type = x.getAttribute("data-label");
-  const vueApp = createApp(AlertWindow, { content: x.textContent || "", type: type || "success" });
+  const vueApp = createApp(AlertWindow, {
+    content: x.textContent || "",
+    type: type || "success",
+  });
   vueApp.mount(x);
 });
 
@@ -201,6 +210,6 @@ if (admin) {
   const router = createAdminRouter();
   const vueApp = createApp(AdminApp);
   vueApp.use(router);
-  vueApp.component("font-awesome-icon", FontAwesomeIcon);
+  vueApp.component("font-awesome-icon", FontAwesomeIcon as Component);
   vueApp.mount(admin);
 }
