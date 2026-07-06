@@ -19,10 +19,9 @@ This is the source code for [egoroff.spb.ru](https://egoroff.spb.ru), a personal
 The project consists of several components:
 
 ### Backend (Rust)
-- **egoroff**: Main CLI application with server and migration commands
+- **egoroff**: Main CLI application with server command
 - **kernel**: Core business logic and data models
 - **server**: HTTP server with REST API and template rendering
-- **migrate**: Data migration utilities
 
 ### Frontend (Vue.js)
 - **ui**: Vue 3 application with TypeScript
@@ -109,11 +108,6 @@ docker build -t egoroff/egoroff .
    cargo run -- server
    ```
 
-2. **For development with migration:**
-   ```bash
-   cargo run --features migrating -- server
-   ```
-
 ### Docker
 
 ```bash
@@ -164,10 +158,9 @@ The application uses environment variables for configuration:
 ```
 egoroff.spb.ru/
 ├── egoroff/           # Rust workspace
-│   ├── egoroff/      # Main CLI application
 │   ├── kernel/       # Core business logic
 │   ├── server/       # HTTP server
-│   └── migrate/      # Migration utilities
+│   └── egoroff/      # Main CLI application
 ├── ui/               # Vue.js frontend
 ├── apache/           # Apache documentation
 ├── templates/        # Template files
@@ -182,10 +175,9 @@ egoroff.spb.ru/
 - `cargo build` — build workspace (debug)
 - `cargo build --release` — production binary
 - `cargo test` — run tests
-- `cargo clippy --workspace --all-features -- -W clippy::pedantic` — lint
+- `cargo clippy --workspace -- -W clippy::pedantic` — lint
 - `cargo run -- server` — start the web server
 - `cargo run -- version` — show version information
-- `cargo run --features migrating -- migrate` — run data migrations
 
 **Frontend** (from `ui/`):
 

@@ -25,7 +25,6 @@ COPY apache/ /apache/
 COPY templates/apache/ /templates/apache/
 COPY egoroff/.cargo/ ./.cargo/
 COPY egoroff/kernel/ ./kernel/
-COPY egoroff/migrate/ ./migrate/
 COPY egoroff/server/ ./server/
 COPY egoroff/egoroff/ ./egoroff/
 COPY egoroff/Cargo.toml ./

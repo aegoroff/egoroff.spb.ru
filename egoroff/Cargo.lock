@@ -832,7 +832,6 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "kernel",
- "migrate",
  "mimalloc",
  "serde",
  "server",
@@ -1882,18 +1881,6 @@ dependencies = [
  "rand_xoshiro",
  "rapidhash",
  "sketches-ddsketch",
-]
-
-[[package]]
-name = "migrate"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "kernel",
- "reqwest 0.13.4",
- "serde",
- "serde_json",
- "tokio",
 ]
 
 [[package]]

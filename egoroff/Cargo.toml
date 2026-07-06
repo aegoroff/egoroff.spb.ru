@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["egoroff", "kernel", "server", "migrate"]
+members = ["egoroff", "kernel", "server"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 # to be able to run with `cargo run`, `check` and so on without selecting a specific package with `-p`

@@ -4,7 +4,7 @@
 Personal website/blog with IndieAuth/Micropub support.
 
 ## Tech Stack
-- **Backend**: Rust (workspace with 4 crates: egoroff, kernel, server, migrate)
+- **Backend**: Rust (workspace with 3 crates: egoroff, kernel, server)
 - **Frontend**: Vue 3 + TypeScript + Bootstrap 5
 - **Database**: SQLite
 - **Build**: Cargo (Rust), Vue CLI (TypeScript)
@@ -18,7 +18,6 @@ Personal website/blog with IndieAuth/Micropub support.
 ### Crate graph
 ```
 egoroff → server → kernel
-migrate (optional, feature `migrating`)
 ```
 
 ### Key libraries
@@ -40,15 +39,13 @@ migrate (optional, feature `migrating`)
 | Frontend API client | `ui/src/services/ApiService.ts` |
 | Frontend models | `ui/src/models/` |
 | DB / storage logic | `kernel/src/sqlite.rs`, `kernel/src/domain.rs` |
-| Data migration CLI | `migrate/`, `egoroff/src/cli/migrate.rs` (feature `migrating`) |
 
 ## Project Structure
 ```
 egoroff/
 ├── egoroff/      # Main CLI application
 ├── kernel/       # Core logic (SQLite, archive)
-├── server/       # HTTP server (handlers, auth, micropub)
-└── migrate/      # Database migrations
+└── server/       # HTTP server (handlers, auth, micropub)
 ui/               # Vue 3 frontend
 ```
 
@@ -90,7 +87,7 @@ ui/               # Vue 3 frontend
 cd egoroff
 cargo build          # Build workspace
 cargo test           # Run tests
-cargo clippy --workspace --all-features -- -W clippy::pedantic  # Lint
+cargo clippy --workspace -- -W clippy::pedantic  # Lint
 cargo run -- server  # Start web server
 ```
 
@@ -109,7 +106,6 @@ bun run lint         # ESLint check
 - Release profile: LTO enabled, strip symbols, panic=abort
 - Frontend uses esbuild-loader for optimization
 - Frontend uses bun as package manager
-- Feature `migrating` enables the `migrate` CLI subcommand
 
 ## When Making Changes
 
