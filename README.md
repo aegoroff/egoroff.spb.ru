@@ -58,28 +58,37 @@ The project consists of several components:
 ## Prerequisites
 
 - Rust (latest stable)
-- Node.js (LTS)
-- Python 3
+- [Bun](https://bun.sh/) (frontend package manager and build)
+- Python 3 (Apache documentation build, optional)
 - Docker (optional)
 
 ## Building
 
+Production assets are embedded into the Rust binary via `rust-embed`, so **build the frontend first** — it writes CSS/JS to `static/dist/`, which the server crate picks up at compile time.
+
 ### Local Development
 
-1. **Build the backend:**
-   ```bash
-   cd egoroff
-   cargo build
-   ```
-
-2. **Build the frontend:**
+1. **Build the frontend:**
    ```bash
    cd ui
-   npm install
-   npm run build
+   bun install          # first time or after dependency changes
+   bun run build        # production → ../static/dist/
    ```
 
-3. **Build Apache documentation:**
+   For faster iteration during admin UI work:
+   ```bash
+   bun run devbuild     # development build → ../static/dist/
+   bun run serve        # Vue dev server (admin SPA only)
+   ```
+
+2. **Build the backend:**
+   ```bash
+   cd egoroff
+   cargo build          # debug
+   cargo build --release  # production
+   ```
+
+3. **Build Apache documentation (optional):**
    ```bash
    python3 build.py
    ```
@@ -169,9 +178,23 @@ egoroff.spb.ru/
 
 ### Available Commands
 
-- `cargo run -- server`: Start the web server
-- `cargo run -- version`: Show version information
-- `cargo run --features migrating -- migrate`: Run data migrations
+**Backend** (from `egoroff/`):
+
+- `cargo build` — build workspace (debug)
+- `cargo build --release` — production binary
+- `cargo test` — run tests
+- `cargo clippy --workspace --all-features -- -W clippy::pedantic` — lint
+- `cargo run -- server` — start the web server
+- `cargo run -- version` — show version information
+- `cargo run --features migrating -- migrate` — run data migrations
+
+**Frontend** (from `ui/`):
+
+- `bun install` — install dependencies
+- `bun run build` — production build to `static/dist/`
+- `bun run devbuild` — development build to `static/dist/`
+- `bun run serve` — admin SPA dev server
+- `bun run lint` — ESLint check
 
 ### Code Quality
 
@@ -180,6 +203,7 @@ The project enforces strict Rust linting:
 - Comprehensive error handling
 - Async/await patterns
 - Type safety throughout
+- Run `cargo clippy` and `bun run lint` before committing
 
 ## License
 
