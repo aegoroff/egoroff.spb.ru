@@ -165,9 +165,9 @@ fn validate_domain(domain: &str) -> Result<()> {
 }
 
 fn validate_port(parsed: &Url) -> Result<()> {
-    // url::Url нормализует порт — Some только если нестандартный
+    // url::Url normalizes the port — Some only for non-standard ports
     if let Some(port) = parsed.port() {
-        // Можно разрешить только 80/443, или заблокировать внутренние
+        // Allow only 80/443, or block internal ports
         if port < 1024 && port != 80 && port != 443 {
             bail!("Port {port} is not allowed");
         }
@@ -197,7 +197,7 @@ fn validate_ipv6(ip: Ipv6Addr) -> Result<()> {
         bail!("Link-local IPv6 address not allowed");
     }
 
-    // IPv4-mapped ::ffff:0:0/96 — нужно проверять явно!
+    // IPv4-mapped ::ffff:0:0/96 must be checked explicitly
     if let Some(ipv4) = ip.to_ipv4_mapped() {
         return validate_ipv4(ipv4);
     }

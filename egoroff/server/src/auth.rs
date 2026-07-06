@@ -67,7 +67,7 @@ impl response::IntoResponse for AppUser {
     }
 }
 
-// Одна структура вместо трёх
+// Single struct instead of three separate ones
 pub struct OAuthAuthorizer<T> {
     client: SpecialClient,
     provider: OAuthProvider,

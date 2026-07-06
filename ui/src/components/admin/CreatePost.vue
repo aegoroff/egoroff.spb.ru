@@ -171,17 +171,17 @@ const formatDateTime = (dateTime: string): string => {
     const now = new Date();
     return now.toISOString().replace(/\.\d{3}Z$/, 'Z');
   }
-  // datetime-local возвращает формат "2024-04-25T04:52"
-  // Добавляем секунды и Z если их нет
+  // datetime-local returns "2024-04-25T04:52" format
+  // Append seconds and Z if missing
   if (dateTime.endsWith('Z')) {
     return dateTime;
   }
   if (dateTime.length === 16) {
-    // Формат "2024-04-25T04:52" - добавляем секунды
+    // Format "2024-04-25T04:52" — append seconds
     return `${dateTime}:00Z`;
   }
   if (dateTime.length === 19) {
-    // Формат "2024-04-25T04:52:37" - добавляем Z
+    // Format "2024-04-25T04:52:37" — append Z
     return `${dateTime}Z`;
   }
   return dateTime;
@@ -199,7 +199,7 @@ const onOk = async (): Promise<void> => {
     emitter.emit("postCreated");
     closeModalById("create-post");
 
-    // Сброс формы
+    // Reset form
     post.value = {
       Created: "",
       Modified: "",

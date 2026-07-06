@@ -143,7 +143,7 @@ const onSelect = (p: EditablePost): void => {
   })
 })
 
-// Отслеживаем изменения роута
+// Watch route changes
 watch(() => route.params.page, (newPage) => {
   const pageNum = parseInt(newPage as string) || 1
   update(pageNum)

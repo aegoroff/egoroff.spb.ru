@@ -101,7 +101,7 @@ const update = (): void => {
   const apiService = new ApiService()
   apiService.updateFullUserInfo(user.value)
 
-  // Сброс поля для нового аватара
+  // Reset field for a new avatar
   newAvatarUrl.value = ''
 }
 </script>

@@ -78,7 +78,7 @@ pub fn typograph(html: &str) -> Result<String> {
                     *depth.borrow_mut() -= 1;
                     Ok(())
                 }));
-                // self-closing (<br/>, <img/> и т.д.) — ignore
+                // self-closing (<br/>, <img/>, etc.) — ignore
             }
 
             Ok(())

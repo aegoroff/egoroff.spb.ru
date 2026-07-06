@@ -3,7 +3,7 @@ export class DashboardStats {
   public downloads_count: number = 0;
   public users_count: number = 0;
 
-  // Для обратной совместимости с шаблоном
+  // Backward compatibility with the template
   get postsCount(): number {
     return this.posts_count || 0;
   }

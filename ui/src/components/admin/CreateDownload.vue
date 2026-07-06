@@ -76,7 +76,7 @@ const onOk = (): void => {
 
   closeModalById("create-download");
 
-  // Сброс формы
+  // Reset form
   download.value = { id: 0, title: "" };
 };
 </script>
