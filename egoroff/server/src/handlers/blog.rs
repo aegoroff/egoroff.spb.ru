@@ -139,7 +139,8 @@ pub async fn serve_document(
     }
 
     let post = match storage.get_post(id) {
-        Ok(item) => item,
+        Ok(item) if item.is_public => item,
+        Ok(_) => return not_found_page(),
         Err(e) => {
             tracing::error!("Post ID '{id}' not found: {e:#?}");
             return not_found_page();

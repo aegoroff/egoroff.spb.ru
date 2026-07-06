@@ -6,6 +6,7 @@ use anyhow::Result;
 use chrono::{DateTime, NaiveDateTime, Utc};
 use kernel::domain::Post;
 use serde::{Deserialize, Serialize};
+use serde_json::{Map, Value, json};
 use thiserror::Error;
 use url::form_urlencoded::parse;
 use utoipa::ToSchema;
@@ -510,6 +511,62 @@ fn parse_micropub_datetime(value: &str) -> Option<DateTime<Utc>> {
         })
 }
 
+/// Microformats2 JSON representation of a post for Micropub `q=source` responses.
+#[derive(Debug, PartialEq, Serialize)]
+pub struct MicropubSource {
+    #[serde(rename = "type")]
+    pub entry_type: Vec<String>,
+    pub properties: Map<String, Value>,
+}
+
+impl MicropubSource {
+    #[must_use]
+    pub fn from_post(post: &Post) -> Self {
+        let mut properties = Map::new();
+
+        if !post.title.is_empty() {
+            properties.insert("name".into(), json!([post.title]));
+        }
+
+        let content = if post.markdown {
+            json!([{"markdown": post.text}])
+        } else {
+            json!([{"html": post.text}])
+        };
+        properties.insert("content".into(), content);
+
+        if !post.tags.is_empty() {
+            properties.insert("category".into(), json!(post.tags));
+        }
+
+        properties.insert(
+            "published".into(),
+            json!([post.created.format("%Y-%m-%d %H:%M:%S").to_string()]),
+        );
+
+        let status = if post.is_public { "published" } else { "draft" };
+        properties.insert("post-status".into(), json!([status]));
+
+        Self {
+            entry_type: vec!["h-entry".into()],
+            properties,
+        }
+    }
+}
+
+/// Extracts a blog post id from a canonical post URL.
+#[must_use]
+pub fn parse_post_url(site_url: &str, post_url: &str) -> Option<i64> {
+    let site_url = site_url.trim_end_matches('/');
+    let post_url = post_url.trim();
+    let prefix = format!("{site_url}/blog/");
+    let id_part = post_url.strip_prefix(&prefix)?;
+    let id_part = id_part
+        .strip_suffix(".html")
+        .or_else(|| id_part.strip_suffix(".htm"))?;
+    id_part.parse().ok()
+}
+
 #[cfg(test)]
 mod test {
     #![allow(clippy::unwrap_in_result)]
@@ -835,5 +892,84 @@ mod test {
         assert!(!post.is_public);
         assert_eq!(post.tags, vec!["micropub"]);
         assert!(post.markdown);
+    }
+
+    #[test]
+    fn parse_post_url_extracts_numeric_id() {
+        assert_eq!(
+            parse_post_url(
+                "https://www.egoroff.spb.ru/",
+                "https://www.egoroff.spb.ru/blog/42.html"
+            ),
+            Some(42)
+        );
+        assert_eq!(
+            parse_post_url(
+                "https://www.egoroff.spb.ru",
+                "https://www.egoroff.spb.ru/blog/7.htm"
+            ),
+            Some(7)
+        );
+        assert_eq!(
+            parse_post_url(
+                "https://www.egoroff.spb.ru/",
+                "https://example.com/blog/1.html"
+            ),
+            None
+        );
+    }
+
+    #[test]
+    fn micropub_source_from_published_markdown_post() {
+        let post = Post {
+            id: 1,
+            created: parse_micropub_datetime("2020-04-04 15:30:00").unwrap_or_default(),
+            modified: Utc::now(),
+            title: "Testing published".into(),
+            short_text: String::new(),
+            text: "Hello *world*".into(),
+            markdown: true,
+            is_public: true,
+            tags: vec!["publish-date".into()],
+        };
+
+        let source = MicropubSource::from_post(&post);
+
+        assert_eq!(source.entry_type, vec!["h-entry"]);
+        assert_eq!(source.properties["name"], json!(["Testing published"]));
+        assert_eq!(
+            source.properties["content"],
+            json!([{"markdown": "Hello *world*"}])
+        );
+        assert_eq!(source.properties["category"], json!(["publish-date"]));
+        assert_eq!(
+            source.properties["published"],
+            json!(["2020-04-04 15:30:00"])
+        );
+        assert_eq!(source.properties["post-status"], json!(["published"]));
+    }
+
+    #[test]
+    fn micropub_source_from_draft_html_post() {
+        let post = Post {
+            id: 2,
+            created: Utc::now(),
+            modified: Utc::now(),
+            title: String::new(),
+            short_text: String::new(),
+            text: "<p>draft</p>".into(),
+            markdown: false,
+            is_public: false,
+            tags: vec![],
+        };
+
+        let source = MicropubSource::from_post(&post);
+
+        assert!(!source.properties.contains_key("name"));
+        assert_eq!(
+            source.properties["content"],
+            json!([{"html": "<p>draft</p>"}])
+        );
+        assert_eq!(source.properties["post-status"], json!(["draft"]));
     }
 }

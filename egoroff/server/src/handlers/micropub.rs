@@ -8,7 +8,7 @@ use uuid::Uuid;
 
 use crate::{
     indie::ME,
-    micropub::{MicropubConfig, MicropubForm, MicropubFormError},
+    micropub::{MicropubConfig, MicropubForm, MicropubFormError, MicropubSource, parse_post_url},
 };
 
 use super::*;
@@ -57,7 +57,10 @@ pub struct MediaResponse {
         ("authorization" = [])
     )
 )]
-pub async fn serve_index_get(Query(query): Query<MicropubRequest>) -> impl IntoResponse {
+pub async fn serve_index_get(
+    Query(query): Query<MicropubRequest>,
+    State(page_context): State<Arc<PageContext<'_>>>,
+) -> impl IntoResponse {
     if let Some(q) = query.q {
         let media_endpoint = Some(format!("{ME}micropub/media"));
         match q.as_str() {
@@ -73,6 +76,28 @@ pub async fn serve_index_get(Query(query): Query<MicropubRequest>) -> impl IntoR
                     syndicate_to: Some(vec![]),
                 };
                 success_response(Json(config))
+            }
+            "source" => {
+                let Some(post_url) = query.url else {
+                    return bad_request_error_response(
+                        "url query parameter is required for source",
+                    );
+                };
+                let Some(post_id) = parse_post_url(ME, &post_url) else {
+                    return bad_request_error_response("invalid post url");
+                };
+
+                let storage = page_context.storage.lock().await;
+                let post = match storage.get_post(post_id) {
+                    Ok(post) => post,
+                    Err(e) => {
+                        tracing::error!("micropub source post {post_id} not found: {e:#?}");
+                        return not_found_response("post not found");
+                    }
+                };
+
+                let source = MicropubSource::from_post(&post);
+                success_response(Json(source))
             }
             "media-endpoint" => {
                 let config = MicropubConfig {
