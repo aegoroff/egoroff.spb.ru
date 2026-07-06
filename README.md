@@ -12,7 +12,7 @@ This is the source code for [egoroff.spb.ru](https://egoroff.spb.ru), a personal
 - Apache documentation viewer
 - Admin interface for content management
 - Search functionality
-- IndieWeb support (Micropub, Webmention)
+- IndieWeb support (Micropub)
 
 ## Architecture
 
@@ -150,7 +150,6 @@ The application uses environment variables for configuration:
 
 ### IndieWeb Support
 - Micropub endpoint for posting
-- Webmention support
 - Microformats markup
 
 ### Search
