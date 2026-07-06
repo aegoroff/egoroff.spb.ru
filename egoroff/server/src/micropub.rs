@@ -3,6 +3,8 @@
 use std::collections::HashMap;
 
 use anyhow::Result;
+use chrono::{DateTime, NaiveDateTime, Utc};
+use kernel::domain::Post;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use url::form_urlencoded::parse;
@@ -98,6 +100,7 @@ pub struct MicropubFormBuilder {
     slug: Option<String>,
     bookmark_of: Option<String>,
     photos: Option<Vec<Photo>>,
+    post_status: Option<String>,
 }
 
 impl MicropubFormBuilder {
@@ -114,6 +117,7 @@ impl MicropubFormBuilder {
             slug: None,
             bookmark_of: None,
             photos: None,
+            post_status: None,
         }
     }
 
@@ -131,7 +135,8 @@ impl MicropubFormBuilder {
                 "content" | "content[html]" => builder.handle_content(v),
                 "name" => builder.handle_name(v),
                 "category" => builder.handle_category(v),
-                "published" => builder.handle_published(v),
+                "published" | "created" => builder.handle_published(v),
+                "post-status" => builder.handle_post_status(v),
                 "mp-slug" => builder.handle_slug(v),
                 "bookmark-of" => builder.handle_bookmark(v),
                 "photo" => builder.handle_photo(v),
@@ -159,6 +164,7 @@ impl MicropubFormBuilder {
             slug: self.slug,
             bookmark_of: self.bookmark_of,
             photos: self.photos,
+            post_status: self.post_status,
         })
     }
 
@@ -225,6 +231,18 @@ impl MicropubFormBuilder {
             }
         } else {
             tracing::error!("unexpected published type");
+        }
+    }
+
+    fn handle_post_status(&mut self, val: MicropubPropertyValue) {
+        match val {
+            MicropubPropertyValue::Values(mut statuses) => {
+                if let Some(status) = statuses.pop() {
+                    self.set_post_status(status);
+                }
+            }
+            MicropubPropertyValue::Value(status) => self.set_post_status(status),
+            _ => tracing::error!("unexpected post-status type"),
         }
     }
 
@@ -301,6 +319,10 @@ impl MicropubFormBuilder {
 
     fn set_bookmark_of(&mut self, val: String) {
         self.bookmark_of = Some(val);
+    }
+
+    fn set_post_status(&mut self, val: String) {
+        self.post_status = Some(val);
     }
 
     fn add_photo(&mut self, val: Photo) {
@@ -398,6 +420,9 @@ pub struct MicropubForm {
 
     /// Photos included with the entry
     pub photos: Option<Vec<Photo>>,
+
+    /// Micropub post-status: published, draft, or queued.
+    pub post_status: Option<String>,
     // TODO: support additional fields and properties
 }
 
@@ -418,6 +443,7 @@ impl MicropubForm {
                 "category" | "category[]" => builder.add_category(v.into_owned()),
                 "name" => builder.set_name(v.into_owned()),
                 "bookmark-of" => builder.set_bookmark_of(v.into_owned()),
+                "post-status" => builder.set_post_status(v.into_owned()),
                 _ => (),
             }
         }
@@ -428,6 +454,60 @@ impl MicropubForm {
     pub fn from_json_bytes(b: &[u8]) -> Result<Self> {
         Ok(MicropubFormBuilder::from_json(b)?.build()?)
     }
+
+    #[must_use]
+    pub fn is_public(&self) -> bool {
+        self.post_status
+            .as_deref()
+            .is_some_and(|status| status.eq_ignore_ascii_case("published"))
+    }
+
+    #[must_use]
+    pub fn to_post(&self, id: i64) -> Post {
+        let now = Utc::now();
+        let created = self
+            .created_at
+            .as_deref()
+            .and_then(parse_micropub_datetime)
+            .unwrap_or(now);
+        let modified = self
+            .updated_at
+            .as_deref()
+            .and_then(parse_micropub_datetime)
+            .unwrap_or(created);
+        let markdown = matches!(
+            self.content_type.as_deref(),
+            None | Some("") | Some("markdown")
+        );
+
+        Post {
+            id,
+            created,
+            modified,
+            title: self.name.clone().unwrap_or_default(),
+            short_text: String::new(),
+            text: self.content.clone(),
+            markdown,
+            is_public: self.is_public(),
+            tags: self.category.clone(),
+        }
+    }
+}
+
+fn parse_micropub_datetime(value: &str) -> Option<DateTime<Utc>> {
+    DateTime::parse_from_rfc3339(value)
+        .ok()
+        .map(|dt| dt.with_timezone(&Utc))
+        .or_else(|| {
+            NaiveDateTime::parse_from_str(value, "%Y-%m-%d %H:%M:%S")
+                .ok()
+                .map(|naive| naive.and_utc())
+        })
+        .or_else(|| {
+            NaiveDateTime::parse_from_str(value, "%Y-%m-%dT%H:%M:%S")
+                .ok()
+                .map(|naive| naive.and_utc())
+        })
 }
 
 #[cfg(test)]
@@ -454,6 +534,7 @@ mod test {
             slug: None,
             bookmark_of: None,
             photos: None,
+            post_status: None,
         };
 
         // assert
@@ -478,6 +559,7 @@ mod test {
             slug: None,
             bookmark_of: None,
             photos: None,
+            post_status: None,
         };
 
         // assert
@@ -502,6 +584,7 @@ mod test {
             slug: None,
             bookmark_of: None,
             photos: None,
+            post_status: None,
         };
 
         // assert
@@ -526,6 +609,7 @@ mod test {
             slug: None,
             bookmark_of: None,
             photos: None,
+            post_status: Some("published".into()),
         };
 
         // assert
@@ -552,6 +636,7 @@ mod test {
             slug: Some("quill-test".into()),
             bookmark_of: None,
             photos: None,
+            post_status: None,
         };
 
         // assert
@@ -576,6 +661,7 @@ mod test {
             slug: None,
             bookmark_of: Some("https://www.egoroff.spb.ru".into()),
             photos: None,
+            post_status: None,
         };
 
         // assert
@@ -600,6 +686,7 @@ mod test {
             slug: Some("markdown-test".into()),
             bookmark_of: None,
             photos: None,
+            post_status: None,
         };
 
         // assert
@@ -624,6 +711,7 @@ mod test {
             slug: Some("publish-date-slug".into()),
             bookmark_of: None,
             photos: None,
+            post_status: None,
         };
 
         // assert
@@ -653,6 +741,7 @@ mod test {
                     alt: Some("test upload".into()),
                 }
             ]),
+            post_status: None,
         };
 
         // assert
@@ -686,9 +775,65 @@ mod test {
                     alt: None,
                 }
             ]),
+            post_status: None,
         };
 
         // assert
         assert_eq!(form, MicropubForm::from_json_bytes(&bytes[..]).unwrap());
+    }
+
+    #[test]
+    fn micropub_form_to_post_maps_tags_status_and_published_date() {
+        let form = MicropubForm {
+            access_token: None,
+            h: "entry".into(),
+            content: "content!".into(),
+            content_type: Some("html".into()),
+            category: vec!["publish-date".into()],
+            name: Some("Testing published".into()),
+            created_at: Some("2020-04-04 15:30:00".into()),
+            updated_at: None,
+            slug: None,
+            bookmark_of: None,
+            photos: None,
+            post_status: Some("published".into()),
+        };
+
+        let post = form.to_post(42);
+
+        assert_eq!(post.id, 42);
+        assert!(post.is_public);
+        assert_eq!(post.tags, vec!["publish-date"]);
+        assert_eq!(post.title, "Testing published");
+        assert_eq!(post.text, "content!");
+        assert!(!post.markdown);
+        assert_eq!(
+            post.created.format("%Y-%m-%d %H:%M:%S").to_string(),
+            "2020-04-04 15:30:00"
+        );
+    }
+
+    #[test]
+    fn micropub_form_to_post_defaults_to_draft_without_post_status() {
+        let form = MicropubForm {
+            access_token: None,
+            h: "entry".into(),
+            content: "draft note".into(),
+            content_type: None,
+            category: vec!["micropub".into()],
+            name: None,
+            created_at: None,
+            updated_at: None,
+            slug: None,
+            bookmark_of: None,
+            photos: None,
+            post_status: None,
+        };
+
+        let post = form.to_post(7);
+
+        assert!(!post.is_public);
+        assert_eq!(post.tags, vec!["micropub"]);
+        assert!(post.markdown);
     }
 }

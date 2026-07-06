@@ -2,8 +2,6 @@
 
 use axum::{body::Bytes, extract::Multipart, http};
 use axum_extra::{TypedHeader, headers::ContentType};
-use chrono::Utc;
-use kernel::domain::Post;
 use serde::Deserialize;
 use utoipa::{IntoParams, ToSchema};
 use uuid::Uuid;
@@ -134,27 +132,14 @@ pub async fn serve_index_post(
             return bad_request_error_response(e.to_string());
         }
     };
-    let created = Utc::now();
 
     let mut storage = page_context.storage.lock().await;
     let post_id = match storage.next_post_id() {
         Ok(id) => id,
         Err(e) => return internal_server_error_response(e.to_string()),
     };
-    let content_type = form.content_type.unwrap_or_default();
-    tracing::info!("content type: {content_type}");
-    let markdown = content_type == "markdown" || content_type.is_empty();
-    let post = Post {
-        created,
-        modified: created,
-        id: post_id,
-        title: form.name.unwrap_or_default(),
-        short_text: String::new(),
-        text: form.content,
-        markdown,
-        is_public: false,
-        tags: vec![],
-    };
+    tracing::info!("content type: {:?}", form.content_type);
+    let post = form.to_post(post_id);
     if let Err(e) = storage.upsert_post(post) {
         return internal_server_error_response(e.to_string());
     }
