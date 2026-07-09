@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -6,10 +6,18 @@ const uiRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const outDir = resolve(uiRoot, '../static/dist')
 const indexPath = resolve(outDir, 'index.html')
 const manifestPath = resolve(outDir, '.vite/manifest.json')
-const marker = '<!-- built files will be auto injected -->'
+const stylesMarker = '<!-- built styles will be auto injected -->'
+const scriptsMarker = '<!-- built scripts will be auto injected -->'
+const legacyMarker = '<!-- built files will be auto injected -->'
+const injectedStylesPattern =
+  /\n?\s*<link rel="stylesheet" href="\/css\/[^"]+">/g
+const injectedScriptsPattern =
+  /\n?\s*<script(?: defer)?(?: type="module")? src="\/js\/[^"]+"><\/script>/g
+const legacyInjectionPattern =
+  /<link rel="stylesheet" href="\/css\/[^"]+">\s*\n\s*<script(?: defer)?(?: type="module")? src="\/js\/[^"]+"><\/script>/
 
 type ManifestChunk = {
-  file: string
+  file?: string
   css?: string[]
   isEntry?: boolean
 }
@@ -23,43 +31,92 @@ function loadManifest(): Record<string, ManifestChunk> {
   }
 }
 
-function buildInjection(entry: ManifestChunk): string {
-  const styles = (entry.css ?? [])
-    .map((file) => `<link rel="stylesheet" href="/${file}">`)
-    .join('\n    ')
-  const script = `<script type="module" src="/${entry.file}"></script>`
+function collectStyles(manifest: Record<string, ManifestChunk>): string[] {
+  const styles = new Set<string>()
 
-  return [styles, script].filter((line) => line.length > 0).join('\n    ')
+  for (const chunk of Object.values(manifest)) {
+    for (const file of chunk.css ?? []) {
+      styles.add(file)
+    }
+
+    if (chunk.file?.endsWith('.css')) {
+      styles.add(chunk.file)
+    }
+  }
+
+  return [...styles]
 }
 
-function injectAssets(html: string, injection: string): string {
+function buildStyles(files: string[]): string {
+  return files
+    .map((file) => `<link rel="stylesheet" href="/${file}">`)
+    .join('\n    ')
+}
+
+function buildScript(file: string): string {
+  return `<script defer src="/${file}"></script>`
+}
+
+function replaceMarker(html: string, marker: string, injection: string): string {
   if (html.includes(marker)) {
     return html.replace(marker, injection)
   }
 
-  const previousInjection =
-    /<link rel="stylesheet" href="\/css\/[^"]+">\s*\n\s*<script type="module" src="\/js\/[^"]+"><\/script>/
+  return html
+}
 
-  if (previousInjection.test(html)) {
-    return html.replace(previousInjection, injection)
+function stripLegacyInjection(html: string): string {
+  return html
+    .replace(legacyInjectionPattern, legacyMarker)
+    .replace(injectedStylesPattern, '')
+    .replace(injectedScriptsPattern, '')
+}
+
+function injectAssets(html: string, styles: string, script: string): string {
+  let updated = stripLegacyInjection(html)
+
+  if (styles.length > 0) {
+    updated = replaceMarker(updated, stylesMarker, styles)
+    if (!updated.includes(styles)) {
+      updated = updated.replace('</head>', `    ${styles}\n</head>`)
+    }
+  } else if (updated.includes(stylesMarker)) {
+    updated = updated.replace(stylesMarker, '')
   }
 
-  return html.replace('</body>', `    ${injection}\n</body>`)
+  updated = replaceMarker(updated, scriptsMarker, script)
+  if (!updated.includes(script)) {
+    updated = updated.replace('</body>', `    ${script}\n</body>`)
+  }
+
+  if (updated.includes(legacyMarker)) {
+    updated = updated.replace(legacyMarker, script)
+  }
+
+  return updated
 }
 
 const manifest = loadManifest()
 const entry = Object.values(manifest).find((chunk) => chunk.isEntry)
 
-if (entry === undefined) {
+if (entry?.file === undefined) {
   throw new Error('Vite manifest does not contain an entry chunk')
 }
 
-const injection = buildInjection(entry)
+const styleFiles = collectStyles(manifest)
+const styles = buildStyles(styleFiles)
+const script = buildScript(entry.file)
 const html = readFileSync(indexPath, 'utf8')
-const updated = injectAssets(html, injection)
+const updated = injectAssets(html, styles, script)
 
 writeFileSync(indexPath, updated)
 
+if (styleFiles.length === 0) {
+  const cssDir = resolve(outDir, 'css')
+  mkdirSync(cssDir, { recursive: true })
+  writeFileSync(resolve(cssDir, '.keep'), '')
+}
+
 console.log(`Injected assets into ${indexPath}`)
-console.log(`  css: ${(entry.css ?? []).join(', ') || '(none)'}`)
+console.log(`  css: ${styleFiles.join(', ') || '(none)'}`)
 console.log(`  js:  ${entry.file}`)

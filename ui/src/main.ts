@@ -1,3 +1,5 @@
+import "./App.scss";
+import "highlight.js/styles/github.css";
 import { createApp, Component } from "vue";
 import VueSocialSharing from "vue3-social-sharing";
 import App from "./App.vue";
@@ -27,9 +29,6 @@ import { Vue3ProgressPlugin } from "@marcoschulte/vue3-progress";
 import AppIcon from "./components/AppIcon.vue";
 import DateFormatter from "@/components/DateFormatter.vue";
 import BlogNavigation from "@/components/BlogNavigation.vue";
-import "./App.scss";
-// Import Bootstrap CSS
-import "bootstrap/dist/css/bootstrap.min.css";
 // Import Bootstrap JS bundle (includes modal, dropdown, collapse, tab)
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import BlogAnnounces from "@/components/BlogAnnounces.vue";
@@ -43,7 +42,6 @@ import DownloadsList from "@/components/DownloadsList.vue";
 import mitt from "mitt";
 
 import "highlight.js/lib/common";
-import "highlight.js/styles/github.css";
 import CodeHighlighter from "@/components/CodeHighlighter.vue";
 
 library.add(

@@ -28,6 +28,7 @@ $enable-negative-margins: true;
 @import "bootstrap/scss/button-group";
 @import "bootstrap/scss/nav";
 @import "bootstrap/scss/navbar";
+@import "bootstrap/scss/breadcrumb";
 @import "bootstrap/scss/card";
 @import "bootstrap/scss/badge";
 @import "bootstrap/scss/list-group";
@@ -35,6 +36,7 @@ $enable-negative-margins: true;
 @import "bootstrap/scss/close";
 @import "bootstrap/scss/helpers";
 @import "bootstrap/scss/utilities";
+@import "bootstrap/scss/utilities/api";
 @import "@marcoschulte/vue3-progress/style";
 
 $footer-height: ($spacer);
