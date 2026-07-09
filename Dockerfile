@@ -11,7 +11,7 @@ COPY ui/src/ ./src/
 COPY static/img/ /static/img/
 COPY static/map.json /static/
 COPY static/robots.txt /static/
-COPY ui/vue.config.js ./
+COPY ui/vite.config.ts ./
 COPY ui/tsconfig.json ./
 COPY ui/bun.lock ./
 RUN bun run build
