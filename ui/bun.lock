@@ -10,7 +10,6 @@
         "@fortawesome/free-solid-svg-icons": "^7.3.0",
         "@fortawesome/vue-fontawesome": "^3.3.0",
         "@marcoschulte/vue3-progress": "^0.0.9",
-        "@popperjs/core": "^2.11.8",
         "axios": "^1.18.1",
         "bootstrap": "^5.3.8",
         "dayjs": "^1.11.21",
