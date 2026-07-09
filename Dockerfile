@@ -12,6 +12,8 @@ COPY static/img/ /static/img/
 COPY static/map.json /static/
 COPY static/robots.txt /static/
 COPY ui/vite.config.ts ./
+COPY ui/build.html ./
+COPY ui/scripts/ ./scripts/
 COPY ui/tsconfig.json ./
 COPY ui/bun.lock ./
 RUN bun run build
