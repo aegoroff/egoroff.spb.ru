@@ -39,12 +39,15 @@ const props = defineProps<{
   postId: number
 }>()
 
-const onOk = (): void => {
+const onOk = async (): Promise<void> => {
   const apiService = new ApiService();
-  apiService.deletePost(props.postId);
-  emitter.emit("postDeleted");
-
-  closeModalById("delete-post");
+  try {
+    await apiService.deletePost(props.postId);
+    emitter.emit("postDeleted");
+    closeModalById("delete-post");
+  } catch (error) {
+    console.error("Failed to delete post:", error);
+  }
 };
 </script>
 

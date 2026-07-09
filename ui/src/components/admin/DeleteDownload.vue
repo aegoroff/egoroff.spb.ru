@@ -39,11 +39,15 @@ const props = defineProps<{
   downloadId: number
 }>()
 
-const onOk = (): void => {
+const onOk = async (): Promise<void> => {
   const apiService = new ApiService();
-  apiService.deleteDownload(props.downloadId);
-  emitter.emit("downloadDeleted");
-  closeModalById("delete-download");
+  try {
+    await apiService.deleteDownload(props.downloadId);
+    emitter.emit("downloadDeleted");
+    closeModalById("delete-download");
+  } catch (error) {
+    console.error("Failed to delete download:", error);
+  }
 };
 </script>
 

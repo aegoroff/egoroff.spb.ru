@@ -132,6 +132,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import ApiService from "@/services/ApiService";
+import { emitter } from "@/main";
 import { closeModalById } from "@/util";
 import { EditablePost } from "@/models/blog";
 
@@ -152,11 +153,15 @@ const tagsString = computed({
   },
 });
 
-const onOk = (): void => {
-  const apiService = new ApiService()
-  apiService.editPost(localPost.value)
-
-  closeModalById("edit-post")
+const onOk = async (): Promise<void> => {
+  const apiService = new ApiService();
+  try {
+    await apiService.editPost(localPost.value);
+    emitter.emit("postUpdated");
+    closeModalById("edit-post");
+  } catch (error) {
+    console.error("Failed to edit post:", error);
+  }
 };
 </script>
 

@@ -141,6 +141,10 @@ const onSelect = (p: EditablePost): void => {
   emitter.on('postDeleted', () => {
     update(page.value)
   })
+
+  emitter.on('postUpdated', () => {
+    update(page.value)
+  })
 })
 
 // Watch route changes

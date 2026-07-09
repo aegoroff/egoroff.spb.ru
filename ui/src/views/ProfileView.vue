@@ -93,16 +93,18 @@ onMounted(() => {
   readProfile()
 })
 
-const update = (): void => {
+const update = async (): Promise<void> => {
   if (newAvatarUrl.value) {
     user.value.avatarUrl = newAvatarUrl.value
   }
 
   const apiService = new ApiService()
-  apiService.updateFullUserInfo(user.value)
-
-  // Reset field for a new avatar
-  newAvatarUrl.value = ''
+  try {
+    await apiService.updateFullUserInfo(user.value)
+    newAvatarUrl.value = ''
+  } catch (error) {
+    console.error('Failed to update profile:', error)
+  }
 }
 </script>
 

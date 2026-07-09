@@ -60,11 +60,14 @@ watch(() => props.download, (newDownload) => {
   localDownload.value = { ...newDownload }
 }, { deep: true })
 
-const onOk = (): void => {
+const onOk = async (): Promise<void> => {
   const apiService = new ApiService();
-  apiService.editDownload(localDownload.value);
-
-  closeModalById("edit-download");
+  try {
+    await apiService.editDownload(localDownload.value);
+    closeModalById("edit-download");
+  } catch (error) {
+    console.error("Failed to edit download:", error);
+  }
 };
 </script>
 

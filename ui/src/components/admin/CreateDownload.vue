@@ -69,15 +69,16 @@ const download = ref<Download>({
   title: "",
 });
 
-const onOk = (): void => {
+const onOk = async (): Promise<void> => {
   const apiService = new ApiService();
-  apiService.editDownload(download.value);
-  emitter.emit("downloadCreated");
-
-  closeModalById("create-download");
-
-  // Reset form
-  download.value = { id: 0, title: "" };
+  try {
+    await apiService.editDownload(download.value);
+    emitter.emit("downloadCreated");
+    closeModalById("create-download");
+    download.value = { id: 0, title: "" };
+  } catch (error) {
+    console.error("Failed to create download:", error);
+  }
 };
 </script>
 

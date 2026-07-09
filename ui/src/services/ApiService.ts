@@ -57,28 +57,28 @@ class ApiService {
     });
   }
 
-  public updateFullUserInfo(u: FullUserInfo): void {
-    axios.put<FullUserInfo>("/api/v2/auth/userinfo/", u);
+  public async updateFullUserInfo(u: FullUserInfo): Promise<void> {
+    await axios.put<FullUserInfo>("/api/v2/auth/userinfo/", u);
   }
 
   public async createPost(p: EditablePost): Promise<void> {
     await axios.post("/api/v2/admin/post", p);
   }
 
-  public editPost(p: EditablePost): void {
-    axios.put<EditablePost>("/api/v2/admin/post", p);
+  public async editPost(p: EditablePost): Promise<void> {
+    await axios.put<EditablePost>("/api/v2/admin/post", p);
   }
 
-  public deletePost(id: number): void {
-    axios.delete(`/api/v2/admin/post/${id}`);
+  public async deletePost(id: number): Promise<void> {
+    await axios.delete(`/api/v2/admin/post/${id}`);
   }
 
-  public editDownload(d: Download): void {
-    axios.put<Download>("/api/v2/admin/download/", d);
+  public async editDownload(d: Download): Promise<void> {
+    await axios.put<Download>("/api/v2/admin/download/", d);
   }
 
-  public deleteDownload(id: number): void {
-    axios.delete(`/api/v2/admin/download/${id}`);
+  public async deleteDownload(id: number): Promise<void> {
+    await axios.delete(`/api/v2/admin/download/${id}`);
   }
 
   public async getDownloads<T>(q?: Query): Promise<ApiResult<T>> {
