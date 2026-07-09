@@ -1,29 +1,25 @@
 import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router'
-import DashboardView from '../views/admin/DashboardView.vue'
-import PostsView from '../views/admin/PostsView.vue'
-import DownloadsView from '../views/admin/DownloadsView.vue'
-import UsersView from '../views/admin/UsersView.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
     name: 'Дашборд',
-    component: DashboardView,
+    component: () => import('../views/admin/DashboardView.vue'),
   },
   {
     path: '/posts/:page?',
     name: 'Блог',
-    component: PostsView,
+    component: () => import('../views/admin/PostsView.vue'),
   },
   {
     path: '/downloads/:page?',
     name: 'Загрузки',
-    component: DownloadsView,
+    component: () => import('../views/admin/DownloadsView.vue'),
   },
   {
     path: '/users',
     name: 'Пользователи',
-    component: UsersView,
+    component: () => import('../views/admin/UsersView.vue'),
   },
 ]
 
