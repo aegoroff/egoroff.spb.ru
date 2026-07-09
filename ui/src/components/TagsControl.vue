@@ -37,6 +37,7 @@ const tagsClasses: Record<number, string> = {
   6: 'tagRank4',
   7: 'tagRank3',
   8: 'tagRank2',
+  9: 'tagRank1',
   10: 'tagRank1'
 }
 
