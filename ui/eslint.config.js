@@ -1,9 +1,9 @@
-import js from "@eslint/js";
-import globals from "globals";
-import tseslint from "typescript-eslint";
-import pluginVue from "eslint-plugin-vue";
+const js = require("@eslint/js");
+const globals = require("globals");
+const tseslint = require("typescript-eslint");
+const pluginVue = require("eslint-plugin-vue");
 
-export default [
+module.exports = [
   {
     files: ["**/*.{js,mjs,cjs,ts,mts,cts,vue}"],
     ...js.configs.recommended,

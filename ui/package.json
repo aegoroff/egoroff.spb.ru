@@ -8,7 +8,7 @@
     "typecheck:vue": "node scripts/vue-tsc-ts6.cjs --noEmit",
     "build": "bun run typecheck && vite build && bun scripts/inject-askama-assets.ts",
     "devbuild": "vite build --mode development && bun scripts/inject-askama-assets.ts",
-    "lint": "node --require ./scripts/eslint-ts6-alias.cjs ./node_modules/eslint/bin/eslint.js --config eslint.config.mts src/"
+    "lint": "node --require ./scripts/eslint-ts6-alias.cjs ./node_modules/eslint/bin/eslint.js src/"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.3.0",
@@ -44,7 +44,6 @@
     "eslint-plugin-standard": "^5.0.0",
     "eslint-plugin-vue": "^10.9.2",
     "globals": "^17.7.0",
-    "jiti": "^2.7.0",
     "sass": "^1.101.0",
     "typescript": "~7.0.2",
     "typescript-eslint": "^8.63.0",
