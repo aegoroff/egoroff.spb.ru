@@ -22,7 +22,6 @@ export default defineConfig(({ mode }) => ({
   define: {
     'process.env.NODE_ENV': JSON.stringify(mode),
     'process.env': JSON.stringify({ NODE_ENV: mode }),
-    'import.meta': '{}',
   },
   build: {
     outDir: resolve(uiRoot, '../static/dist'),
@@ -35,18 +34,10 @@ export default defineConfig(({ mode }) => ({
       input: {
         main: resolve(uiRoot, 'build.html'),
       },
-      transform: {
-        define: {
-          'import.meta': '{}',
-        },
-      },
       output: {
-        banner: `var process={env:{NODE_ENV:${JSON.stringify(mode)}}};`,
         entryFileNames: 'js/[name]-[hash].js',
         chunkFileNames: 'js/[name]-[hash].js',
         assetFileNames: 'css/main-[hash][extname]',
-        format: 'iife',
-        name: 'EgoroffUI',
       },
     },
   },

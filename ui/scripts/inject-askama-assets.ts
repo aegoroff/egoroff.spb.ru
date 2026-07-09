@@ -54,7 +54,7 @@ function buildStyles(files: string[]): string {
 }
 
 function buildScript(file: string): string {
-  return `<script defer src="/${file}"></script>`
+  return `<script type="module" src="/${file}"></script>`
 }
 
 function replaceMarker(html: string, marker: string, injection: string): string {
