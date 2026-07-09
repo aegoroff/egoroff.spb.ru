@@ -19,6 +19,8 @@ import {
   faSignOutAlt,
   faTools,
   faTrashAlt,
+  faUsers,
+  faArrowRight,
 } from "@fortawesome/free-solid-svg-icons";
 import {
   faGoogle,
@@ -57,7 +59,9 @@ library.add(
   faSignInAlt,
   faSignOutAlt,
   faTools,
-  faTrashAlt
+  faTrashAlt,
+  faUsers,
+  faArrowRight
 );
 library.add(faGoogle, faGithub, faVk, faYandex);
 

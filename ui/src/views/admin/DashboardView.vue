@@ -12,11 +12,11 @@
                 <h2 class="mb-0">{{ stats.posts_count }}</h2>
               </div>
               <div class="display-4">
-                <i class="bi bi-journal-text"></i>
+                <font-awesome-icon icon="book" />
               </div>
             </div>
             <router-link to="/posts" class="text-white text-decoration-none mt-3 d-inline-block">
-              <i class="bi bi-arrow-right"></i> Перейти к постам
+              <font-awesome-icon icon="arrow-right" /> Перейти к постам
             </router-link>
           </div>
         </div>
@@ -31,11 +31,11 @@
                 <h2 class="mb-0">{{ stats.downloads_count }}</h2>
               </div>
               <div class="display-4">
-                <i class="bi bi-download"></i>
+                <font-awesome-icon icon="download" />
               </div>
             </div>
             <router-link to="/downloads" class="text-white text-decoration-none mt-3 d-inline-block">
-              <i class="bi bi-arrow-right"></i> Перейти к загрузкам
+              <font-awesome-icon icon="arrow-right" /> Перейти к загрузкам
             </router-link>
           </div>
         </div>
@@ -50,11 +50,11 @@
                 <h2 class="mb-0">{{ stats.users_count }}</h2>
               </div>
               <div class="display-4">
-                <i class="bi bi-people"></i>
+                <font-awesome-icon icon="users" />
               </div>
             </div>
             <router-link to="/users" class="text-white text-decoration-none mt-3 d-inline-block">
-              <i class="bi bi-arrow-right"></i> Перейти к пользователям
+              <font-awesome-icon icon="arrow-right" /> Перейти к пользователям
             </router-link>
           </div>
         </div>
