@@ -1,43 +1,18 @@
-$font-family-sans-serif: "Open Sans", Verdana, "Helvetica Neue", Helvetica,
-  Arial, sans-serif;
-$font-family-serif: "Noto Serif", Georgia, "Times New Roman", Times, serif;
-$font-family-base: $font-family-serif;
-$headings-font-family: $font-family-sans-serif;
-$breadcrumb-divider: "→";
+@use "sass:math";
 
-// Only necessary Bootstrap parts
-@import "~bootstrap/scss/functions";
-@import "~bootstrap/scss/variables";
-@import "~bootstrap/scss/maps";
-@import "~bootstrap/scss/mixins";
+$spacer: 1rem;
+$footer-height: $spacer;
 
-// Enable/disable components options
-$enable-negative-margins: true;
-
-@import "~bootstrap/scss/root";
-@import "~bootstrap/scss/reboot";
-@import "~bootstrap/scss/type";
-@import "~bootstrap/scss/images";
-@import "~bootstrap/scss/containers";
-@import "~bootstrap/scss/grid";
-@import "~bootstrap/scss/tables";
-@import "~bootstrap/scss/forms";
-@import "~bootstrap/scss/buttons";
-@import "~bootstrap/scss/transitions";
-@import "~bootstrap/scss/dropdown";
-@import "~bootstrap/scss/button-group";
-@import "~bootstrap/scss/nav";
-@import "~bootstrap/scss/navbar";
-@import "~bootstrap/scss/card";
-@import "~bootstrap/scss/badge";
-@import "~bootstrap/scss/list-group";
-@import "~bootstrap/scss/modal";
-@import "~bootstrap/scss/close";
-@import "~bootstrap/scss/helpers";
-@import "~bootstrap/scss/utilities";
-@import "@marcoschulte/vue3-progress/style";
-
-$footer-height: ($spacer);
+:root {
+  --bs-font-sans-serif: "Open Sans", Verdana, "Helvetica Neue", Helvetica, Arial,
+    sans-serif;
+  --bs-font-serif: "Noto Serif", Georgia, "Times New Roman", Times, serif;
+  --bs-body-font-family: var(--bs-font-serif);
+  --bs-heading-font-family: var(--bs-font-sans-serif);
+  --bs-breadcrumb-divider: "→";
+  --vue3-progress-bar-height: 4px;
+  --vue3-progress-bar-color: #32a6db;
+}
 
 body {
   > .container {
@@ -55,10 +30,10 @@ body {
 
 a {
   text-decoration: none;
-}
 
-a:hover {
-  text-decoration: underline;
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 .card {
@@ -67,8 +42,8 @@ a:hover {
 
 .shortDate {
   font-weight: bold;
-  font-family: $headings-font-family;
-  color: $gray-500;
+  font-family: var(--bs-heading-font-family);
+  color: var(--bs-gray-500);
 }
 
 .img-error {
@@ -81,7 +56,7 @@ a:hover {
 .navbar,
 .breadcrumb,
 .text-muted {
-  font-family: $font-family-sans-serif;
+  font-family: var(--bs-font-sans-serif);
 }
 
 html {
@@ -96,7 +71,7 @@ html {
   width: 100%;
   height: $footer-height;
   border-top: 1px solid #ddd;
-  color: $text-muted;
+  color: var(--bs-secondary-color);
   background-color: #f5f5f5;
   text-align: center;
 
@@ -116,10 +91,8 @@ html {
   text-overflow: ellipsis;
 }
 
-td {
-  &.ellipsis {
-    max-width: 0;
-  }
+td.ellipsis {
+  max-width: 0;
 }
 
 h1,
@@ -134,13 +107,13 @@ h6,
 .h4,
 .h5,
 .h6 {
+  font-family: var(--bs-font-sans-serif);
+
   small,
   .small {
-    color: $gray-500;
+    color: var(--bs-gray-500);
   }
 }
-
-// Signin
 
 $btn-padding-y: 0.5rem;
 $btn-padding-y-lg: 0.75rem;
@@ -153,10 +126,10 @@ $padding-base-horizontal: $btn-padding-y;
 $padding-large-horizontal: $btn-padding-y-lg;
 $padding-small-horizontal: $btn-padding-y-sm;
 
-$bs-height-base: floor($btn-line-height + $btn-padding-x * 2);
-$bs-height-lg: floor($btn-line-height + $btn-padding-x-lg * 2);
-$bs-height-sm: floor($btn-line-height + $btn-padding-x-sm * 2);
-$bs-height-xs: floor($btn-line-height + $btn-padding-x-sm * 2);
+$bs-height-base: math.floor($btn-line-height + $btn-padding-x * 2);
+$bs-height-lg: math.floor($btn-line-height + $btn-padding-x-lg * 2);
+$bs-height-sm: math.floor($btn-line-height + $btn-padding-x-sm * 2);
+$bs-height-xs: math.floor($btn-line-height + $btn-padding-x-sm * 2);
 
 .btn-social {
   position: relative;
@@ -165,7 +138,6 @@ $bs-height-xs: floor($btn-line-height + $btn-padding-x-sm * 2);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-
   display: flex;
   gap: 0.5rem;
 
@@ -175,19 +147,23 @@ $bs-height-xs: floor($btn-line-height + $btn-padding-x-sm * 2);
     top: 0;
     bottom: 0;
     width: $bs-height-base;
-    line-height: $bs-height-base + 2;
-    font-size: 1.6em;
+    line-height: $btn-line-height !important;
+    padding-top: $btn-padding-y !important;
+    padding-bottom: $btn-padding-y !important;
+    font-size: inherit !important;
     text-align: center;
-    border-right: 1px solid rgba(0, 0, 0, 0.2);
+    border-right: 1px solid rgb(0 0 0 / 20%);
   }
 
   &.btn-lg {
     padding-left: $bs-height-lg + $padding-large-horizontal;
 
     > :first-child {
-      line-height: $bs-height-lg;
+      line-height: $btn-line-height !important;
+      padding-top: $btn-padding-y-lg !important;
+      padding-bottom: $btn-padding-y-lg !important;
+      font-size: inherit !important;
       width: $bs-height-lg;
-      font-size: 1.8em;
     }
   }
 
@@ -195,9 +171,11 @@ $bs-height-xs: floor($btn-line-height + $btn-padding-x-sm * 2);
     padding-left: $bs-height-sm + $padding-small-horizontal;
 
     > :first-child {
-      line-height: $bs-height-sm;
+      line-height: $btn-line-height !important;
+      padding-top: $btn-padding-y-sm !important;
+      padding-bottom: $btn-padding-y-sm !important;
+      font-size: inherit !important;
       width: $bs-height-sm;
-      font-size: 1.4em;
     }
   }
 
@@ -205,27 +183,11 @@ $bs-height-xs: floor($btn-line-height + $btn-padding-x-sm * 2);
     padding-left: $bs-height-xs + $padding-small-horizontal;
 
     > :first-child {
-      line-height: $bs-height-xs;
-      width: $bs-height-xs;
-      font-size: 1.2em;
-    }
-  }
-}
-
-.btn-social {
-  > :first-child {
-    line-height: $btn-line-height !important;
-    padding-top: $btn-padding-y !important;
-    padding-bottom: $btn-padding-y !important;
-    font-size: inherit !important;
-  }
-
-  &.btn-lg {
-    > :first-child {
       line-height: $btn-line-height !important;
-      padding-top: $btn-padding-y-lg !important;
-      padding-bottom: $btn-padding-y-lg !important;
+      padding-top: $btn-padding-y-sm !important;
+      padding-bottom: $btn-padding-y-sm !important;
       font-size: inherit !important;
+      width: $bs-height-xs;
     }
   }
 }
@@ -267,38 +229,21 @@ $bs-height-xs: floor($btn-line-height + $btn-padding-x-sm * 2);
 
 .btn-google {
   background-color: #dd4b39;
+  border-color: #dd4b39;
   color: white;
 }
+
 .btn-github {
   background-color: #333;
+  border-color: #333;
   color: white;
-}
-.btn-yandex {
-  background-color: #f00;
-  color: white;
-}
-
-@mixin btn-social($color-bg, $color: null) {
-  @if $color {
-    color: $color;
-  }
-
-  @include button-variant($color-bg, $color-bg);
-}
-
-.btn-google {
-  @include btn-social(#dd4b39);
 }
 
 .btn-yandex {
-  @include btn-social(#dd4b39);
+  background-color: #f00;
+  border-color: #f00;
+  color: white;
 }
-
-.btn-github {
-  @include btn-social(#444444);
-}
-
-// Apache
 
 pre.code,
 code {
@@ -318,30 +263,30 @@ pre.code {
   border: none;
 }
 
-/* Tables */
-
 div.table,
 div.breadcrumbs,
 div.bottomMenuContainer,
-div.directive {
-  height: 0;
-}
-
+div.directive,
 div.tr {
   height: 0;
 }
 
-/* не для IE */
+div.table[class],
+div.breadcrumbs[class],
+div.bottomMenuContainer[class],
+div.directive[class],
+div.tr[class] {
+  height: auto;
+}
+
 div.table[class],
 div.breadcrumbs[class],
 div.bottomMenuContainer[class],
 div.directive[class] {
-  height: auto;
   display: table;
 }
 
 div.tr[class] {
-  height: auto;
   display: table-row;
 }
 
@@ -410,19 +355,11 @@ div.warning {
   border: 1px solid #f00;
 }
 
-/* example inside table */
-table {
-  div.example {
-    margin-right: 1em;
-  }
+table div.example {
+  margin-right: 1em;
 }
 
 .breadcrumb {
   --bs-breadcrumb-bg: #e9ecef;
   padding: 0.75rem 1rem;
-}
-
-:root {
-  --vue3-progress-bar-height: 4px;
-  --vue3-progress-bar-color: #32a6db;
 }

@@ -14,7 +14,7 @@
     {% block meta %}
     {% endblock %}
 
-    <link href="<%= BASE_URL %>favicon.ico" rel="icon"/>
+    <link href="/favicon.ico" rel="icon"/>
     <link href="https://www.egoroff.spb.ru/auth" rel="authorization_endpoint"/>
     <link href="https://www.egoroff.spb.ru/token" rel="token_endpoint"/>
     <link href="https://www.egoroff.spb.ru/micropub/" rel="micropub"/>
@@ -32,19 +32,20 @@
           rel="alternate"
           title="Recent Posts"
           type="application/atom+xml"/>
+    <!-- built styles will be auto injected -->
 </head>
 <body>
 <noscript>
-    <strong>We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work properly without JavaScript enabled.
+    <strong>We're sorry but this site doesn't work properly without JavaScript enabled.
         Please enable it to continue.</strong>
 </noscript>
 <div id="app" datafld="{{title}}"></div>
-<!-- built files will be auto injected -->
 {% block content %}{% endblock %}
 <footer class="footer bg-light" role="contentinfo">
     <div class="container text-center">
         <p class="text-muted mb-0">&copy; 2002-{{ year }} - Александр Егоров</p>
     </div>
 </footer>
+    <!-- built scripts will be auto injected -->
 </body>
 </html>
