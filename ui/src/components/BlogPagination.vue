@@ -23,7 +23,7 @@
 </template>
 
 <script setup lang="ts">
-import { emitter } from '@/main'
+import { emitter } from '@/events'
 
 const props = defineProps<{
   pages: number

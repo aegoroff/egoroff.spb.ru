@@ -32,7 +32,7 @@
 
 <script setup lang="ts">
 import ApiService from "@/services/ApiService";
-import { emitter } from "@/main";
+import { emitter } from "@/events";
 import { closeModalById } from "@/util";
 
 const props = defineProps<{

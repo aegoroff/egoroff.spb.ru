@@ -143,7 +143,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import ApiService from "@/services/ApiService";
-import { emitter } from "@/main";
+import { emitter } from "@/events";
 import { EditablePost } from "@/models/blog";
 import { closeModalById } from "@/util";
 

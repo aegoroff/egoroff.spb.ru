@@ -44,7 +44,7 @@ import AlertWindow from "@/components/AlertWindow.vue";
 import { createAdminRouter } from "@/router";
 import DownloadsList from "@/components/DownloadsList.vue";
 import { remountBlogFilterFromHash } from "@/blogMount";
-import mitt from "mitt";
+import { emitter } from "@/events";
 
 import "highlight.js/lib/common";
 import CodeHighlighter from "@/components/CodeHighlighter.vue";
@@ -65,18 +65,6 @@ library.add(
   faArrowRight
 );
 library.add(faGoogle, faGithub, faVk, faYandex);
-
-export type Events = {
-  pageChanged: number;
-  dateSelectionChanged: void;
-  postDeleted: void;
-  postCreated: void;
-  postUpdated: void;
-  downloadCreated: void;
-  downloadDeleted: void;
-  tagChanged: string;
-};
-export const emitter = mitt<Events>();
 
 const appElement = document.getElementById("app");
 if (appElement) {

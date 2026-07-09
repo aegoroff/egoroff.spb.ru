@@ -55,11 +55,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import ApiService from '@/services/ApiService'
 import AppIcon from '@/components/AppIcon.vue'
-import { emitter } from '@/main'
+import { emitter } from '@/events'
 import EditDownload from '@/components/admin/EditDownload.vue'
 import { Download } from '@/models/portfolio'
 import DeleteDownload from '@/components/admin/DeleteDownload.vue'
@@ -109,17 +109,21 @@ const onSelect = (d: Download): void => {
   selectedDownloadId.value = d.id
 }
 
+const refreshDownloads = (): void => {
+  update(page.value)
+}
+
 onMounted(() => {
   const routePage = parseInt(route.params.page as string) || 1
   update(routePage)
 
-  emitter.on('downloadDeleted', () => {
-    update(page.value)
-  })
+  emitter.on('downloadDeleted', refreshDownloads)
+  emitter.on('downloadCreated', refreshDownloads)
+})
 
-  emitter.on('downloadCreated', () => {
-    update(page.value)
-  })
+onUnmounted(() => {
+  emitter.off('downloadDeleted', refreshDownloads)
+  emitter.off('downloadCreated', refreshDownloads)
 })
 
 // Watch route changes

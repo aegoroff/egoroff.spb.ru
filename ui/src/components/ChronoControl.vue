@@ -50,8 +50,8 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { emitter } from '@/main'
+import { onMounted, onUnmounted } from 'vue'
+import { emitter } from '@/events'
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 dayjs.locale('ru');
@@ -121,26 +121,32 @@ const updateYearMonth = (year: number, month: number, page: number) => {
   )
 }
 
+const onPageChanged = (page: number): void => {
+  const parts = window.location.hash.substring(1).split('&')
+
+  let y = 0
+  let m = 0
+
+  for (const part of parts) {
+    const [key, value] = part.split('=')
+    if (key === 'year') y = Number(value)
+    if (key === 'month') m = Number(value)
+  }
+
+  if (!y) return
+
+  if (!m) {
+    updateYear(y, page)
+  } else {
+    updateYearMonth(y, m, page)
+  }
+}
+
 onMounted(() => {
-  emitter.on('pageChanged', (page: number) => {
-    const parts = window.location.hash.substring(1).split('&')
+  emitter.on('pageChanged', onPageChanged)
+})
 
-    let y = 0
-    let m = 0
-
-    for (const part of parts) {
-      const [key, value] = part.split('=')
-      if (key === 'year') y = Number(value)
-      if (key === 'month') m = Number(value)
-    }
-
-    if (!y) return
-
-    if (!m) {
-      updateYear(y, page)
-    } else {
-      updateYearMonth(y, m, page)
-    }
-  })
+onUnmounted(() => {
+  emitter.off('pageChanged', onPageChanged)
 })
 </script>

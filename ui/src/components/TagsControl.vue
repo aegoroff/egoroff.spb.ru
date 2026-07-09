@@ -13,8 +13,8 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { emitter } from '@/main'
+import { onMounted, onUnmounted } from 'vue'
+import { emitter } from '@/events'
 import { remountBlogFilter } from '@/blogMount'
 import { Tag } from '@/models/blog'
 
@@ -63,22 +63,30 @@ const update = (tag: string, page: number): void => {
   remountBlogFilter(`tag=${tag}&page=${page}`, `все посты по метке: ${tag}`)
 }
 
-onMounted(() => {
-  emitter.on('pageChanged', (page: number) => {
-    const parts = window.location.hash.substring(1).split('&')
+const onPageChanged = (page: number): void => {
+  const parts = window.location.hash.substring(1).split('&')
 
-    for (const part of parts) {
-      const [key, value] = part.split('=')
-      if (key === 'tag') {
-        update(value, page)
-        return
-      }
+  for (const part of parts) {
+    const [key, value] = part.split('=')
+    if (key === 'tag') {
+      update(value, page)
+      return
     }
-  })
+  }
+}
 
-  emitter.on('dateSelectionChanged', () => {
-    emit('update:currentTag', '')
-  })
+const onDateSelectionChanged = (): void => {
+  emit('update:currentTag', '')
+}
+
+onMounted(() => {
+  emitter.on('pageChanged', onPageChanged)
+  emitter.on('dateSelectionChanged', onDateSelectionChanged)
+})
+
+onUnmounted(() => {
+  emitter.off('pageChanged', onPageChanged)
+  emitter.off('dateSelectionChanged', onDateSelectionChanged)
 })
 </script>
 
