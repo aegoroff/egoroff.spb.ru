@@ -1,7 +1,6 @@
 <template>
-  <div id="blogPager" v-if="pages > 1">
-    <nav aria-label="Page navigation">
-      <ul class="pagination justify-content-center mb-0">
+  <nav v-if="pages > 1" aria-label="Page navigation">
+    <ul class="pagination justify-content-center mb-0">
         <li :class="['page-item', { disabled: page === 1 }]">
           <a class="page-link" href="#" @click.prevent="goToPage(page - 1)">&larr; новее</a>
         </li>
@@ -19,7 +18,6 @@
         </li>
       </ul>
     </nav>
-  </div>
 </template>
 
 <script setup lang="ts">

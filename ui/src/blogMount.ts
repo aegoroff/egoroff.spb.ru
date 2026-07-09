@@ -27,9 +27,30 @@ function blogFilterTitle(query: string): string {
   return 'тут я пишу'
 }
 
+function prepareBlogPager(): void {
+  let pager = document.getElementById('blogPager')
+  if (!pager) {
+    const container = document.getElementById('blogcontainer')
+    if (!container) {
+      return
+    }
+    pager = document.createElement('div')
+    pager.id = 'blogPager'
+    container.insertAdjacentElement('afterend', pager)
+    return
+  }
+  if (pager.tagName === 'UL') {
+    const div = document.createElement('div')
+    div.id = 'blogPager'
+    pager.replaceWith(div)
+  }
+}
+
 export function remountBlogFilter(query: string, title: string): void {
   blogAnnouncesApp?.unmount()
   blogTitleApp?.unmount()
+
+  prepareBlogPager()
 
   blogAnnouncesApp = createApp(BlogAnnounces, { q: query })
   blogAnnouncesApp.mount('#blogcontainer')
