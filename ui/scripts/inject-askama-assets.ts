@@ -9,10 +9,10 @@ const manifestPath = resolve(outDir, '.vite/manifest.json')
 const stylesMarker = '<!-- built styles will be auto injected -->'
 const scriptsMarker = '<!-- built scripts will be auto injected -->'
 const legacyMarker = '<!-- built files will be auto injected -->'
-const injectedStylesPattern =
-  /\n?\s*<link rel="stylesheet" href="\/css\/[^"]+">/g
-const injectedScriptsPattern =
-  /\n?\s*<script(?: defer)?(?: type="module")? src="\/js\/[^"]+"><\/script>/g
+const injectedStyleLine =
+  /^\s*<link rel="stylesheet" href="\/css\/[^"]+">\s*$/
+const injectedScriptLine =
+  /^\s*<script(?: defer)?(?: type="module")? src="\/js\/[^"]+"><\/script>\s*$/
 const legacyInjectionPattern =
   /<link rel="stylesheet" href="\/css\/[^"]+">\s*\n\s*<script(?: defer)?(?: type="module")? src="\/js\/[^"]+"><\/script>/g
 
@@ -81,11 +81,21 @@ function replaceUntilStable(
   }
 }
 
+function removeInjectedAssetLines(html: string): string {
+  return html
+    .split('\n')
+    .filter((line) => !injectedStyleLine.test(line) && !injectedScriptLine.test(line))
+    .join('\n')
+}
+
 function stripLegacyInjection(html: string): string {
-  let updated = replaceUntilStable(html, legacyInjectionPattern, legacyMarker)
-  updated = replaceUntilStable(updated, injectedStylesPattern, '')
-  updated = replaceUntilStable(updated, injectedScriptsPattern, '')
-  return updated
+  const withoutLegacyPair = replaceUntilStable(
+    html,
+    legacyInjectionPattern,
+    legacyMarker,
+  )
+
+  return removeInjectedAssetLines(withoutLegacyPair)
 }
 
 function injectAssets(html: string, styles: string, script: string): string {
