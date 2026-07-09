@@ -51,14 +51,12 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { createApp } from 'vue'
 import { emitter } from '@/main'
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 dayjs.locale('ru');
 
-import BlogAnnounces from '@/components/BlogAnnounces.vue'
-import BlogTitle from '@/components/BlogTitle.vue'
+import { remountBlogFilter } from '@/blogMount'
 import { Year } from '@/models/blog'
 
 defineProps<{
@@ -98,13 +96,7 @@ const updateYear = (year: number, page: number) => {
 
   emitter.emit('dateSelectionChanged')
 
-  createApp(BlogAnnounces, {
-    q: `year=${year}&page=${page}`
-  }).mount('#blogcontainer')
-
-  createApp(BlogTitle, {
-    text: `записи за ${year} год`
-  }).mount('#blogSmallTitle')
+  remountBlogFilter(`year=${year}&page=${page}`, `записи за ${year} год`)
 }
 
 const updateYearMonth = (year: number, month: number, page: number) => {
@@ -122,15 +114,11 @@ const updateYearMonth = (year: number, month: number, page: number) => {
 
   emitter.emit('dateSelectionChanged')
 
-  createApp(BlogAnnounces, {
-    q: `year=${year}&month=${month}&page=${page}`
-  }).mount('#blogcontainer')
-
   const m = dayjs(new Date(year, month - 1, 1))
-
-  createApp(BlogTitle, {
-    text: `записи за ${m.format('MMMM YYYY')}`
-  }).mount('#blogSmallTitle')
+  remountBlogFilter(
+    `year=${year}&month=${month}&page=${page}`,
+    `записи за ${m.format('MMMM YYYY')}`
+  )
 }
 
 onMounted(() => {

@@ -43,6 +43,7 @@ import SocialButtons from "@/components/SocialButtons.vue";
 import AlertWindow from "@/components/AlertWindow.vue";
 import { createAdminRouter } from "@/router";
 import DownloadsList from "@/components/DownloadsList.vue";
+import { remountBlogFilterFromHash } from "@/blogMount";
 import mitt from "mitt";
 
 import "highlight.js/lib/common";
@@ -110,19 +111,7 @@ if (blogNav) {
 
 const blogContainer = document.getElementById("blogcontainer");
 if (blogContainer && window.location.hash) {
-  const hash = window.location.hash.substring(1);
-  const vueApp = createApp(BlogAnnounces, { q: hash });
-  vueApp.component("DateFormatter", DateFormatter);
-  vueApp.mount(blogContainer);
-
-  const blogTitle = document.getElementById("blogSmallTitle");
-  if (blogTitle) {
-    const e = hash.split("=");
-    const titleText = `все посты по метке: ${e[1]}`;
-
-    const vueApp2 = createApp(BlogTitle, { text: titleText });
-    vueApp2.mount(blogTitle);
-  }
+  remountBlogFilterFromHash(window.location.hash.substring(1));
 }
 
 const portfolioDownloads = document.getElementById("portfolioDownloads");

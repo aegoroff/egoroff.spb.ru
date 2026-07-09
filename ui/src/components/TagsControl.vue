@@ -14,10 +14,8 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { createApp } from 'vue'
-import BlogAnnounces from '@/components/BlogAnnounces.vue'
-import BlogTitle from '@/components/BlogTitle.vue'
 import { emitter } from '@/main'
+import { remountBlogFilter } from '@/blogMount'
 import { Tag } from '@/models/blog'
 
 defineProps<{
@@ -62,13 +60,7 @@ const update = (tag: string, page: number): void => {
   emitter.emit('tagChanged', tag)
   emit('update:currentTag', tag)
 
-  createApp(BlogAnnounces, {
-    q: `tag=${tag}&page=${page}`
-  }).mount('#blogcontainer')
-
-  createApp(BlogTitle, {
-    text: `все посты по метке: ${tag}`
-  }).mount('#blogSmallTitle')
+  remountBlogFilter(`tag=${tag}&page=${page}`, `все посты по метке: ${tag}`)
 }
 
 onMounted(() => {
