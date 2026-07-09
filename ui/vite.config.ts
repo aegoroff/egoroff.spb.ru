@@ -5,13 +5,6 @@ import { defineConfig } from 'vite'
 
 const uiRoot = fileURLToPath(new URL('.', import.meta.url))
 
-const scssDeprecationSilence = [
-  'import',
-  'global-builtin',
-  'color-functions',
-  'if-function',
-] as const
-
 export default defineConfig(({ mode }) => ({
   plugins: [vue()],
   resolve: {
@@ -23,12 +16,6 @@ export default defineConfig(({ mode }) => ({
     preprocessorOptions: {
       scss: {
         api: 'modern-compiler',
-        quietDeps: true,
-        silenceDeprecations: [...scssDeprecationSilence],
-      },
-      sass: {
-        quietDeps: true,
-        silenceDeprecations: [...scssDeprecationSilence],
       },
     },
   },

@@ -1,4 +1,6 @@
-import "./App.scss";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "@marcoschulte/vue3-progress/style";
+import "./styles/site.scss";
 import "highlight.js/styles/github.css";
 import { createApp, Component } from "vue";
 import VueSocialSharing from "vue3-social-sharing";
