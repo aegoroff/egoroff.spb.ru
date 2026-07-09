@@ -118,6 +118,8 @@ const updateYearMonth = (year: number, month: number, page: number) => {
   }
   params.delete('tag')
 
+  window.location.hash = params.toString()
+
   emitter.emit('dateSelectionChanged')
 
   createApp(BlogAnnounces, {
