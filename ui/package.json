@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "vite build",
-    "devbuild": "vite build --mode development",
+    "build": "vite build && bun scripts/inject-askama-assets.ts",
+    "devbuild": "vite build --mode development && bun scripts/inject-askama-assets.ts",
     "lint": "eslint --config eslint.config.mts src/"
   },
   "dependencies": {
