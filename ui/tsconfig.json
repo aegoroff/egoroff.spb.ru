@@ -12,6 +12,7 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "noUncheckedSideEffectImports": false,
+    "noEmit": true,
     "sourceMap": true,
     "rootDir": ".",
     "types": [

@@ -3,7 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "vite build && bun scripts/inject-askama-assets.ts",
+    "typecheck": "tsc --noEmit && node scripts/vue-tsc-ts6.cjs --noEmit",
+    "typecheck:ts": "tsc --noEmit",
+    "typecheck:vue": "node scripts/vue-tsc-ts6.cjs --noEmit",
+    "build": "bun run typecheck && vite build && bun scripts/inject-askama-assets.ts",
     "devbuild": "vite build --mode development && bun scripts/inject-askama-assets.ts",
     "lint": "node --require ./scripts/eslint-ts6-alias.cjs ./node_modules/eslint/bin/eslint.js --config eslint.config.mts src/"
   },
