@@ -14,7 +14,7 @@ const injectedStylesPattern =
 const injectedScriptsPattern =
   /\n?\s*<script(?: defer)?(?: type="module")? src="\/js\/[^"]+"><\/script>/g
 const legacyInjectionPattern =
-  /<link rel="stylesheet" href="\/css\/[^"]+">\s*\n\s*<script(?: defer)?(?: type="module")? src="\/js\/[^"]+"><\/script>/
+  /<link rel="stylesheet" href="\/css\/[^"]+">\s*\n\s*<script(?: defer)?(?: type="module")? src="\/js\/[^"]+"><\/script>/g
 
 type ManifestChunk = {
   file?: string
@@ -65,11 +65,27 @@ function replaceMarker(html: string, marker: string, injection: string): string 
   return html
 }
 
+function replaceUntilStable(
+  html: string,
+  pattern: RegExp,
+  replacement: string,
+): string {
+  let updated = html
+
+  for (;;) {
+    const next = updated.replace(pattern, replacement)
+    if (next === updated) {
+      return next
+    }
+    updated = next
+  }
+}
+
 function stripLegacyInjection(html: string): string {
-  return html
-    .replace(legacyInjectionPattern, legacyMarker)
-    .replace(injectedStylesPattern, '')
-    .replace(injectedScriptsPattern, '')
+  let updated = replaceUntilStable(html, legacyInjectionPattern, legacyMarker)
+  updated = replaceUntilStable(updated, injectedStylesPattern, '')
+  updated = replaceUntilStable(updated, injectedScriptsPattern, '')
+  return updated
 }
 
 function injectAssets(html: string, styles: string, script: string): string {
