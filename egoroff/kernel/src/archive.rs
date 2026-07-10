@@ -50,7 +50,7 @@ fn group_to_years(dates: &[DateTime<Utc>]) -> Vec<Year> {
                 .chunk_by(|(_y, m)| *m)
                 .into_iter()
                 .map(|(month, mg)| Month {
-                    month: month as i32,
+                    month: month.cast_signed(),
                     posts: mg.count() as i32,
                 })
                 .fold(Year::new(y), |mut y, m| {

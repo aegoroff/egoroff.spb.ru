@@ -476,10 +476,7 @@ impl MicropubForm {
             .as_deref()
             .and_then(parse_micropub_datetime)
             .unwrap_or(created);
-        let markdown = matches!(
-            self.content_type.as_deref(),
-            None | Some("") | Some("markdown")
-        );
+        let markdown = matches!(self.content_type.as_deref(), None | Some("" | "markdown"));
 
         Post {
             id,
