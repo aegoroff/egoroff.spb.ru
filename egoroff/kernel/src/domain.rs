@@ -131,13 +131,13 @@ impl PostsRequest {
         let year = self.year.unwrap_or(0);
         let month = self.month.unwrap_or(0);
         if year > 0 {
-            let m: u32 = if month > 0 { month as u32 } else { 1 };
+            let m: u32 = if month > 0 { month.cast_unsigned() } else { 1 };
             let from_dt = NaiveDate::from_ymd_opt(year, m, 1)?
                 .and_hms_opt(0, 0, 0)?
                 .and_local_timezone(Utc)
                 .latest()?;
 
-            let m: u32 = if month > 0 { month as u32 } else { 12 };
+            let m: u32 = if month > 0 { month.cast_unsigned() } else { 12 };
             let d = Self::last_day_of_month(year, m)?;
             let to_dt = NaiveDate::from_ymd_opt(year, m, d)?
                 .and_hms_opt(23, 59, 59)?
