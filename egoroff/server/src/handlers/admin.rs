@@ -14,9 +14,9 @@ pub async fn serve() -> impl IntoResponse {
 
 #[derive(Serialize, Default)]
 pub struct DashboardStats {
-    pub posts_count: i32,
-    pub downloads_count: i32,
-    pub users_count: i32,
+    pub posts: i32,
+    pub downloads: i32,
+    pub users: i32,
 }
 
 pub async fn serve_dashboard_api(
@@ -29,8 +29,8 @@ pub async fn serve_dashboard_api(
     let users_count = storage.count_users().unwrap_or(0);
 
     success_response(Json(DashboardStats {
-        posts_count,
-        downloads_count,
-        users_count,
+        posts: posts_count,
+        downloads: downloads_count,
+        users: users_count,
     }))
 }

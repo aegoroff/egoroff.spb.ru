@@ -9,7 +9,7 @@
             <div class="d-flex justify-content-between align-items-center">
               <div>
                 <h6 class="card-title mb-2">Посты в блоге</h6>
-                <h2 class="mb-0">{{ stats.posts_count }}</h2>
+                <h2 class="mb-0">{{ stats.posts }}</h2>
               </div>
               <div class="display-4">
                 <font-awesome-icon icon="book" />
@@ -28,7 +28,7 @@
             <div class="d-flex justify-content-between align-items-center">
               <div>
                 <h6 class="card-title mb-2">Загрузки</h6>
-                <h2 class="mb-0">{{ stats.downloads_count }}</h2>
+                <h2 class="mb-0">{{ stats.downloads }}</h2>
               </div>
               <div class="display-4">
                 <font-awesome-icon icon="download" />
@@ -47,7 +47,7 @@
             <div class="d-flex justify-content-between align-items-center">
               <div>
                 <h6 class="card-title mb-2">Пользователи</h6>
-                <h2 class="mb-0">{{ stats.users_count }}</h2>
+                <h2 class="mb-0">{{ stats.users }}</h2>
               </div>
               <div class="display-4">
                 <font-awesome-icon icon="users" />
