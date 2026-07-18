@@ -1,7 +1,8 @@
-# docker image build --tag egoroff/egoroff .
+# Multi-arch image: linux/amd64 + linux/arm64 via buildx (see docker.sh).
+# UI and Rust compile on BUILDPLATFORM; final stage matches TARGETPLATFORM.
 
 # build UI
-FROM oven/bun:1 AS node-build
+FROM --platform=$BUILDPLATFORM oven/bun:1 AS node-build
 WORKDIR /app
 COPY ui/package.json .
 COPY ui/public/ ./public/
@@ -18,8 +19,8 @@ COPY ui/tsconfig.json ./
 COPY ui/bun.lock ./
 RUN bun run build
 
-# Build service
-FROM rust:alpine AS rust-build
+# --- amd64: native musl build on Alpine ---
+FROM --platform=$BUILDPLATFORM rust:alpine AS rust-build-amd64
 WORKDIR /egoroff
 RUN apk add musl-dev lld openssl-dev ca-certificates curl && update-ca-certificates
 COPY --from=node-build /static /static
@@ -32,7 +33,32 @@ COPY egoroff/egoroff/ ./egoroff/
 COPY egoroff/Cargo.toml ./
 COPY egoroff/Cargo.lock ./
 RUN rustup target add x86_64-unknown-linux-musl && \
-    cargo build -p egoroff --release --target x86_64-unknown-linux-musl --locked
+    cargo build -p egoroff --release --target x86_64-unknown-linux-musl --locked && \
+    mkdir -p /out && \
+    cp target/x86_64-unknown-linux-musl/release/egoroff /out/egoroff
+
+# --- arm64: cross-compile with rust-musl-cross ---
+FROM --platform=$BUILDPLATFORM ghcr.io/rust-cross/rust-musl-cross:aarch64-musl AS rust-build-arm64
+RUN rustup toolchain uninstall stable-x86_64-unknown-linux-gnu && \
+    rustup toolchain install stable-x86_64-unknown-linux-gnu && \
+    rustup update stable && \
+    rustup target add aarch64-unknown-linux-musl
+WORKDIR /egoroff
+COPY --from=node-build /static /static
+COPY apache/ /apache/
+COPY templates/apache/ /templates/apache/
+COPY egoroff/.cargo/ ./.cargo/
+COPY egoroff/kernel/ ./kernel/
+COPY egoroff/server/ ./server/
+COPY egoroff/egoroff/ ./egoroff/
+COPY egoroff/Cargo.toml ./
+COPY egoroff/Cargo.lock ./
+RUN cargo build -p egoroff --release --target aarch64-unknown-linux-musl --locked && \
+    mkdir -p /out && \
+    cp target/aarch64-unknown-linux-musl/release/egoroff /out/egoroff
+
+ARG TARGETARCH
+FROM rust-build-${TARGETARCH} AS rust-build
 
 FROM gcr.io/distroless/static-debian13:latest
 ENV EGOROFF_HTTP_PORT=4200 \
@@ -42,7 +68,7 @@ ENV EGOROFF_HTTP_PORT=4200 \
     EGOROFF_HOME_DIR=/
 COPY --from=rust-build /apache/config.json /apache/
 COPY --from=node-build /static /static
-COPY --from=rust-build /egoroff/target/x86_64-unknown-linux-musl/release/egoroff /usr/local/bin/egoroff
+COPY --from=rust-build /out/egoroff /usr/local/bin/egoroff
 ENTRYPOINT [ "/usr/local/bin/egoroff" ]
 CMD [ "server" ]
 EXPOSE 4200
