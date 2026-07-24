@@ -8,6 +8,7 @@ use crate::domain::{
     Download, Folder, OAuthProvider, Post, PostsRequest, SmallPost, Storage, TagAggregate, User,
 };
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Mode {
     ReadWrite,
     ReadOnly,

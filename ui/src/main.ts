@@ -123,13 +123,9 @@ if (social) {
 
 const search = document.getElementById("siteSearch");
 if (search) {
-  const apiKey = search.getAttribute("property");
-  const cx = search.getAttribute("datafld");
   const urlParams = new URLSearchParams(window.location.search);
   const q = urlParams.get("q");
   const vueApp = createApp(SearchView, {
-    apiKey: apiKey || "",
-    cx: cx || "",
     query: q || "",
   });
   vueApp.mount(search);

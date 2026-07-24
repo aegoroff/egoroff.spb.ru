@@ -54,6 +54,7 @@ pub mod blog;
 pub mod indie;
 pub mod micropub;
 pub mod portfolio;
+pub mod search;
 mod template;
 
 #[derive(RustEmbed)]
@@ -86,7 +87,7 @@ struct Apache;
 
 pub async fn serve_index(State(page_context): State<Arc<PageContext<'_>>>) -> impl IntoResponse {
     let storage = page_context.storage.lock().await;
-    let result = archive::get_small_posts(storage, 5, None);
+    let result = archive::get_small_posts(&storage, 5, None);
 
     let blog_posts = match result {
         Ok(r) => r,
@@ -131,7 +132,6 @@ pub async fn serve_search(State(page_context): State<Arc<PageContext<'_>>>) -> i
             keywords: get_keywords(section),
             meta_description: &section.descr,
             flashed_messages: vec![],
-            config: &page_context.site_config,
             year: get_year(),
         }
         .into_response()

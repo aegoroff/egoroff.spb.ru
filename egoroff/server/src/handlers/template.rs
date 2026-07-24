@@ -3,7 +3,7 @@ use axum::http::{self, StatusCode};
 use axum::response::{IntoResponse, Response};
 use kernel::domain::{Post, SmallPost};
 
-use crate::domain::{Apache, BlogRequest, Config, Error, Message, Poster};
+use crate::domain::{Apache, BlogRequest, Error, Message, Poster};
 
 fn text_html_respose<T: Template>(t: T) -> Response {
     match t.render() {
@@ -28,7 +28,7 @@ fn text_html_respose<T: Template>(t: T) -> Response {
                 (
                     http::header::CONTENT_SECURITY_POLICY,
                     http::HeaderValue::from_static(
-                        "default-src 'none'; script-src 'self'; frame-ancestors 'self'; connect-src 'self' www.googleapis.com; img-src 'self' data: *.ggpht.com avatars.githubusercontent.com *.googleusercontent.com i.imgur.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.googleapis.com fonts.gstatic.com;",
+                        "default-src 'none'; script-src 'self'; frame-ancestors 'self'; connect-src 'self'; img-src 'self' data: *.ggpht.com avatars.githubusercontent.com *.googleusercontent.com i.imgur.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.googleapis.com fonts.gstatic.com;",
                     ),
                 ),
                 (
@@ -91,7 +91,6 @@ pub struct Search<'a> {
     pub keywords: &'a str,
     pub meta_description: &'a str,
     pub flashed_messages: Vec<Message>,
-    pub config: &'a Config,
     pub year: u32,
 }
 

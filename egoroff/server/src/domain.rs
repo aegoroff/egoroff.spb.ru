@@ -49,9 +49,9 @@ pub struct Navigation {
 /// Represents the application's configuration data.
 #[derive(Serialize, Deserialize, Default)]
 pub struct Config {
-    /// The search API key.
+    /// Google Custom Search API key (server-only; never expose to HTML/JS).
     pub search_api_key: String,
-    /// The Google Site ID.
+    /// Google Custom Search Engine ID (`cx`, server-only).
     pub google_site_id: String,
     /// The analytics ID.
     pub analytics_id: String,

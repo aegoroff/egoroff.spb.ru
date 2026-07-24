@@ -32,8 +32,14 @@ COPY egoroff/server/ ./server/
 COPY egoroff/egoroff/ ./egoroff/
 COPY egoroff/Cargo.toml ./
 COPY egoroff/Cargo.lock ./
+ARG CARGO_MIRROR=
 RUN rustup target add x86_64-unknown-linux-musl && \
-    cargo build -p egoroff --release --target x86_64-unknown-linux-musl --locked && \
+    set -- && \
+    if [ -n "$CARGO_MIRROR" ]; then \
+      set -- --config "source.crates-io.replace-with='mirror'" \
+             --config "source.mirror.registry='$CARGO_MIRROR'"; \
+    fi && \
+    cargo build -p egoroff --release --target x86_64-unknown-linux-musl --locked "$@" && \
     mkdir -p /out && \
     cp target/x86_64-unknown-linux-musl/release/egoroff /out/egoroff
 
@@ -53,7 +59,13 @@ COPY egoroff/server/ ./server/
 COPY egoroff/egoroff/ ./egoroff/
 COPY egoroff/Cargo.toml ./
 COPY egoroff/Cargo.lock ./
-RUN cargo build -p egoroff --release --target aarch64-unknown-linux-musl --locked && \
+ARG CARGO_MIRROR=
+RUN set -- && \
+    if [ -n "$CARGO_MIRROR" ]; then \
+      set -- --config "source.crates-io.replace-with='mirror'" \
+             --config "source.mirror.registry='$CARGO_MIRROR'"; \
+    fi && \
+    cargo build -p egoroff --release --target aarch64-unknown-linux-musl --locked "$@" && \
     mkdir -p /out && \
     cp target/aarch64-unknown-linux-musl/release/egoroff /out/egoroff
 

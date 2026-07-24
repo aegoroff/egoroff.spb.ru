@@ -51,7 +51,7 @@ fn group_to_years(dates: &[DateTime<Utc>]) -> Vec<Year> {
                 .into_iter()
                 .map(|(month, mg)| Month {
                     month: month.cast_signed(),
-                    posts: mg.count() as i32,
+                    posts: i32::try_from(mg.count()).unwrap_or(i32::MAX),
                 })
                 .fold(Year::new(y), |mut y, m| {
                     y.append_month(m);
@@ -62,12 +62,15 @@ fn group_to_years(dates: &[DateTime<Utc>]) -> Vec<Year> {
 }
 
 pub fn get_small_posts(
-    storage: MutexGuard<Sqlite>,
+    storage: &MutexGuard<Sqlite>,
     page_size: i32,
     request: Option<PostsRequest>,
 ) -> Result<ApiResult<SmallPost>> {
-    let request = request.unwrap_or_default();
+    let mut request = request.unwrap_or_default();
     let page = request.page.unwrap_or(1);
+
+    // Public listing always counts and returns public posts only.
+    request.include_private = None;
 
     let total_posts_count = storage.count_posts(request.clone())?;
     let pages_count = ceil_div(total_posts_count, page_size);

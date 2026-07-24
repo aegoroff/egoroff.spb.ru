@@ -112,8 +112,6 @@ export class GoogleSearch {
 
 export class SearchQuery {
   public q!: string;
-  public key!: string;
-  public cx!: string;
   public start!: number;
 }
 
@@ -121,9 +119,7 @@ class SearchService {
   public async search(q?: SearchQuery): Promise<GoogleSearch> {
     const progress = useProgress().start();
     return await axios
-      .get<GoogleSearch>(
-        `https://www.googleapis.com/customsearch/v1${toQuery(q)}`
-      )
+      .get<GoogleSearch>(`/api/v2/search/${toQuery(q)}`)
       .then((r) => {
         return r.data;
       })

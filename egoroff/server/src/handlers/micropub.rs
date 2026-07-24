@@ -204,15 +204,12 @@ pub async fn serve_media_endpoint_post(
         ));
     };
 
-    let file_name_prefix = Uuid::new_v4();
-    let mut file_name = file_name_prefix.to_string();
-
-    let ids: Vec<i64> = if content_type
+    let (ids, file_name): (Vec<i64>, String) = if content_type
         .to_string()
         .eq_ignore_ascii_case("multipart/form-data")
     {
         if let Ok(Some(field)) = multipart.next_field().await {
-            file_name = format!("{file_name}_{}", field.file_name().unwrap_or_default());
+            let file_name = media_storage_file_name(Uuid::new_v4(), field.file_name());
             match read_from_stream(field).await {
                 Ok((result, read_bytes)) => {
                     resource
@@ -235,7 +232,7 @@ pub async fn serve_media_endpoint_post(
                         .await;
                     match result {
                         Ok(x) => match x.json().await {
-                            Ok(ids) => ids,
+                            Ok(ids) => (ids, file_name),
                             Err(e) => return internal_server_error_response(e.to_string()),
                         },
                         Err(e) => {
@@ -326,5 +323,66 @@ pub async fn serve_media_endpoint_get(
             }
         }
         Err(e) => internal_server_error_response(e.to_string()),
+    }
+}
+
+/// Builds a storage object name that cannot escape the media bucket.
+///
+/// Client-supplied filenames may contain path separators or `..` segments.
+/// Only a safe ASCII alphanumeric extension is preserved from the basename.
+fn media_storage_file_name(id: Uuid, client_file_name: Option<&str>) -> String {
+    let id = id.to_string();
+    let Some(client_file_name) = client_file_name.filter(|name| !name.is_empty()) else {
+        return id;
+    };
+
+    let basename = client_file_name
+        .rsplit(['/', '\\'])
+        .next()
+        .unwrap_or(client_file_name);
+
+    let Some(extension) = basename
+        .rsplit_once('.')
+        .map(|(_, ext)| ext)
+        .filter(|ext| !ext.is_empty() && ext.chars().all(|c| c.is_ascii_alphanumeric()))
+    else {
+        return id;
+    };
+
+    format!("{id}.{extension}")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::media_storage_file_name;
+    use rstest::rstest;
+    use uuid::Uuid;
+
+    const ID: Uuid = Uuid::from_u128(0x0123_4567_89ab_cdef_0123_4567_89ab_cdef);
+
+    #[rstest]
+    #[case(None, "01234567-89ab-cdef-0123-456789abcdef")]
+    #[case(Some(""), "01234567-89ab-cdef-0123-456789abcdef")]
+    #[case(Some("photo.jpg"), "01234567-89ab-cdef-0123-456789abcdef.jpg")]
+    #[case(Some("photo.JPEG"), "01234567-89ab-cdef-0123-456789abcdef.JPEG")]
+    #[case(Some("../../etc/passwd"), "01234567-89ab-cdef-0123-456789abcdef")]
+    #[case(
+        Some("../other-bucket/x.png"),
+        "01234567-89ab-cdef-0123-456789abcdef.png"
+    )]
+    #[case(Some(r"..\windows\x.png"), "01234567-89ab-cdef-0123-456789abcdef.png")]
+    #[case(Some("archive.tar.gz"), "01234567-89ab-cdef-0123-456789abcdef.gz")]
+    #[case(Some("no-extension"), "01234567-89ab-cdef-0123-456789abcdef")]
+    #[case(Some("bad.ext-1"), "01234567-89ab-cdef-0123-456789abcdef")]
+    #[case(Some("bad."), "01234567-89ab-cdef-0123-456789abcdef")]
+    fn media_storage_file_name_tests(
+        #[case] client_file_name: Option<&str>,
+        #[case] expected: &str,
+    ) {
+        // Arrange / Act
+        let actual = media_storage_file_name(ID, client_file_name);
+
+        // Assert
+        assert_eq!(expected, actual);
     }
 }

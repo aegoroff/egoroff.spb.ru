@@ -160,7 +160,7 @@ pub async fn serve_users_api(
             return make_json_response::<ApiResult<User>>(Err(anyhow::anyhow!(e)));
         }
     };
-    let users_count = users.len() as i32;
+    let users_count = i32::try_from(users.len()).unwrap_or(i32::MAX);
 
     let result = ApiResult {
         result: users,

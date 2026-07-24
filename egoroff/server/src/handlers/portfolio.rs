@@ -119,7 +119,7 @@ pub async fn serve_downloadable_files(
 ) -> impl IntoResponse {
     let downloads = read_downloads(page_context.clone()).await;
     if let Some(downloads) = downloads {
-        let count = downloads.len() as i32;
+        let count = i32::try_from(downloads.len()).unwrap_or(i32::MAX);
         let result = ApiResult {
             result: downloads,
             pages: 1,
