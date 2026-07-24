@@ -86,7 +86,7 @@ struct Apache;
 
 pub async fn serve_index(State(page_context): State<Arc<PageContext<'_>>>) -> impl IntoResponse {
     let storage = page_context.storage.lock().await;
-    let result = archive::get_small_posts(storage, 5, None);
+    let result = archive::get_small_posts(&storage, 5, None);
 
     let blog_posts = match result {
         Ok(r) => r,

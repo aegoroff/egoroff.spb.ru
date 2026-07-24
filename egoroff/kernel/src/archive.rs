@@ -62,7 +62,7 @@ fn group_to_years(dates: &[DateTime<Utc>]) -> Vec<Year> {
 }
 
 pub fn get_small_posts(
-    storage: MutexGuard<Sqlite>,
+    storage: &MutexGuard<Sqlite>,
     page_size: i32,
     request: Option<PostsRequest>,
 ) -> Result<ApiResult<SmallPost>> {

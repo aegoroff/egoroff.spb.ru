@@ -170,19 +170,19 @@ impl Redirect {
     /// you generally don't want the redirected-to page to observe the original request method and
     /// body (if non-empty). If you want to preserve the request method and body,
     /// [`Redirect::temporary`] should be used instead.
-    /// [mdn]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/303
+    /// [mdn]: <https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/303>
     pub fn to(uri: &str) -> Self {
         Self::with_status_code(StatusCode::SEE_OTHER, uri)
     }
 
     /// Create a new [`Redirect`] that uses a [`308 Permanent Redirect`][mdn] status code.
-    /// [mdn]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/308
+    /// [mdn]: <https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/308>
     pub fn permanent(uri: &str) -> Self {
         Self::with_status_code(StatusCode::PERMANENT_REDIRECT, uri)
     }
 
     /// Create a new [`Redirect`] that uses a [`308 Permanent Redirect`][mdn] status code.
-    /// [mdn]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/302
+    /// [mdn]: <https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/302>
     pub fn found(uri: &str) -> Self {
         Self::with_status_code(StatusCode::FOUND, uri)
     }

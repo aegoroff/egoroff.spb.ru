@@ -77,7 +77,7 @@ async fn serve_index(
     };
 
     let storage = page_context.storage.lock().await;
-    let result = archive::get_small_posts(storage, PAGE_SIZE, Some(req));
+    let result = archive::get_small_posts(&storage, PAGE_SIZE, Some(req));
 
     let api_result = match result {
         Ok(ar) => ar,
@@ -208,7 +208,7 @@ pub async fn redirect() -> impl IntoResponse {
 
 pub async fn serve_atom(State(page_context): State<Arc<PageContext<'_>>>) -> impl IntoResponse {
     let storage = page_context.storage.lock().await;
-    let result = archive::get_small_posts(storage, 20, None);
+    let result = archive::get_small_posts(&storage, 20, None);
 
     match result {
         Ok(r) => match atom::from_small_posts(r.result) {
@@ -250,7 +250,7 @@ pub async fn serve_posts_api(
     Query(request): Query<PostsRequest>,
 ) -> impl IntoResponse {
     let storage = page_context.storage.lock().await;
-    let result = archive::get_small_posts(storage, PAGE_SIZE, Some(request));
+    let result = archive::get_small_posts(&storage, PAGE_SIZE, Some(request));
     make_json_response(result)
 }
 

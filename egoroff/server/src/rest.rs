@@ -176,7 +176,7 @@ pub fn create_routes(
         .nest("/portfolio/", portfolio_routes())
         .merge(static_resources_routes())
         .nest("/api/v2", public_api())
-        .merge(oauth2_routes(storage_path)?)
+        .merge(oauth2_routes(&storage_path)?)
         .layer(session_service)
         .layer(CompressionLayer::new().compress_when(compress_predicate))
         .layer(RequestBodyLimitLayer::new(20 * 1024 * 1024))
@@ -221,10 +221,10 @@ fn public_api() -> Router<Arc<PageContext<'static>>> {
         .route("/auth/user", get(handlers::auth::serve_user_api_call))
 }
 
-fn oauth2_routes(storage_path: PathBuf) -> Result<Router<Arc<PageContext<'static>>>> {
-    let google_authorizer = GoogleAuthorizer::new(storage_path.as_path())?;
-    let github_authorizer = GithubAuthorizer::new(storage_path.as_path())?;
-    let yandex_authorizer = YandexAuthorizer::new(storage_path.as_path())?;
+fn oauth2_routes(storage_path: &Path) -> Result<Router<Arc<PageContext<'static>>>> {
+    let google_authorizer = GoogleAuthorizer::new(storage_path)?;
+    let github_authorizer = GithubAuthorizer::new(storage_path)?;
+    let yandex_authorizer = YandexAuthorizer::new(storage_path)?;
 
     let google_authorizer = Arc::new(google_authorizer);
     let github_authorizer = Arc::new(github_authorizer);
