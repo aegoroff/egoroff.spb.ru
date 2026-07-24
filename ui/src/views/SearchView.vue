@@ -52,8 +52,6 @@ const ItemsPerPage = 10
 
 const props = defineProps<{
   query?: string
-  apiKey?: string
-  cx?: string
 }>()
 
 const searchResult = ref<GoogleSearch | null>(null)
@@ -88,8 +86,6 @@ const search = async (): Promise<void> => {
 
   const q = new SearchQuery()
   q.q = localQuery.value
-  q.key = props.apiKey || ''
-  q.cx = props.cx || ''
   q.start = (page.value - 1) * ItemsPerPage + 1
 
   const service = new SearchService()

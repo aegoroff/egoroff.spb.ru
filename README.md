@@ -122,6 +122,8 @@ The application uses environment variables for configuration:
 - `EGOROFF_HTTPS_PORT`: HTTPS port (default: 4201)
 - `EGOROFF_DATA_DIR`: Data storage directory
 - `EGOROFF_HOME_DIR`: Home directory
+- `EGOROFF_SEARCH_API_KEY`: Google Custom Search API key (server-only; used by `/api/v2/search/` proxy). Compatible with HTTP-referrer restrictions for `https://www.egoroff.spb.ru/*` — the proxy sends that `Referer`.
+- `EGOROFF_SITE_ID`: Google Custom Search Engine ID (`cx`, server-only)
 
 ## Features
 
@@ -147,7 +149,8 @@ The application uses environment variables for configuration:
 - Microformats markup
 
 ### Search
-- Full-text search across posts
+- Full-text search across posts via Google Custom Search
+- Server-side API proxy keeps the CSE key off the client
 - Real-time search results
 - Search result highlighting
 

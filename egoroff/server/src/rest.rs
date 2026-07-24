@@ -59,6 +59,7 @@ impl Modify for SecurityAddon {
         paths(
             handlers::blog::serve_posts_api,
             handlers::portfolio::serve_downloadable_files,
+            handlers::search::serve_search_api,
             handlers::micropub::serve_index_get,
             handlers::micropub::serve_index_post,
             handlers::micropub::serve_media_endpoint_post,
@@ -213,6 +214,7 @@ fn public_api() -> Router<Arc<PageContext<'static>>> {
         .route("/navigation/", get(handlers::serve_navigation))
         .route("/blog/archive/", get(handlers::blog::serve_archive_api))
         .route("/blog/posts/", get(handlers::blog::serve_posts_api))
+        .route("/search/", get(handlers::search::serve_search_api))
         .route(
             "/portfolio/files/",
             get(handlers::portfolio::serve_downloadable_files),

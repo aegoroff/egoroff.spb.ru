@@ -54,6 +54,7 @@ pub mod blog;
 pub mod indie;
 pub mod micropub;
 pub mod portfolio;
+pub mod search;
 mod template;
 
 #[derive(RustEmbed)]
@@ -131,7 +132,6 @@ pub async fn serve_search(State(page_context): State<Arc<PageContext<'_>>>) -> i
             keywords: get_keywords(section),
             meta_description: &section.descr,
             flashed_messages: vec![],
-            config: &page_context.site_config,
             year: get_year(),
         }
         .into_response()
