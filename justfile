@@ -101,13 +101,18 @@ local profile="debug":
 # ===== Docker (docker.sh, as-is: buildx multi-arch publish) =====
 
 # Build + publish amd64/arm64 images and a multi-arch manifest via buildx.
-# Usage: just docker [tag]   (or set TAG env var)
+# Usage: just docker [tag]   (or set TAG / CARGO_MIRROR env vars)
+# Example: CARGO_MIRROR='sparse+https://mirrors.ustc.edu.cn/crates.io-index/' just docker
 [group('docker')]
-docker tag=env("TAG", "master"):
+docker tag=env("TAG", "master") cargo_mirror=env("CARGO_MIRROR", ""):
     #!/usr/bin/env bash
     set -euo pipefail
     full_tag="registry.egoroff.spb.ru/egoroff/egoroff.spb.ru:{{tag}}"
     builder="egoroff-multiarch"
+    mirror_args=()
+    if [ -n "{{cargo_mirror}}" ]; then
+      mirror_args=(--build-arg "CARGO_MIRROR={{cargo_mirror}}")
+    fi
 
     if ! docker buildx inspect "${builder}" >/dev/null 2>&1; then
       docker buildx create --name "${builder}" --driver docker-container --use
@@ -120,6 +125,7 @@ docker tag=env("TAG", "master"):
       --platform linux/amd64 \
       -t "${full_tag}-x64" \
       --provenance=false \
+      "${mirror_args[@]}" \
       --push \
       .
 
@@ -127,9 +133,9 @@ docker tag=env("TAG", "master"):
       --platform linux/arm64 \
       -t "${full_tag}-arm64" \
       --provenance=false \
+      "${mirror_args[@]}" \
       --push \
       .
-
     # registry:3 + buildx imagetools often fails with HEAD 400 on an existing tag.
     # docker manifest list (Schema 2) is what this registry already accepts.
     docker manifest rm "${full_tag}" 2>/dev/null || true
