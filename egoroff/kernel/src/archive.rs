@@ -66,8 +66,11 @@ pub fn get_small_posts(
     page_size: i32,
     request: Option<PostsRequest>,
 ) -> Result<ApiResult<SmallPost>> {
-    let request = request.unwrap_or_default();
+    let mut request = request.unwrap_or_default();
     let page = request.page.unwrap_or(1);
+
+    // Public listing always counts and returns public posts only.
+    request.include_private = None;
 
     let total_posts_count = storage.count_posts(request.clone())?;
     let pages_count = ceil_div(total_posts_count, page_size);

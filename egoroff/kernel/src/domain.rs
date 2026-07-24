@@ -102,7 +102,9 @@ pub struct PostsRequest {
     pub year: Option<i32>,
     /// The month to filter posts by (optional).
     pub month: Option<i32>,
-    /// Whether to include private posts in the result (optional).
+    /// Whether to include private posts when counting (admin listing only).
+    ///
+    /// The public posts API ignores this flag and always counts public posts.
     pub include_private: Option<bool>,
 }
 
