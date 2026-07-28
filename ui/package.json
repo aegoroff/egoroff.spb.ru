@@ -34,7 +34,7 @@
     "@vue/compiler-sfc": "^3.5.40",
     "eslint": "^10.8.0",
     "eslint-plugin-vue": "^10.10.0",
-    "globals": "^17.7.0",
+    "globals": "^17.8.0",
     "sass": "^1.102.0",
     "typescript": "~7.0.2",
     "typescript-eslint": "^8.65.0",
