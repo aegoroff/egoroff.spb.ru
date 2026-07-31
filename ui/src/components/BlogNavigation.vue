@@ -30,7 +30,9 @@ const archive = ref<Archive>({
   tags: [],
   years: []
 })
-const currentTag = ref('')
+const currentTag = ref(
+  new URLSearchParams(window.location.hash.slice(1)).get('tag') ?? ''
+)
 
 onMounted(async () => {
   const apiService = new ApiService()
