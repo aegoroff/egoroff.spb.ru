@@ -35,8 +35,6 @@ import DateFormatter from "@/components/DateFormatter.vue";
 import BlogNavigation from "@/components/BlogNavigation.vue";
 // Import Bootstrap JS bundle (includes modal, dropdown, collapse, tab)
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
-import BlogAnnounces from "@/components/BlogAnnounces.vue";
-import BlogTitle from "@/components/BlogTitle.vue";
 import SearchView from "@/views/SearchView.vue";
 import ProfileView from "@/views/ProfileView.vue";
 import SocialButtons from "@/components/SocialButtons.vue";
@@ -44,7 +42,6 @@ import AlertWindow from "@/components/AlertWindow.vue";
 import { createAdminRouter } from "@/router";
 import DownloadsList from "@/components/DownloadsList.vue";
 import { remountBlogFilterFromHash } from "@/blogMount";
-import { emitter } from "@/events";
 
 import "highlight.js/lib/common";
 import CodeHighlighter from "@/components/CodeHighlighter.vue";
@@ -71,23 +68,9 @@ if (appElement) {
   const t = appElement.getAttribute("datafld");
   const vueApp = createApp(App, { title: t || "" });
   vueApp.component("font-awesome-icon", FontAwesomeIcon as Component);
-  vueApp.component("AppIcon", AppIcon);
-  vueApp.component("DateFormatter", DateFormatter);
-  vueApp.component("BlogNavigation", BlogNavigation);
-  vueApp.component("BlogAnnounces", BlogAnnounces);
-  vueApp.component("BlogTitle", BlogTitle);
-  vueApp.component("CodeHighlighter", CodeHighlighter);
-  vueApp.component("AlertWindow", AlertWindow);
-  vueApp.component("SocialButtons", SocialButtons);
-  vueApp.component("DownloadsList", DownloadsList);
-  vueApp.component("SearchView", SearchView);
-  vueApp.component("ProfileView", ProfileView);
-
   vueApp.use(Vue3ProgressPlugin);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   vueApp.use(VueSocialSharing as any);
-  vueApp.config.globalProperties.emitter = emitter;
-
   vueApp.mount(appElement);
 }
 
