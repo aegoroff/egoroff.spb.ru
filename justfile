@@ -37,7 +37,7 @@ fmt:
 # Remove build artifacts
 [group('backend')]
 clean:
-    cargo clean --manifest-path egoroff/Cargo.tomlW
+    cargo clean --manifest-path egoroff/Cargo.toml
 
 # ===== Frontend (Vue + bun, in ./ui) =====
 
@@ -49,7 +49,7 @@ install:
 # Production frontend build -> static/dist/
 [group('frontend')]
 ui-build:
-    cd ui && bun run buildW
+    cd ui && bun run build
 
 # ESLint check
 [group('frontend')]
@@ -68,23 +68,26 @@ apache:
 apache-clean:
     python3 build.py --clean-all
 
-# ===== Local server run (make_local.sh, as-is) =====
+# ===== Local server run =====
 
 # Build UI + backend and run the local server.
-# Usage: just local [debug|release]
+# Usage:
+#   just local           -> debug build (fast, incremental)
+#   just local release   -> release (LTO) build
 [group('local')]
 local profile="debug":
     #!/usr/bin/env bash
+    set -e
     if [[ "{{profile}}" = "release" ]]; then
       additional="--release"
     else
       additional=""
     fi
     base_path=./home
-    [[ -d "$base_path" ]] && rm -r "$base_path"
+    [[ -d "$base_path" ]] && rm -r "$base_path" || true
     (
       cd ./ui/ || exit
-      bun run build || exit
+      bun run build
     )
     mkdir "$base_path"
     locals=(static apache)
@@ -93,7 +96,10 @@ local profile="debug":
     done
     (
       cd ./egoroff/ || exit
-      cargo clean
+      # Force `server` crate to re-run its rust-embed macros so freshly built
+      # UI (static/dist) and apache templates get re-embedded into the binary.
+      # Only `server` is cleaned — dependency cache (tokio, axum, ...) stays.
+      cargo clean -p server
       cargo b --workspace $additional
       RUST_LOG="server=debug,axum=info,hyper=info,tower=info,axum_login=info" ./target/"{{profile}}"/egoroff server
     )
