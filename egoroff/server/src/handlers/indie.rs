@@ -8,13 +8,13 @@ use axum_extra::{
 use chrono::{TimeDelta, Utc};
 
 use crate::{
-    body::Redirect,
     domain::PageContext,
     indie::{
         Claims, IndieQuery, ME, SCOPES, Token, TokenRequest, TokenValidationResult, generate_jwt,
         read_from_client, validate_jwt,
     },
 };
+use axum::http::header::LOCATION;
 
 pub async fn serve_auth(
     Query(query): Query<IndieQuery>,
@@ -63,9 +63,8 @@ pub async fn serve_auth(
                 c.insert(token);
                 to.append_query(&q);
                 let to = to.to_string();
-                // redirect to uri with state and new token
-                let resp = Redirect::found(&to);
-                (StatusCode::FOUND, resp.into_response())
+                // redirect to uri with state and new token (302 Found)
+                (StatusCode::FOUND, [(LOCATION, to)].into_response())
             }
             Err(e) => {
                 tracing::error!("generate jwt token error: {e:#?}");

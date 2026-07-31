@@ -4,10 +4,8 @@ use anyhow::Context;
 use kernel::domain::{ApiResult, Download, DownloadsRequest};
 use serde::Deserialize;
 
-use crate::{
-    body::Redirect,
-    domain::{Downloadable, FilesContainer},
-};
+use crate::domain::{Downloadable, FilesContainer};
+use axum::response::Redirect;
 
 use super::{
     template::{ApacheDocument, Portfolio},

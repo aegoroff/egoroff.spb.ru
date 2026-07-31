@@ -4,10 +4,10 @@ use crate::{
         AppUser, AuthBackend, GithubAuthorizer, GoogleAuthorizer, OAuthAuthorizer, OAuthProfile,
         YandexAuthorizer,
     },
-    body::Redirect,
     domain::{AuthRequest, AuthorizedUser},
     handlers::template::Signin,
 };
+use axum::response::Redirect;
 use kernel::domain::{ApiResult, User};
 use oauth2::{CsrfToken, PkceCodeVerifier, TokenResponse};
 use serde::Deserialize;

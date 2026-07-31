@@ -358,11 +358,7 @@ fn internal_server_error_page() -> Response {
 }
 
 fn redirect_response(new_path: &str) -> Response {
-    (
-        StatusCode::PERMANENT_REDIRECT,
-        Redirect::permanent(new_path).into_response(),
-    )
-        .into_response()
+    Redirect::permanent(new_path).into_response()
 }
 
 fn error_page_response(code: &str) -> Response {

@@ -3,7 +3,8 @@ use kernel::{
     domain::{ApiResult, Post, SmallPost},
 };
 
-use crate::body::{Content, Redirect};
+use crate::body::Content;
+use axum::response::Redirect;
 
 use super::{
     template::{BlogIndex, BlogPost},
