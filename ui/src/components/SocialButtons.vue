@@ -1,33 +1,27 @@
 <template>
   <div>
-    <a v-for="net in networks" :key="net" 
-       :href="getShareUrl(net)" 
-       class="btn btn-sm" 
-       target="_blank">
-      <font-awesome-icon :icon="['fab', net]"></font-awesome-icon>
-    </a>
+    <ShareNetwork
+      v-for="net in networks"
+      :key="net"
+      :network="net"
+      :url="url"
+      :title="title"
+      v-slot="{ share }"
+    >
+      <a href="#" class="btn btn-sm" @click.prevent="share">
+        <font-awesome-icon :icon="['fab', net]"></font-awesome-icon>
+      </a>
+    </ShareNetwork>
   </div>
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{
-  url: string
-  title: string
-}>()
+import { ShareNetwork } from "vue3-social-sharing";
 
-const networks = ['vk', 'telegram']
-    
-const getShareUrl = (network: string): string => {
-  const encodedUrl = encodeURIComponent(props.url)
-  const encodedTitle = encodeURIComponent(props.title)
-  
-  switch(network) {
-    case 'vk':
-      return `https://vk.com/share.php?url=${encodedUrl}&title=${encodedTitle}`
-    case 'telegram':
-      return `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}`
-    default:
-      return '#'
-  }
-}
+defineProps<{
+  url: string;
+  title: string;
+}>();
+
+const networks = ["vk", "telegram"] as const;
 </script>

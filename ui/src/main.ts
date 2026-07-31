@@ -3,7 +3,6 @@ import "@marcoschulte/vue3-progress/style";
 import "./styles/site.scss";
 import "highlight.js/styles/github.css";
 import { createApp, Component } from "vue";
-import VueSocialSharing from "vue3-social-sharing";
 import App from "./App.vue";
 import AdminApp from "./AdminApp.vue";
 import { library } from "@fortawesome/fontawesome-svg-core";
@@ -26,6 +25,7 @@ import {
   faGoogle,
   faGithub,
   faVk,
+  faTelegram,
   faYandex,
 } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
@@ -60,7 +60,7 @@ library.add(
   faUsers,
   faArrowRight
 );
-library.add(faGoogle, faGithub, faVk, faYandex);
+library.add(faGoogle, faGithub, faVk, faTelegram, faYandex);
 
 const appElement = document.getElementById("app");
 if (appElement) {
@@ -68,8 +68,6 @@ if (appElement) {
   const vueApp = createApp(App, { title: t || "" });
   vueApp.component("font-awesome-icon", FontAwesomeIcon as Component);
   vueApp.use(Vue3ProgressPlugin);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  vueApp.use(VueSocialSharing as any);
   vueApp.mount(appElement);
 }
 
@@ -97,7 +95,6 @@ if (social) {
   const vueApp = createApp(SocialButtons, {
     title: title || "",
     url: window.location.href,
-    networks: ["vk"],
   });
   vueApp.component("font-awesome-icon", FontAwesomeIcon as Component);
   vueApp.mount(social);
