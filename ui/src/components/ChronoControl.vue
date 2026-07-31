@@ -52,35 +52,15 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue'
 import { emitter } from '@/events'
-import dayjs from 'dayjs';
-import 'dayjs/locale/ru';
-dayjs.locale('ru');
-
 import { remountBlogFilter } from '@/blogMount'
+import { formatMonthName, formatMonthYear } from '@/util'
 import { Year } from '@/models/blog'
 
 defineProps<{
   years: Year[]
 }>()
 
-const months: Record<number, string> = {
-  1: 'Январь',
-  2: 'Февраль',
-  3: 'Март',
-  4: 'Апрель',
-  5: 'Май',
-  6: 'Июнь',
-  7: 'Июль',
-  8: 'Август',
-  9: 'Сентябрь',
-  10: 'Октябрь',
-  11: 'Ноябрь',
-  12: 'Декабрь'
-}
-
-const monthName = (month: number): string => {
-  return months[month]
-}
+const monthName = formatMonthName
 
 const updateYear = (year: number, page: number) => {
   const params = new URLSearchParams(window.location.hash.slice(1))
@@ -114,10 +94,9 @@ const updateYearMonth = (year: number, month: number, page: number) => {
 
   emitter.emit('dateSelectionChanged')
 
-  const m = dayjs(new Date(year, month - 1, 1))
   remountBlogFilter(
     `year=${year}&month=${month}&page=${page}`,
-    `записи за ${m.format('MMMM YYYY')}`
+    `записи за ${formatMonthYear(year, month)}`
   )
 }
 

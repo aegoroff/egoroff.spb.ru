@@ -4,30 +4,18 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import dayjs from 'dayjs'
-import localizedFormat from 'dayjs/plugin/localizedFormat'
-import relativeTime from 'dayjs/plugin/relativeTime';
-import 'dayjs/locale/ru'
+import { formatFromNow, formatLongDate } from '@/util'
 
-// dayjs config
-dayjs.extend(localizedFormat)
-dayjs.extend(relativeTime);
-dayjs.locale('ru')
-
-// props
 const props = defineProps<{
   date: string
   formatStr: string
 }>()
 
-function formatnow(): boolean {
-  return props.formatStr === "from-now";
-}
+const fromNow = computed(() => props.formatStr === 'from-now')
 
-const formatted = computed(() => {
-  const d = dayjs(props.date);
-  return formatnow() ? d.fromNow() : d.format(props.formatStr);
-})
+const formatted = computed(() =>
+  fromNow.value ? formatFromNow(props.date) : formatLongDate(props.date)
+)
 
-const cssClass = computed(() => formatnow() ? "date-from-now" : "shortDate")
+const cssClass = computed(() => (fromNow.value ? 'date-from-now' : 'shortDate'))
 </script>

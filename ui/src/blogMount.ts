@@ -1,10 +1,7 @@
 import { App, createApp } from 'vue'
-import dayjs from 'dayjs'
-import 'dayjs/locale/ru'
 import BlogAnnounces from '@/components/BlogAnnounces.vue'
 import BlogTitle from '@/components/BlogTitle.vue'
-
-dayjs.locale('ru')
+import { formatMonthYear } from '@/util'
 
 let blogAnnouncesApp: App | null = null
 let blogTitleApp: App | null = null
@@ -18,8 +15,7 @@ function blogFilterTitle(query: string): string {
   const year = params.get('year')
   const month = params.get('month')
   if (year && month) {
-    const m = dayjs(new Date(Number(year), Number(month) - 1, 1))
-    return `записи за ${m.format('MMMM YYYY')}`
+    return `записи за ${formatMonthYear(Number(year), Number(month))}`
   }
   if (year) {
     return `записи за ${year} год`

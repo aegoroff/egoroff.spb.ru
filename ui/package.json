@@ -18,7 +18,6 @@
     "@marcoschulte/vue3-progress": "^0.0.9",
     "axios": "^1.18.1",
     "bootstrap": "^5.3.8",
-    "dayjs": "^1.11.21",
     "highlight.js": "^11.11.1",
     "highlightjs-zig": "^1.0.2",
     "mitt": "^3.0.1",
