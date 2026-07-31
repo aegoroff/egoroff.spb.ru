@@ -108,7 +108,6 @@ pub async fn serve_index(State(page_context): State<Arc<PageContext<'_>>>) -> im
                     meta_description: &section.descr,
                     posts: blog_posts.result,
                     apache_docs: docs,
-                    flashed_messages: vec![],
                     year: get_year(),
                 }
                 .into_response()
@@ -131,7 +130,6 @@ pub async fn serve_search(State(page_context): State<Arc<PageContext<'_>>>) -> i
             title_path: "",
             keywords: get_keywords(section),
             meta_description: &section.descr,
-            flashed_messages: vec![],
             year: get_year(),
         }
         .into_response()
@@ -379,7 +377,6 @@ fn error_page_response(code: &str) -> Response {
         keywords: "",
         meta_description: "",
         error,
-        flashed_messages: vec![],
         year: get_year(),
     }
     .into_response()

@@ -3,7 +3,7 @@ use axum::http::{self, StatusCode};
 use axum::response::{IntoResponse, Response};
 use kernel::domain::{Post, SmallPost};
 
-use crate::domain::{Apache, BlogRequest, Error, Message, Poster};
+use crate::domain::{Apache, BlogRequest, Error, Poster};
 
 fn text_html_respose<T: Template>(t: T) -> Response {
     match t.render() {
@@ -51,7 +51,6 @@ pub struct ErrorPage<'a> {
     pub title_path: &'a str,
     pub keywords: &'a str,
     pub meta_description: &'a str,
-    pub flashed_messages: Vec<Message>,
     pub error: Error,
     pub year: u32,
 }
@@ -72,7 +71,6 @@ pub struct Index<'a> {
     pub meta_description: &'a str,
     pub posts: Vec<SmallPost>,
     pub apache_docs: Vec<crate::domain::Apache>,
-    pub flashed_messages: Vec<Message>,
     pub year: u32,
 }
 
@@ -90,7 +88,6 @@ pub struct Search<'a> {
     pub title_path: &'a str,
     pub keywords: &'a str,
     pub meta_description: &'a str,
-    pub flashed_messages: Vec<Message>,
     pub year: u32,
 }
 
@@ -108,7 +105,6 @@ pub struct ApacheDocument<'a> {
     pub title_path: &'a str,
     pub keywords: &'a str,
     pub meta_description: &'a str,
-    pub flashed_messages: Vec<Message>,
     pub content: &'a str,
     pub year: u32,
 }
@@ -127,7 +123,6 @@ pub struct Portfolio<'a> {
     pub title_path: &'a str,
     pub keywords: &'a str,
     pub meta_description: &'a str,
-    pub flashed_messages: Vec<Message>,
     pub apache_docs: Vec<Apache>,
     pub year: u32,
 }
@@ -146,7 +141,6 @@ pub struct BlogIndex<'a> {
     pub title_path: &'a str,
     pub keywords: &'a str,
     pub meta_description: &'a str,
-    pub flashed_messages: Vec<Message>,
     pub poster: &'a Poster<SmallPost>,
     pub request: &'a BlogRequest,
     pub year: u32,
@@ -166,7 +160,6 @@ pub struct BlogPost<'a> {
     pub title_path: &'a str,
     pub keywords: &'a str,
     pub meta_description: String,
-    pub flashed_messages: Vec<Message>,
     pub main_post: &'a Post,
     pub content: &'a str,
     pub year: u32,
@@ -186,7 +179,6 @@ pub struct Signin<'a> {
     pub title_path: &'a str,
     pub keywords: &'a str,
     pub meta_description: &'a str,
-    pub flashed_messages: Vec<Message>,
     pub google_signin_url: &'a str,
     pub github_signin_url: &'a str,
     pub yandex_signin_url: &'a str,
@@ -207,7 +199,6 @@ pub struct Profile<'a> {
     pub title_path: &'a str,
     pub keywords: &'a str,
     pub meta_description: &'a str,
-    pub flashed_messages: Vec<Message>,
     pub year: u32,
 }
 

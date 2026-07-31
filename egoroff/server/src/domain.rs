@@ -120,15 +120,6 @@ pub struct Error {
     pub name: String,
 }
 
-/// Represents a message sent by the application.
-#[derive(Deserialize, Serialize, Default)]
-pub struct Message {
-    /// The type of the message.
-    pub r#type: String,
-    /// The text content of the message.
-    pub text: String,
-}
-
 /// Represents an authentication request in the application.
 #[derive(Debug, Deserialize)]
 #[allow(dead_code)]

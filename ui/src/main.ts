@@ -38,7 +38,6 @@ import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import SearchView from "@/views/SearchView.vue";
 import ProfileView from "@/views/ProfileView.vue";
 import SocialButtons from "@/components/SocialButtons.vue";
-import AlertWindow from "@/components/AlertWindow.vue";
 import { createAdminRouter } from "@/router";
 import DownloadsList from "@/components/DownloadsList.vue";
 import { remountBlogFilterFromHash } from "@/blogMount";
@@ -155,15 +154,6 @@ function mountHighlighting(prefix: string, el: Element): void {
 document.querySelectorAll("pre, code").forEach((el) => {
   mountHighlighting("brush: ", el);
   mountHighlighting("language-", el);
-});
-
-document.querySelectorAll(".alert").forEach((x) => {
-  const type = x.getAttribute("data-label");
-  const vueApp = createApp(AlertWindow, {
-    content: x.textContent || "",
-    type: type || "success",
-  });
-  vueApp.mount(x);
 });
 
 const admin = document.getElementById("admin");

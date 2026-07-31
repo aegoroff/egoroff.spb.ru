@@ -42,7 +42,6 @@ pub async fn serve_index(State(page_context): State<Arc<PageContext<'_>>>) -> im
         title_path: &title_path,
         keywords: get_keywords(section),
         meta_description: &section.descr,
-        flashed_messages: vec![],
         apache_docs: vec![],
         year: get_year(),
     };
@@ -94,7 +93,6 @@ pub async fn serve_apache_document(
             title_path: &title_path,
             keywords: &doc.keywords,
             meta_description: &doc.description,
-            flashed_messages: vec![],
             content: &content,
             year: get_year(),
         }
