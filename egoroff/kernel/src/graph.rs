@@ -1,8 +1,7 @@
 #![allow(clippy::module_name_repetitions)]
 
 use itertools::Itertools;
-use petgraph::prelude::*;
-use std::{collections::HashMap, iter::once, ops::AddAssign};
+use std::{collections::HashMap, iter::once};
 
 pub const SEP: &str = "/";
 
@@ -40,92 +39,29 @@ impl SiteSection {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
-struct NodeId(i32);
-
-impl AddAssign<i32> for NodeId {
-    fn add_assign(&mut self, rhs: i32) {
-        self.0 += rhs;
-    }
-}
-
-const ROOT_NODE: NodeId = NodeId(1);
-
 #[derive(Debug)]
 pub struct SiteGraph<'a> {
-    g: DiGraphMap<NodeId, ()>,
-    next_id: NodeId,
-    map: HashMap<NodeId, &'a SiteSection>,
-    search: HashMap<String, NodeId>,
+    sections: HashMap<String, &'a SiteSection>,
 }
 
 impl<'a> SiteGraph<'a> {
     #[must_use]
     pub fn new(root: &'a SiteSection) -> Self {
-        let mut g = SiteGraph {
-            g: DiGraphMap::new(),
-            next_id: ROOT_NODE,
-            map: HashMap::new(),
-            search: HashMap::new(),
-        };
-        g.build(root, None);
-        g
+        let mut sections = HashMap::new();
+        Self::index(&mut sections, root);
+        Self { sections }
     }
 
-    fn register(&mut self, s: &'a SiteSection, parent: Option<NodeId>) -> NodeId {
-        let id = self.next_id;
-        self.next_id += 1;
-        self.search.insert(s.id.clone(), id);
-        self.map.insert(id, s);
-        self.g.add_node(id);
-        if let Some(parent_id) = parent {
-            self.g.add_edge(parent_id, id, ());
-        }
-        id
-    }
-
-    fn build(&mut self, section: &'a SiteSection, parent: Option<NodeId>) {
-        let id = self.register(section, parent);
+    fn index(sections: &mut HashMap<String, &'a SiteSection>, section: &'a SiteSection) {
+        sections.insert(section.id.clone(), section);
         for child in section.children.iter().flatten() {
-            self.build(child, Some(id));
+            Self::index(sections, child);
         }
     }
 
     #[must_use]
     pub fn get_section(&self, id: &str) -> Option<&SiteSection> {
-        let ix = self.search.get(id)?;
-        self.map.get(ix).copied()
-    }
-
-    #[must_use]
-    pub fn full_path(&self, id: &str) -> String {
-        let Some(&node_id) = self.search.get(id) else {
-            return String::new();
-        };
-        if id == SEP {
-            return String::from(SEP);
-        }
-
-        let mut path = vec![node_id];
-        let mut current = node_id;
-        while let Some(parent) = self
-            .g
-            .neighbors_directed(current, Direction::Incoming)
-            .next()
-        {
-            path.push(parent);
-            current = parent;
-        }
-
-        let result = path
-            .iter()
-            .rev()
-            .filter_map(|n| self.map.get(n))
-            .map(|s| s.id.as_str())
-            .filter(|x| *x != SEP)
-            .join(SEP);
-
-        format!("{SEP}{result}{SEP}")
+        self.sections.get(id).copied()
     }
 
     #[must_use]
@@ -186,24 +122,6 @@ mod tests {
     #![allow(clippy::unwrap_used)]
     use super::*;
     use rstest::{fixture, rstest};
-
-    #[rstest]
-    #[case("aa", "/a/aa/")]
-    #[case("a", "/a/")]
-    #[case("b", "/b/")]
-    #[case("bb", "/b/bb/")]
-    #[case("ab", "")]
-    #[case("/", "/")]
-    fn full_path_tests(root: SiteSection, #[case] id: &str, #[case] expected: &str) {
-        // arrange
-        let g = SiteGraph::new(&root);
-
-        // act
-        let actual = g.full_path(id);
-
-        // assert
-        assert_eq!(actual, expected);
-    }
 
     #[rstest]
     #[case("/")]
