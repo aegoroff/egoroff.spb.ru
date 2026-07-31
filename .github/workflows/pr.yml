@@ -6,21 +6,10 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        build: [linux, macos, windows]
-        include:
-          - build: linux
-            os: ubuntu-latest
-          - build: macos
-            os: macos-latest
-          - build: windows
-            os: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Update rust
-        if: matrix.build == 'linux' # build rust only on linux
         run: rustup update
       - uses: actions/checkout@v4
       - name: Use Bun
@@ -33,19 +22,15 @@ jobs:
         working-directory: ./ui
         run: |
           bun run build
-      - name: Install LLVM linker (Linux)
-        if: matrix.build == 'linux'
+      - name: Install build deps
         run: |
           sudo apt-get update -y
           sudo apt-get install lld python3-lxml -y
       - name: Run build script
-        if: matrix.build == 'linux'
         run: ./build.py
       - name: Rust Build
-        if: matrix.build == 'linux'
         run: cargo build --workspace
         working-directory: ./egoroff
       - name: Run tests
-        if: matrix.build == 'linux'
         run: cargo test --workspace
         working-directory: ./egoroff
