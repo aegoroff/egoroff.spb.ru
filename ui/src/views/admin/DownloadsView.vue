@@ -21,9 +21,15 @@
       </ul>
     </nav>
 
-    <EditDownload id="edit-download" :download="selectedDownload"></EditDownload>
-    <CreateDownload id="create-download"></CreateDownload>
-    <DeleteDownload id="delete-download" :downloadId="selectedDownloadId"></DeleteDownload>
+    <DownloadForm modal-id="edit-download" mode="edit" :download="selectedDownload" />
+    <DownloadForm modal-id="create-download" mode="create" />
+    <ConfirmDelete
+      modal-id="delete-download"
+      title="Удалить загрузку"
+      message="Действительно удалить загрузку?"
+      :item-id="selectedDownloadId"
+      kind="download"
+    />
 
     <div class="table-responsive" id="downloads-table">
       <table class="table table-striped table-hover table-sm">
@@ -60,10 +66,9 @@ import { useRoute } from 'vue-router'
 import ApiService from '@/services/ApiService'
 import AppIcon from '@/components/AppIcon.vue'
 import { emitter } from '@/events'
-import EditDownload from '@/components/admin/EditDownload.vue'
+import DownloadForm from '@/components/admin/DownloadForm.vue'
+import ConfirmDelete from '@/components/admin/ConfirmDelete.vue'
 import { Download } from '@/models/portfolio'
-import DeleteDownload from '@/components/admin/DeleteDownload.vue'
-import CreateDownload from '@/components/admin/CreateDownload.vue'
 import { Query } from '@/models/blog'
 
 const route = useRoute()
@@ -119,11 +124,13 @@ onMounted(() => {
 
   emitter.on('downloadDeleted', refreshDownloads)
   emitter.on('downloadCreated', refreshDownloads)
+  emitter.on('downloadUpdated', refreshDownloads)
 })
 
 onUnmounted(() => {
   emitter.off('downloadDeleted', refreshDownloads)
   emitter.off('downloadCreated', refreshDownloads)
+  emitter.off('downloadUpdated', refreshDownloads)
 })
 
 // Watch route changes

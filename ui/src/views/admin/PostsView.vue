@@ -28,7 +28,13 @@
 
     <CreatePost id="create-post"></CreatePost>
     <EditPost id="edit-post" :post="selectedPost"></EditPost>
-    <DeletePost id="delete-post" :postId="selectedPostId"></DeletePost>
+    <ConfirmDelete
+      modal-id="delete-post"
+      title="Удалить пост"
+      message="Действительно удалить пост?"
+      :item-id="selectedPostId"
+      kind="post"
+    />
 
     <div class="table-responsive" id="posts-table">
       <table class="table table-striped table-hover table-sm">
@@ -75,7 +81,7 @@ import ApiService from '@/services/ApiService'
 import DateFormatter from '@/components/DateFormatter.vue'
 import CreatePost from '@/components/admin/CreatePost.vue'
 import EditPost from '@/components/admin/EditPost.vue'
-import DeletePost from '@/components/admin/DeletePost.vue'
+import ConfirmDelete from '@/components/admin/ConfirmDelete.vue'
 import AppIcon from '@/components/AppIcon.vue'
 import { emitter } from '@/events'
 import { EditablePost, Query } from '@/models/blog'

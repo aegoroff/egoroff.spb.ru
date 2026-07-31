@@ -7,6 +7,7 @@ export type Events = {
   postCreated: void;
   postUpdated: void;
   downloadCreated: void;
+  downloadUpdated: void;
   downloadDeleted: void;
   tagChanged: string;
 };
