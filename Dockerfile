@@ -39,6 +39,9 @@ RUN rustup target add x86_64-unknown-linux-musl && \
       set -- --config "source.crates-io.replace-with='mirror'" \
              --config "source.mirror.registry='$CARGO_MIRROR'"; \
     fi && \
+    # Force rust-embed/Askama to re-read freshly built UI (static/dist), same as
+    # `just local`. Otherwise a cached server artifact can keep a stale frontend.
+    cargo clean -p server && \
     cargo build -p egoroff --release --target x86_64-unknown-linux-musl --locked "$@" && \
     mkdir -p /out && \
     cp target/x86_64-unknown-linux-musl/release/egoroff /out/egoroff
@@ -65,6 +68,9 @@ RUN set -- && \
       set -- --config "source.crates-io.replace-with='mirror'" \
              --config "source.mirror.registry='$CARGO_MIRROR'"; \
     fi && \
+    # Force rust-embed/Askama to re-read freshly built UI (static/dist), same as
+    # `just local`. Otherwise a cached server artifact can keep a stale frontend.
+    cargo clean -p server && \
     cargo build -p egoroff --release --target aarch64-unknown-linux-musl --locked "$@" && \
     mkdir -p /out && \
     cp target/aarch64-unknown-linux-musl/release/egoroff /out/egoroff
