@@ -26,8 +26,8 @@
       </ul>
     </nav>
 
-    <CreatePost id="create-post"></CreatePost>
-    <EditPost id="edit-post" :post="selectedPost"></EditPost>
+    <PostForm modal-id="create-post" mode="create" />
+    <PostForm modal-id="edit-post" mode="edit" :post="selectedPost" />
     <ConfirmDelete
       modal-id="delete-post"
       title="Удалить пост"
@@ -79,8 +79,7 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import ApiService from '@/services/ApiService'
 import DateFormatter from '@/components/DateFormatter.vue'
-import CreatePost from '@/components/admin/CreatePost.vue'
-import EditPost from '@/components/admin/EditPost.vue'
+import PostForm from '@/components/admin/PostForm.vue'
 import ConfirmDelete from '@/components/admin/ConfirmDelete.vue'
 import AppIcon from '@/components/AppIcon.vue'
 import { emitter } from '@/events'

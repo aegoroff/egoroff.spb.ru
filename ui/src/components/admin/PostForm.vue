@@ -1,9 +1,9 @@
 <template>
-  <div class="modal fade" id="create-post" tabindex="-1" aria-hidden="true">
+  <div class="modal fade" :id="modalId" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Создать новый пост</h5>
+          <h5 class="modal-title">{{ modalTitle }}</h5>
           <button
             type="button"
             class="btn-close"
@@ -11,14 +11,14 @@
           ></button>
         </div>
         <div class="modal-body">
-          <form ref="form">
+          <form>
             <ul class="nav nav-tabs" role="presentation">
               <li class="nav-item" role="presentation">
                 <button
                   class="nav-link active"
-                  id="create-properties-tab-btn"
+                  :id="ids.propertiesTabBtn"
                   data-bs-toggle="tab"
-                  data-bs-target="#create-properties-tab"
+                  :data-bs-target="`#${ids.propertiesTab}`"
                   type="button"
                 >
                   Свойства
@@ -27,9 +27,9 @@
               <li class="nav-item" role="presentation">
                 <button
                   class="nav-link"
-                  id="create-text-tab-btn"
+                  :id="ids.textTabBtn"
                   data-bs-toggle="tab"
-                  data-bs-target="#create-text-tab"
+                  :data-bs-target="`#${ids.textTab}`"
                   type="button"
                 >
                   Основной текст
@@ -37,49 +37,52 @@
               </li>
             </ul>
             <div class="tab-content mt-3">
-              <div class="tab-pane fade show active" id="create-properties-tab">
+              <div
+                class="tab-pane fade show active"
+                :id="ids.propertiesTab"
+              >
                 <div class="mb-3">
-                  <label for="create-post-title-input" class="form-label"
-                    >Название</label
-                  >
+                  <label :for="ids.title" class="form-label">Название</label>
                   <input
                     type="text"
                     class="form-control"
-                    id="create-post-title-input"
-                    v-model="post.Title"
+                    :id="ids.title"
+                    v-model="localPost.Title"
                     required
                   />
                   <div class="invalid-feedback">название обязательно</div>
                 </div>
-                <div class="mb-3">
-                  <label for="create-post-created" class="form-label">Дата создания</label>
+                <div class="mb-3" v-if="mode === 'create'">
+                  <label :for="ids.created" class="form-label"
+                    >Дата создания</label
+                  >
                   <input
                     type="datetime-local"
                     class="form-control"
-                    id="create-post-created"
-                    v-model="post.Created"
+                    :id="ids.created"
+                    v-model="localPost.Created"
                     required
                   />
                   <div class="invalid-feedback">дата создания обязательна</div>
                 </div>
                 <div class="mb-3">
-                  <label for="create-post-tags" class="form-label">Теги</label>
+                  <label :for="ids.tags" class="form-label">Теги</label>
                   <input
                     type="text"
                     class="form-control"
-                    id="create-post-tags"
+                    :id="ids.tags"
                     v-model="tagsString"
                     placeholder="Введите теги через запятую, точку с запятой или пробел"
                   />
                 </div>
                 <div class="mb-3">
-                  <label for="create-post-short-text" class="form-label"
+                  <label :for="ids.shortText" class="form-label"
                     >Краткое описание</label
                   >
                   <textarea
                     class="form-control"
-                    id="create-post-short-text"
-                    v-model="post.ShortText"
+                    :id="ids.shortText"
+                    v-model="localPost.ShortText"
                     rows="3"
                     max-rows="6"
                   ></textarea>
@@ -88,10 +91,10 @@
                   <input
                     class="form-check-input"
                     type="checkbox"
-                    id="create-post-public"
-                    v-model="post.IsPublic"
+                    :id="ids.isPublic"
+                    v-model="localPost.IsPublic"
                   />
-                  <label class="form-check-label" for="create-post-public">
+                  <label class="form-check-label" :for="ids.isPublic">
                     Опубликовано
                   </label>
                 </div>
@@ -99,23 +102,23 @@
                   <input
                     class="form-check-input"
                     type="checkbox"
-                    id="create-post-markdown"
-                    v-model="post.Markdown"
+                    :id="ids.markdown"
+                    v-model="localPost.Markdown"
                   />
-                  <label class="form-check-label" for="create-post-markdown">
+                  <label class="form-check-label" :for="ids.markdown">
                     Markdown
                   </label>
                 </div>
               </div>
-              <div class="tab-pane fade" id="create-text-tab">
+              <div class="tab-pane fade" :id="ids.textTab">
                 <div class="mb-3">
-                  <label for="create-post-text" class="form-label"
+                  <label :for="ids.text" class="form-label"
                     >Основной текст</label
                   >
                   <textarea
                     class="form-control"
-                    id="create-post-text"
-                    v-model="post.Text"
+                    :id="ids.text"
+                    v-model="localPost.Text"
                     rows="20"
                   ></textarea>
                 </div>
@@ -132,7 +135,7 @@
             Отмена
           </button>
           <button type="button" class="btn btn-primary" @click="onOk">
-            Создать
+            {{ mode === "create" ? "Создать" : "Сохранить" }}
           </button>
         </div>
       </div>
@@ -141,13 +144,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import ApiService from "@/services/ApiService";
 import { emitter } from "@/events";
 import { EditablePost } from "@/models/blog";
 import { closeModalById } from "@/util";
 
-const post = ref<EditablePost>({
+const props = defineProps<{
+  modalId: string;
+  mode: "create" | "edit";
+  post?: EditablePost;
+}>();
+
+const emptyPost = (): EditablePost => ({
   Created: "",
   Modified: "",
   id: 0,
@@ -159,29 +168,75 @@ const post = ref<EditablePost>({
   ShortText: "",
 });
 
+const localPost = ref<EditablePost>(
+  props.mode === "edit" && props.post ? { ...props.post } : emptyPost()
+);
+
+watch(
+  () => props.post,
+  (newPost) => {
+    if (props.mode === "edit" && newPost) {
+      localPost.value = { ...newPost };
+    }
+  },
+  { deep: true }
+);
+
+/** Preserve original DOM ids from CreatePost / EditPost. */
+const ids = computed(() =>
+  props.mode === "create"
+    ? {
+        propertiesTabBtn: "create-properties-tab-btn",
+        propertiesTab: "create-properties-tab",
+        textTabBtn: "create-text-tab-btn",
+        textTab: "create-text-tab",
+        title: "create-post-title-input",
+        created: "create-post-created",
+        tags: "create-post-tags",
+        shortText: "create-post-short-text",
+        isPublic: "create-post-public",
+        markdown: "create-post-markdown",
+        text: "create-post-text",
+      }
+    : {
+        propertiesTabBtn: "properties-tab-btn",
+        propertiesTab: "properties-tab",
+        textTabBtn: "text-tab-btn",
+        textTab: "text-tab",
+        title: "post-title-input",
+        created: "",
+        tags: "post-tags",
+        shortText: "post-short-text",
+        isPublic: "post-public",
+        markdown: "post-markdown",
+        text: "post-text",
+      }
+);
+
+const modalTitle = computed(() =>
+  props.mode === "create" ? "Создать новый пост" : localPost.value.Title
+);
+
 const tagsString = computed({
-  get: () => post.value.Tags.join(", "),
+  get: () => localPost.value.Tags.join(", "),
   set: (value: string) => {
-    post.value.Tags = value.split(/[,;\s]+/).filter((tag) => tag.trim());
+    localPost.value.Tags = value.split(/[,;\s]+/).filter((tag) => tag.trim());
   },
 });
 
 const formatDateTime = (dateTime: string): string => {
   if (!dateTime) {
     const now = new Date();
-    return now.toISOString().replace(/\.\d{3}Z$/, 'Z');
+    return now.toISOString().replace(/\.\d{3}Z$/, "Z");
   }
   // datetime-local returns "2024-04-25T04:52" format
-  // Append seconds and Z if missing
-  if (dateTime.endsWith('Z')) {
+  if (dateTime.endsWith("Z")) {
     return dateTime;
   }
   if (dateTime.length === 16) {
-    // Format "2024-04-25T04:52" — append seconds
     return `${dateTime}:00Z`;
   }
   if (dateTime.length === 19) {
-    // Format "2024-04-25T04:52:37" — append Z
     return `${dateTime}Z`;
   }
   return dateTime;
@@ -190,29 +245,26 @@ const formatDateTime = (dateTime: string): string => {
 const onOk = async (): Promise<void> => {
   const apiService = new ApiService();
   try {
-    const formattedPost = {
-      ...post.value,
-      Created: formatDateTime(post.value.Created),
-      Modified: formatDateTime(post.value.Created),
-    };
-    await apiService.createPost(formattedPost);
-    emitter.emit("postCreated");
-    closeModalById("create-post");
-
-    // Reset form
-    post.value = {
-      Created: "",
-      Modified: "",
-      id: 0,
-      Title: "",
-      IsPublic: false,
-      Markdown: false,
-      Tags: [],
-      Text: "",
-      ShortText: "",
-    };
+    if (props.mode === "create") {
+      const formattedPost = {
+        ...localPost.value,
+        Created: formatDateTime(localPost.value.Created),
+        Modified: formatDateTime(localPost.value.Created),
+      };
+      await apiService.createPost(formattedPost);
+      emitter.emit("postCreated");
+      closeModalById(props.modalId);
+      localPost.value = emptyPost();
+    } else {
+      await apiService.editPost(localPost.value);
+      emitter.emit("postUpdated");
+      closeModalById(props.modalId);
+    }
   } catch (error) {
-    console.error("Failed to create post:", error);
+    console.error(
+      props.mode === "create" ? "Failed to create post:" : "Failed to edit post:",
+      error
+    );
   }
 };
 </script>
