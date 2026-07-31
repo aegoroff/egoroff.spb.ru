@@ -1,9 +1,11 @@
 use super::{template::Profile, *};
-use crate::auth::AppUser;
 use crate::{
-    auth::{ToUser, YandexAuthorizer},
+    auth::{
+        AppUser, AuthBackend, GithubAuthorizer, GoogleAuthorizer, OAuthAuthorizer, OAuthProfile,
+        YandexAuthorizer,
+    },
     body::Redirect,
-    domain::AuthorizedUser,
+    domain::{AuthRequest, AuthorizedUser},
     handlers::template::Signin,
 };
 use kernel::domain::{ApiResult, User};
@@ -11,11 +13,6 @@ use oauth2::{CsrfToken, PkceCodeVerifier, TokenResponse};
 use serde::Deserialize;
 use tower_sessions::Session;
 use url::Url;
-
-use crate::{
-    auth::{AuthBackend, Authorizer, GithubAuthorizer, GoogleAuthorizer},
-    domain::AuthRequest,
-};
 
 type AuthSession = axum_login::AuthSession<AuthBackend>;
 
@@ -173,9 +170,9 @@ pub async fn serve_users_api(
     make_json_response(Ok(result))
 }
 
-async fn oauth_callback<T: auth::ToUser, U: Authorizer<T>>(
+async fn oauth_callback<T: OAuthProfile>(
     query: AuthRequest,
-    authorizer: Arc<U>,
+    authorizer: Arc<OAuthAuthorizer<T>>,
     page_context: Arc<PageContext<'static>>,
     session: Session,
     pkce_code_verifier_key: &str,
@@ -219,9 +216,8 @@ async fn oauth_callback<T: auth::ToUser, U: Authorizer<T>>(
             Ok(token) => {
                 let user = authorizer.get_user(token.access_token()).await;
                 match user {
-                    Ok(u) => {
+                    Ok(user) => {
                         drop(session);
-                        let user = u.to_user();
                         if let Err(e) = storage.upsert_user(&user) {
                             tracing::error!("login error: {e:#?}");
                             return Redirect::to(LOGIN_URI);

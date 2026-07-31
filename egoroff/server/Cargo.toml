@@ -31,7 +31,6 @@ rust-embed = { version = "8", features = ["include-exclude"] }
 anyhow = { workspace = true }
 chrono = { workspace = true, default-features = false, features = ["serde", "clock", "std"]}
 oauth2 = {version= "5.0.0", features = ["reqwest"] }
-async-trait = { workspace = true }
 reqwest = { workspace = true, features = ["json", "multipart", "stream", "rustls" ] }
 jsonwebtoken = { version = "11.0.0", features = [ "rust_crypto" ]}
 url = { workspace = true }

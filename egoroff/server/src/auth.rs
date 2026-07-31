@@ -7,7 +7,6 @@ use std::{
 };
 
 use anyhow::{Context, Result};
-use async_trait::async_trait;
 use axum::{Json, response};
 use axum_login::{AuthUser, AuthnBackend, AuthzBackend};
 use chrono::Utc;
@@ -23,7 +22,7 @@ use oauth2::{
     url::Url,
 };
 use reqwest::{Client, StatusCode};
-use serde::Deserialize;
+use serde::{Deserialize, de::DeserializeOwned};
 use thiserror::Error;
 
 use crate::domain::AuthorizedUser;
@@ -67,7 +66,6 @@ impl response::IntoResponse for AppUser {
     }
 }
 
-// Single struct instead of three separate ones
 pub struct OAuthAuthorizer<T> {
     client: SpecialClient,
     provider: OAuthProvider,
@@ -110,7 +108,13 @@ pub enum UserStoreError {
     SqlError(<kernel::sqlite::Sqlite as kernel::domain::Storage>::Err),
 }
 
-pub trait ToUser {
+pub trait OAuthProfile: Sized + Send + Sync + DeserializeOwned {
+    const NAME: &'static str;
+    const AUTH_URL: &'static str;
+    const TOKEN_URL: &'static str;
+    const USERINFO_URL: &'static str;
+
+    fn auth_header(token: &str) -> String;
     fn to_user(&self) -> User;
 }
 
@@ -152,11 +156,19 @@ pub struct YandexUser {
     pub default_avatar_id: Option<String>,
 }
 
-impl ToUser for GoogleUser {
+impl OAuthProfile for GoogleUser {
+    const NAME: &'static str = "google";
+    const AUTH_URL: &'static str = "https://accounts.google.com/o/oauth2/v2/auth";
+    const TOKEN_URL: &'static str = "https://www.googleapis.com/oauth2/v3/token";
+    const USERINFO_URL: &'static str = "https://www.googleapis.com/oauth2/v3/userinfo";
+
+    fn auth_header(token: &str) -> String {
+        format!("Bearer {token}")
+    }
+
     fn to_user(&self) -> User {
-        let created = Utc::now();
         User {
-            created,
+            created: Utc::now(),
             email: self.email.clone().unwrap_or_default(),
             name: self.name.clone().unwrap_or_default(),
             login: self.email.as_deref().unwrap_or_default().to_string(),
@@ -164,16 +176,24 @@ impl ToUser for GoogleUser {
             federated_id: self.sub.clone(),
             admin: false,
             verified: true,
-            provider: "google".to_owned(),
+            provider: Self::NAME.to_owned(),
         }
     }
 }
 
-impl ToUser for GithubUser {
+impl OAuthProfile for GithubUser {
+    const NAME: &'static str = "github";
+    const AUTH_URL: &'static str = "https://github.com/login/oauth/authorize";
+    const TOKEN_URL: &'static str = "https://github.com/login/oauth/access_token";
+    const USERINFO_URL: &'static str = "https://api.github.com/user";
+
+    fn auth_header(token: &str) -> String {
+        format!("Bearer {token}")
+    }
+
     fn to_user(&self) -> User {
-        let created = Utc::now();
         User {
-            created,
+            created: Utc::now(),
             email: self.email.as_deref().unwrap_or_default().to_string(),
             name: self.name.as_deref().unwrap_or_default().to_string(),
             login: self.login.clone(),
@@ -181,16 +201,24 @@ impl ToUser for GithubUser {
             federated_id: format!("{}", self.id),
             admin: false,
             verified: true,
-            provider: "github".to_owned(),
+            provider: Self::NAME.to_owned(),
         }
     }
 }
 
-impl ToUser for YandexUser {
+impl OAuthProfile for YandexUser {
+    const NAME: &'static str = "yandex";
+    const AUTH_URL: &'static str = "https://oauth.yandex.ru/authorize";
+    const TOKEN_URL: &'static str = "https://oauth.yandex.ru/token";
+    const USERINFO_URL: &'static str = "https://login.yandex.ru/info?format=json";
+
+    fn auth_header(token: &str) -> String {
+        format!("OAuth {token}")
+    }
+
     fn to_user(&self) -> User {
-        let created = Utc::now();
         User {
-            created,
+            created: Utc::now(),
             email: self
                 .default_email
                 .as_deref()
@@ -206,138 +234,25 @@ impl ToUser for YandexUser {
             federated_id: self.id.clone(),
             admin: false,
             verified: true,
-            provider: "yandex".to_owned(),
+            provider: Self::NAME.to_owned(),
         }
     }
 }
 
-#[async_trait]
-pub trait FetchUser: Sized + Send + Sync {
-    async fn fetch(token: &AccessToken) -> Result<Self>;
-}
-
-#[async_trait]
-impl FetchUser for GoogleUser {
-    async fn fetch(token: &AccessToken) -> Result<Self> {
-        Ok(send_user_request(
-            "https://www.googleapis.com/oauth2/v3/userinfo",
-            &format!("Bearer {}", token.secret()),
-        )
-        .await?
-        .json()
-        .await?)
-    }
-}
-
-#[async_trait]
-impl FetchUser for GithubUser {
-    async fn fetch(token: &AccessToken) -> Result<Self> {
-        Ok(send_user_request(
-            "https://api.github.com/user",
-            &format!("Bearer {}", token.secret()),
-        )
-        .await?
-        .json()
-        .await?)
-    }
-}
-
-#[async_trait]
-impl FetchUser for YandexUser {
-    async fn fetch(token: &AccessToken) -> Result<Self> {
-        Ok(send_user_request(
-            "https://login.yandex.ru/info?format=json",
-            &format!("OAuth {}", token.secret()),
-        )
-        .await?
-        .json()
-        .await?)
-    }
-}
-
-async fn send_user_request(url: &str, auth_header: &str) -> Result<reqwest::Response> {
-    let response = Client::builder()
-        .build()?
-        .get(url)
-        .header("Authorization", auth_header)
-        .header("User-Agent", "egoroff.spb.ru API auth request")
-        .send()
-        .await?;
-    tracing::debug!("Get user status: {}", response.status());
-    if response.status() == StatusCode::OK {
-        Ok(response)
-    } else {
-        Err(anyhow::Error::msg(
-            response.text().await.unwrap_or_default(),
-        ))
-    }
-}
-
-#[async_trait]
-pub trait Authorizer<T> {
-    fn generate_authorize_url(&self) -> GeneratedUrl;
-    async fn exchange_code(
-        &self,
-        code: String,
-        pkce_code_verifier: PkceCodeVerifier,
-    ) -> Result<StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>>;
-    async fn get_user(&self, token: &AccessToken) -> Result<T>;
-}
-
-impl OAuthAuthorizer<GoogleUser> {
+impl<T: OAuthProfile> OAuthAuthorizer<T> {
     pub fn new<P: AsRef<Path>>(db_path: P) -> Result<Self> {
-        let (client, provider) = create_client_and_provider(
-            db_path,
-            "google",
-            "https://accounts.google.com/o/oauth2/v2/auth",
-            "https://www.googleapis.com/oauth2/v3/token",
-        )
-        .with_context(|| "Failed to create Google authorizer")?;
+        let (client, provider) =
+            create_client_and_provider(db_path, T::NAME, T::AUTH_URL, T::TOKEN_URL)
+                .with_context(|| format!("Failed to create {} authorizer", T::NAME))?;
         Ok(Self {
             client,
             provider,
             _phantom: PhantomData,
         })
     }
-}
 
-impl OAuthAuthorizer<GithubUser> {
-    pub fn new<P: AsRef<Path>>(db_path: P) -> Result<Self> {
-        let (client, provider) = create_client_and_provider(
-            db_path,
-            "github",
-            "https://github.com/login/oauth/authorize",
-            "https://github.com/login/oauth/access_token",
-        )
-        .with_context(|| "Failed to create GitHub authorizer")?;
-        Ok(Self {
-            client,
-            provider,
-            _phantom: PhantomData,
-        })
-    }
-}
-
-impl OAuthAuthorizer<YandexUser> {
-    pub fn new<P: AsRef<Path>>(db_path: P) -> Result<Self> {
-        let (client, provider) = create_client_and_provider(
-            db_path,
-            "yandex",
-            "https://oauth.yandex.ru/authorize",
-            "https://oauth.yandex.ru/token",
-        )
-        .with_context(|| "Failed to create Yandex authorizer")?;
-        Ok(Self {
-            client,
-            provider,
-            _phantom: PhantomData,
-        })
-    }
-}
-
-#[async_trait]
-impl<T: FetchUser> Authorizer<T> for OAuthAuthorizer<T> {
-    fn generate_authorize_url(&self) -> GeneratedUrl {
+    #[must_use]
+    pub fn generate_authorize_url(&self) -> GeneratedUrl {
         let request = self.client.authorize_url(CsrfToken::new_random).add_scopes(
             self.provider
                 .scopes
@@ -353,7 +268,7 @@ impl<T: FetchUser> Authorizer<T> for OAuthAuthorizer<T> {
         }
     }
 
-    async fn exchange_code(
+    pub async fn exchange_code(
         &self,
         code: String,
         pkce_code_verifier: PkceCodeVerifier,
@@ -373,8 +288,30 @@ impl<T: FetchUser> Authorizer<T> for OAuthAuthorizer<T> {
         Ok(result)
     }
 
-    async fn get_user(&self, token: &AccessToken) -> Result<T> {
-        T::fetch(token).await
+    pub async fn get_user(&self, token: &AccessToken) -> Result<User> {
+        let profile: T = send_user_request(T::USERINFO_URL, &T::auth_header(token.secret()))
+            .await?
+            .json()
+            .await?;
+        Ok(profile.to_user())
+    }
+}
+
+async fn send_user_request(url: &str, auth_header: &str) -> Result<reqwest::Response> {
+    let response = Client::builder()
+        .build()?
+        .get(url)
+        .header("Authorization", auth_header)
+        .header("User-Agent", "egoroff.spb.ru API auth request")
+        .send()
+        .await?;
+    tracing::debug!("Get user status: {}", response.status());
+    if response.status() == StatusCode::OK {
+        Ok(response)
+    } else {
+        Err(anyhow::Error::msg(
+            response.text().await.unwrap_or_default(),
+        ))
     }
 }
 
