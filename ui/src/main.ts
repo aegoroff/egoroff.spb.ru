@@ -158,6 +158,7 @@ if (admin) {
   const router = createAdminRouter();
   const vueApp = createApp(AdminApp);
   vueApp.use(router);
+  vueApp.use(Vue3ProgressPlugin);
   vueApp.component("font-awesome-icon", FontAwesomeIcon as Component);
   vueApp.mount(admin);
 }

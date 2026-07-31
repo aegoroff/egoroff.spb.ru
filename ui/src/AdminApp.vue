@@ -1,5 +1,6 @@
 <template>
   <div class="container">
+    <vue3-progress-bar></vue3-progress-bar>
     <div class="row">
       <div class="col-2">
         <main-menu/>

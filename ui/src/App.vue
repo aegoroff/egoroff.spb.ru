@@ -12,7 +12,8 @@ import NavigationBar from '@/components/NavigationBar.vue'
 import ApiService from '@/services/ApiService'
 import {User as ApiUser} from '@/models/common'
 import BreadcrumbsBar from '@/components/BreadcrumbsBar.vue'
-import { Section } from './models/common';
+import { Section } from './models/common'
+import { useProgress } from '@marcoschulte/vue3-progress'
 
 defineProps<{
   title: string
@@ -23,19 +24,24 @@ const breadcrumbs = ref<Array<Section>>([])
 const user = ref<ApiUser | null>(null)
 
 onMounted(async () => {
+  const progress = useProgress().start()
   const apiService = new ApiService()
-  const [nav, userResult] = await Promise.allSettled([
-    apiService.getNavigation(),
-    apiService.getUser()
-  ])
-  
-  if (nav.status === 'fulfilled') {
-    navigation.value = nav.value.sections
-    breadcrumbs.value = nav.value.breadcrumbs
-  }
-  
-  if (userResult.status === 'fulfilled') {
-    user.value = userResult.value
+  try {
+    const [nav, userResult] = await Promise.allSettled([
+      apiService.getNavigation(),
+      apiService.getUser()
+    ])
+
+    if (nav.status === 'fulfilled') {
+      navigation.value = nav.value.sections
+      breadcrumbs.value = nav.value.breadcrumbs
+    }
+
+    if (userResult.status === 'fulfilled') {
+      user.value = userResult.value
+    }
+  } finally {
+    progress.finish()
   }
 })
 </script>

@@ -1,6 +1,5 @@
 import axios from "axios";
 import { toQuery } from "@/util";
-import { useProgress } from "@marcoschulte/vue3-progress";
 
 export class Url {
   public type!: string;
@@ -117,13 +116,11 @@ export class SearchQuery {
 
 class SearchService {
   public async search(q?: SearchQuery): Promise<GoogleSearch> {
-    const progress = useProgress().start();
     return await axios
       .get<GoogleSearch>(`/api/v2/search/${toQuery(q)}`)
       .then((r) => {
         return r.data;
-      })
-      .finally(() => progress.finish());
+      });
   }
 }
 

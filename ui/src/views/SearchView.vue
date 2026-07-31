@@ -1,52 +1,55 @@
 <template>
-  <form class="d-flex mb-3" @submit.prevent="newSearch">
-    <div class="row w-100">
-      <div class="col-8">
-        <input
-          id="search-control"
-          class="form-control w-100"
-          v-model="localQuery"
-          placeholder="Введите текст для поиска"
-          required
-        >
+  <div>
+    <form class="d-flex mb-3" @submit.prevent="newSearch">
+      <div class="row w-100">
+        <div class="col-8">
+          <input
+            id="search-control"
+            class="form-control w-100"
+            v-model="localQuery"
+            placeholder="Введите текст для поиска"
+            required
+          >
+        </div>
+        <div class="col">
+          <button class="btn btn-primary" type="submit">
+            <i class="fas fa-search"></i> Искать
+          </button>
+        </div>
       </div>
-      <div class="col">
-        <button class="btn btn-primary" type="submit">
-          <i class="fas fa-search"></i> Искать
-        </button>
-      </div>
-    </div>
-  </form>
+    </form>
 
-  <div class="row" v-if="searchResult">
-    <div class="col">
-      <div class="text-muted mb-3">Результатов: примерно
-        <span>{{ searchResult.searchInformation.formattedTotalResults }}</span>
-        <span> (<span>{{ searchResult.searchInformation.formattedSearchTime }}</span> сек.)</span>
+    <div class="row" v-if="searchResult">
+      <div class="col">
+        <div class="text-muted mb-3">Результатов: примерно
+          <span>{{ searchResult.searchInformation.formattedTotalResults }}</span>
+          <span> (<span>{{ searchResult.searchInformation.formattedSearchTime }}</span> сек.)</span>
+        </div>
+        <SearchResulter :items="searchResult.items"/>
+        <nav v-if="pages > 1 || page > 1">
+          <ul class="pagination">
+            <li class="page-item" :class="{ disabled: page === 1 }">
+              <a class="page-link" href="#" @click.prevent="changePage(page - 1)">Назад</a>
+            </li>
+            <li class="page-item" v-for="p in pageNumbers" :key="p" :class="{ active: p === page }">
+              <a class="page-link" href="#" @click.prevent="changePage(p)">{{ p }}</a>
+            </li>
+            <li class="page-item" :class="{ disabled: page === pages }">
+              <a class="page-link" href="#" @click.prevent="changePage(page + 1)">Вперед</a>
+            </li>
+          </ul>
+        </nav>
       </div>
-      <SearchResulter :items="searchResult.items"/>
-      <nav v-if="pages > 1 || page > 1">
-        <ul class="pagination">
-          <li class="page-item" :class="{ disabled: page === 1 }">
-            <a class="page-link" href="#" @click.prevent="changePage(page - 1)">Назад</a>
-          </li>
-          <li class="page-item" v-for="p in pageNumbers" :key="p" :class="{ active: p === page }">
-            <a class="page-link" href="#" @click.prevent="changePage(p)">{{ p }}</a>
-          </li>
-          <li class="page-item" :class="{ disabled: page === pages }">
-            <a class="page-link" href="#" @click.prevent="changePage(page + 1)">Вперед</a>
-          </li>
-        </ul>
-      </nav>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import SearchService, { GoogleSearch, SearchQuery } from '@/services/SearchService'
 import SearchResulter from '@/components/SearchResulter.vue'
 import { removeHash } from '@/util'
+import { useProgress } from '@marcoschulte/vue3-progress'
 
 const ItemsPerPage = 10
 
@@ -88,6 +91,7 @@ const search = async (): Promise<void> => {
   q.q = localQuery.value
   q.start = (page.value - 1) * ItemsPerPage + 1
 
+  const progress = useProgress().start()
   const service = new SearchService()
   try {
     const result = await service.search(q)
@@ -95,8 +99,11 @@ const search = async (): Promise<void> => {
 
     const totalResults = parseInt(result.searchInformation.totalResults, 10)
     pages.value = Math.ceil(totalResults / ItemsPerPage)
+    await nextTick()
   } catch (error) {
     console.error('Search failed:', error)
+  } finally {
+    progress.finish()
   }
 }
 
