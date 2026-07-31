@@ -6,13 +6,15 @@ use std::{
 };
 
 use anyhow::Result;
-use lol_html::{ElementContentHandlers, HtmlRewriter, Selector, Settings, element};
+use lol_html::{
+    ElementContentHandlers, HtmlRewriter, Selector, Settings, doc_text, element,
+    html_content::TextType,
+};
 use pulldown_cmark::{Options, Parser, html};
 use quick_xml::{
     Reader, Writer,
     events::{BytesEnd, BytesStart, Event},
 };
-use scraper::Html;
 
 const REPLACES: &[(&[u8], &str)] = &[
     (b"example", "pre"),
@@ -160,15 +162,22 @@ pub fn markdown2html(input: &str) -> Result<String> {
 }
 
 pub fn html2text(html: &str) -> Result<String> {
-    let document = Html::parse_fragment(html);
-
-    Ok(document
-        .root_element()
-        .text()
-        .map(str::trim)
-        .filter(|s| !s.is_empty())
-        .collect::<Vec<_>>()
-        .join(" "))
+    let mut parts: Vec<String> = Vec::new();
+    let mut rewriter = HtmlRewriter::new(
+        Settings::new().append_document_content_handler(doc_text!(|t| {
+            if t.text_type() == TextType::Data {
+                let trimmed = t.as_str().trim();
+                if !trimmed.is_empty() {
+                    parts.push(trimmed.to_owned());
+                }
+            }
+            Ok(())
+        })),
+        |_: &[u8]| {},
+    );
+    rewriter.write(html.as_bytes())?;
+    rewriter.end()?;
+    Ok(parts.join(" "))
 }
 
 #[cfg(test)]
