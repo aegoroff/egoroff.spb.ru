@@ -8,7 +8,7 @@ use axum::{Router, routing::get};
 use axum_prometheus::PrometheusMetricLayer;
 
 use axum_login::{AuthManagerLayerBuilder, login_required, permission_required};
-use hyper::{Method, header};
+use axum::http::{Method, header};
 use tower_sessions::cookie::{SameSite, time::Duration};
 use tower_sessions::{Expiry, SessionManagerLayer};
 
