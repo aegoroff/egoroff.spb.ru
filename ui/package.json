@@ -2,6 +2,7 @@
   "name": "ui.egoroff.spb.ru",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit && node scripts/vue-tsc-ts6.cjs --noEmit",
     "typecheck:ts": "tsc --noEmit",
