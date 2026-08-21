@@ -1,3 +1,5 @@
+use core::fmt::NumBuffer;
+
 use crate::indie::ME;
 use serde::Deserialize;
 use serde_json::Value;
@@ -109,11 +111,12 @@ fn google_error_summary(body: &Value) -> String {
 
 fn google_search_url(key: &str, cx: &str, q: &str, start: u32) -> Option<String> {
     let mut url = Url::parse(GOOGLE_CUSTOM_SEARCH_URL).ok()?;
+    let mut buf = NumBuffer::new();
     url.query_pairs_mut()
         .append_pair("key", key)
         .append_pair("cx", cx)
         .append_pair("q", q)
-        .append_pair("start", &start.to_string());
+        .append_pair("start", start.format_into(&mut buf));
     Some(url.to_string())
 }
 

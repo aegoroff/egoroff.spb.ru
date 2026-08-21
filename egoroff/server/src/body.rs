@@ -1,12 +1,12 @@
-use std::path::Path;
-
 use axum::{
     BoxError,
     body::{Body, Bytes},
     http::{HeaderValue, header},
     response::{IntoResponse, Response},
 };
+use core::fmt::NumBuffer;
 use futures::TryStream;
+use std::path::Path;
 
 /// Custom response with content type specified.
 #[derive(Clone, Copy, Debug)]
@@ -138,7 +138,8 @@ where
         if let Ok(val) = HeaderValue::from_str(attachment.as_str()) {
             let content_disposition = (header::CONTENT_DISPOSITION, val);
             if let Some(len) = self.length {
-                if let Ok(val) = HeaderValue::from_str(&len.to_string()) {
+                let mut buf = NumBuffer::new();
+                if let Ok(val) = HeaderValue::from_str(len.format_into(&mut buf)) {
                     let content_length = (header::CONTENT_LENGTH, val);
                     ([content_type, content_disposition, content_length], body).into_response()
                 } else {
