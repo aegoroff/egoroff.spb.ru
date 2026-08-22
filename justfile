@@ -121,7 +121,11 @@ docker tag=env("TAG", "master") cargo_mirror=env("CARGO_MIRROR", ""):
     fi
 
     if ! docker buildx inspect "${builder}" >/dev/null 2>&1; then
-      docker buildx create --name "${builder}" --driver docker-container --use
+      # network=host: use host DNS (split-horizon). Bridge buildkit otherwise
+      # resolves registry.egoroff.spb.ru via 8.8.8.8 to the public IP, which
+      # returns 501 on blob uploads instead of reaching the local registry.
+      docker buildx create --name "${builder}" --driver docker-container \
+        --driver-opt network=host --use
     else
       docker buildx use "${builder}"
     fi
