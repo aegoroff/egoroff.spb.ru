@@ -2,7 +2,6 @@ use std::{
     borrow::Cow,
     collections::{HashMap, HashSet},
     io::Cursor,
-    str,
 };
 
 use anyhow::Result;
@@ -16,26 +15,26 @@ use quick_xml::{
     events::{BytesEnd, BytesStart, Event},
 };
 
-const REPLACES: &[(&[u8], &str)] = &[
-    (b"example", "pre"),
-    (b"quote", "blockquote"),
-    (b"link", "a"),
-    (b"center", "div"),
-    (b"div1", "2"),
-    (b"div2", "3"),
-    (b"div3", "4"),
-    (b"head", "h"),
-    (b"table", "table"),
-    (b"acronym", "acronym"),
+const REPLACES: &[(&str, &str)] = &[
+    ("example", "pre"),
+    ("quote", "blockquote"),
+    ("link", "a"),
+    ("center", "div"),
+    ("div1", "2"),
+    ("div2", "3"),
+    ("div3", "4"),
+    ("head", "h"),
+    ("table", "table"),
+    ("acronym", "acronym"),
 ];
 
-const PARENTS: &[&[u8]] = &[b"div1", b"div2", b"div3"];
+const PARENTS: &[&str] = &["div1", "div2", "div3"];
 
-static PARENTS_SET: std::sync::LazyLock<HashSet<&'static [u8]>> =
+static PARENTS_SET: std::sync::LazyLock<HashSet<&'static str>> =
     std::sync::LazyLock::new(|| PARENTS.iter().copied().collect());
 
-static REPLACES_MAP: std::sync::LazyLock<HashMap<&'static [u8], &'static str>> =
-    std::sync::LazyLock::new(|| REPLACES.iter().map(|(k, v)| (*k, *v)).collect());
+static REPLACES_MAP: std::sync::LazyLock<HashMap<&'static str, &'static str>> =
+    std::sync::LazyLock::new(|| REPLACES.iter().copied().collect());
 
 pub fn xml2html(input: &str) -> Result<String> {
     let mut reader = Reader::from_str(input);
@@ -65,9 +64,8 @@ pub fn xml2html(input: &str) -> Result<String> {
                     let mut href: Option<Cow<'static, str>> = None;
 
                     for a in original_attributes {
-                        let attr = a.key.local_name();
-                        let id = str::from_utf8(attr.as_ref()).unwrap_or("");
-                        let val = str::from_utf8(a.value.as_ref()).unwrap_or("");
+                        let id = a.key.local_name().into_inner();
+                        let val = a.value.as_ref();
 
                         href = match id {
                             "id" => match val {
