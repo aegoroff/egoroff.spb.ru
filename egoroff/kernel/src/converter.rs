@@ -257,7 +257,7 @@ mod tests {
         "<a href=\"/blog/\" itemprop=\"url\">test</a>"
     )]
     #[case(
-        "<?xml version=\"1.0\"?><link hame=\"2\">test</link>",
+        "<?xml version=\"1.0\"?><link name=\"2\">test</link>",
         "<a href=\"/blog/2.html\" itemprop=\"url\">test</a>"
     )]
     #[case(
