@@ -8,6 +8,9 @@ fn main() {
     // builds can ship a stale frontend. Mirror `just local`'s `cargo clean -p server`.
     let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR"));
     for rel in ["../../static", "../../apache", "../../templates/apache"] {
-        println!("cargo:rerun-if-changed={}", manifest_dir.join(rel).display());
+        println!(
+            "cargo:rerun-if-changed={}",
+            manifest_dir.join(rel).display()
+        );
     }
 }
