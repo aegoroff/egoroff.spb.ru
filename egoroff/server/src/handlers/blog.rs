@@ -8,7 +8,7 @@ use crate::body::Content;
 use axum::response::Redirect;
 
 use super::{
-    template::{BlogIndex, BlogPost, PostView},
+    template::{BlogIndex, BlogPost},
     *,
 };
 
@@ -153,11 +153,6 @@ pub async fn serve_document(
 
     match render_post_content(&mut post) {
         Ok(content) => {
-            let post_view = PostView {
-                created: post.created,
-                tags: &post.tags,
-            };
-
             let meta_description = if content.is_empty() {
                 post.title.clone()
             } else {
@@ -181,7 +176,7 @@ pub async fn serve_document(
                 title: &post.title,
                 title_path: &title_path,
                 keywords: &keywords,
-                main_post: &post_view,
+                main_post: &post,
                 content,
                 meta_description,
                 year: get_year(),
