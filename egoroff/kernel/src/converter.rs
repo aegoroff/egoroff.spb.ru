@@ -77,7 +77,7 @@ pub fn xml2html(input: &str) -> Result<String> {
                                 _ => Some(Cow::Borrowed("/")),
                             },
 
-                            "hame" => Some(Cow::Owned(format!("/blog/{val}.html"))),
+                            "name" => Some(Cow::Owned(format!("/blog/{val}.html"))),
 
                             _ => href,
                         };
