@@ -337,6 +337,8 @@ fn strip_extension(path: &str) -> &str {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::unwrap_in_result)]
+    #![allow(clippy::unwrap_used)]
     use super::*;
     use rstest::rstest;
 
@@ -358,64 +360,52 @@ mod tests {
         assert_eq!(expected, actual)
     }
 
+    #[rstest]
+    #[case("Hello **world**", "", true, "<p>Hello <strong>world</strong></p>\n")]
+    #[case("a - b", "", true, "<p>a&nbsp;&mdash; b</p>\n")]
+    #[case("", "teaser only", true, "teaser only")]
+    #[case("", "<p>a - b</p>", true, "<p>a&nbsp;&mdash; b</p>")]
+    #[case("<p>a - b</p>", "", false, "<p>a&nbsp;&mdash; b</p>")]
+    #[case(
+        "<?xml version=\"1.0\"?><body><p>a - b</p><ul><li>c - d</li></ul></body>",
+        "",
+        false,
+        "<p>a&nbsp;&mdash; b</p><ul><li>c&nbsp;&mdash; d</li></ul>"
+    )]
+    fn render_post_content_tests(
+        #[case] text: &str,
+        #[case] short_text: &str,
+        #[case] markdown: bool,
+        #[case] expected: &str,
+    ) {
+        // arrange
+        let mut post = Post {
+            text: text.into(),
+            short_text: short_text.into(),
+            markdown,
+            ..Default::default()
+        };
+
+        // act
+        let actual = render_post_content(&mut post).unwrap();
+
+        // assert
+        assert_eq!(expected, actual);
+    }
+
     #[test]
-    fn render_post_content_drops_raw_text() {
+    fn render_post_content_clears_raw_text() {
+        // arrange
         let mut post = Post {
             text: "Hello **world**".into(),
-            short_text: "teaser".into(),
             markdown: true,
             ..Default::default()
         };
 
-        let html = render_post_content(&mut post).unwrap();
+        // act
+        render_post_content(&mut post).unwrap();
 
+        // assert
         assert!(post.text.is_empty());
-        assert!(html.contains("<strong>world</strong>"));
-    }
-
-    #[test]
-    fn render_post_content_uses_short_text_when_body_empty() {
-        let mut post = Post {
-            text: String::new(),
-            short_text: "teaser only".into(),
-            markdown: true,
-            ..Default::default()
-        };
-
-        let html = render_post_content(&mut post).unwrap();
-
-        assert!(post.text.is_empty());
-        assert!(html.contains("teaser only"));
-    }
-
-    #[test]
-    fn render_post_content_typographs_html_body() {
-        let mut post = Post {
-            text: "<p>a - b</p>".into(),
-            markdown: false,
-            ..Default::default()
-        };
-
-        let html = render_post_content(&mut post).unwrap();
-
-        assert!(html.contains("&mdash;"));
-    }
-
-    #[test]
-    fn render_post_content_typographs_xml_body() {
-        let mut post = Post {
-            text: "<?xml version=\"1.0\"?>\n<body><p>a - b</p><ul><li>c - d</li></ul></body>"
-                .into(),
-            markdown: false,
-            ..Default::default()
-        };
-
-        let html = render_post_content(&mut post).unwrap();
-
-        assert!(html.contains("&mdash;"));
-        assert!(html.contains("<p>a&nbsp;&mdash; b</p>"));
-        assert!(html.contains("<li>c&nbsp;&mdash; d</li>"));
-        assert!(!html.contains("<?xml"));
-        assert!(!html.contains("<body>"));
     }
 }
