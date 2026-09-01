@@ -12,9 +12,9 @@ use lol_html::{
 };
 use regex::Regex;
 
-const ALLOWED_TAGS: &[&str] = &[
-    "p", "div", "span", "a", "dt", "dd", "li", "i", "b", "em", "strong", "small", "h1", "h2", "h3",
-    "h4", "h5", "h6", "td", "th",
+/// Tags whose descendants must not be typographed (code and raw text).
+const SKIP_TAGS: &[&str] = &[
+    "pre", "code", "script", "style", "kbd", "samp", "textarea", "tt",
 ];
 
 type Rule = (&'static str, &'static str);
@@ -38,8 +38,8 @@ static TYPOGRAPH_RE: std::sync::LazyLock<Vec<(Regex, &'static str)>> =
             .collect()
     });
 
-static ALLOWED_SET: std::sync::LazyLock<HashSet<&'static str>> =
-    std::sync::LazyLock::new(|| ALLOWED_TAGS.iter().copied().collect());
+static SKIP_SET: std::sync::LazyLock<HashSet<&'static str>> =
+    std::sync::LazyLock::new(|| SKIP_TAGS.iter().copied().collect());
 
 pub fn typograph(html: &str) -> Result<String> {
     let forbidden_depth: Rc<RefCell<u32>> = Rc::new(RefCell::new(0));
@@ -69,7 +69,7 @@ pub fn typograph(html: &str) -> Result<String> {
     let element_handler: (Cow<Selector>, ElementContentHandlers) =
         element!("*", |e: &mut Element| {
             let tag_name = e.tag_name();
-            let is_forbidden = !ALLOWED_SET.contains(tag_name.as_str());
+            let is_forbidden = SKIP_SET.contains(tag_name.as_str());
 
             if is_forbidden && let Some(handlers) = e.end_tag_handlers() {
                 *forbidden_depth.borrow_mut() += 1;
@@ -84,10 +84,7 @@ pub fn typograph(html: &str) -> Result<String> {
             Ok(())
         });
 
-    let mut settings = Settings::new();
-    for t in ALLOWED_TAGS {
-        settings = settings.append_element_content_handler(text!(*t, text_handler));
-    }
+    let settings = Settings::new().append_element_content_handler(text!("*", text_handler));
 
     let mut result = Vec::with_capacity(html.len() * 2); // Pre-allocate more memory
 
@@ -164,6 +161,12 @@ mod tests {
     #[case("<p>test \"a\"bc</p>", "<p>test «a»bc</p>")]
     #[case("<p>URL \"/\". </p>", "<p>URL «/». </p>")]
     #[case("<p>test \"a - b\"cd</p>", "<p>test «a&nbsp;&mdash; b»cd</p>")]
+    #[case("<body><p>a - b</p></body>", "<body><p>a&nbsp;&mdash; b</p></body>")]
+    #[case("<ul><li>a - b</li></ul>", "<ul><li>a&nbsp;&mdash; b</li></ul>")]
+    #[case(
+        "<blockquote><p>a - b</p></blockquote>",
+        "<blockquote><p>a&nbsp;&mdash; b</p></blockquote>"
+    )]
     fn typograph_tests(#[case] str: &str, #[case] expected: &str) {
         // arrange
 

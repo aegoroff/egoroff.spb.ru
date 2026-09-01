@@ -400,4 +400,22 @@ mod tests {
 
         assert!(html.contains("&mdash;"));
     }
+
+    #[test]
+    fn render_post_content_typographs_xml_body() {
+        let mut post = Post {
+            text: "<?xml version=\"1.0\"?>\n<body><p>a - b</p><ul><li>c - d</li></ul></body>"
+                .into(),
+            markdown: false,
+            ..Default::default()
+        };
+
+        let html = render_post_content(&mut post).unwrap();
+
+        assert!(html.contains("&mdash;"));
+        assert!(html.contains("<p>a&nbsp;&mdash; b</p>"));
+        assert!(html.contains("<li>c&nbsp;&mdash; d</li>"));
+        assert!(!html.contains("<?xml"));
+        assert!(!html.contains("<body>"));
+    }
 }

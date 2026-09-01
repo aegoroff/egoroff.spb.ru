@@ -43,6 +43,9 @@ pub fn xml2html(input: &str) -> Result<String> {
     let mut parents: Vec<&'static str> = Vec::new();
     loop {
         match reader.read_event() {
+            Ok(Event::Decl(_) | Event::PI(_)) => continue,
+            Ok(Event::Start(e)) if matches!(e.name().as_ref(), "body" | "html") => continue,
+            Ok(Event::End(e)) if matches!(e.name().as_ref(), "body" | "html") => continue,
             Ok(Event::Start(e)) if REPLACES_MAP.contains_key(e.name().as_ref()) => {
                 let Some(replace) = REPLACES_MAP.get(e.name().as_ref()) else {
                     continue;
@@ -189,87 +192,85 @@ mod tests {
     #[case("<p>test \"a - b\"cd</p>", "<p>test \"a - b\"cd</p>")]
     #[case(
         "<?xml version=\"1.0\"?><div1><head>A</head><div2><head>B</head><div3><head>C</head></div3></div2></div1>",
-        "<?xml version=\"1.0\"?><h2>A</h2><h3>B</h3><h4>C</h4>"
+        "<h2>A</h2><h3>B</h3><h4>C</h4>"
     )]
     #[case(
         "<?xml version=\"1.0\"?><div1><head>A</head><div2><head>B</head></div2><head>C</head></div1>",
-        "<?xml version=\"1.0\"?><h2>A</h2><h3>B</h3><h2>C</h2>"
+        "<h2>A</h2><h3>B</h3><h2>C</h2>"
     )]
     #[case(
         "<?xml version=\"1.0\"?><p>test \"a - b\"cd</p>",
-        "<?xml version=\"1.0\"?><p>test \"a - b\"cd</p>"
+        "<p>test \"a - b\"cd</p>"
     )]
     #[case(
-        "<?xml version=\"1.0\"?><center>test</center>",
-        "<?xml version=\"1.0\"?><div>test</div>"
+        "<?xml version=\"1.0\"?><body><p>test \"a - b\"cd</p></body>",
+        "<p>test \"a - b\"cd</p>"
     )]
-    #[case(
-        "<?xml version=\"1.0\"?><example>test</example>",
-        "<?xml version=\"1.0\"?><pre>test</pre>"
-    )]
+    #[case("<?xml version=\"1.0\"?><center>test</center>", "<div>test</div>")]
+    #[case("<?xml version=\"1.0\"?><example>test</example>", "<pre>test</pre>")]
     #[case(
         "<?xml version=\"1.0\"?><example><![CDATA[<p>test</p>]]></example>",
-        "<?xml version=\"1.0\"?><pre>&lt;p&gt;test&lt;/p&gt;</pre>"
+        "<pre>&lt;p&gt;test&lt;/p&gt;</pre>"
     )]
     #[case(
         "<?xml version=\"1.0\"?><example class=\"lang-rust\">test</example>",
-        "<?xml version=\"1.0\"?><pre class=\"lang-rust\">test</pre>"
+        "<pre class=\"lang-rust\">test</pre>"
     )]
     #[case(
         "<?xml version=\"1.0\"?><quote>test</quote>",
-        "<?xml version=\"1.0\"?><blockquote>test</blockquote>"
+        "<blockquote>test</blockquote>"
     )]
     #[case(
         "<?xml version=\"1.0\"?><link>test</link>",
-        "<?xml version=\"1.0\"?><a itemprop=\"url\">test</a>"
+        "<a itemprop=\"url\">test</a>"
     )]
     #[case(
         "<?xml version=\"1.0\"?><div1><head>test</head><p>b</p></div1>",
-        "<?xml version=\"1.0\"?><h2>test</h2><p>b</p>"
+        "<h2>test</h2><p>b</p>"
     )]
     #[case(
         "<?xml version=\"1.0\"?><div2><head>test</head><p>b</p></div2>",
-        "<?xml version=\"1.0\"?><h3>test</h3><p>b</p>"
+        "<h3>test</h3><p>b</p>"
     )]
     #[case(
         "<?xml version=\"1.0\"?><div3><head>test</head><p>b</p></div3>",
-        "<?xml version=\"1.0\"?><h4>test</h4><p>b</p>"
+        "<h4>test</h4><p>b</p>"
     )]
     #[case(
         "<?xml version=\"1.0\"?><div1><head>h</head><div2><head>h</head></div2></div1>",
-        "<?xml version=\"1.0\"?><h2>h</h2><h3>h</h3>"
+        "<h2>h</h2><h3>h</h3>"
     )]
     #[case(
         "<?xml version=\"1.0\"?><table><tr><td>test</td></tr></table>",
-        "<?xml version=\"1.0\"?><table class=\"table table-condensed table-striped\"><tr><td>test</td></tr></table>"
+        "<table class=\"table table-condensed table-striped\"><tr><td>test</td></tr></table>"
     )]
     #[case(
         "<?xml version=\"1.0\"?><acronym>test</acronym>",
-        "<?xml version=\"1.0\"?><acronym class=\"initialism\">test</acronym>"
+        "<acronym class=\"initialism\">test</acronym>"
     )]
     #[case(
         "<?xml version=\"1.0\"?><link id=\"3\">test</link>",
-        "<?xml version=\"1.0\"?><a href=\"/\" itemprop=\"url\">test</a>"
+        "<a href=\"/\" itemprop=\"url\">test</a>"
     )]
     #[case(
         "<?xml version=\"1.0\"?><link id=\"2\">test</link>",
-        "<?xml version=\"1.0\"?><a href=\"/blog/\" itemprop=\"url\">test</a>"
+        "<a href=\"/blog/\" itemprop=\"url\">test</a>"
     )]
     #[case(
         "<?xml version=\"1.0\"?><link hame=\"2\">test</link>",
-        "<?xml version=\"1.0\"?><a href=\"/blog/2.html\" itemprop=\"url\">test</a>"
+        "<a href=\"/blog/2.html\" itemprop=\"url\">test</a>"
     )]
     #[case(
         "<?xml version=\"1.0\"?><link id=\"1\">test</link>",
-        "<?xml version=\"1.0\"?><a href=\"/portfolio/\" itemprop=\"url\">test</a>"
+        "<a href=\"/portfolio/\" itemprop=\"url\">test</a>"
     )]
     #[case(
         "<?xml version=\"1.0\"?><link id=\"53\">test</link>",
-        "<?xml version=\"1.0\"?><a href=\"/portfolio/\" itemprop=\"url\">test</a>"
+        "<a href=\"/portfolio/\" itemprop=\"url\">test</a>"
     )]
     #[case(
         "<?xml version=\"1.0\"?><link id=\"62\">test</link>",
-        "<?xml version=\"1.0\"?><a href=\"/portfolio/\" itemprop=\"url\">test</a>"
+        "<a href=\"/portfolio/\" itemprop=\"url\">test</a>"
     )]
     #[case(
         "<link id=\"62\">test</link>",
