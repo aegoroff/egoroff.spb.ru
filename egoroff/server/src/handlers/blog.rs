@@ -1,13 +1,14 @@
 use kernel::{
-    converter::html2text,
+    converter::{html2text, markdown2html, xml2html},
     domain::{ApiResult, Post, SmallPost},
+    typograph::typograph,
 };
 
 use crate::body::Content;
 use axum::response::Redirect;
 
 use super::{
-    template::{BlogIndex, BlogPost},
+    template::{BlogIndex, BlogPost, PostView},
     *,
 };
 
@@ -138,7 +139,7 @@ pub async fn serve_document(
         return redirect_response(&new_path);
     }
 
-    let post = match storage.get_post(id) {
+    let mut post = match storage.get_post(id) {
         Ok(item) if item.is_public => item,
         Ok(_) => return not_found_page(),
         Err(e) => {
@@ -150,17 +151,14 @@ pub async fn serve_document(
     let uri = format!("{BLOG_PATH}{path}");
     let title_path = page_context.site_graph.make_title_path(&uri);
 
-    let content = if post.markdown {
-        markdown2html(&post.text)
-    } else if post.text.starts_with("<?xml version=\"1.0\"?>") {
-        xml2html(&post.text)
-    } else {
-        Ok(post.text.clone())
-    };
+    match render_post_content(&mut post) {
+        Ok(content) => {
+            let post_view = PostView {
+                created: post.created,
+                tags: &post.tags,
+            };
 
-    match content {
-        Ok(c) => {
-            let meta_description = if c.is_empty() {
+            let meta_description = if content.is_empty() {
                 post.title.clone()
             } else {
                 let descr = if post.markdown {
@@ -183,8 +181,8 @@ pub async fn serve_document(
                 title: &post.title,
                 title_path: &title_path,
                 keywords: &keywords,
-                main_post: &post,
-                content: &c,
+                main_post: &post_view,
+                content,
                 meta_description,
                 year: get_year(),
             }
@@ -195,6 +193,28 @@ pub async fn serve_document(
             internal_server_error_page()
         }
     }
+}
+
+/// Converts post body to typographed HTML and drops raw `text` from `post`.
+fn render_post_content(post: &mut Post) -> Result<String> {
+    let text = std::mem::take(&mut post.text);
+    let is_xml = text.starts_with("<?xml version=\"1.0\"?>");
+
+    let html = if post.markdown {
+        markdown2html(&text)?
+    } else if is_xml {
+        xml2html(&text)?
+    } else {
+        text
+    };
+
+    let body = if html.is_empty() {
+        post.short_text.clone()
+    } else {
+        html
+    };
+
+    typograph(&body)
 }
 
 /// Just redirects to /blog/ page using 308 code
@@ -341,5 +361,48 @@ mod tests {
 
         // assert
         assert_eq!(expected, actual)
+    }
+
+    #[test]
+    fn render_post_content_drops_raw_text() {
+        let mut post = Post {
+            text: "Hello **world**".into(),
+            short_text: "teaser".into(),
+            markdown: true,
+            ..Default::default()
+        };
+
+        let html = render_post_content(&mut post).unwrap();
+
+        assert!(post.text.is_empty());
+        assert!(html.contains("<strong>world</strong>"));
+    }
+
+    #[test]
+    fn render_post_content_uses_short_text_when_body_empty() {
+        let mut post = Post {
+            text: String::new(),
+            short_text: "teaser only".into(),
+            markdown: true,
+            ..Default::default()
+        };
+
+        let html = render_post_content(&mut post).unwrap();
+
+        assert!(post.text.is_empty());
+        assert!(html.contains("teaser only"));
+    }
+
+    #[test]
+    fn render_post_content_typographs_html_body() {
+        let mut post = Post {
+            text: "<p>a - b</p>".into(),
+            markdown: false,
+            ..Default::default()
+        };
+
+        let html = render_post_content(&mut post).unwrap();
+
+        assert!(html.contains("&mdash;"));
     }
 }

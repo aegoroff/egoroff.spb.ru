@@ -1,7 +1,8 @@
 use askama::Template;
 use axum::http::{self, StatusCode};
 use axum::response::{IntoResponse, Response};
-use kernel::domain::{Post, SmallPost};
+use chrono::{DateTime, Utc};
+use kernel::domain::SmallPost;
 
 use crate::domain::{Apache, BlogRequest, Error, Poster};
 
@@ -152,6 +153,13 @@ impl IntoResponse for BlogIndex<'_> {
     }
 }
 
+/// Blog post metadata for templates (full `text` is not included).
+#[derive(Debug)]
+pub struct PostView<'a> {
+    pub created: DateTime<Utc>,
+    pub tags: &'a [String],
+}
+
 #[derive(Template)]
 #[template(path = "blog/post.html")]
 pub struct BlogPost<'a> {
@@ -160,8 +168,8 @@ pub struct BlogPost<'a> {
     pub title_path: &'a str,
     pub keywords: &'a str,
     pub meta_description: String,
-    pub main_post: &'a Post,
-    pub content: &'a str,
+    pub main_post: &'a PostView<'a>,
+    pub content: String,
     pub year: u32,
 }
 
