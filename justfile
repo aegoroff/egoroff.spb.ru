@@ -22,7 +22,7 @@ build-release:
 # Run all tests
 [group('backend')]
 test:
-    cargo test --manifest-path egoroff/Cargo.toml
+    cargo test --manifest-path egoroff/Cargo.toml --workspace --all-features
 
 # Lint the workspace with pedantic clippy
 [group('backend')]
