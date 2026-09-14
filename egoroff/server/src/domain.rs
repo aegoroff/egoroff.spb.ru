@@ -2,7 +2,7 @@ use std::{collections::HashSet, path::PathBuf, sync::Arc};
 
 use futures::lock::Mutex;
 use kernel::{
-    domain::ApiResult,
+    domain::{ApiResult, User},
     graph::{SiteGraph, SiteSection},
     sqlite::Sqlite,
 };
@@ -145,6 +145,34 @@ pub struct AuthorizedUser {
     pub provider: String,
 }
 
+/// Represents the profile fields a user is allowed to change about themselves.
+///
+/// Everything else about the stored user is taken from the authenticated
+/// session, so a request cannot alter identity or privileges.
+#[derive(Debug, Deserialize, Serialize, Default)]
+pub struct UserInfoUpdate {
+    /// The display name of the user.
+    pub name: String,
+    /// The email address associated with the user.
+    pub email: String,
+    /// The URL of the user's avatar image.
+    #[serde(rename = "avatarUrl")]
+    pub avatar_url: String,
+}
+
+impl UserInfoUpdate {
+    /// Builds the user to store from this request and the authenticated user.
+    #[must_use]
+    pub fn into_user(self, current: &User) -> User {
+        User {
+            name: self.name,
+            email: self.email,
+            avatar_url: self.avatar_url,
+            ..current.clone()
+        }
+    }
+}
+
 /// Represents a container for files in the application.
 #[derive(Serialize, Default, ToSchema)]
 pub struct FilesContainer {
@@ -208,9 +236,95 @@ impl<T> Poster<T> {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::unwrap_used)]
+    use chrono::{TimeZone, Utc};
     use kernel::domain::SmallPost;
+    use rstest::rstest;
 
     use super::*;
+
+    fn authenticated_user() -> User {
+        User {
+            created: Utc.with_ymd_and_hms(2020, 3, 1, 10, 0, 0).unwrap(),
+            email: String::from("old@example.com"),
+            name: String::from("Old Name"),
+            login: String::from("egoroff"),
+            avatar_url: String::from("https://example.com/old.png"),
+            federated_id: String::from("federated-id"),
+            admin: true,
+            verified: true,
+            provider: String::from("github"),
+        }
+    }
+
+    #[test]
+    fn into_user_takes_editable_fields_from_request() {
+        // arrange
+        let current = authenticated_user();
+        let update = UserInfoUpdate {
+            name: String::from("New Name"),
+            email: String::from("new@example.com"),
+            avatar_url: String::from("https://example.com/new.png"),
+        };
+
+        // act
+        let user = update.into_user(&current);
+
+        // assert
+        assert_eq!(user.name, "New Name");
+        assert_eq!(user.email, "new@example.com");
+        assert_eq!(user.avatar_url, "https://example.com/new.png");
+    }
+
+    #[rstest]
+    #[case(true, true)]
+    #[case(false, false)]
+    #[case(true, false)]
+    #[case(false, true)]
+    fn into_user_keeps_identity_and_privileges_from_session(
+        #[case] admin: bool,
+        #[case] verified: bool,
+    ) {
+        // arrange
+        let current = User {
+            admin,
+            verified,
+            ..authenticated_user()
+        };
+        let update = UserInfoUpdate {
+            name: String::from("New Name"),
+            email: String::from("new@example.com"),
+            avatar_url: String::from("https://example.com/new.png"),
+        };
+
+        // act
+        let user = update.into_user(&current);
+
+        // assert
+        assert_eq!(user.admin, admin);
+        assert_eq!(user.verified, verified);
+        assert_eq!(user.login, "egoroff");
+        assert_eq!(user.federated_id, "federated-id");
+        assert_eq!(user.provider, "github");
+        assert_eq!(user.created, current.created);
+    }
+
+    #[test]
+    fn user_info_update_drops_fields_it_does_not_own() {
+        // arrange
+        let body = r#"{"name":"New Name","email":"new@example.com","avatarUrl":"https://example.com/new.png","admin":true,"verified":true,"username":"root","provider":"google","federated_id":"other"}"#;
+        let current = authenticated_user();
+
+        // act
+        let update: UserInfoUpdate = serde_json::from_str(body).unwrap();
+        let user = update.into_user(&current);
+
+        // assert
+        assert_eq!(user.avatar_url, "https://example.com/new.png");
+        assert_eq!(user.login, "egoroff");
+        assert_eq!(user.federated_id, "federated-id");
+        assert_eq!(user.provider, "github");
+    }
 
     #[test]
     fn poster_new_with_pages_first_page() {

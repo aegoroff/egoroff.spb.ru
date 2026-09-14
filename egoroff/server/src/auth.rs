@@ -50,6 +50,11 @@ impl AppUser {
         Self { user }
     }
 
+    #[must_use]
+    pub fn user(&self) -> &User {
+        &self.user
+    }
+
     pub fn into_authorized(self) -> AuthorizedUser {
         AuthorizedUser {
             login_or_name: self.user.login,

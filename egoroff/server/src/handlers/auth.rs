@@ -4,7 +4,7 @@ use crate::{
         AppUser, AuthBackend, GithubAuthorizer, GoogleAuthorizer, OAuthAuthorizer, OAuthProfile,
         YandexAuthorizer,
     },
-    domain::{AuthRequest, AuthorizedUser},
+    domain::{AuthRequest, AuthorizedUser, UserInfoUpdate},
     handlers::template::Signin,
 };
 use axum::response::Redirect;
@@ -331,4 +331,35 @@ pub async fn serve_user_info_api_call(auth: AuthSession) -> impl IntoResponse {
     } else {
         Redirect::to(LOGIN_URI).into_response()
     }
+}
+
+pub async fn serve_user_info_update(
+    mut auth: AuthSession,
+    State(page_context): State<Arc<PageContext<'_>>>,
+    Json(update): Json<UserInfoUpdate>,
+) -> impl IntoResponse {
+    let Some(current) = auth.user.clone() else {
+        return StatusCode::UNAUTHORIZED.into_response();
+    };
+
+    let user = update.into_user(current.user());
+    let result = update_profile(&mut auth, &page_context, user).await;
+    if let Err(e) = &result {
+        tracing::error!("Failed to update profile: {e:#?}");
+    }
+    updated_response(result).into_response()
+}
+
+async fn update_profile(
+    auth: &mut AuthSession,
+    page_context: &PageContext<'_>,
+    user: User,
+) -> anyhow::Result<()> {
+    {
+        let mut storage = page_context.storage.lock().await;
+        storage.upsert_user(&user)?;
+    }
+    // Refresh the session so the new name and avatar show up without re-login.
+    auth.login(&AppUser::new(user)).await?;
+    Ok(())
 }

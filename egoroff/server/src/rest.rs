@@ -337,11 +337,13 @@ fn auth_routes() -> Router<Arc<PageContext<'static>>> {
         .route("/logout/", get(handlers::auth::serve_logout))
         .route(
             "/api/v2/auth/userinfo",
-            get(handlers::auth::serve_user_info_api_call),
+            get(handlers::auth::serve_user_info_api_call)
+                .put(handlers::auth::serve_user_info_update),
         )
         .route(
             "/api/v2/auth/userinfo/",
-            get(handlers::auth::serve_user_info_api_call),
+            get(handlers::auth::serve_user_info_api_call)
+                .put(handlers::auth::serve_user_info_update),
         )
 }
 
