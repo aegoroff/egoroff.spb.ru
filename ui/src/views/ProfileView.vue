@@ -68,13 +68,13 @@ import AppIcon from '@/components/AppIcon.vue'
 import { FullUserInfo } from '@/models/common'
 
 const user = ref<FullUserInfo>({
-  id: 0,
   admin: false,
   created: '',
   avatarUrl: '',
   email: '',
   name: '',
   username: '',
+  federatedId: '',
   verified: false,
   provider: ''
 })

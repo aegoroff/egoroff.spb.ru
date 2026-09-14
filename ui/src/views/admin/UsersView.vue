@@ -17,8 +17,8 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="user in users" :key="user.id">
-            <td>{{ user.id }}</td>
+          <tr v-for="user in users" :key="`${user.provider}_${user.federatedId}`">
+            <td>{{ user.federatedId }}</td>
             <td>{{ user.name }}</td>
             <td>{{ user.username }}</td>
             <td>{{ user.email }}</td>

@@ -17,6 +17,7 @@ pub struct User {
     #[serde(rename(serialize = "avatarUrl"))]
     pub avatar_url: String,
     /// The federated ID of the user (e.g., from an external authentication provider).
+    #[serde(rename = "federatedId")]
     pub federated_id: String,
     /// A boolean indicating whether the user is an administrator.
     pub admin: bool,
@@ -325,6 +326,43 @@ mod tests {
     #![allow(clippy::unwrap_used)]
     use super::*;
     use rstest::{fixture, rstest};
+
+    #[rstest]
+    #[case("username")]
+    #[case("avatarUrl")]
+    #[case("federatedId")]
+    #[case("created")]
+    #[case("email")]
+    #[case("name")]
+    #[case("admin")]
+    #[case("verified")]
+    #[case("provider")]
+    fn user_serializes_expected_key(#[case] key: &str) {
+        // arrange
+        let user = User::default();
+
+        // act
+        let json = serde_json::to_value(&user).unwrap();
+
+        // assert
+        assert!(json.get(key).is_some(), "missing key {key}");
+    }
+
+    #[rstest]
+    #[case("id")]
+    #[case("login")]
+    #[case("avatar_url")]
+    #[case("federated_id")]
+    fn user_does_not_serialize_key(#[case] key: &str) {
+        // arrange
+        let user = User::default();
+
+        // act
+        let json = serde_json::to_value(&user).unwrap();
+
+        // assert
+        assert!(json.get(key).is_none(), "unexpected key {key}");
+    }
 
     #[rstest]
     fn as_query_period_single_first_month(mut posts_req: PostsRequest) {
