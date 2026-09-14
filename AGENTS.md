@@ -66,7 +66,7 @@ ui/               # Vue 3 frontend
 
 ### TypeScript/Vue
 - Use TypeScript strict mode
-- Follow ESLint configuration (`eslint.config.mts`)
+- Follow ESLint configuration (`eslint.config.cjs`)
 - Use Composition API for new components
 - Import types explicitly
 - Write code comments only in English
@@ -106,6 +106,10 @@ bun run lint         # ESLint check
 - Release profile: LTO enabled, strip symbols, panic=abort
 - Frontend uses esbuild-loader for optimization
 - Frontend uses bun as package manager
+- `ui/eslint.config.cjs` must keep the `.cjs` extension: the package is
+  `"type": "module"` so Vite can use its native config loader, while the flat
+  config itself is CommonJS. A `.mts`/`.ts` config would bring the `jiti`
+  dependency back, which was deliberately dropped
 
 ## When Making Changes
 
