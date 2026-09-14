@@ -7,7 +7,7 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, computed } from 'vue'
 import hljs from 'highlight.js'
-import zig from 'highlightjs-zig';
+import zig from '@/languages/zig';
 hljs.registerLanguage('zig', zig);
 
 const props = defineProps<{

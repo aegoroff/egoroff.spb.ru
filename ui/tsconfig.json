@@ -16,7 +16,8 @@
     "sourceMap": true,
     "rootDir": ".",
     "types": [
-      "vite/client"
+      "vite/client",
+      "@types/bun"
     ],
     "paths": {
       "@/*": [
