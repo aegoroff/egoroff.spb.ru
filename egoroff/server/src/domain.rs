@@ -136,6 +136,7 @@ pub struct AuthRequest {
 #[derive(Debug, Deserialize, Serialize, Default)]
 pub struct AuthorizedUser {
     /// The login or name of the user.
+    #[serde(rename = "loginOrName")]
     pub login_or_name: String,
     /// Whether the user is authenticated.
     pub authenticated: bool,
@@ -255,6 +256,24 @@ mod tests {
             verified: true,
             provider: String::from("github"),
         }
+    }
+
+    #[test]
+    fn authorized_user_serializes_login_in_camel_case() {
+        // arrange
+        let user = AuthorizedUser {
+            login_or_name: String::from("egoroff"),
+            authenticated: true,
+            admin: true,
+            provider: String::from("github"),
+        };
+
+        // act
+        let json = serde_json::to_string(&user).unwrap();
+
+        // assert
+        assert!(json.contains(r#""loginOrName":"egoroff""#));
+        assert!(!json.contains("login_or_name"));
     }
 
     #[test]
