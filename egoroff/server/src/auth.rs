@@ -105,7 +105,7 @@ pub enum UserStoreError {
     #[error("invalid id")]
     InvalidId,
     #[error("SQL error: {0:?}")]
-    SqlError(<kernel::sqlite::Sqlite as kernel::domain::Storage>::Err),
+    SqlError(anyhow::Error),
 }
 
 pub trait OAuthProfile: Sized + Send + Sync + DeserializeOwned {
@@ -364,7 +364,7 @@ where
                     Err(err) => Err(UserStoreError::SqlError(err)),
                 }
             }
-            Err(err) => Err(UserStoreError::SqlError(err)),
+            Err(err) => Err(UserStoreError::SqlError(err.into())),
         }
     }
 
@@ -382,7 +382,7 @@ where
                     Err(err) => Err(UserStoreError::SqlError(err)),
                 }
             }
-            Err(err) => Err(UserStoreError::SqlError(err)),
+            Err(err) => Err(UserStoreError::SqlError(err.into())),
         }
     }
 }

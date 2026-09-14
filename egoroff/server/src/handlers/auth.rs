@@ -154,7 +154,7 @@ pub async fn serve_users_api(
         Ok(u) => u,
         Err(e) => {
             tracing::error!("Failed to get users: {e:#?}");
-            return make_json_response::<ApiResult<User>>(Err(anyhow::anyhow!(e)));
+            return make_json_response::<ApiResult<User>>(Err(e));
         }
     };
     let users_count = i32::try_from(users.len()).unwrap_or(i32::MAX);

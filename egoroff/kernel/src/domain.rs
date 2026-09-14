@@ -1,5 +1,4 @@
 use chrono::{DateTime, Datelike, NaiveDate, Utc};
-use std::{error::Error, fmt::Debug};
 use utoipa::{IntoParams, ToSchema};
 
 /// Represents a user in the system.
@@ -290,36 +289,34 @@ pub struct Download {
 }
 
 pub trait Storage {
-    type Err: Sync + Send + Error + 'static;
-
-    fn new_database(&self) -> Result<(), Self::Err>;
+    fn new_database(&self) -> anyhow::Result<()>;
     fn get_small_posts(
         &self,
         limit: i32,
         offset: i32,
         request: PostsRequest,
-    ) -> Result<Vec<SmallPost>, Self::Err>;
-    fn get_posts(&self, limit: i32, offset: i32) -> Result<Vec<Post>, Self::Err>;
-    fn get_post(&self, id: i64) -> Result<Post, Self::Err>;
-    fn get_new_post_id(&self, id: i64) -> Result<i64, Self::Err>;
-    fn upsert_post(&mut self, post: Post) -> Result<(), Self::Err>;
-    fn next_post_id(&mut self) -> Result<i64, Self::Err>;
-    fn delete_post(&mut self, id: i64) -> Result<usize, Self::Err>;
-    fn count_posts(&self, request: PostsRequest) -> Result<i32, Self::Err>;
-    fn get_aggregate_tags(&self) -> Result<Vec<TagAggregate>, Self::Err>;
-    fn get_posts_create_dates(&self) -> Result<Vec<DateTime<Utc>>, Self::Err>;
-    fn get_posts_ids(&self) -> Result<Vec<i64>, Self::Err>;
-    fn get_oauth_provider(&self, name: &str) -> Result<OAuthProvider, Self::Err>;
-    fn get_user(&self, federated_id: &str, provider: &str) -> Result<User, Self::Err>;
-    fn upsert_user(&mut self, user: &User) -> Result<(), Self::Err>;
-    fn get_folders(&self) -> Result<Vec<Folder>, Self::Err>;
-    fn get_download(&self, id: i64) -> Result<Download, Self::Err>;
-    fn upsert_download(&mut self, download: Download) -> Result<(), Self::Err>;
-    fn delete_download(&mut self, id: i64) -> Result<usize, Self::Err>;
-    fn get_downloads(&self, limit: i32, offset: i32) -> Result<Vec<Download>, Self::Err>;
-    fn count_downloads(&self) -> Result<i32, Self::Err>;
-    fn get_users(&self) -> Result<Vec<User>, Self::Err>;
-    fn count_users(&self) -> Result<i32, Self::Err>;
+    ) -> anyhow::Result<Vec<SmallPost>>;
+    fn get_posts(&self, limit: i32, offset: i32) -> anyhow::Result<Vec<Post>>;
+    fn get_post(&self, id: i64) -> anyhow::Result<Post>;
+    fn get_new_post_id(&self, id: i64) -> anyhow::Result<i64>;
+    fn upsert_post(&mut self, post: Post) -> anyhow::Result<()>;
+    fn next_post_id(&mut self) -> anyhow::Result<i64>;
+    fn delete_post(&mut self, id: i64) -> anyhow::Result<usize>;
+    fn count_posts(&self, request: PostsRequest) -> anyhow::Result<i32>;
+    fn get_aggregate_tags(&self) -> anyhow::Result<Vec<TagAggregate>>;
+    fn get_posts_create_dates(&self) -> anyhow::Result<Vec<DateTime<Utc>>>;
+    fn get_posts_ids(&self) -> anyhow::Result<Vec<i64>>;
+    fn get_oauth_provider(&self, name: &str) -> anyhow::Result<OAuthProvider>;
+    fn get_user(&self, federated_id: &str, provider: &str) -> anyhow::Result<User>;
+    fn upsert_user(&mut self, user: &User) -> anyhow::Result<()>;
+    fn get_folders(&self) -> anyhow::Result<Vec<Folder>>;
+    fn get_download(&self, id: i64) -> anyhow::Result<Download>;
+    fn upsert_download(&mut self, download: Download) -> anyhow::Result<()>;
+    fn delete_download(&mut self, id: i64) -> anyhow::Result<usize>;
+    fn get_downloads(&self, limit: i32, offset: i32) -> anyhow::Result<Vec<Download>>;
+    fn count_downloads(&self) -> anyhow::Result<i32>;
+    fn get_users(&self) -> anyhow::Result<Vec<User>>;
+    fn count_users(&self) -> anyhow::Result<i32>;
 }
 
 #[cfg(test)]
