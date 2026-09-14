@@ -59,7 +59,7 @@ ui/               # Vue 3 frontend
 - Run `cargo clippy` before committing
 - Create tests for a new functionality
 - Write tests in AAA pattern
-- If tests can be parameterized use `test-case` crate
+- If tests can be parameterized use `rstest` crate (`#[rstest]` with `#[case]`; `#[fixture]` for shared setup)
 - Code must pass all clippy pedantic validations
 - Result code must be formatted using `cargo fmt` (`style_edition = "2024"`)
 - Write code comments only in English
