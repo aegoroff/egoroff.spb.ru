@@ -9,55 +9,39 @@
       </h1>
     </div>
 
-    <form @submit.prevent="update">
-      <div class="row">
-        <div class="col">
-          <div class="mb-3">
-            <label for="login" class="form-label">Логин:</label>
-            <input id="login" class="form-control" readonly v-model="user.username">
-          </div>
-          <div class="mb-3">
-            <label for="userName" class="form-label">Имя:</label>
-            <input id="userName" class="form-control" required v-model="user.name">
-          </div>
-
-          <div class="mb-3">
-            <label for="userEmail" class="form-label">Электропочта:</label>
-            <input
-              id="userEmail"
-              class="form-control"
-              v-model="user.email"
-              type="email"
-              placeholder="Введите адрес электропочты"
-              required
-            >
-            <div class="form-text">С вашей электропочтой я никогда и ни с кем не поделюсь</div>
-          </div>
+    <div class="row">
+      <div class="col">
+        <div class="mb-3">
+          <label for="login" class="form-label">Логин:</label>
+          <input id="login" class="form-control" readonly v-model="user.username">
+        </div>
+        <div class="mb-3">
+          <label for="userName" class="form-label">Имя:</label>
+          <input id="userName" class="form-control" readonly v-model="user.name">
         </div>
 
-        <div class="col">
-          <div class="mb-3" v-if="user.avatarUrl">
-            <label for="avatar" class="form-label d-block">Аватар:</label>
-
-            <img class="img-thumbnail mb-2" id="avatar" :src="user.avatarUrl" width="180"/>
-
-            <p class="text-muted mb-0">
-              Изменить на
-              <a href="//gravatar.com" target="_blank">Gravatar</a>
-            </p>
-          </div>
-          <div class="mb-3" v-if="!user.avatarUrl">
-            <label for="newAvatarUrl" class="form-label">Аватар:</label>
-            <input id="newAvatarUrl" class="form-control" v-model="newAvatarUrl">
-          </div>
+        <div class="mb-3">
+          <label for="userEmail" class="form-label">Электропочта:</label>
+          <input id="userEmail" class="form-control" readonly v-model="user.email" type="email">
+          <div class="form-text">С вашей электропочтой я никогда и ни с кем не поделюсь</div>
         </div>
       </div>
-      <div class="row">
-        <div class="col">
-          <button class="btn btn-primary btn-lg" type="submit">Обновить профиль</button>
+
+      <div class="col">
+        <div class="mb-3" v-if="user.avatarUrl">
+          <label for="avatar" class="form-label d-block">Аватар:</label>
+
+          <img class="img-thumbnail mb-2" id="avatar" :src="user.avatarUrl" width="180"/>
         </div>
       </div>
-    </form>
+    </div>
+    <div class="row">
+      <div class="col">
+        <p class="text-muted">
+          Данные профиля приходят от провайдера авторизации и обновляются при каждом входе.
+        </p>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -78,7 +62,6 @@ const user = ref<FullUserInfo>({
   verified: false,
   provider: ''
 })
-const newAvatarUrl = ref('')
 
 const readProfile = async (): Promise<void> => {
   const apiService = new ApiService()
@@ -92,20 +75,6 @@ const readProfile = async (): Promise<void> => {
 onMounted(() => {
   readProfile()
 })
-
-const update = async (): Promise<void> => {
-  if (newAvatarUrl.value) {
-    user.value.avatarUrl = newAvatarUrl.value
-  }
-
-  const apiService = new ApiService()
-  try {
-    await apiService.updateFullUserInfo(user.value)
-    newAvatarUrl.value = ''
-  } catch (error) {
-    console.error('Failed to update profile:', error)
-  }
-}
 </script>
 
 <style scoped>
