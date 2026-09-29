@@ -2,6 +2,7 @@
 
 use axum::{body::Bytes, extract::Multipart, http};
 use axum_extra::{TypedHeader, headers::ContentType};
+use mime_guess::mime::{self, Mime};
 use serde::Deserialize;
 use utoipa::{IntoParams, ToSchema};
 use uuid::Uuid;
@@ -142,10 +143,7 @@ pub async fn serve_index_post(
     body: Bytes,
 ) -> impl IntoResponse {
     tracing::info!("content type header: {content_type}");
-    let form = if content_type
-        .to_string()
-        .eq_ignore_ascii_case("application/json")
-    {
+    let form = if is_media_type(content_type, &mime::APPLICATION_JSON) {
         MicropubForm::from_json_bytes(&body.slice(..))
     } else {
         // x-www-form-urlencoded
@@ -204,53 +202,51 @@ pub async fn serve_media_endpoint_post(
         ));
     };
 
-    let (ids, file_name): (Vec<i64>, String) = if content_type
-        .to_string()
-        .eq_ignore_ascii_case("multipart/form-data")
-    {
-        if let Ok(Some(field)) = multipart.next_field().await {
-            let file_name = media_storage_file_name(Uuid::new_v4(), field.file_name());
-            match read_from_stream(field).await {
-                Ok((result, read_bytes)) => {
-                    resource
-                        .append_path("api")
-                        .append_path(MEDIA_BUCKET)
-                        .append_path(&file_name);
+    let (ids, file_name): (Vec<i64>, String) =
+        if is_media_type(content_type, &mime::MULTIPART_FORM_DATA) {
+            if let Ok(Some(field)) = multipart.next_field().await {
+                let file_name = media_storage_file_name(Uuid::new_v4(), field.file_name());
+                match read_from_stream(field).await {
+                    Ok((result, read_bytes)) => {
+                        resource
+                            .append_path("api")
+                            .append_path(MEDIA_BUCKET)
+                            .append_path(&file_name);
 
-                    let client = Client::new();
-                    let mut form = reqwest::multipart::Form::new();
+                        let client = Client::new();
+                        let mut form = reqwest::multipart::Form::new();
 
-                    let stream = reqwest::Body::from(result);
-                    let part =
-                        reqwest::multipart::Part::stream_with_length(stream, read_bytes as u64)
-                            .file_name(file_name.clone());
-                    form = form.part("file", part);
-                    let result = client
-                        .post(resource.to_string())
-                        .multipart(form)
-                        .send()
-                        .await;
-                    match result {
-                        Ok(x) => match x.json().await {
-                            Ok(ids) => (ids, file_name),
-                            Err(e) => return internal_server_error_response(e.to_string()),
-                        },
-                        Err(e) => {
-                            return internal_server_error_response(e.to_string());
+                        let stream = reqwest::Body::from(result);
+                        let part =
+                            reqwest::multipart::Part::stream_with_length(stream, read_bytes as u64)
+                                .file_name(file_name.clone());
+                        form = form.part("file", part);
+                        let result = client
+                            .post(resource.to_string())
+                            .multipart(form)
+                            .send()
+                            .await;
+                        match result {
+                            Ok(x) => match x.json().await {
+                                Ok(ids) => (ids, file_name),
+                                Err(e) => return internal_server_error_response(e.to_string()),
+                            },
+                            Err(e) => {
+                                return internal_server_error_response(e.to_string());
+                            }
                         }
                     }
+                    Err(e) => {
+                        tracing::error!("{e}");
+                        return internal_server_error_response(e.to_string());
+                    }
                 }
-                Err(e) => {
-                    tracing::error!("{e}");
-                    return internal_server_error_response(e.to_string());
-                }
+            } else {
+                return bad_request_error_response("no form data received");
             }
         } else {
-            return bad_request_error_response("no form data received");
-        }
-    } else {
-        return bad_request_error_response("expected content-type of multipart/form-data");
-    };
+            return bad_request_error_response("expected content-type of multipart/form-data");
+        };
 
     tracing::info!("file id: {}", ids[0]);
 
@@ -326,6 +322,12 @@ pub async fn serve_media_endpoint_get(
     }
 }
 
+/// Compares the media type of a `Content-Type` header with `expected`,
+/// ignoring parameters such as `charset` or `boundary`.
+fn is_media_type(content_type: ContentType, expected: &Mime) -> bool {
+    Mime::from(content_type).essence_str() == expected.essence_str()
+}
+
 /// Builds a storage object name that cannot escape the media bucket.
 ///
 /// Client-supplied filenames may contain path separators or `..` segments.
@@ -354,7 +356,11 @@ fn media_storage_file_name(id: Uuid, client_file_name: Option<&str>) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::media_storage_file_name;
+    #![allow(clippy::unwrap_in_result)]
+    #![allow(clippy::unwrap_used)]
+    use super::{is_media_type, media_storage_file_name};
+    use axum_extra::headers::ContentType;
+    use mime_guess::mime;
     use rstest::rstest;
     use uuid::Uuid;
 
@@ -381,6 +387,39 @@ mod tests {
     ) {
         // Arrange / Act
         let actual = media_storage_file_name(ID, client_file_name);
+
+        // Assert
+        assert_eq!(expected, actual);
+    }
+
+    #[rstest]
+    #[case("application/json", true)]
+    #[case("application/json; charset=utf-8", true)]
+    #[case("Application/JSON", true)]
+    #[case("application/x-www-form-urlencoded", false)]
+    #[case("text/json", false)]
+    fn is_media_type_json_tests(#[case] header: &str, #[case] expected: bool) {
+        // Arrange
+        let content_type: ContentType = header.parse().unwrap();
+
+        // Act
+        let actual = is_media_type(content_type, &mime::APPLICATION_JSON);
+
+        // Assert
+        assert_eq!(expected, actual);
+    }
+
+    #[rstest]
+    #[case("multipart/form-data", true)]
+    #[case("multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxk", true)]
+    #[case("multipart/mixed; boundary=abc", false)]
+    #[case("application/octet-stream", false)]
+    fn is_media_type_multipart_tests(#[case] header: &str, #[case] expected: bool) {
+        // Arrange
+        let content_type: ContentType = header.parse().unwrap();
+
+        // Act
+        let actual = is_media_type(content_type, &mime::MULTIPART_FORM_DATA);
 
         // Assert
         assert_eq!(expected, actual);
