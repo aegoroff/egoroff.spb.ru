@@ -8,10 +8,11 @@
             type="button"
             class="btn-close"
             data-bs-dismiss="modal"
+            :disabled="busy"
           ></button>
         </div>
         <div class="modal-body">
-          <form>
+          <form ref="form" novalidate :class="{ 'was-validated': validated }" @submit.prevent="onOk">
             <ul class="nav nav-tabs" role="presentation">
               <li class="nav-item" role="presentation">
                 <button
@@ -50,7 +51,7 @@
                     v-model="localPost.Title"
                     required
                   />
-                  <div class="invalid-feedback">название обязательно</div>
+                  <div class="invalid-feedback">Название обязательно</div>
                 </div>
                 <div class="mb-3" v-if="mode === 'create'">
                   <label :for="ids.created" class="form-label"
@@ -61,9 +62,8 @@
                     class="form-control"
                     :id="ids.created"
                     v-model="localPost.Created"
-                    required
                   />
-                  <div class="invalid-feedback">дата создания обязательна</div>
+                  <div class="form-text">Если не указана, будет использовано текущее время</div>
                 </div>
                 <div class="mb-3">
                   <label :for="ids.tags" class="form-label">Теги</label>
@@ -131,10 +131,12 @@
             type="button"
             class="btn btn-secondary"
             data-bs-dismiss="modal"
+            :disabled="busy"
           >
             Отмена
           </button>
-          <button type="button" class="btn btn-primary" @click="onOk">
+          <button type="button" class="btn btn-primary" :disabled="busy" @click="onOk">
+            <span v-if="busy" class="spinner-border spinner-border-sm me-1" role="status"></span>
             {{ mode === "create" ? "Создать" : "Сохранить" }}
           </button>
         </div>
@@ -148,7 +150,8 @@ import { computed, ref, watch } from "vue";
 import ApiService from "@/services/ApiService";
 import { emitter } from "@/events";
 import { EditablePost } from "@/models/blog";
-import { closeModalById } from "@/util";
+import { useModalForm } from "@/composables/useModalForm";
+import { useNotify } from "@/composables/useNotify";
 
 const props = defineProps<{
   modalId: string;
@@ -168,9 +171,21 @@ const emptyPost = (): EditablePost => ({
   ShortText: "",
 });
 
+const notify = useNotify();
+
 const localPost = ref<EditablePost>(
   props.mode === "edit" && props.post ? { ...props.post } : emptyPost()
 );
+
+// Unsaved edits are discarded on close; a create draft is kept until it is submitted.
+const { form, validated, busy, submit } = useModalForm({
+  modalId: props.modalId,
+  onHidden: () => {
+    if (props.mode === "edit" && props.post) {
+      localPost.value = { ...props.post };
+    }
+  },
+});
 
 watch(
   () => props.post,
@@ -244,27 +259,28 @@ const formatDateTime = (dateTime: string): string => {
 
 const onOk = async (): Promise<void> => {
   const apiService = new ApiService();
-  try {
-    if (props.mode === "create") {
-      const formattedPost = {
+  if (props.mode === "create") {
+    const created = await submit(async () => {
+      await apiService.createPost({
         ...localPost.value,
         Created: formatDateTime(localPost.value.Created),
         Modified: formatDateTime(localPost.value.Created),
-      };
-      await apiService.createPost(formattedPost);
-      emitter.emit("postCreated");
-      closeModalById(props.modalId);
+      });
+    }, "Не удалось создать пост");
+    if (created) {
       localPost.value = emptyPost();
-    } else {
-      await apiService.editPost(localPost.value);
-      emitter.emit("postUpdated");
-      closeModalById(props.modalId);
+      emitter.emit("postCreated");
+      notify.success("Пост создан");
     }
-  } catch (error) {
-    console.error(
-      props.mode === "create" ? "Failed to create post:" : "Failed to edit post:",
-      error
+  } else {
+    const saved = await submit(
+      () => apiService.editPost(localPost.value),
+      "Не удалось сохранить пост"
     );
+    if (saved) {
+      emitter.emit("postUpdated");
+      notify.success("Пост сохранён");
+    }
   }
 };
 </script>

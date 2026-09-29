@@ -12,19 +12,7 @@
       </button>
     </div>
 
-    <nav v-if="pages > 1">
-      <ul class="pagination justify-content-center" id="posts-pager">
-        <li class="page-item" :class="{ disabled: page === 1 }">
-          <router-link :to="`/posts/${page - 1}`" class="page-link">Назад</router-link>
-        </li>
-        <li class="page-item" v-for="p in pageNumbers" :key="p" :class="{ active: p === page }">
-          <router-link :to="`/posts/${p}`" class="page-link">{{ p }}</router-link>
-        </li>
-        <li class="page-item" :class="{ disabled: page === pages }">
-          <router-link :to="`/posts/${page + 1}`" class="page-link">Вперед</router-link>
-        </li>
-      </ul>
-    </nav>
+    <AdminPagination :page="page" :pages="pages" base-path="/posts" />
 
     <PostForm modal-id="create-post" mode="create" />
     <PostForm modal-id="edit-post" mode="edit" :post="selectedPost" />
@@ -33,27 +21,24 @@
       title="Удалить пост"
       message="Действительно удалить пост?"
       :item-id="selectedPostId"
+      :item-title="selectedPost.Title"
       kind="post"
     />
 
     <div class="table-responsive" id="posts-table">
-      <table class="table table-striped table-hover table-sm">
+      <table class="table table-striped table-hover table-sm align-middle">
         <thead>
           <tr>
-            <th scope="col">-</th>
             <th scope="col">ID</th>
             <th scope="col">Создано</th>
             <th scope="col">Название</th>
             <th scope="col">Опубликовано</th>
+            <th scope="col" class="text-end">Действия</th>
           </tr>
         </thead>
         <tbody>
+          <TableStatus :loading="loading" :failed="failed" :rows="posts.length" :colspan="5" />
           <tr v-for="item in posts" :key="item.id">
-            <td>
-              <a href="#" data-bs-toggle="modal" data-bs-target="#delete-post" @click="onSelect(item)">
-                <AppIcon icon="trash-alt"></AppIcon>
-              </a>
-            </td>
             <td>{{ item.id }}</td>
             <td>
               <DateFormatter :date="item.Created" format-str="L"></DateFormatter>
@@ -67,6 +52,37 @@
               <span v-if="item.IsPublic" class="badge bg-success">Да</span>
               <span v-else class="badge bg-secondary">Нет</span>
             </td>
+            <td class="text-end text-nowrap">
+              <a
+                :href="`/blog/${item.id}.html`"
+                target="_blank"
+                rel="noopener"
+                class="btn btn-sm btn-outline-secondary me-1"
+                title="Открыть на сайте"
+              >
+                <AppIcon icon="external-link-alt"></AppIcon>
+              </a>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-primary me-1"
+                title="Редактировать"
+                data-bs-toggle="modal"
+                data-bs-target="#edit-post"
+                @click="onSelect(item)"
+              >
+                <AppIcon icon="pen"></AppIcon>
+              </button>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-danger"
+                title="Удалить"
+                data-bs-toggle="modal"
+                data-bs-target="#delete-post"
+                @click="onSelect(item)"
+              >
+                <AppIcon icon="trash-alt"></AppIcon>
+              </button>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -75,7 +91,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import ApiService from '@/services/ApiService'
 import DateFormatter from '@/components/DateFormatter.vue'
@@ -83,6 +99,9 @@ import PostForm from '@/components/admin/PostForm.vue'
 import ConfirmDelete from '@/components/admin/ConfirmDelete.vue'
 import AppIcon from '@/components/AppIcon.vue'
 import { emitter } from '@/events'
+import AdminPagination from '@/components/admin/AdminPagination.vue'
+import TableStatus from '@/components/admin/TableStatus.vue'
+import { useNotify } from '@/composables/useNotify'
 import { EditablePost, Query } from '@/models/blog'
 
 const route = useRoute()
@@ -102,17 +121,9 @@ const selectedPost = ref<EditablePost>({
   ShortText: ''
 })
 const selectedPostId = ref(0)
-
-const pageNumbers = computed(() => {
-  const numbers = []
-  const start = Math.max(1, page.value - 2)
-  const end = Math.min(pages.value, page.value + 2)
-
-  for (let i = start; i <= end; i++) {
-    numbers.push(i)
-  }
-  return numbers
-})
+const loading = ref(true)
+const failed = ref(false)
+const notify = useNotify()
 
 const update = async (pageNum: number): Promise<void> => {
   const q = new Query()
@@ -120,13 +131,18 @@ const update = async (pageNum: number): Promise<void> => {
   q.limit = '10'
 
   const apiService = new ApiService()
+  loading.value = true
+  failed.value = false
   try {
     const result = await apiService.getAdminPosts<EditablePost>(q)
     posts.value = result.result
     pages.value = result.pages
     page.value = result.page
   } catch (error) {
-    console.error('Failed to fetch posts:', error)
+    failed.value = true
+    notify.error('Не удалось загрузить посты', error)
+  } finally {
+    loading.value = false
   }
 }
 

@@ -17,6 +17,7 @@
           </tr>
         </thead>
         <tbody>
+          <TableStatus :loading="loading" :failed="failed" :rows="users.length" :colspan="8" />
           <tr v-for="user in users" :key="`${user.provider}_${user.federatedId}`">
             <td>{{ user.federatedId }}</td>
             <td>{{ user.name }}</td>
@@ -43,8 +44,13 @@
 import { ref, onMounted } from 'vue'
 import ApiService from '@/services/ApiService'
 import { FullUserInfo } from '@/models/common'
+import TableStatus from '@/components/admin/TableStatus.vue'
+import { useNotify } from '@/composables/useNotify'
 
 const users = ref<Array<FullUserInfo>>([])
+const loading = ref(true)
+const failed = ref(false)
+const notify = useNotify()
 
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString)
@@ -63,7 +69,10 @@ const loadUsers = async () => {
     const result = await apiService.getUsers<FullUserInfo>()
     users.value = result.result
   } catch (error) {
-    console.error('Failed to fetch users:', error)
+    failed.value = true
+    notify.error('Не удалось загрузить пользователей', error)
+  } finally {
+    loading.value = false
   }
 }
 

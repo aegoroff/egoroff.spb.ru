@@ -9,7 +9,10 @@
             <div class="d-flex justify-content-between align-items-center">
               <div>
                 <h6 class="card-title mb-2">Посты в блоге</h6>
-                <h2 class="mb-0">{{ stats.posts }}</h2>
+                <h2 class="mb-0">
+                  <span v-if="loading" class="spinner-border" role="status"></span>
+                  <template v-else>{{ stats.posts }}</template>
+                </h2>
               </div>
               <div class="display-4">
                 <font-awesome-icon icon="book" />
@@ -28,7 +31,10 @@
             <div class="d-flex justify-content-between align-items-center">
               <div>
                 <h6 class="card-title mb-2">Загрузки</h6>
-                <h2 class="mb-0">{{ stats.downloads }}</h2>
+                <h2 class="mb-0">
+                  <span v-if="loading" class="spinner-border" role="status"></span>
+                  <template v-else>{{ stats.downloads }}</template>
+                </h2>
               </div>
               <div class="display-4">
                 <font-awesome-icon icon="download" />
@@ -47,7 +53,10 @@
             <div class="d-flex justify-content-between align-items-center">
               <div>
                 <h6 class="card-title mb-2">Пользователи</h6>
-                <h2 class="mb-0">{{ stats.users }}</h2>
+                <h2 class="mb-0">
+                  <span v-if="loading" class="spinner-border" role="status"></span>
+                  <template v-else>{{ stats.users }}</template>
+                </h2>
               </div>
               <div class="display-4">
                 <font-awesome-icon icon="users" />
@@ -67,15 +76,20 @@
 import { ref, onMounted } from 'vue'
 import ApiService from '@/services/ApiService'
 import { DashboardStats } from '@/models/dashboard'
+import { useNotify } from '@/composables/useNotify'
 
 const stats = ref<DashboardStats>(new DashboardStats())
+const notify = useNotify()
+const loading = ref(true)
 
 const loadStats = async () => {
   const apiService = new ApiService()
   try {
     stats.value = await apiService.getDashboardStats()
   } catch (error) {
-    console.error('Failed to fetch dashboard stats:', error)
+    notify.error('Не удалось загрузить статистику', error)
+  } finally {
+    loading.value = false
   }
 }
 

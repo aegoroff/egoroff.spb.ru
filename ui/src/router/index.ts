@@ -24,8 +24,13 @@ const routes: Array<RouteRecordRaw> = [
 ]
 
 export function createAdminRouter() {
-  return createRouter({
+  const router = createRouter({
     history: createWebHashHistory(),
     routes,
   })
+  const siteTitle = document.title
+  router.afterEach((to) => {
+    document.title = to.name ? `${String(to.name)} | ${siteTitle}` : siteTitle
+  })
+  return router
 }

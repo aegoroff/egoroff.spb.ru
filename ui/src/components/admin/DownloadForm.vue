@@ -8,10 +8,11 @@
             type="button"
             class="btn-close"
             data-bs-dismiss="modal"
+            :disabled="busy"
           ></button>
         </div>
         <div class="modal-body">
-          <form>
+          <form ref="form" novalidate :class="{ 'was-validated': validated }" @submit.prevent="onOk">
             <div class="mb-3" v-if="mode === 'create'">
               <label :for="`${modalId}-id-input`" class="form-label"
                 >Идентификатор</label
@@ -21,9 +22,10 @@
                 class="form-control"
                 :id="`${modalId}-id-input`"
                 v-model.number="localDownload.id"
+                min="1"
                 required
               />
-              <div class="invalid-feedback">ID обязателен</div>
+              <div class="invalid-feedback">ID обязателен и должен быть больше нуля</div>
             </div>
             <div class="mb-3">
               <label :for="`${modalId}-title-input`" class="form-label"
@@ -36,7 +38,7 @@
                 v-model="localDownload.title"
                 required
               />
-              <div class="invalid-feedback">название обязательно</div>
+              <div class="invalid-feedback">Название обязательно</div>
             </div>
           </form>
         </div>
@@ -45,10 +47,12 @@
             type="button"
             class="btn btn-secondary"
             data-bs-dismiss="modal"
+            :disabled="busy"
           >
             Отмена
           </button>
-          <button type="button" class="btn btn-primary" @click="onOk">
+          <button type="button" class="btn btn-primary" :disabled="busy" @click="onOk">
+            <span v-if="busy" class="spinner-border spinner-border-sm me-1" role="status"></span>
             {{ mode === 'create' ? 'Создать' : 'Сохранить' }}
           </button>
         </div>
@@ -62,7 +66,8 @@ import { computed, ref, watch } from "vue";
 import ApiService from "@/services/ApiService";
 import { emitter } from "@/events";
 import { Download } from "@/models/portfolio";
-import { closeModalById } from "@/util";
+import { useModalForm } from "@/composables/useModalForm";
+import { useNotify } from "@/composables/useNotify";
 
 const props = defineProps<{
   modalId: string;
@@ -72,11 +77,23 @@ const props = defineProps<{
 
 const emptyDownload = (): Download => ({ id: 0, title: "" });
 
+const notify = useNotify();
+
 const localDownload = ref<Download>(
   props.mode === "edit" && props.download
     ? { ...props.download }
     : emptyDownload()
 );
+
+// Unsaved edits are discarded on close; a create draft is kept until it is submitted.
+const { form, validated, busy, submit } = useModalForm({
+  modalId: props.modalId,
+  onHidden: () => {
+    if (props.mode === "edit" && props.download) {
+      localDownload.value = { ...props.download };
+    }
+  },
+});
 
 watch(
   () => props.download,
@@ -96,22 +113,22 @@ const modalTitle = computed(() =>
 
 const onOk = async (): Promise<void> => {
   const apiService = new ApiService();
-  try {
-    await apiService.editDownload(localDownload.value);
-    closeModalById(props.modalId);
-    if (props.mode === "create") {
-      emitter.emit("downloadCreated");
-      localDownload.value = emptyDownload();
-    } else {
-      emitter.emit("downloadUpdated");
-    }
-  } catch (error) {
-    console.error(
-      props.mode === "create"
-        ? "Failed to create download:"
-        : "Failed to edit download:",
-      error
-    );
+  const saved = await submit(
+    () => apiService.editDownload(localDownload.value),
+    props.mode === "create"
+      ? "Не удалось создать загрузку"
+      : "Не удалось сохранить загрузку"
+  );
+  if (!saved) {
+    return;
+  }
+  if (props.mode === "create") {
+    localDownload.value = emptyDownload();
+    emitter.emit("downloadCreated");
+    notify.success("Загрузка создана");
+  } else {
+    emitter.emit("downloadUpdated");
+    notify.success("Загрузка сохранена");
   }
 };
 </script>

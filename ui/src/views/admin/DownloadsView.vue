@@ -7,19 +7,7 @@
       </button>
     </div>
 
-    <nav v-if="pages > 1">
-      <ul class="pagination justify-content-center" id="downloads-pager">
-        <li class="page-item" :class="{ disabled: page === 1 }">
-          <router-link :to="`/downloads/${page - 1}`" class="page-link">Назад</router-link>
-        </li>
-        <li class="page-item" v-for="p in pageNumbers" :key="p" :class="{ active: p === page }">
-          <router-link :to="`/downloads/${p}`" class="page-link">{{ p }}</router-link>
-        </li>
-        <li class="page-item" :class="{ disabled: page === pages }">
-          <router-link :to="`/downloads/${page + 1}`" class="page-link">Вперед</router-link>
-        </li>
-      </ul>
-    </nav>
+    <AdminPagination :page="page" :pages="pages" base-path="/downloads" />
 
     <DownloadForm modal-id="edit-download" mode="edit" :download="selectedDownload" />
     <DownloadForm modal-id="create-download" mode="create" />
@@ -28,30 +16,49 @@
       title="Удалить загрузку"
       message="Действительно удалить загрузку?"
       :item-id="selectedDownloadId"
+      :item-title="selectedDownload.title"
       kind="download"
     />
 
     <div class="table-responsive" id="downloads-table">
-      <table class="table table-striped table-hover table-sm">
+      <table class="table table-striped table-hover table-sm align-middle">
         <thead>
           <tr>
-            <th scope="col">-</th>
             <th scope="col">ID</th>
             <th scope="col">Название</th>
+            <th scope="col" class="text-end">Действия</th>
           </tr>
         </thead>
         <tbody>
+          <TableStatus :loading="loading" :failed="failed" :rows="downloads.length" :colspan="3" />
           <tr v-for="item in downloads" :key="item.id">
-            <td>
-              <a href="#" data-bs-toggle="modal" data-bs-target="#delete-download" @click="onSelect(item)">
-                <AppIcon icon="trash-alt"></AppIcon>
-              </a>
-            </td>
             <td>{{ item.id }}</td>
             <td>
               <a href="#" data-bs-toggle="modal" data-bs-target="#edit-download" @click="onSelect(item)">
                 {{ item.title }}
               </a>
+            </td>
+            <td class="text-end text-nowrap">
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-primary me-1"
+                title="Редактировать"
+                data-bs-toggle="modal"
+                data-bs-target="#edit-download"
+                @click="onSelect(item)"
+              >
+                <AppIcon icon="pen"></AppIcon>
+              </button>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-danger"
+                title="Удалить"
+                data-bs-toggle="modal"
+                data-bs-target="#delete-download"
+                @click="onSelect(item)"
+              >
+                <AppIcon icon="trash-alt"></AppIcon>
+              </button>
             </td>
           </tr>
         </tbody>
@@ -61,11 +68,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import ApiService from '@/services/ApiService'
 import AppIcon from '@/components/AppIcon.vue'
 import { emitter } from '@/events'
+import AdminPagination from '@/components/admin/AdminPagination.vue'
+import TableStatus from '@/components/admin/TableStatus.vue'
+import { useNotify } from '@/composables/useNotify'
 import DownloadForm from '@/components/admin/DownloadForm.vue'
 import ConfirmDelete from '@/components/admin/ConfirmDelete.vue'
 import { Download } from '@/models/portfolio'
@@ -81,17 +91,9 @@ const selectedDownload = ref<Download>({
   title: ''
 })
 const selectedDownloadId = ref(0)
-
-const pageNumbers = computed(() => {
-  const numbers = []
-  const start = Math.max(1, page.value - 2)
-  const end = Math.min(pages.value, page.value + 2)
-
-  for (let i = start; i <= end; i++) {
-    numbers.push(i)
-  }
-  return numbers
-})
+const loading = ref(true)
+const failed = ref(false)
+const notify = useNotify()
 
 const update = async (pageNum: number): Promise<void> => {
   const q = new Query()
@@ -99,13 +101,18 @@ const update = async (pageNum: number): Promise<void> => {
   q.limit = '10'
 
   const apiService = new ApiService()
+  loading.value = true
+  failed.value = false
   try {
     const result = await apiService.getDownloads<Download>(q)
     downloads.value = result.result
     pages.value = result.pages
     page.value = result.page
   } catch (error) {
-    console.error('Failed to fetch downloads:', error)
+    failed.value = true
+    notify.error('Не удалось загрузить список загрузок', error)
+  } finally {
+    loading.value = false
   }
 }
 

@@ -20,6 +20,8 @@ import {
   faTrashAlt,
   faUsers,
   faArrowRight,
+  faPen,
+  faExternalLinkAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import {
   faGoogle,
@@ -58,7 +60,9 @@ library.add(
   faTools,
   faTrashAlt,
   faUsers,
-  faArrowRight
+  faArrowRight,
+  faPen,
+  faExternalLinkAlt
 );
 library.add(faGoogle, faGithub, faVk, faTelegram, faYandex);
 
