@@ -34,6 +34,26 @@ pub struct BlogRequest {
     pub tag: Option<String>,
 }
 
+impl BlogRequest {
+    /// Returns the tag to filter posts by, ignoring an empty one.
+    #[must_use]
+    pub fn tag(&self) -> Option<&str> {
+        self.tag.as_deref().filter(|tag| !tag.is_empty())
+    }
+
+    /// Returns the URL-encoded `?tag=...` query to keep the tag in pagination links,
+    /// or an empty string when there is no tag.
+    #[must_use]
+    pub fn tag_query(&self) -> String {
+        self.tag().map_or_else(String::new, |tag| {
+            let query = url::form_urlencoded::Serializer::new(String::new())
+                .append_pair("tag", tag)
+                .finish();
+            format!("?{query}")
+        })
+    }
+}
+
 /// Represents navigation data in the application.
 #[derive(Deserialize, Serialize, Default)]
 pub struct Navigation {
@@ -439,5 +459,25 @@ mod tests {
         assert_eq!(poster.pages, vec![1]);
         assert_eq!(poster.prev_page, 1);
         assert_eq!(poster.next_page, 1);
+    }
+
+    #[rstest]
+    #[case(None, "")]
+    #[case(Some(""), "")]
+    #[case(Some("rust"), "?tag=rust")]
+    #[case(Some("a b&c"), "?tag=a+b%26c")]
+    #[case(Some("\"><script>"), "?tag=%22%3E%3Cscript%3E")]
+    #[case(Some("метка"), "?tag=%D0%BC%D0%B5%D1%82%D0%BA%D0%B0")]
+    fn blog_request_tag_query_tests(#[case] tag: Option<&str>, #[case] expected: &str) {
+        // arrange
+        let request = BlogRequest {
+            tag: tag.map(ToOwned::to_owned),
+        };
+
+        // act
+        let actual = request.tag_query();
+
+        // assert
+        assert_eq!(expected, actual);
     }
 }

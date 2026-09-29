@@ -67,7 +67,7 @@ pub fn get_small_posts(
     request: Option<PostsRequest>,
 ) -> Result<ApiResult<SmallPost>> {
     let mut request = request.unwrap_or_default();
-    let page = request.page.unwrap_or(1);
+    let (page, offset) = page_offset(request.page, page_size);
 
     // Public listing always counts and returns public posts only.
     request.include_private = None;
@@ -75,7 +75,7 @@ pub fn get_small_posts(
     let total_posts_count = storage.count_posts(request.clone())?;
     let pages_count = ceil_div(total_posts_count, page_size);
 
-    let posts = storage.get_small_posts(page_size, page_size * (page - 1), request)?;
+    let posts = storage.get_small_posts(page_size, offset, request)?;
 
     Ok(ApiResult {
         result: update_short_text(posts),
@@ -91,14 +91,14 @@ pub fn get_posts(
     page_size: i32,
     request: PostsRequest,
 ) -> Result<ApiResult<Post>> {
-    let page = request.page.unwrap_or(1);
+    let (page, offset) = page_offset(request.page, page_size);
 
     let mut req = request;
     req.include_private = Some(true);
     let total_posts_count = storage.count_posts(req)?;
     let pages_count = ceil_div(total_posts_count, page_size);
 
-    let posts = storage.get_posts(page_size, page_size * (page - 1))?;
+    let posts = storage.get_posts(page_size, offset)?;
 
     Ok(ApiResult {
         result: posts,
@@ -107,6 +107,14 @@ pub fn get_posts(
         count: total_posts_count,
         status: "success",
     })
+}
+
+/// Returns the 1-based page number and the row offset for a requested page.
+/// Missing, zero or negative pages are treated as the first page.
+#[must_use]
+pub fn page_offset(page: Option<i32>, page_size: i32) -> (i32, i32) {
+    let page = page.unwrap_or(1).max(1);
+    (page, page_size.saturating_mul(page - 1))
 }
 
 /// Integer division with upper rounding (ceil)
@@ -150,6 +158,29 @@ mod tests {
 
         // assert
         assert_eq!(expected, actual);
+    }
+
+    #[rstest]
+    #[case(None, 1, 0)]
+    #[case(Some(1), 1, 0)]
+    #[case(Some(3), 3, 40)]
+    #[case(Some(0), 1, 0)]
+    #[case(Some(-5), 1, 0)]
+    #[case(Some(i32::MIN), 1, 0)]
+    #[case(Some(i32::MAX), i32::MAX, i32::MAX)]
+    fn page_offset_tests(
+        #[case] page: Option<i32>,
+        #[case] expected_page: i32,
+        #[case] expected_offset: i32,
+    ) {
+        // arrange
+        let page_size = 20;
+
+        // act
+        let actual = page_offset(page, page_size);
+
+        // assert
+        assert_eq!((expected_page, expected_offset), actual);
     }
 
     #[test]

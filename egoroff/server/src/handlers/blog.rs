@@ -68,6 +68,9 @@ async fn serve_index(
     } else {
         1
     };
+    if page < 1 {
+        return not_found_page();
+    }
 
     let Some(section) = page_context.site_graph.get_section("blog") else {
         return internal_server_error_page();
@@ -75,6 +78,7 @@ async fn serve_index(
 
     let req = PostsRequest {
         page: Some(page),
+        tag: request.tag().map(ToOwned::to_owned),
         ..Default::default()
     };
 

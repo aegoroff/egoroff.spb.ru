@@ -243,7 +243,7 @@ pub async fn serve_downloads_admin_api(
     Query(request): Query<DownloadsRequest>,
 ) -> impl IntoResponse {
     let page_size = 10;
-    let page = request.page.unwrap_or(1);
+    let (page, offset) = archive::page_offset(request.page, page_size);
     let storage = page_context.storage.lock().await;
 
     let total_downloads_count = match storage.count_downloads() {
@@ -256,7 +256,7 @@ pub async fn serve_downloads_admin_api(
 
     let pages_count = count_pages(total_downloads_count, page_size);
 
-    let downloads = match storage.get_downloads(page_size, page_size * (page - 1)) {
+    let downloads = match storage.get_downloads(page_size, offset) {
         Ok(downloads) => downloads,
         Err(e) => {
             tracing::error!("{e:#?}");
