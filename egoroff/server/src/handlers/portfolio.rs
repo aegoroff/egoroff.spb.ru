@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use anyhow::Context;
-use kernel::domain::{ApiResult, Download, DownloadsRequest};
+use kernel::domain::{ApiResult, Download, DownloadsRequest, Folder};
 use serde::Deserialize;
 
 use crate::domain::{Downloadable, FilesContainer};
@@ -146,53 +146,78 @@ pub async fn redirect_to_real_document(
     Redirect::permanent(&new_path)
 }
 
+/// Reads downloadable files of all folders.
+///
+/// The storage lock is not held while the file store is queried over HTTP,
+/// so a slow file store cannot stall other requests that need the database.
 async fn read_downloads(page_context: Arc<PageContext<'_>>) -> Option<Vec<FilesContainer>> {
-    let storage = page_context.storage.lock().await;
+    let folders = page_context.storage.lock().await.get_folders().ok()?;
 
-    let folders = storage.get_folders().ok()?;
+    let base = Resource::new(&page_context.store_uri)?;
+    let client = Client::builder()
+        .timeout(Duration::from_secs(DOWNLOADS_WAIT_TIMEOUT_SECONDS))
+        .build()
+        .ok()?;
 
-    let mut result = vec![];
-    for f in folders {
-        let mut resource = Resource::new(&page_context.store_uri)?;
-        let mut container = FilesContainer {
-            title: f.title,
-            ..Default::default()
-        };
-        resource.append_path("api").append_path(&f.bucket);
-        let client = Client::builder()
-            .timeout(Duration::from_secs(DOWNLOADS_WAIT_TIMEOUT_SECONDS))
-            .build()
-            .ok()?;
-
-        match client.get(resource.to_string()).send().await {
-            Ok(r) => {
-                let files = r.json::<Vec<StoredFile>>().await;
-                match files {
-                    Ok(files) => {
-                        for file in files {
-                            match storage.get_download(file.id) {
-                                Ok(meta_info) => {
-                                    let downloadable = Downloadable {
-                                        title: meta_info.title,
-                                        path: format!("/storage/{}/{}", f.bucket, file.path),
-                                        filename: file.path,
-                                        size: file.size,
-                                        blake3_hash: file.blake3_hash,
-                                    };
-                                    container.files.push(downloadable);
-                                }
-                                Err(e) => tracing::trace!("{e:#?}"),
-                            }
-                        }
-                    }
-                    Err(e) => tracing::error!("{e:#?}"),
-                }
-            }
-            Err(e) => tracing::warn!("{e:#?}"),
-        }
-        result.push(container);
+    let mut listings = Vec::with_capacity(folders.len());
+    for folder in folders {
+        let files = fetch_stored_files(&client, base.clone(), &folder.bucket).await;
+        listings.push((folder, files));
     }
-    Some(result)
+
+    let storage = page_context.storage.lock().await;
+    Some(make_files_containers(&*storage, listings))
+}
+
+async fn fetch_stored_files(
+    client: &Client,
+    mut resource: Resource,
+    bucket: &str,
+) -> Vec<StoredFile> {
+    resource.append_path("api").append_path(bucket);
+    match client.get(resource.to_string()).send().await {
+        Ok(r) => r.json::<Vec<StoredFile>>().await.unwrap_or_else(|e| {
+            tracing::error!("{e:#?}");
+            vec![]
+        }),
+        Err(e) => {
+            tracing::warn!("{e:#?}");
+            vec![]
+        }
+    }
+}
+
+/// Combines file store listings with download titles from the database.
+/// Files without a database record are skipped.
+fn make_files_containers(
+    storage: &impl Storage,
+    listings: Vec<(Folder, Vec<StoredFile>)>,
+) -> Vec<FilesContainer> {
+    listings
+        .into_iter()
+        .map(|(folder, files)| {
+            let files = files
+                .into_iter()
+                .filter_map(|file| match storage.get_download(file.id) {
+                    Ok(meta_info) => Some(Downloadable {
+                        title: meta_info.title,
+                        path: format!("/storage/{}/{}", folder.bucket, file.path),
+                        filename: file.path,
+                        size: file.size,
+                        blake3_hash: file.blake3_hash,
+                    }),
+                    Err(e) => {
+                        tracing::trace!("{e:#?}");
+                        None
+                    }
+                })
+                .collect();
+            FilesContainer {
+                title: folder.title,
+                files,
+            }
+        })
+        .collect()
 }
 
 pub async fn serve_download_update(
@@ -252,4 +277,70 @@ pub async fn serve_downloads_admin_api(
 
 fn count_pages(count: i32, page_size: i32) -> i32 {
     count / page_size + i32::from(count % page_size > 0)
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(clippy::unwrap_in_result)]
+    #![allow(clippy::unwrap_used)]
+    use super::*;
+    use kernel::sqlite::{Mode, Sqlite};
+
+    fn stored_file(id: i64, path: &str) -> StoredFile {
+        StoredFile {
+            id,
+            path: path.to_string(),
+            blake3_hash: format!("hash{id}"),
+            size: 10,
+        }
+    }
+
+    #[test]
+    fn make_files_containers_joins_titles_and_skips_unknown_files() {
+        // arrange
+        let mut storage = Sqlite::open(":memory:", Mode::ReadWrite).unwrap();
+        storage.new_database().unwrap();
+        storage
+            .upsert_download(Download {
+                id: 1,
+                title: String::from("Known file"),
+            })
+            .unwrap();
+        let folder = Folder {
+            bucket: String::from("apps"),
+            title: String::from("Applications"),
+        };
+        let files = vec![stored_file(1, "known.zip"), stored_file(2, "unknown.zip")];
+
+        // act
+        let actual = make_files_containers(&storage, vec![(folder, files)]);
+
+        // assert
+        assert_eq!(1, actual.len());
+        assert_eq!("Applications", actual[0].title);
+        assert_eq!(1, actual[0].files.len());
+        let file = &actual[0].files[0];
+        assert_eq!("Known file", file.title);
+        assert_eq!("/storage/apps/known.zip", file.path);
+        assert_eq!("known.zip", file.filename);
+        assert_eq!("hash1", file.blake3_hash);
+    }
+
+    #[test]
+    fn make_files_containers_keeps_folder_without_files() {
+        // arrange
+        let storage = Sqlite::open(":memory:", Mode::ReadWrite).unwrap();
+        storage.new_database().unwrap();
+        let folder = Folder {
+            bucket: String::from("empty"),
+            title: String::from("Empty"),
+        };
+
+        // act
+        let actual = make_files_containers(&storage, vec![(folder, vec![])]);
+
+        // assert
+        assert_eq!(1, actual.len());
+        assert!(actual[0].files.is_empty());
+    }
 }
