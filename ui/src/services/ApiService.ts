@@ -1,131 +1,108 @@
 import axios from "axios";
-import { Archive, Query } from "@/models/blog";
-import { toQuery } from "@/util";
-import { FullUserInfo, User } from '@/models/common';
-import { EditablePost } from "@/models/blog";
-import { Download } from "@/models/portfolio";
 import { useProgress } from "@marcoschulte/vue3-progress";
-import { Nav } from "@/models/common";
-import { DashboardStats } from "@/models/dashboard";
+import { toQuery } from "@/util";
+import type { Archive, EditablePost, Post, Query } from "@/models/blog";
+import type { FullUserInfo, Nav, Section, User } from "@/models/common";
+import type { DashboardStats } from "@/models/dashboard";
+import type { Download, FilesContainer } from "@/models/portfolio";
 
-export class ApiResult<T> {
-  public status!: string;
-  public count!: number;
-  public page!: number;
-  public pages!: number;
-  public result!: Array<T>;
+/** One page of a server listing (`ApiResult` on the server). */
+export interface ApiResult<T> {
+  status: string;
+  count: number;
+  page: number;
+  pages: number;
+  result: Array<T>;
+}
+
+/** Body of a successful admin create, update or delete. */
+interface OperationResult {
+  result: string;
+}
+
+/** Navigation as the server sends it: both lists may be missing. */
+interface NavResponse {
+  sections?: Array<Section>;
+  breadcrumbs?: Array<Section>;
+}
+
+async function get<R>(url: string): Promise<R> {
+  const response = await axios.get<R>(url);
+  return response.data;
+}
+
+/** GET that shows the page progress bar; used by admin screens. */
+function getWithProgress<R>(url: string): Promise<R> {
+  return useProgress().attach(get<R>(url));
 }
 
 class ApiService {
+  /** Navigation for the current page; falls back to empty lists on failure. */
   public async getNavigation(): Promise<Nav> {
-    const navigation = new Nav();
-    navigation.sections = [];
-    navigation.breadcrumbs = [];
     const q = encodeURIComponent(document.location.pathname);
     try {
-      const response = await axios.get<Nav>(`/api/v2/navigation/?uri=${q}`);
-      navigation.sections.push(...response.data.sections);
-      if (response.data.breadcrumbs) {
-        navigation.breadcrumbs.push(...response.data.breadcrumbs);
-      }
+      const nav = await get<NavResponse>(`/api/v2/navigation/?uri=${q}`);
+      return { sections: nav.sections ?? [], breadcrumbs: nav.breadcrumbs ?? [] };
     } catch (error) {
       console.error("Failed to fetch navigation:", error);
+      return { sections: [], breadcrumbs: [] };
     }
-    return navigation;
   }
 
-  public async getBlogArchive(): Promise<Archive> {
-    return await axios.get<Archive>("/api/v2/blog/archive/").then((r) => {
-      return r.data;
-    });
+  public getBlogArchive(): Promise<Archive> {
+    return get<Archive>("/api/v2/blog/archive/");
   }
 
-  public async getUser(): Promise<User> {
-    return await axios.get<User>("/api/v2/auth/user/").then((r) => {
-      return r.data;
-    });
+  public getUser(): Promise<User> {
+    return get<User>("/api/v2/auth/user/");
   }
 
-  public async getFullUserInfo(): Promise<FullUserInfo> {
-    return await axios.get<FullUserInfo>("/api/v2/auth/userinfo/").then((r) => {
-      return r.data;
-    });
+  public getFullUserInfo(): Promise<FullUserInfo> {
+    return get<FullUserInfo>("/api/v2/auth/userinfo/");
+  }
+
+  public getPosts(q?: Query): Promise<ApiResult<Post>> {
+    return get<ApiResult<Post>>(`/api/v2/blog/posts/${toQuery(q)}`);
+  }
+
+  public getDownloadableFiles(): Promise<ApiResult<FilesContainer>> {
+    return get<ApiResult<FilesContainer>>("/api/v2/portfolio/files/");
+  }
+
+  public getAdminPosts(q?: Query): Promise<ApiResult<EditablePost>> {
+    return getWithProgress<ApiResult<EditablePost>>(`/api/v2/admin/posts/${toQuery(q)}`);
+  }
+
+  public getDownloads(q?: Query): Promise<ApiResult<Download>> {
+    return getWithProgress<ApiResult<Download>>(`/api/v2/admin/download/${toQuery(q)}`);
+  }
+
+  public getDashboardStats(): Promise<DashboardStats> {
+    return getWithProgress<DashboardStats>("/api/v2/admin/dashboard/");
+  }
+
+  public getUsers(): Promise<ApiResult<FullUserInfo>> {
+    return getWithProgress<ApiResult<FullUserInfo>>("/api/v2/admin/users/");
   }
 
   public async createPost(p: EditablePost): Promise<void> {
-    await axios.post("/api/v2/admin/post", p);
+    await axios.post<OperationResult>("/api/v2/admin/post", p);
   }
 
   public async editPost(p: EditablePost): Promise<void> {
-    await axios.put<EditablePost>("/api/v2/admin/post", p);
+    await axios.put<OperationResult>("/api/v2/admin/post", p);
   }
 
   public async deletePost(id: number): Promise<void> {
-    await axios.delete(`/api/v2/admin/post/${id}`);
+    await axios.delete<OperationResult>(`/api/v2/admin/post/${id}`);
   }
 
   public async editDownload(d: Download): Promise<void> {
-    await axios.put<Download>("/api/v2/admin/download/", d);
+    await axios.put<OperationResult>("/api/v2/admin/download/", d);
   }
 
   public async deleteDownload(id: number): Promise<void> {
-    await axios.delete(`/api/v2/admin/download/${id}`);
-  }
-
-  public async getDownloads<T>(q?: Query): Promise<ApiResult<T>> {
-    const progress = useProgress().start();
-    return await axios
-      .get<ApiResult<T>>(`/api/v2/admin/download/${toQuery(q)}`)
-      .then((r) => {
-        return r.data;
-      })
-      .finally(() => progress.finish());
-  }
-
-  public async getPosts<T>(q?: Query): Promise<ApiResult<T>> {
-    return await axios
-      .get<ApiResult<T>>(`/api/v2/blog/posts/${toQuery(q)}`)
-      .then((r) => {
-        return r.data;
-      });
-  }
-
-  public async getDownloadableFiles<T>(): Promise<ApiResult<T>> {
-    return await axios
-      .get<ApiResult<T>>("/api/v2/portfolio/files/")
-      .then((r) => {
-        return r.data;
-      });
-  }
-
-  public async getAdminPosts<T>(q?: Query): Promise<ApiResult<T>> {
-    const progress = useProgress().start();
-    return await axios
-      .get<ApiResult<T>>(`/api/v2/admin/posts/${toQuery(q)}`)
-      .then((r) => {
-        return r.data;
-      })
-      .finally(() => progress.finish());
-  }
-
-  public async getDashboardStats(): Promise<DashboardStats> {
-    const progress = useProgress().start();
-    return await axios
-      .get<DashboardStats>("/api/v2/admin/dashboard/")
-      .then((r) => {
-        return r.data;
-      })
-      .finally(() => progress.finish());
-  }
-
-  public async getUsers<T>(): Promise<ApiResult<T>> {
-    const progress = useProgress().start();
-    return await axios
-      .get<ApiResult<T>>("/api/v2/admin/users/")
-      .then((r) => {
-        return r.data;
-      })
-      .finally(() => progress.finish());
+    await axios.delete<OperationResult>(`/api/v2/admin/download/${id}`);
   }
 }
 

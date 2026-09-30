@@ -104,8 +104,8 @@ import AppIcon from '@/components/AppIcon.vue'
 import AdminPagination from '@/components/admin/AdminPagination.vue'
 import TableStatus from '@/components/admin/TableStatus.vue'
 import { usePagedList } from '@/composables/usePagedList'
-import { emptyPost, Query } from '@/models/blog'
-import type { EditablePost } from '@/models/blog'
+import { emptyPost } from '@/models/blog'
+import type { EditablePost, Query } from '@/models/blog'
 
 const route = useRoute()
 const apiService = new ApiService()
@@ -119,9 +119,9 @@ const {
   refresh
 } = usePagedList(
   (pageNum) => {
-    const q = new Query()
+    const q: Query = {}
     q.page = pageNum.toString()
-    return apiService.getAdminPosts<EditablePost>(q)
+    return apiService.getAdminPosts(q)
   },
   () => parseInt(route.params.page as string) || 1,
   'Не удалось загрузить посты'

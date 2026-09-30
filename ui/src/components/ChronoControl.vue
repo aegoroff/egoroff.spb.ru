@@ -54,7 +54,7 @@ import { onMounted, onUnmounted } from 'vue'
 import { emitter } from '@/events'
 import { remountBlogFilter } from '@/blogMount'
 import { formatMonthName, formatMonthYear } from '@/util'
-import { Year } from '@/models/blog'
+import type { Year } from '@/models/blog'
 
 defineProps<{
   years: Year[]

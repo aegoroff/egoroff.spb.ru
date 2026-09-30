@@ -91,10 +91,9 @@ const search = async (): Promise<void> => {
   q.q = localQuery.value
   q.start = (page.value - 1) * ItemsPerPage + 1
 
-  const progress = useProgress().start()
   const service = new SearchService()
   try {
-    const result = await service.search(q)
+    const result = await useProgress().attach(service.search(q))
     searchResult.value = result
 
     const totalResults = parseInt(result.searchInformation.totalResults, 10)
@@ -102,8 +101,6 @@ const search = async (): Promise<void> => {
     await nextTick()
   } catch (error) {
     console.error('Search failed:', error)
-  } finally {
-    progress.finish()
   }
 }
 

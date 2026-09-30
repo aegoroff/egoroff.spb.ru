@@ -43,7 +43,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import ApiService from '@/services/ApiService'
-import { FullUserInfo } from '@/models/common'
+import type { FullUserInfo } from '@/models/common'
 import TableStatus from '@/components/admin/TableStatus.vue'
 import { useNotify } from '@/composables/useNotify'
 
@@ -66,7 +66,7 @@ const formatDate = (dateString: string): string => {
 const loadUsers = async () => {
   const apiService = new ApiService()
   try {
-    const result = await apiService.getUsers<FullUserInfo>()
+    const result = await apiService.getUsers()
     users.value = result.result
   } catch (error) {
     failed.value = true

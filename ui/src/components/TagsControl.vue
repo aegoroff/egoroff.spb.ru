@@ -16,7 +16,7 @@
 import { onMounted, onUnmounted } from 'vue'
 import { emitter } from '@/events'
 import { remountBlogFilter } from '@/blogMount'
-import { Tag } from '@/models/blog'
+import type { Tag } from '@/models/blog'
 
 defineProps<{
   tags: Tag[]

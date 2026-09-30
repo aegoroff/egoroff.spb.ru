@@ -75,10 +75,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import ApiService from '@/services/ApiService'
-import { DashboardStats } from '@/models/dashboard'
+import type { DashboardStats } from '@/models/dashboard'
 import { useNotify } from '@/composables/useNotify'
 
-const stats = ref<DashboardStats>(new DashboardStats())
+const stats = ref<DashboardStats>({ posts: 0, downloads: 0, users: 0 })
 const notify = useNotify()
 const loading = ref(true)
 

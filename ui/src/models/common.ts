@@ -1,32 +1,35 @@
-export class User {
-  public loginOrName!: string;
-  public provider!: string;
-  public authenticated!: boolean;
-  public admin!: boolean;
+/** Current session user (`AuthorizedUser` on the server). */
+export interface User {
+  loginOrName: string
+  provider: string
+  authenticated: boolean
+  admin: boolean
 }
 
-export class FullUserInfo {
-  public admin!: boolean
-  public created!: string
-  public avatarUrl!: string
-  public email!: string
-  public name!: string
-  public username!: string
-  public federatedId!: string
-  public verified!: boolean
-  public provider!: string
+/** Stored user (`User` on the server). */
+export interface FullUserInfo {
+  admin: boolean
+  created: string
+  avatarUrl: string
+  email: string
+  name: string
+  username: string
+  federatedId: string
+  verified: boolean
+  provider: string
 }
 
-export class Section {
-  public id!: string
-  public title!: string
-  public class!: string
-  public icon!: string
-  public active!: boolean
-  public descr!: string
+/** Site map section (`SiteSection` on the server). */
+export interface Section {
+  id: string
+  title: string
+  icon: string
+  descr?: string
+  keywords?: string
+  active?: boolean
 }
 
-export class Nav {
-  public sections!: Array<Section>;
-  public breadcrumbs!: Array<Section>;
+export interface Nav {
+  sections: Array<Section>
+  breadcrumbs: Array<Section>
 }

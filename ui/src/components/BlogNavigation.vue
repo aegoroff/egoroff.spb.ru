@@ -24,7 +24,7 @@ import { ref, onMounted } from 'vue'
 import ApiService from '@/services/ApiService'
 import TagsControl from '@/components/TagsControl.vue'
 import ChronoControl from '@/components/ChronoControl.vue'
-import { Archive } from '@/models/blog'
+import type { Archive } from '@/models/blog'
 
 const archive = ref<Archive>({
   tags: [],

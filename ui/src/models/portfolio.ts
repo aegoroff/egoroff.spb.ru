@@ -1,19 +1,19 @@
-export class Downloadable {
-  public Title!: string
-  public Path!: string
-  public FileName!: string
-  public Blake3Hash!: string
-  public Size!: number
+export interface Downloadable {
+  Title: string
+  Path: string
+  FileName: string
+  Blake3Hash: string
+  Size: number
 }
 
-export class FilesContainer {
-  public Title!: string
-  public Files!: Array<Downloadable>
+export interface FilesContainer {
+  Title: string
+  Files: Array<Downloadable>
 }
 
-export class Download {
-  public id!: number;
-  public title!: string;
+export interface Download {
+  id: number
+  title: string
 }
 
 export const emptyDownload = (): Download => ({ id: 0, title: "" });

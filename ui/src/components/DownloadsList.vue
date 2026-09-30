@@ -29,7 +29,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import ApiService from '@/services/ApiService'
-import { Downloadable, FilesContainer } from '@/models/portfolio'
+import type { Downloadable, FilesContainer } from '@/models/portfolio'
 
 const PREVIEW_COUNT = 3
 
@@ -64,7 +64,7 @@ const visibleFiles = (folder: FilesContainer): Array<Downloadable> => {
 onMounted(async () => {
   const apiService = new ApiService()
   try {
-    const result = await apiService.getDownloadableFiles<FilesContainer>()
+    const result = await apiService.getDownloadableFiles()
     downloads.value = result.result.map((folder) => ({
       ...folder,
       Files: [...folder.Files].reverse(),

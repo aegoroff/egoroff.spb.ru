@@ -1,5 +1,5 @@
 import { SearchQuery } from '@/services/SearchService'
-import { Query } from './models/blog'
+import type { Query } from './models/blog'
 
 const RU = 'ru-RU'
 

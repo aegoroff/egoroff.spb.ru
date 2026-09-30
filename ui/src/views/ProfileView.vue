@@ -49,7 +49,7 @@
 import { ref, onMounted } from 'vue'
 import ApiService from '@/services/ApiService'
 import AppIcon from '@/components/AppIcon.vue'
-import { FullUserInfo } from '@/models/common'
+import type { FullUserInfo } from '@/models/common'
 
 const user = ref<FullUserInfo>({
   admin: false,

@@ -1,51 +1,51 @@
-export class Archive {
-  public tags!: Array<Tag>
-  public years!: Array<Year>
+export interface Archive {
+  tags: Array<Tag>
+  years: Array<Year>
 }
 
-export class Month {
-  public month!: number
-  public posts!: number
+export interface Month {
+  month: number
+  posts: number
 }
 
-export class Year {
-  public year!: number
-  public posts!: number
-  public months!: Array<Month>
+export interface Year {
+  year: number
+  posts: number
+  months: Array<Month>
 }
 
-export class Tag {
-  public title!: string
-  public level!: number
+export interface Tag {
+  title: string
+  level: number
 }
 
-export class Query {
-  public limit!: string;
-  public offset!: string;
-  public tag!: string;
-  public year!: string;
-  public month!: string;
-  public page!: string;
+/** Filters of the posts listing; the server always pages by a fixed size. */
+export interface Query {
+  tag?: string
+  year?: string
+  month?: string
+  page?: string
 }
 
-export class Post {
-  public Key!: string
-  public Created!: string
-  public id!: number
-  public Title!: string
-  public ShortText!: string
+/** Public post teaser (`SmallPost` on the server). */
+export interface Post {
+  Created: string
+  id: number
+  Title: string
+  ShortText: string
 }
 
-export class EditablePost {
-  public Created!: string;
-  public Modified!: string;
-  public id!: number;
-  public Title!: string;
-  public IsPublic!: boolean;
-  public Markdown!: boolean;
-  public Tags!: Array<string>;
-  public Text!: string;
-  public ShortText!: string;
+/** Full post as the admin API reads and writes it (`Post` on the server). */
+export interface EditablePost {
+  Created: string
+  Modified: string
+  id: number
+  Title: string
+  IsPublic: boolean
+  Markdown: boolean
+  Tags: Array<string>
+  Text: string
+  ShortText: string
 }
 
 export const emptyPost = (): EditablePost => ({

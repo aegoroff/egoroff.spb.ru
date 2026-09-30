@@ -1,5 +1,5 @@
-export class DashboardStats {
-  public posts: number = 0;
-  public downloads: number = 0;
-  public users: number = 0;
+export interface DashboardStats {
+  posts: number
+  downloads: number
+  users: number
 }

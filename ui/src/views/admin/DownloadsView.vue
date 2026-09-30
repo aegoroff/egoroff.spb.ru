@@ -87,7 +87,7 @@ import ConfirmDelete from '@/components/admin/ConfirmDelete.vue'
 import { usePagedList } from '@/composables/usePagedList'
 import { emptyDownload } from '@/models/portfolio'
 import type { Download } from '@/models/portfolio'
-import { Query } from '@/models/blog'
+import type { Query } from '@/models/blog'
 
 const route = useRoute()
 const apiService = new ApiService()
@@ -101,9 +101,9 @@ const {
   refresh
 } = usePagedList(
   (pageNum) => {
-    const q = new Query()
+    const q: Query = {}
     q.page = pageNum.toString()
-    return apiService.getDownloads<Download>(q)
+    return apiService.getDownloads(q)
   },
   () => parseInt(route.params.page as string) || 1,
   'Не удалось загрузить список загрузок'

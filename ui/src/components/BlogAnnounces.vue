@@ -22,7 +22,7 @@ import { ref, onMounted } from 'vue'
 import DateFormatter from '@/components/DateFormatter.vue'
 import ApiService from '@/services/ApiService'
 import BlogPagination from '@/components/BlogPagination.vue'
-import { Post, Query } from '@/models/blog'
+import type { Post, Query } from '@/models/blog'
 
 const props = withDefaults(defineProps<{
   q?: string
@@ -35,7 +35,7 @@ const pages = ref(0)
 const page = ref(1)
 
 const getQuery = (): Query => {
-  const q = new Query()
+  const q: Query = {}
   const parts = props.q.split('&')
 
   for (const part of parts) {
@@ -50,7 +50,7 @@ const getQuery = (): Query => {
 
 const loadPosts = async (): Promise<void> => {
   const apiService = new ApiService()
-  const result = await apiService.getPosts<Post>(getQuery())
+  const result = await apiService.getPosts(getQuery())
   posts.value = result.result
   pages.value = result.pages
   page.value = result.page
