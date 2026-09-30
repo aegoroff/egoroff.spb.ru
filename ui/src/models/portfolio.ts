@@ -15,3 +15,5 @@ export class Download {
   public id!: number;
   public title!: string;
 }
+
+export const emptyDownload = (): Download => ({ id: 0, title: "" });

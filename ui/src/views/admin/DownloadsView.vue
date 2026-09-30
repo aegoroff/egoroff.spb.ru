@@ -9,15 +9,23 @@
 
     <AdminPagination :page="page" :pages="pages" base-path="/downloads" />
 
-    <DownloadForm modal-id="edit-download" mode="edit" :download="selectedDownload" />
-    <DownloadForm modal-id="create-download" mode="create" />
+    <DownloadForm
+      modal-id="edit-download"
+      mode="edit"
+      :download="selectedDownload"
+      @saved="refresh"
+    />
+    <DownloadForm modal-id="create-download" mode="create" @saved="refresh" />
     <ConfirmDelete
       modal-id="delete-download"
       title="Удалить загрузку"
       message="Действительно удалить загрузку?"
-      :item-id="selectedDownloadId"
+      :item-id="selectedDownload.id"
       :item-title="selectedDownload.title"
-      kind="download"
+      :remove="(id) => apiService.deleteDownload(id)"
+      success-text="Загрузка удалена"
+      failure-text="Не удалось удалить загрузку"
+      @deleted="refresh"
     />
 
     <div class="table-responsive" id="downloads-table">
@@ -68,83 +76,44 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref } from 'vue'
 import { useRoute } from 'vue-router'
 import ApiService from '@/services/ApiService'
 import AppIcon from '@/components/AppIcon.vue'
-import { emitter } from '@/events'
 import AdminPagination from '@/components/admin/AdminPagination.vue'
 import TableStatus from '@/components/admin/TableStatus.vue'
-import { useNotify } from '@/composables/useNotify'
 import DownloadForm from '@/components/admin/DownloadForm.vue'
 import ConfirmDelete from '@/components/admin/ConfirmDelete.vue'
-import { Download } from '@/models/portfolio'
+import { usePagedList } from '@/composables/usePagedList'
+import { emptyDownload } from '@/models/portfolio'
+import type { Download } from '@/models/portfolio'
 import { Query } from '@/models/blog'
 
 const route = useRoute()
+const apiService = new ApiService()
 
-const downloads = ref<Array<Download>>([])
-const page = ref(1)
-const pages = ref(1)
-const selectedDownload = ref<Download>({
-  id: 0,
-  title: ''
-})
-const selectedDownloadId = ref(0)
-const loading = ref(true)
-const failed = ref(false)
-const notify = useNotify()
+const {
+  items: downloads,
+  page,
+  pages,
+  loading,
+  failed,
+  refresh
+} = usePagedList(
+  (pageNum) => {
+    const q = new Query()
+    q.page = pageNum.toString()
+    return apiService.getDownloads<Download>(q)
+  },
+  () => parseInt(route.params.page as string) || 1,
+  'Не удалось загрузить список загрузок'
+)
 
-const update = async (pageNum: number): Promise<void> => {
-  const q = new Query()
-  q.page = pageNum.toString()
-  q.limit = '10'
-
-  const apiService = new ApiService()
-  loading.value = true
-  failed.value = false
-  try {
-    const result = await apiService.getDownloads<Download>(q)
-    downloads.value = result.result
-    pages.value = result.pages
-    page.value = result.page
-  } catch (error) {
-    failed.value = true
-    notify.error('Не удалось загрузить список загрузок', error)
-  } finally {
-    loading.value = false
-  }
-}
+const selectedDownload = ref<Download>(emptyDownload())
 
 const onSelect = (d: Download): void => {
   selectedDownload.value = d
-  selectedDownloadId.value = d.id
 }
-
-const refreshDownloads = (): void => {
-  update(page.value)
-}
-
-onMounted(() => {
-  const routePage = parseInt(route.params.page as string) || 1
-  update(routePage)
-
-  emitter.on('downloadDeleted', refreshDownloads)
-  emitter.on('downloadCreated', refreshDownloads)
-  emitter.on('downloadUpdated', refreshDownloads)
-})
-
-onUnmounted(() => {
-  emitter.off('downloadDeleted', refreshDownloads)
-  emitter.off('downloadCreated', refreshDownloads)
-  emitter.off('downloadUpdated', refreshDownloads)
-})
-
-// Watch route changes
-watch(() => route.params.page, (newPage) => {
-  const pageNum = parseInt(newPage as string) || 1
-  update(pageNum)
-})
 </script>
 
 <style scoped lang="scss">

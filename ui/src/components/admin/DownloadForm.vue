@@ -64,8 +64,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import ApiService from "@/services/ApiService";
-import { emitter } from "@/events";
-import { Download } from "@/models/portfolio";
+import { emptyDownload } from "@/models/portfolio";
+import type { Download } from "@/models/portfolio";
 import { useModalForm } from "@/composables/useModalForm";
 import { useNotify } from "@/composables/useNotify";
 
@@ -75,7 +75,7 @@ const props = defineProps<{
   download?: Download;
 }>();
 
-const emptyDownload = (): Download => ({ id: 0, title: "" });
+const emit = defineEmits<{ saved: [] }>();
 
 const notify = useNotify();
 
@@ -124,10 +124,10 @@ const onOk = async (): Promise<void> => {
   }
   if (props.mode === "create") {
     localDownload.value = emptyDownload();
-    emitter.emit("downloadCreated");
+    emit("saved");
     notify.success("Загрузка создана");
   } else {
-    emitter.emit("downloadUpdated");
+    emit("saved");
     notify.success("Загрузка сохранена");
   }
 };

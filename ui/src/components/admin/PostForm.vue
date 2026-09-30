@@ -148,8 +148,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import ApiService from "@/services/ApiService";
-import { emitter } from "@/events";
-import { EditablePost } from "@/models/blog";
+import { emptyPost } from "@/models/blog";
+import type { EditablePost } from "@/models/blog";
 import { useModalForm } from "@/composables/useModalForm";
 import { useNotify } from "@/composables/useNotify";
 
@@ -159,17 +159,7 @@ const props = defineProps<{
   post?: EditablePost;
 }>();
 
-const emptyPost = (): EditablePost => ({
-  Created: "",
-  Modified: "",
-  id: 0,
-  Title: "",
-  IsPublic: false,
-  Markdown: false,
-  Tags: [],
-  Text: "",
-  ShortText: "",
-});
+const emit = defineEmits<{ saved: [] }>();
 
 const notify = useNotify();
 
@@ -269,7 +259,7 @@ const onOk = async (): Promise<void> => {
     }, "Не удалось создать пост");
     if (created) {
       localPost.value = emptyPost();
-      emitter.emit("postCreated");
+      emit("saved");
       notify.success("Пост создан");
     }
   } else {
@@ -278,7 +268,7 @@ const onOk = async (): Promise<void> => {
       "Не удалось сохранить пост"
     );
     if (saved) {
-      emitter.emit("postUpdated");
+      emit("saved");
       notify.success("Пост сохранён");
     }
   }

@@ -14,15 +14,18 @@
 
     <AdminPagination :page="page" :pages="pages" base-path="/posts" />
 
-    <PostForm modal-id="create-post" mode="create" />
-    <PostForm modal-id="edit-post" mode="edit" :post="selectedPost" />
+    <PostForm modal-id="create-post" mode="create" @saved="refresh" />
+    <PostForm modal-id="edit-post" mode="edit" :post="selectedPost" @saved="refresh" />
     <ConfirmDelete
       modal-id="delete-post"
       title="Удалить пост"
       message="Действительно удалить пост?"
-      :item-id="selectedPostId"
+      :item-id="selectedPost.id"
       :item-title="selectedPost.Title"
-      kind="post"
+      :remove="(id) => apiService.deletePost(id)"
+      success-text="Пост удалён"
+      failure-text="Не удалось удалить пост"
+      @deleted="refresh"
     />
 
     <div class="table-responsive" id="posts-table">
@@ -91,90 +94,44 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref } from 'vue'
 import { useRoute } from 'vue-router'
 import ApiService from '@/services/ApiService'
 import DateFormatter from '@/components/DateFormatter.vue'
 import PostForm from '@/components/admin/PostForm.vue'
 import ConfirmDelete from '@/components/admin/ConfirmDelete.vue'
 import AppIcon from '@/components/AppIcon.vue'
-import { emitter } from '@/events'
 import AdminPagination from '@/components/admin/AdminPagination.vue'
 import TableStatus from '@/components/admin/TableStatus.vue'
-import { useNotify } from '@/composables/useNotify'
-import { EditablePost, Query } from '@/models/blog'
+import { usePagedList } from '@/composables/usePagedList'
+import { emptyPost, Query } from '@/models/blog'
+import type { EditablePost } from '@/models/blog'
 
 const route = useRoute()
+const apiService = new ApiService()
 
-const posts = ref<Array<EditablePost>>([])
-const page = ref(1)
-const pages = ref(1)
-const selectedPost = ref<EditablePost>({
-  Created: '',
-  Modified: '',
-  id: 0,
-  Title: '',
-  IsPublic: false,
-  Markdown: false,
-  Tags: [],
-  Text: '',
-  ShortText: ''
-})
-const selectedPostId = ref(0)
-const loading = ref(true)
-const failed = ref(false)
-const notify = useNotify()
+const {
+  items: posts,
+  page,
+  pages,
+  loading,
+  failed,
+  refresh
+} = usePagedList(
+  (pageNum) => {
+    const q = new Query()
+    q.page = pageNum.toString()
+    return apiService.getAdminPosts<EditablePost>(q)
+  },
+  () => parseInt(route.params.page as string) || 1,
+  'Не удалось загрузить посты'
+)
 
-const update = async (pageNum: number): Promise<void> => {
-  const q = new Query()
-  q.page = pageNum.toString()
-  q.limit = '10'
-
-  const apiService = new ApiService()
-  loading.value = true
-  failed.value = false
-  try {
-    const result = await apiService.getAdminPosts<EditablePost>(q)
-    posts.value = result.result
-    pages.value = result.pages
-    page.value = result.page
-  } catch (error) {
-    failed.value = true
-    notify.error('Не удалось загрузить посты', error)
-  } finally {
-    loading.value = false
-  }
-}
+const selectedPost = ref<EditablePost>(emptyPost())
 
 const onSelect = (p: EditablePost): void => {
   selectedPost.value = p
-  selectedPostId.value = p.id
 }
-
-const refreshPosts = (): void => {
-  update(page.value)
-}
-
-onMounted(() => {
-  const routePage = parseInt(route.params.page as string) || 1
-  update(routePage)
-
-  emitter.on('postCreated', refreshPosts)
-  emitter.on('postDeleted', refreshPosts)
-  emitter.on('postUpdated', refreshPosts)
-})
-
-onUnmounted(() => {
-  emitter.off('postCreated', refreshPosts)
-  emitter.off('postDeleted', refreshPosts)
-  emitter.off('postUpdated', refreshPosts)
-})
-
-// Watch route changes
-watch(() => route.params.page, (newPage) => {
-  const pageNum = parseInt(newPage as string) || 1
-  update(pageNum)
-})
 </script>
 
 <style scoped lang="scss">

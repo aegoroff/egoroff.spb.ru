@@ -47,3 +47,15 @@ export class EditablePost {
   public Text!: string;
   public ShortText!: string;
 }
+
+export const emptyPost = (): EditablePost => ({
+  Created: "",
+  Modified: "",
+  id: 0,
+  Title: "",
+  IsPublic: false,
+  Markdown: false,
+  Tags: [],
+  Text: "",
+  ShortText: "",
+});

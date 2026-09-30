@@ -13,11 +13,11 @@ const DISMISS_DELAY_MS = 5000
 const MAX_DETAILS_LENGTH = 200
 
 const notifications = ref<Array<Notification>>([])
-const timers = new Map<number, number>()
+const timers = new Map<number, ReturnType<typeof setTimeout>>()
 let nextId = 1
 
 const dismiss = (id: number): void => {
-  window.clearTimeout(timers.get(id))
+  clearTimeout(timers.get(id))
   timers.delete(id)
   notifications.value = notifications.value.filter((n) => n.id !== id)
 }
@@ -25,7 +25,7 @@ const dismiss = (id: number): void => {
 const push = (kind: NotificationKind, text: string): void => {
   const id = nextId++
   notifications.value.push({ id, kind, text })
-  timers.set(id, window.setTimeout(() => dismiss(id), DISMISS_DELAY_MS))
+  timers.set(id, setTimeout(() => dismiss(id), DISMISS_DELAY_MS))
 }
 
 // Plain-text server responses carry useful details; HTML error pages do not.

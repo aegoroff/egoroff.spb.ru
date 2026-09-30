@@ -13,7 +13,6 @@ export class ApiResult<T> {
   public count!: number;
   public page!: number;
   public pages!: number;
-  public row!: string;
   public result!: Array<T>;
 }
 

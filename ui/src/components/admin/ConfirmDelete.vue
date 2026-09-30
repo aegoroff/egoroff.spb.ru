@@ -39,8 +39,6 @@
 
 <script setup lang="ts">
 import { nextTick, ref } from "vue";
-import ApiService from "@/services/ApiService";
-import { emitter } from "@/events";
 import { closeModalById } from "@/util";
 import { useNotify } from "@/composables/useNotify";
 
@@ -50,38 +48,24 @@ const props = defineProps<{
   message: string;
   itemId: number;
   itemTitle?: string;
-  kind: "post" | "download";
+  remove: (id: number) => Promise<void>;
+  successText: string;
+  failureText: string;
 }>();
 
-const apiService = new ApiService();
-
-const actions = {
-  post: {
-    remove: (id: number) => apiService.deletePost(id),
-    emit: () => emitter.emit("postDeleted"),
-    success: "Пост удалён",
-    failure: "Не удалось удалить пост",
-  },
-  download: {
-    remove: (id: number) => apiService.deleteDownload(id),
-    emit: () => emitter.emit("downloadDeleted"),
-    success: "Загрузка удалена",
-    failure: "Не удалось удалить загрузку",
-  },
-};
+const emit = defineEmits<{ deleted: [] }>();
 
 const notify = useNotify();
 const busy = ref(false);
 
 const onOk = async (): Promise<void> => {
-  const action = actions[props.kind];
   busy.value = true;
   try {
-    await action.remove(props.itemId);
-    action.emit();
-    notify.success(action.success);
+    await props.remove(props.itemId);
+    emit("deleted");
+    notify.success(props.successText);
   } catch (error) {
-    notify.error(action.failure, error);
+    notify.error(props.failureText, error);
     return;
   } finally {
     busy.value = false;
