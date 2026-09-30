@@ -31,10 +31,10 @@ pub struct Claims {
     pub client_id: String,
     pub redirect_uri: Option<String>,
     pub aud: Option<String>, // Optional. Audience
-    pub exp: Option<usize>, // Required (validate_exp defaults to true in validation). Expiration time (as UTC timestamp)
-    pub iat: Option<usize>, // Optional. Issued at (as UTC timestamp)
+    pub exp: Option<i64>, // Required (validate_exp defaults to true in validation). Expiration time (as UTC timestamp)
+    pub iat: Option<i64>, // Optional. Issued at (as UTC timestamp)
     pub iss: Option<String>, // Optional. Issuer
-    pub nbf: Option<usize>, // Optional. Not Before (as UTC timestamp)
+    pub nbf: Option<i64>, // Optional. Not Before (as UTC timestamp)
     pub sub: Option<String>, // Optional. Subject (whom token refers to)
     pub jti: Option<String>,
 }
@@ -313,5 +313,64 @@ impl RequireIndieAuthorizationLayer {
             public_key_path,
             _body_type: PhantomData,
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use chrono::Utc;
+    use rstest::{fixture, rstest};
+
+    const PRIVATE_KEY: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/testdata/jwt_private.pem");
+    const PUBLIC_KEY: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/testdata/jwt_public.pem");
+
+    #[fixture]
+    fn now() -> i64 {
+        Utc::now().timestamp()
+    }
+
+    fn claims(issued: i64, expired: i64) -> Claims {
+        Claims {
+            client_id: "https://example.com/".to_string(),
+            redirect_uri: Some("https://example.com/callback".to_string()),
+            aud: None,
+            exp: Some(expired),
+            iat: Some(issued),
+            iss: Some(ME.to_string()),
+            nbf: None,
+            sub: None,
+            jti: None,
+        }
+    }
+
+    #[rstest]
+    fn jwt_roundtrip_preserves_timestamps(now: i64) -> Result<()> {
+        // arrange
+        let expected = claims(now, now + 600);
+
+        // act
+        let token = generate_jwt(&expected, PRIVATE_KEY)?;
+        let actual = validate_jwt(&token, PUBLIC_KEY)?;
+
+        // assert
+        assert_eq!(expected.iat, actual.iat);
+        assert_eq!(expected.exp, actual.exp);
+        assert_eq!(expected.client_id, actual.client_id);
+        Ok(())
+    }
+
+    #[rstest]
+    fn jwt_expired_token_rejected(now: i64) -> Result<()> {
+        // arrange
+        let expired = claims(now - 7200, now - 3600);
+        let token = generate_jwt(&expired, PRIVATE_KEY)?;
+
+        // act
+        let actual = validate_jwt(&token, PUBLIC_KEY);
+
+        // assert
+        assert!(actual.is_err());
+        Ok(())
     }
 }

@@ -30,11 +30,11 @@ pub async fn serve_auth(
 
     if redirect.starts_with(&client_id) {
         let now = Utc::now();
-        let issued = now.timestamp() as usize;
+        let issued = now.timestamp();
         let expired = TimeDelta::try_minutes(10)
             .and_then(|lifetime| now.checked_add_signed(lifetime))
             .ok_or_else(|| ApiError::internal("invalid Indie code lifetime"))?
-            .timestamp() as usize;
+            .timestamp();
         let claims = Claims {
             client_id,
             redirect_uri: Some(redirect.clone()),
@@ -90,12 +90,10 @@ pub async fn serve_token_generate(
     page_context.cache.lock().await.remove(&req.code);
 
     let now = Utc::now();
-    let issued = now.timestamp() as usize;
+    let issued = now.timestamp();
     let lifetime = TimeDelta::try_days(90)
         .ok_or_else(|| ApiError::internal("invalid Indie token lifetime"))?;
-    let expired = now
-        .checked_add_signed(lifetime)
-        .map(|dt| dt.timestamp() as usize);
+    let expired = now.checked_add_signed(lifetime).map(|dt| dt.timestamp());
 
     let claims = Claims {
         client_id: req.client_id,
