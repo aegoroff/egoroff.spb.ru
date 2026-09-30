@@ -238,10 +238,8 @@ fn ip_in_range(ip: Ipv4Addr, network: Ipv4Addr, prefix: u8) -> bool {
     (u32::from(ip) & mask) == (u32::from(network) & mask)
 }
 
-pub async fn read_from_client(uri: &str) -> Result<String> {
+pub async fn read_from_client(client: &Client, uri: &str) -> Result<String> {
     validate_uri(uri)?;
-    let client = Client::builder().build()?;
-
     let response = client.get(uri).send().await?.text().await?;
 
     Ok(response)

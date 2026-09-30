@@ -61,10 +61,12 @@ pub async fn serve_auth(
         let client = Resource::new(&client_id).ok_or_else(|| {
             ApiError::bad_request(format!("invalid client_id: {client_id}")).logged()
         })?;
-        let resp = read_from_client(&client.to_string()).await.map_err(|e| {
-            ApiError::bad_request("cannot read client_id")
-                .caused_by(e.context("Error reading data from client"))
-        })?;
+        let resp = read_from_client(&page_context.http_client, &client.to_string())
+            .await
+            .map_err(|e| {
+                ApiError::bad_request("cannot read client_id")
+                    .caused_by(e.context("Error reading data from client"))
+            })?;
         tracing::info!("Response from client: {resp}");
         Ok(StatusCode::OK.into_response())
     }

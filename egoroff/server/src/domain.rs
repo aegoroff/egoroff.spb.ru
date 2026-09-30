@@ -94,6 +94,8 @@ pub struct PageContext<'a> {
     pub site_config: Config,
     /// The external file store.
     pub file_store: FileStore,
+    /// Shared HTTP client for outgoing requests; it pools connections.
+    pub http_client: reqwest::Client,
     /// The certificates path.
     pub certs_path: String,
     /// The cache instance.

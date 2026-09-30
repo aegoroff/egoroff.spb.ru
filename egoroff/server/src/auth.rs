@@ -71,6 +71,9 @@ impl response::IntoResponse for AppUser {
 pub struct OAuthAuthorizer<T> {
     client: SpecialClient,
     provider: OAuthProvider,
+    /// Exchanges authorization codes; never follows redirects.
+    exchange_client: oauth2::reqwest::Client,
+    http_client: Client,
     _phantom: PhantomData<T>,
 }
 
@@ -242,13 +245,19 @@ impl OAuthProfile for YandexUser {
 }
 
 impl<T: OAuthProfile> OAuthAuthorizer<T> {
-    pub fn new<P: AsRef<Path>>(db_path: P) -> Result<Self> {
+    pub fn new<P: AsRef<Path>>(db_path: P, http_client: Client) -> Result<Self> {
         let (client, provider) =
             create_client_and_provider(db_path, T::NAME, T::AUTH_URL, T::TOKEN_URL)
                 .with_context(|| format!("Failed to create {} authorizer", T::NAME))?;
+        let exchange_client = oauth2::reqwest::ClientBuilder::new()
+            // Following redirects opens the client up to SSRF vulnerabilities.
+            .redirect(oauth2::reqwest::redirect::Policy::none())
+            .build()?;
         Ok(Self {
             client,
             provider,
+            exchange_client,
+            http_client,
             _phantom: PhantomData,
         })
     }
@@ -275,33 +284,35 @@ impl<T: OAuthProfile> OAuthAuthorizer<T> {
         code: String,
         pkce_code_verifier: PkceCodeVerifier,
     ) -> Result<StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>> {
-        let http_client = oauth2::reqwest::ClientBuilder::new()
-            // Following redirects opens the client up to SSRF vulnerabilities.
-            .redirect(oauth2::reqwest::redirect::Policy::none())
-            .build()?;
-
         let result = self
             .client
             .exchange_code(AuthorizationCode::new(code))
             .set_pkce_verifier(pkce_code_verifier)
-            .request_async(&http_client)
+            .request_async(&self.exchange_client)
             .await
             .with_context(|| "Failed to exchange OAuth code with pkce verifier")?;
         Ok(result)
     }
 
     pub async fn get_user(&self, token: &AccessToken) -> Result<User> {
-        let profile: T = send_user_request(T::USERINFO_URL, &T::auth_header(token.secret()))
-            .await?
-            .json()
-            .await?;
+        let profile: T = send_user_request(
+            &self.http_client,
+            T::USERINFO_URL,
+            &T::auth_header(token.secret()),
+        )
+        .await?
+        .json()
+        .await?;
         Ok(profile.to_user())
     }
 }
 
-async fn send_user_request(url: &str, auth_header: &str) -> Result<reqwest::Response> {
-    let response = Client::builder()
-        .build()?
+async fn send_user_request(
+    client: &Client,
+    url: &str,
+    auth_header: &str,
+) -> Result<reqwest::Response> {
+    let response = client
         .get(url)
         .header("Authorization", auth_header)
         .header("User-Agent", "egoroff.spb.ru API auth request")

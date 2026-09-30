@@ -6,7 +6,7 @@ use serde_json::Value;
 use url::Url;
 use utoipa::IntoParams;
 
-use super::{ApiError, Arc, Client, Json, PageContext, Query, Result, State};
+use super::{ApiError, Arc, Json, PageContext, Query, Result, State};
 
 const GOOGLE_CUSTOM_SEARCH_URL: &str = "https://www.googleapis.com/customsearch/v1";
 
@@ -55,7 +55,8 @@ pub async fn serve_search_api(
         .ok_or_else(|| ApiError::internal("failed to build Google Custom Search URL"))?;
 
     // Keys restricted by HTTP referrer expect the site origin; browser used to send it.
-    let response = Client::new()
+    let response = page_context
+        .http_client
         .get(url)
         .header("Referer", ME)
         .send()

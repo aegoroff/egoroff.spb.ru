@@ -95,6 +95,7 @@ pub fn create_routes(
     let auth_backend = AuthBackend::new(storage.clone());
     let cache = Arc::new(Mutex::new(HashSet::new()));
     let micropub_api = micropub_api(&certs_path);
+    let http_client = reqwest::Client::builder().build()?;
 
     let page_context = Arc::new(PageContext {
         apache_docs: handlers::portfolio::read_apache_documents(base_path)?,
@@ -103,6 +104,7 @@ pub fn create_routes(
         site_graph,
         site_config,
         file_store,
+        http_client: http_client.clone(),
         certs_path,
         cache,
     });
@@ -179,7 +181,7 @@ pub fn create_routes(
         .nest("/portfolio/", portfolio_routes())
         .merge(static_resources_routes())
         .nest("/api/v2", public_api())
-        .merge(oauth2_routes(&storage_path)?)
+        .merge(oauth2_routes(&storage_path, &http_client)?)
         .layer(session_service)
         .layer(CompressionLayer::new().compress_when(compress_predicate))
         .layer(RequestBodyLimitLayer::new(20 * 1024 * 1024))
@@ -225,10 +227,13 @@ fn public_api() -> Router<Arc<PageContext<'static>>> {
         .route("/auth/user", get(handlers::auth::serve_user_api_call))
 }
 
-fn oauth2_routes(storage_path: &Path) -> Result<Router<Arc<PageContext<'static>>>> {
-    let google_authorizer = GoogleAuthorizer::new(storage_path)?;
-    let github_authorizer = GithubAuthorizer::new(storage_path)?;
-    let yandex_authorizer = YandexAuthorizer::new(storage_path)?;
+fn oauth2_routes(
+    storage_path: &Path,
+    http_client: &reqwest::Client,
+) -> Result<Router<Arc<PageContext<'static>>>> {
+    let google_authorizer = GoogleAuthorizer::new(storage_path, http_client.clone())?;
+    let github_authorizer = GithubAuthorizer::new(storage_path, http_client.clone())?;
+    let yandex_authorizer = YandexAuthorizer::new(storage_path, http_client.clone())?;
 
     let google_authorizer = Arc::new(google_authorizer);
     let github_authorizer = Arc::new(github_authorizer);

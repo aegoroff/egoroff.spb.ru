@@ -24,7 +24,6 @@ use std::{
 };
 use tokio_util::io::StreamReader;
 
-use reqwest::Client;
 use rust_embed::RustEmbed;
 use serde::Serialize;
 
