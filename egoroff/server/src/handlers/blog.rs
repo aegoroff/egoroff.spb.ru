@@ -7,8 +7,11 @@ use crate::body::Content;
 use axum::response::Redirect;
 
 use super::{
+    ApiError, Arc, BlogRequest, HashMap, IntoResponse, Json, JsonResult, OperationResponse,
+    PageContext, PageError, Poster, Query, Response, Result, State, StatusCode, atom, created,
+    extract, find_section, get_keywords, get_year, redirect_response,
     template::{BlogIndex, BlogPost},
-    *,
+    updated,
 };
 
 const OPINIONS_REMAP: &[(&str, &str)] = &[
@@ -242,6 +245,6 @@ mod tests {
         let actual = strip_extension(test_data);
 
         // assert
-        assert_eq!(expected, actual)
+        assert_eq!(expected, actual);
     }
 }

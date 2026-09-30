@@ -43,9 +43,9 @@ pub fn xml2html(input: &str) -> Result<String> {
     let mut parents: Vec<&'static str> = Vec::new();
     loop {
         match reader.read_event() {
-            Ok(Event::Decl(_) | Event::PI(_)) => continue,
-            Ok(Event::Start(e)) if matches!(e.name().as_ref(), "body" | "html") => continue,
-            Ok(Event::End(e)) if matches!(e.name().as_ref(), "body" | "html") => continue,
+            Ok(Event::Decl(_) | Event::PI(_)) => {}
+            Ok(Event::Start(e)) if matches!(e.name().as_ref(), "body" | "html") => {}
+            Ok(Event::End(e)) if matches!(e.name().as_ref(), "body" | "html") => {}
             Ok(Event::Start(e)) if REPLACES_MAP.contains_key(e.name().as_ref()) => {
                 let Some(replace) = REPLACES_MAP.get(e.name().as_ref()) else {
                     continue;
