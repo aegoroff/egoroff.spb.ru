@@ -16,10 +16,7 @@ struct Url<'a> {
     pub priority: &'a str,
 }
 
-pub fn make_site_map(
-    apache_docs: Vec<crate::domain::Apache>,
-    post_ids: Vec<i64>,
-) -> Result<String> {
+pub fn make_site_map(apache_docs: &[crate::domain::Apache], post_ids: Vec<i64>) -> Result<String> {
     let mut builder = Builder::new();
 
     builder.write_attributed_start_tag(

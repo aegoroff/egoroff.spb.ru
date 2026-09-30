@@ -80,7 +80,7 @@ impl Modify for SecurityAddon {
 struct ApiDoc;
 
 pub fn create_routes(
-    base_path: PathBuf,
+    base_path: &Path,
     site_graph: Arc<SiteGraph<'static>>,
     site_config: Config,
     data_path: &Path,
@@ -98,7 +98,7 @@ pub fn create_routes(
     let micropub_api = micropub_api(&certs_path);
 
     let page_context = Arc::new(PageContext {
-        base_path,
+        apache_docs: handlers::portfolio::read_apache_documents(base_path)?,
         blog: Blog::new(storage.clone()),
         storage,
         site_graph,

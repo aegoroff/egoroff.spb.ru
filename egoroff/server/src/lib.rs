@@ -125,7 +125,7 @@ pub async fn run() -> Result<()> {
     let site_graph = Arc::new(SiteGraph::new(root));
 
     let app = rest::create_routes(
-        BASE_PATH.to_path_buf(),
+        &BASE_PATH,
         site_graph,
         site_config,
         &cfg.data_path,

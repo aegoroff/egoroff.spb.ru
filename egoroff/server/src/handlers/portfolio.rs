@@ -27,7 +27,6 @@ pub async fn serve_index(
 ) -> Result<Response, PageError> {
     let section = find_section(&page_context, "portfolio")?;
     let title_path = page_context.site_graph.make_title_path(PORTFOLIO_PATH);
-    let apache_docs = read_apache_documents(&page_context.base_path)?;
 
     Ok(Portfolio {
         html_class: "portfolio",
@@ -35,7 +34,7 @@ pub async fn serve_index(
         title_path: &title_path,
         keywords: get_keywords(section),
         meta_description: &section.descr,
-        apache_docs,
+        apache_docs: &page_context.apache_docs,
         year: get_year(),
     }
     .into_response())
@@ -45,9 +44,9 @@ pub async fn serve_apache_document(
     State(page_context): State<Arc<PageContext<'_>>>,
     extract::Path(path): extract::Path<String>,
 ) -> Result<Response, PageError> {
-    let apache_documents = read_apache_documents(&page_context.base_path)?;
     let id = path.trim_end_matches(".html");
-    let doc = apache_documents
+    let doc = page_context
+        .apache_docs
         .iter()
         .find(|item| item.id == id)
         .ok_or_else(PageError::not_found)?;

@@ -85,7 +85,6 @@ pub async fn serve_index(
     State(page_context): State<Arc<PageContext<'_>>>,
 ) -> Result<Response, PageError> {
     let posts = page_context.blog.recent(HOME_POSTS).await?;
-    let apache_docs = portfolio::read_apache_documents(&page_context.base_path)?;
     let section = find_section(&page_context, "/")?;
     Ok(Index {
         html_class: "welcome",
@@ -94,7 +93,7 @@ pub async fn serve_index(
         keywords: get_keywords(section),
         meta_description: &section.descr,
         posts,
-        apache_docs,
+        apache_docs: &page_context.apache_docs,
         year: get_year(),
     }
     .into_response())
@@ -118,9 +117,11 @@ pub async fn serve_search(
 pub async fn serve_sitemap(
     State(page_context): State<Arc<PageContext<'_>>>,
 ) -> Result<Xml<String>, ApiError> {
-    let apache_documents = portfolio::read_apache_documents(&page_context.base_path)?;
     let post_ids = page_context.blog.ids().await?;
-    Ok(Xml(sitemap::make_site_map(apache_documents, post_ids)?))
+    Ok(Xml(sitemap::make_site_map(
+        &page_context.apache_docs,
+        post_ids,
+    )?))
 }
 
 pub async fn serve_js(extract::Path(path): extract::Path<String>) -> impl IntoResponse {

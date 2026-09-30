@@ -1,4 +1,4 @@
-use std::{collections::HashSet, path::PathBuf, sync::Arc};
+use std::{collections::HashSet, sync::Arc};
 
 use futures::lock::Mutex;
 use kernel::{
@@ -82,8 +82,8 @@ pub struct Config {
 
 /// Represents the context of a page in the application.
 pub struct PageContext<'a> {
-    /// The base path of the page.
-    pub base_path: PathBuf,
+    /// Apache documents from `apache/config.json`, read once at startup.
+    pub apache_docs: Vec<Apache>,
     /// The database storage instance.
     pub storage: Database,
     /// Posts: listing, reading, archive and editing.

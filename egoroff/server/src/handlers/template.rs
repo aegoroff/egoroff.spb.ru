@@ -70,7 +70,7 @@ pub struct Index<'a> {
     pub keywords: &'a str,
     pub meta_description: &'a str,
     pub posts: Vec<SmallPost>,
-    pub apache_docs: Vec<crate::domain::Apache>,
+    pub apache_docs: &'a [Apache],
     pub year: u32,
 }
 
@@ -123,7 +123,7 @@ pub struct Portfolio<'a> {
     pub title_path: &'a str,
     pub keywords: &'a str,
     pub meta_description: &'a str,
-    pub apache_docs: Vec<Apache>,
+    pub apache_docs: &'a [Apache],
     pub year: u32,
 }
 
