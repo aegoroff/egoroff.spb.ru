@@ -15,7 +15,6 @@ use futures::{Stream, TryStreamExt};
 use futures_util::StreamExt;
 use kernel::graph::SiteSection;
 use kernel::{domain::Storage, graph, resource::Resource};
-use percent_encoding::percent_decode_str;
 use std::fmt::Display;
 use std::{
     collections::HashMap,
@@ -211,42 +210,12 @@ pub async fn serve_storage(
     extract::Path((bucket, path)): extract::Path<(String, String)>,
     State(page_context): State<Arc<PageContext<'_>>>,
 ) -> impl IntoResponse {
-    let Some(mut resource) = Resource::new(&page_context.store_uri) else {
-        tracing::error!("Invalid storage uri {}", page_context.store_uri);
-        return internal_server_error_response(String::from(
-            "Invalid server settings that prevented to reach storage",
-        ));
-    };
-
-    // to prevent path traversal attacks
-    if !is_safe_path_segment(&bucket) || !is_safe_path_segment(&path) {
-        return bad_request_error_response(format!(
-            "invalid bucket: '{bucket}' or path: '{path}' detected."
-        ));
-    }
-
-    resource
-        .append_path("api")
-        .append_path(&bucket)
-        .append_path(&path);
-
-    let client = Client::new();
-
-    match client.get(resource.to_string()).send().await {
-        Ok(response) => match response.error_for_status() {
-            Ok(r) => {
-                let headers = r.headers();
-                let len = get_content_length(headers);
-                success_response(FileReply::new(r.bytes_stream(), path, len))
-            }
-            Err(e) => {
-                tracing::error!("{e:#?}");
-                not_found_response(format!("{bucket}/{path} not found"))
-            }
-        },
+    match page_context.file_store.open(&bucket, &path).await {
+        Ok(Some(body)) => success_response(FileReply::new(body.stream, path, body.length)),
+        Ok(None) => not_found_response(format!("{bucket}/{path} not found")),
         Err(e) => {
             tracing::error!("{e:#?}");
-            bad_request_error_response(Body::empty())
+            internal_server_error_response(Body::empty())
         }
     }
 }
@@ -285,12 +254,6 @@ fn unauthorized_response<R: IntoResponse>(r: R) -> (StatusCode, Response) {
     (StatusCode::UNAUTHORIZED, r.into_response())
 }
 
-fn get_content_length(headers: &axum::http::HeaderMap) -> Option<i64> {
-    let len_header = headers.get("content-length")?;
-    let val = len_header.to_str().ok()?;
-    val.parse().ok()
-}
-
 pub async fn serve_navigation(
     Query(query): Query<Uri>,
     State(page_context): State<Arc<PageContext<'_>>>,
@@ -324,22 +287,6 @@ pub async fn serve_navigation(
         sections: root.clone_children(current),
         breadcrumbs: optional_breadcrumbs,
     })
-}
-
-fn is_safe_path_segment(segment: &str) -> bool {
-    let decoded = percent_decode_str(segment);
-    let decoded = decoded.decode_utf8_lossy();
-    if decoded.is_empty()
-        || decoded.contains("..")
-        || decoded.contains('/')
-        || decoded.contains(':')
-    {
-        return false;
-    }
-
-    decoded
-        .chars()
-        .all(|c| c.is_ascii_alphanumeric() || matches!(c, '-' | '_' | '.'))
 }
 
 fn not_found_page() -> Response {
@@ -390,7 +337,7 @@ fn make_json_response<T: Default + Serialize>(result: Result<T>) -> impl IntoRes
     }
 }
 
-async fn read_from_stream<S, E>(stream: S) -> Result<(Vec<u8>, usize)>
+async fn read_from_stream<S, E>(stream: S) -> Result<Vec<u8>>
 where
     S: Stream<Item = Result<Bytes, E>> + StreamExt,
     E: Sync + std::error::Error + Send + 'static,
@@ -401,8 +348,8 @@ where
     futures::pin_mut!(body_reader);
     let mut buffer = Vec::new();
 
-    let copied_bytes = tokio::io::copy(&mut body_reader, &mut buffer).await?;
-    Ok((buffer, copied_bytes as usize))
+    tokio::io::copy(&mut body_reader, &mut buffer).await?;
+    Ok(buffer)
 }
 
 fn updated_response<T, E: Display>(result: Result<T, E>) -> impl IntoResponse {
@@ -420,99 +367,5 @@ fn created_response<T, E: Display>(result: Result<T, E>) -> impl IntoResponse {
         internal_server_error_response(Json(OperationResult { result: &error }))
     } else {
         success_response(Json(OperationResult { result: "created" }))
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    #![allow(clippy::unwrap_in_result)]
-    #![allow(clippy::unwrap_used)]
-    use super::*;
-    use rstest::rstest;
-
-    #[rstest]
-    #[case("123", 123)]
-    #[case("0", 0)]
-    #[case("-1", -1)]
-    #[case("8000000000", 8_000_000_000)]
-    #[trace]
-    fn get_content_length_positive_tests(#[case] test_data: &str, #[case] expected: i64) {
-        // arrange
-        let mut headers = axum::http::HeaderMap::new();
-        headers.insert("host", "example.com".parse().unwrap());
-        headers.insert("content-length", test_data.parse().unwrap());
-
-        // act
-        let actual = get_content_length(&headers);
-
-        // assert
-        assert_eq!(Some(expected), actual);
-    }
-
-    #[test]
-    fn get_content_length_no_header() {
-        // arrange
-        let mut headers = axum::http::HeaderMap::new();
-        headers.insert("host", "example.com".parse().unwrap());
-
-        // act
-        let actual = get_content_length(&headers);
-
-        // assert
-        assert!(actual.is_none());
-    }
-
-    #[test]
-    fn get_content_length_incorrect_header() {
-        // arrange
-        let mut headers = axum::http::HeaderMap::new();
-        headers.insert("host", "example.com".parse().unwrap());
-        headers.insert("content-length", "www".parse().unwrap());
-
-        // act
-        let actual = get_content_length(&headers);
-
-        // assert
-        assert!(actual.is_none());
-    }
-
-    #[test]
-    fn get_content_length_header_in_other_case() {
-        // arrange
-        let mut headers = axum::http::HeaderMap::new();
-        headers.insert("host", "example.com".parse().unwrap());
-        headers.insert("Content-Length", "123".parse().unwrap());
-
-        // act
-        let actual = get_content_length(&headers);
-
-        // assert
-        assert_eq!(Some(123), actual);
-    }
-
-    #[rstest]
-    #[case("123", true)]
-    #[case("ab", true)]
-    #[case("ab12", true)]
-    #[case("ab-12", true)]
-    #[case("ab_12", true)]
-    #[case("ab_12.exe", true)]
-    #[case("ab_1-2.exe", true)]
-    #[case("ab12.", true)]
-    #[case("ab12..", false)]
-    #[case("ab..12", false)]
-    #[case("ab/12", false)]
-    #[case("", false)]
-    #[case("qq:/", false)]
-    #[case("qq:", false)]
-    #[case("qq%3f", false)]
-    #[trace]
-    fn is_safe_path_segment_tests(#[case] test_data: &str, #[case] expected: bool) {
-        // arrange
-        // act
-        let actual = is_safe_path_segment(test_data);
-
-        // assert
-        assert_eq!(expected, actual);
     }
 }

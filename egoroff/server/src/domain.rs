@@ -8,6 +8,8 @@ use kernel::{
     sqlite::Sqlite,
 };
 use oauth2::CsrfToken;
+
+use crate::file_store::FileStore;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
@@ -90,8 +92,8 @@ pub struct PageContext<'a> {
     pub site_graph: Arc<SiteGraph<'a>>,
     /// The site configuration data.
     pub site_config: Config,
-    /// The store URI.
-    pub store_uri: String,
+    /// The external file store.
+    pub file_store: FileStore,
     /// The certificates path.
     pub certs_path: String,
     /// The cache instance.

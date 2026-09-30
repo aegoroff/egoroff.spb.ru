@@ -1,6 +1,5 @@
 #![allow(clippy::module_name_repetitions)]
 
-use anyhow::Context;
 use axum::{body::Bytes, extract::Multipart, http};
 use axum_extra::{TypedHeader, headers::ContentType};
 use mime_guess::mime::{self, Mime};
@@ -21,15 +20,6 @@ const MEDIA_BUCKET: &str = "media";
 pub struct MicropubRequest {
     pub q: Option<String>,
     pub url: Option<String>,
-}
-
-#[derive(Deserialize)]
-#[allow(dead_code)]
-pub struct File {
-    pub id: i64,
-    pub path: String,
-    pub bucket: String,
-    pub size: usize,
 }
 
 /// Response containing a URL to the uploaded media.
@@ -191,13 +181,6 @@ pub async fn serve_media_endpoint_post(
 ) -> impl IntoResponse {
     tracing::info!("content type header: {content_type}");
 
-    let Some(mut resource) = Resource::new(&page_context.store_uri) else {
-        tracing::error!("Invalid storage uri {}", page_context.store_uri);
-        return internal_server_error_response(String::from(
-            "Invalid server settings that prevented to reach storage",
-        ));
-    };
-
     if !is_media_type(content_type, &mime::MULTIPART_FORM_DATA) {
         return bad_request_error_response("expected content-type of multipart/form-data");
     }
@@ -207,7 +190,7 @@ pub async fn serve_media_endpoint_post(
     };
 
     let file_name = media_storage_file_name(Uuid::new_v4(), field.file_name());
-    let (data, read_bytes) = match read_from_stream(field).await {
+    let data = match read_from_stream(field).await {
         Ok(r) => r,
         Err(e) => {
             tracing::error!("{e}");
@@ -215,12 +198,11 @@ pub async fn serve_media_endpoint_post(
         }
     };
 
-    resource
-        .append_path("api")
-        .append_path(MEDIA_BUCKET)
-        .append_path(&file_name);
-
-    match upload_media(&resource, &file_name, data, read_bytes).await {
+    match page_context
+        .file_store
+        .upload(MEDIA_BUCKET, &file_name, data)
+        .await
+    {
         Ok(id) => tracing::info!("file id: {id}"),
         Err(e) => {
             tracing::error!("media upload failed: {e:#}");
@@ -271,61 +253,15 @@ pub async fn serve_media_endpoint_get(
         return bad_request_error_response(String::from("No query"));
     }
 
-    let Some(mut resource) = Resource::new(&page_context.store_uri) else {
-        return internal_server_error_response(String::from(
-            "Invalid server settings that prevented to reach storage",
-        ));
-    };
-
-    resource
-        .append_path("api")
-        .append_path(MEDIA_BUCKET)
-        .append_path("last");
-    let client = Client::new();
-    let result = client.get(resource.to_string()).send().await;
-    match result {
-        Ok(x) => {
-            tracing::info!("Response status: {}", x.status());
-            match x.json::<File>().await {
-                Ok(file) => {
-                    let response = MediaResponse {
-                        url: format!("{ME}storage/{MEDIA_BUCKET}/{}", file.path),
-                    };
-                    success_response(Json(response))
-                }
-                Err(e) => internal_server_error_response(e.to_string()),
-            }
+    match page_context.file_store.last(MEDIA_BUCKET).await {
+        Ok(file) => {
+            let response = MediaResponse {
+                url: format!("{ME}storage/{MEDIA_BUCKET}/{}", file.path),
+            };
+            success_response(Json(response))
         }
         Err(e) => internal_server_error_response(e.to_string()),
     }
-}
-
-/// Uploads a file to the file store and returns the id it was stored under.
-async fn upload_media(
-    resource: &Resource,
-    file_name: &str,
-    data: Vec<u8>,
-    len: usize,
-) -> Result<i64> {
-    let part = reqwest::multipart::Part::stream_with_length(reqwest::Body::from(data), len as u64)
-        .file_name(file_name.to_owned());
-    let form = reqwest::multipart::Form::new().part("file", part);
-
-    let ids: Vec<i64> = Client::new()
-        .post(resource.to_string())
-        .multipart(form)
-        .send()
-        .await?
-        .error_for_status()?
-        .json()
-        .await?;
-    first_file_id(&ids)
-}
-
-fn first_file_id(ids: &[i64]) -> Result<i64> {
-    ids.first()
-        .copied()
-        .context("file store returned no file id")
 }
 
 /// Compares the media type of a `Content-Type` header with `expected`,
@@ -364,7 +300,7 @@ fn media_storage_file_name(id: Uuid, client_file_name: Option<&str>) -> String {
 mod tests {
     #![allow(clippy::unwrap_in_result)]
     #![allow(clippy::unwrap_used)]
-    use super::{first_file_id, is_media_type, media_storage_file_name};
+    use super::{is_media_type, media_storage_file_name};
     use axum_extra::headers::ContentType;
     use mime_guess::mime;
     use rstest::rstest;
@@ -429,28 +365,5 @@ mod tests {
 
         // Assert
         assert_eq!(expected, actual);
-    }
-
-    #[rstest]
-    #[case(&[42], 42)]
-    #[case(&[42, 7], 42)]
-    fn first_file_id_returns_first(#[case] ids: &[i64], #[case] expected: i64) {
-        // Arrange / Act
-        let actual = first_file_id(ids).unwrap();
-
-        // Assert
-        assert_eq!(expected, actual);
-    }
-
-    #[test]
-    fn first_file_id_empty_is_error() {
-        // Arrange
-        let ids: &[i64] = &[];
-
-        // Act
-        let actual = first_file_id(ids);
-
-        // Assert
-        assert!(actual.is_err());
     }
 }

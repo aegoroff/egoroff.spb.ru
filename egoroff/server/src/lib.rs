@@ -21,6 +21,7 @@ mod atom;
 mod auth;
 mod body;
 mod domain;
+mod file_store;
 mod handlers;
 mod indie;
 mod micropub;
@@ -128,7 +129,7 @@ pub async fn run() -> Result<()> {
         site_graph,
         site_config,
         &cfg.data_path,
-        cfg.store_uri,
+        file_store::FileStore::new(&cfg.store_uri),
         cfg.certs_path,
     )
     .context("Routes creation error")?;

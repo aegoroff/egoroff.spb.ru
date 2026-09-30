@@ -1,13 +1,11 @@
-use std::time::Duration;
-
 use anyhow::Context;
 use kernel::{
     domain::{ApiResult, Download, DownloadsRequest, Folder},
     paging,
 };
-use serde::Deserialize;
 
 use crate::domain::{Downloadable, FilesContainer};
+use crate::file_store::StoredFile;
 use axum::response::Redirect;
 
 use super::{
@@ -20,15 +18,6 @@ use super::{
 struct ApacheTemplates;
 
 const PORTFOLIO_PATH: &str = "/portfolio/";
-const DOWNLOADS_WAIT_TIMEOUT_SECONDS: u64 = 5;
-
-#[derive(Deserialize, Default)]
-pub struct StoredFile {
-    pub id: i64,
-    pub path: String,
-    pub blake3_hash: String,
-    pub size: u64,
-}
 
 pub async fn serve_index(State(page_context): State<Arc<PageContext<'_>>>) -> impl IntoResponse {
     let Some(section) = page_context.site_graph.get_section("portfolio") else {
@@ -156,38 +145,21 @@ pub async fn redirect_to_real_document(
 async fn read_downloads(page_context: Arc<PageContext<'_>>) -> Option<Vec<FilesContainer>> {
     let folders = page_context.storage.lock().await.get_folders().ok()?;
 
-    let base = Resource::new(&page_context.store_uri)?;
-    let client = Client::builder()
-        .timeout(Duration::from_secs(DOWNLOADS_WAIT_TIMEOUT_SECONDS))
-        .build()
-        .ok()?;
-
     let mut listings = Vec::with_capacity(folders.len());
     for folder in folders {
-        let files = fetch_stored_files(&client, base.clone(), &folder.bucket).await;
+        let files = page_context
+            .file_store
+            .list(&folder.bucket)
+            .await
+            .unwrap_or_else(|e| {
+                tracing::warn!("{e:#?}");
+                vec![]
+            });
         listings.push((folder, files));
     }
 
     let storage = page_context.storage.lock().await;
     Some(make_files_containers(&*storage, listings))
-}
-
-async fn fetch_stored_files(
-    client: &Client,
-    mut resource: Resource,
-    bucket: &str,
-) -> Vec<StoredFile> {
-    resource.append_path("api").append_path(bucket);
-    match client.get(resource.to_string()).send().await {
-        Ok(r) => r.json::<Vec<StoredFile>>().await.unwrap_or_else(|e| {
-            tracing::error!("{e:#?}");
-            vec![]
-        }),
-        Err(e) => {
-            tracing::warn!("{e:#?}");
-            vec![]
-        }
-    }
 }
 
 /// Combines file store listings with download titles from the database.

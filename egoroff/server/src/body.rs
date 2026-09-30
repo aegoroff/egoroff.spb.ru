@@ -97,7 +97,7 @@ where
 pub struct FileReply<S> {
     data: S,
     path: String,
-    length: Option<i64>,
+    length: Option<u64>,
 }
 
 impl<S> FileReply<S>
@@ -106,7 +106,7 @@ where
     S::Ok: Into<Bytes>,
     S::Error: Into<BoxError>,
 {
-    pub fn new(data: S, path: String, length: Option<i64>) -> Self {
+    pub fn new(data: S, path: String, length: Option<u64>) -> Self {
         Self { data, path, length }
     }
 

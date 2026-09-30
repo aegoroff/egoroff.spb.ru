@@ -13,6 +13,7 @@ use tower_sessions::cookie::{SameSite, time::Duration};
 use tower_sessions::{Expiry, SessionManagerLayer};
 
 use crate::domain::PageContext;
+use crate::file_store::FileStore;
 use futures::lock::Mutex;
 use indie::RequireIndieAuthorizationLayer;
 use kernel::blog::Blog;
@@ -83,7 +84,7 @@ pub fn create_routes(
     site_graph: Arc<SiteGraph<'static>>,
     site_config: Config,
     data_path: &Path,
-    store_uri: String,
+    file_store: FileStore,
     certs_path: String,
 ) -> Result<Router> {
     let storage_path = data_path.join(kernel::sqlite::DATABASE);
@@ -102,7 +103,7 @@ pub fn create_routes(
         storage,
         site_graph,
         site_config,
-        store_uri,
+        file_store,
         certs_path,
         cache,
     });
