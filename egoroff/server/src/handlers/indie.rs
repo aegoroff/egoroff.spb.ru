@@ -19,7 +19,7 @@ use axum::http::header::LOCATION;
 pub async fn serve_auth(
     Query(query): Query<IndieQuery>,
     State(page_context): State<Arc<PageContext<'_>>>,
-) -> impl IntoResponse {
+) -> Result<Response, ApiError> {
     let private_key_path = PathBuf::from(&page_context.certs_path).join("egoroffspbrupri.pem");
 
     let redirect = query.redirect_uri.unwrap_or_default();
@@ -28,13 +28,10 @@ pub async fn serve_auth(
     if redirect.starts_with(&client_id) {
         let now = Utc::now();
         let issued = now.timestamp() as usize;
-        let Some(lifetime_minutes) = TimeDelta::try_minutes(10) else {
-            return bad_request_error_response(Body::empty());
-        };
-        let Some(expired) = now.checked_add_signed(lifetime_minutes) else {
-            return bad_request_error_response(Body::empty());
-        };
-        let expired = expired.timestamp() as usize;
+        let expired = TimeDelta::try_minutes(10)
+            .and_then(|lifetime| now.checked_add_signed(lifetime))
+            .ok_or_else(|| ApiError::internal("invalid Indie code lifetime"))?
+            .timestamp() as usize;
         let claims = Claims {
             client_id,
             redirect_uri: Some(redirect.clone()),
@@ -47,44 +44,26 @@ pub async fn serve_auth(
             jti: None,
         };
 
-        let Some(state) = query.state else {
-            tracing::error!("No state extracted from query");
-            return bad_request_error_response(Body::empty());
-        };
+        let state = query
+            .state
+            .ok_or_else(|| ApiError::bad_request("state is required").logged())?;
+        let mut to = Resource::new(&redirect)
+            .ok_or_else(|| ApiError::bad_request("invalid redirect_uri"))?;
+        let token = generate_jwt(&claims, private_key_path)?;
 
-        // generate token and if success redirect to uri specified
-        match generate_jwt(&claims, private_key_path) {
-            Ok(token) => {
-                let q = format!("state={state}&code={token}");
-                let Some(mut to) = Resource::new(&redirect) else {
-                    return bad_request_error_response(Body::empty());
-                };
-                let mut c = page_context.cache.lock().await;
-                c.insert(token);
-                to.append_query(&q);
-                let to = to.to_string();
-                // redirect to uri with state and new token (302 Found)
-                (StatusCode::FOUND, [(LOCATION, to)].into_response())
-            }
-            Err(e) => {
-                tracing::error!("generate jwt token error: {e:#?}");
-                bad_request_error_response(e.to_string())
-            }
-        }
-    } else if let Some(u) = Resource::new(&client_id) {
-        match read_from_client(&u.to_string()).await {
-            Ok(resp) => {
-                tracing::info!("Response from client: {resp}");
-                success_response(Body::empty())
-            }
-            Err(e) => {
-                tracing::error!("Error reading data from client: {e:#?}");
-                bad_request_error_response(Body::empty())
-            }
-        }
+        to.append_query(&format!("state={state}&code={token}"));
+        page_context.cache.lock().await.insert(token);
+        Ok((StatusCode::FOUND, [(LOCATION, to.to_string())]).into_response())
     } else {
-        tracing::error!("invalid client ID: {client_id}");
-        bad_request_error_response(Body::empty())
+        let client = Resource::new(&client_id).ok_or_else(|| {
+            ApiError::bad_request(format!("invalid client_id: {client_id}")).logged()
+        })?;
+        let resp = read_from_client(&client.to_string()).await.map_err(|e| {
+            ApiError::bad_request("cannot read client_id")
+                .caused_by(e.context("Error reading data from client"))
+        })?;
+        tracing::info!("Response from client: {resp}");
+        Ok(StatusCode::OK.into_response())
     }
 }
 
@@ -102,35 +81,22 @@ pub async fn serve_auth(
 pub async fn serve_token_generate(
     State(page_context): State<Arc<PageContext<'_>>>,
     Form(req): Form<TokenRequest>,
-) -> impl IntoResponse {
+) -> Result<Json<Token>, ApiError> {
     let public_key_path = PathBuf::from(&page_context.certs_path).join("egoroffspbrupub.pem");
+    validate_jwt(&req.code, public_key_path).map_err(jwt_rejected)?;
+    page_context.cache.lock().await.remove(&req.code);
 
-    match validate_jwt(&req.code, public_key_path) {
-        Ok(_claims) => {
-            let mut cache = page_context.cache.lock().await;
-            cache.remove(&req.code);
-        }
-        Err(e) => {
-            tracing::error!("validate jwt token error: {e:#?}");
-            return unauthorized_response(e.to_string());
-        }
-    }
-
-    let client_id = req.client_id;
-    let redirect_uri = req.redirect_uri;
     let now = Utc::now();
     let issued = now.timestamp() as usize;
-
-    let Some(lifetime) = TimeDelta::try_days(90) else {
-        return internal_server_error_response("invalid Indie token lifetime".to_string());
-    };
+    let lifetime = TimeDelta::try_days(90)
+        .ok_or_else(|| ApiError::internal("invalid Indie token lifetime"))?;
     let expired = now
         .checked_add_signed(lifetime)
         .map(|dt| dt.timestamp() as usize);
 
     let claims = Claims {
-        client_id,
-        redirect_uri: Some(redirect_uri),
+        client_id: req.client_id,
+        redirect_uri: Some(req.redirect_uri),
         aud: None,
         exp: expired,
         iat: Some(issued),
@@ -141,21 +107,13 @@ pub async fn serve_token_generate(
     };
 
     let private_key_path = PathBuf::from(&page_context.certs_path).join("egoroffspbrupri.pem");
-    match generate_jwt(&claims, private_key_path) {
-        Ok(token) => {
-            let t = Token {
-                access_token: token,
-                token_type: "Bearer".to_string(),
-                scope: SCOPES.to_string(),
-                me: ME.to_string(),
-            };
-            success_response(Json(t))
-        }
-        Err(e) => {
-            tracing::error!("generate jwt token error: {e:#?}");
-            bad_request_error_response(e.to_string())
-        }
-    }
+    let access_token = generate_jwt(&claims, private_key_path)?;
+    Ok(Json(Token {
+        access_token,
+        token_type: "Bearer".to_string(),
+        scope: SCOPES.to_string(),
+        me: ME.to_string(),
+    }))
 }
 
 /// Validates Indie authorization JWT token that passed in Authorization header
@@ -175,25 +133,18 @@ pub async fn serve_token_generate(
 pub async fn serve_token_validate(
     State(page_context): State<Arc<PageContext<'_>>>,
     TypedHeader(authorization): TypedHeader<Authorization<Bearer>>,
-) -> impl IntoResponse {
+) -> Result<Json<TokenValidationResult>, ApiError> {
     let public_key_path = PathBuf::from(&page_context.certs_path).join("egoroffspbrupub.pem");
+    let claims = validate_jwt(authorization.token(), public_key_path).map_err(jwt_rejected)?;
+    let me = claims.iss.ok_or_else(|| ApiError::unauthorized("no iss"))?;
 
-    match validate_jwt(authorization.token(), public_key_path) {
-        Ok(claims) => {
-            let Some(me) = claims.iss else {
-                return unauthorized_response("no iss".to_string());
-            };
+    Ok(Json(TokenValidationResult {
+        me,
+        client_id: claims.client_id,
+        scope: SCOPES.to_string(),
+    }))
+}
 
-            let response = TokenValidationResult {
-                me,
-                client_id: claims.client_id,
-                scope: SCOPES.to_string(),
-            };
-            success_response(Json(response))
-        }
-        Err(e) => {
-            tracing::error!("validate jwt token error: {e:#?}");
-            unauthorized_response(e.to_string())
-        }
-    }
+fn jwt_rejected(e: anyhow::Error) -> ApiError {
+    ApiError::unauthorized(e.to_string()).caused_by(e.context("JWT validation failed"))
 }

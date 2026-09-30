@@ -147,27 +147,16 @@ pub async fn serve_profile() -> impl IntoResponse {
 
 pub async fn serve_users_api(
     State(page_context): State<Arc<PageContext<'_>>>,
-) -> impl IntoResponse {
-    let storage = page_context.storage.lock().await;
-
-    let users = match storage.get_users() {
-        Ok(u) => u,
-        Err(e) => {
-            tracing::error!("Failed to get users: {e:#?}");
-            return make_json_response::<ApiResult<User>>(Err(e));
-        }
-    };
-    let users_count = i32::try_from(users.len()).unwrap_or(i32::MAX);
-
-    let result = ApiResult {
+) -> JsonResult<ApiResult<User>> {
+    let users = page_context.storage.lock().await.get_users()?;
+    let count = i32::try_from(users.len()).unwrap_or(i32::MAX);
+    Ok(Json(ApiResult {
         result: users,
         pages: 1,
         page: 1,
-        count: users_count,
+        count,
         status: "success",
-    };
-
-    make_json_response(Ok(result))
+    }))
 }
 
 async fn oauth_callback<T: OAuthProfile>(
@@ -337,17 +326,14 @@ pub async fn serve_user_info_update(
     mut auth: AuthSession,
     State(page_context): State<Arc<PageContext<'_>>>,
     Json(update): Json<UserInfoUpdate>,
-) -> impl IntoResponse {
+) -> OperationResponse {
     let Some(current) = auth.user.clone() else {
-        return StatusCode::UNAUTHORIZED.into_response();
+        return Err(OperationError::Unauthorized);
     };
 
     let user = update.into_user(current.user());
-    let result = update_profile(&mut auth, &page_context, user).await;
-    if let Err(e) = &result {
-        tracing::error!("Failed to update profile: {e:#?}");
-    }
-    updated_response(result).into_response()
+    update_profile(&mut auth, &page_context, user).await?;
+    Ok(updated())
 }
 
 async fn update_profile(

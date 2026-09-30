@@ -19,77 +19,50 @@ struct ApacheTemplates;
 
 const PORTFOLIO_PATH: &str = "/portfolio/";
 
-pub async fn serve_index(State(page_context): State<Arc<PageContext<'_>>>) -> impl IntoResponse {
-    let Some(section) = page_context.site_graph.get_section("portfolio") else {
-        return internal_server_error_page();
-    };
-
+pub async fn serve_index(
+    State(page_context): State<Arc<PageContext<'_>>>,
+) -> Result<Response, PageError> {
+    let section = find_section(&page_context, "portfolio")?;
     let title_path = page_context.site_graph.make_title_path(PORTFOLIO_PATH);
+    let apache_docs = read_apache_documents(&page_context.base_path)?;
 
-    let mut context = Portfolio {
+    Ok(Portfolio {
         html_class: "portfolio",
         title: &section.title,
         title_path: &title_path,
         keywords: get_keywords(section),
         meta_description: &section.descr,
-        apache_docs: vec![],
+        apache_docs,
         year: get_year(),
-    };
-
-    match read_apache_documents(&page_context.base_path) {
-        Ok(docs) => {
-            context.apache_docs = docs;
-            context.into_response()
-        }
-        Err(e) => {
-            tracing::error!("{e:#?}");
-            internal_server_error_page()
-        }
     }
+    .into_response())
 }
 
 pub async fn serve_apache_document(
     State(page_context): State<Arc<PageContext<'_>>>,
     extract::Path(path): extract::Path<String>,
-) -> impl IntoResponse {
-    let apache_documents = match read_apache_documents(&page_context.base_path) {
-        Ok(docs) => docs,
-        Err(e) => {
-            tracing::error!("{e:#?}");
-            return internal_server_error_page();
-        }
-    };
-
-    let map: HashMap<&str, &crate::domain::Apache> = apache_documents
+) -> Result<Response, PageError> {
+    let apache_documents = read_apache_documents(&page_context.base_path)?;
+    let id = path.trim_end_matches(".html");
+    let doc = apache_documents
         .iter()
-        .map(|item| (item.id.as_str(), item))
-        .collect();
-
-    let doc = path.trim_end_matches(".html");
-
-    let Some(doc) = map.get(doc) else {
-        return not_found_page();
-    };
+        .find(|item| item.id == id)
+        .ok_or_else(PageError::not_found)?;
+    let file = ApacheTemplates::get(&path).ok_or_else(PageError::not_found)?;
 
     let uri = format!("{PORTFOLIO_PATH}{path}");
     let title_path = page_context.site_graph.make_title_path(&uri);
-
-    let asset = ApacheTemplates::get(&path);
-    if let Some(file) = asset {
-        let content = String::from_utf8_lossy(&file.data);
-        ApacheDocument {
-            html_class: "",
-            title: &doc.title,
-            title_path: &title_path,
-            keywords: &doc.keywords,
-            meta_description: &doc.description,
-            content: &content,
-            year: get_year(),
-        }
-        .into_response()
-    } else {
-        not_found_page()
+    let content = String::from_utf8_lossy(&file.data);
+    Ok(ApacheDocument {
+        html_class: "",
+        title: &doc.title,
+        title_path: &title_path,
+        keywords: &doc.keywords,
+        meta_description: &doc.description,
+        content: &content,
+        year: get_year(),
     }
+    .into_response())
 }
 
 /// Gets downloadable files
@@ -104,21 +77,16 @@ pub async fn serve_apache_document(
 )]
 pub async fn serve_downloadable_files(
     State(page_context): State<Arc<PageContext<'_>>>,
-) -> impl IntoResponse {
-    let downloads = read_downloads(page_context.clone()).await;
-    if let Some(downloads) = downloads {
-        let count = i32::try_from(downloads.len()).unwrap_or(i32::MAX);
-        let result = ApiResult {
-            result: downloads,
-            pages: 1,
-            page: 1,
-            count,
-            status: "success",
-        };
-        make_json_response(Ok(result)).into_response()
-    } else {
-        internal_server_error_page().into_response()
-    }
+) -> JsonResult<ApiResult<FilesContainer>> {
+    let downloads = read_downloads(page_context.clone()).await?;
+    let count = i32::try_from(downloads.len()).unwrap_or(i32::MAX);
+    Ok(Json(ApiResult {
+        result: downloads,
+        pages: 1,
+        page: 1,
+        count,
+        status: "success",
+    }))
 }
 
 pub fn read_apache_documents(base_path: &Path) -> Result<Vec<crate::domain::Apache>> {
@@ -142,8 +110,8 @@ pub async fn redirect_to_real_document(
 ///
 /// The storage lock is not held while the file store is queried over HTTP,
 /// so a slow file store cannot stall other requests that need the database.
-async fn read_downloads(page_context: Arc<PageContext<'_>>) -> Option<Vec<FilesContainer>> {
-    let folders = page_context.storage.lock().await.get_folders().ok()?;
+async fn read_downloads(page_context: Arc<PageContext<'_>>) -> Result<Vec<FilesContainer>> {
+    let folders = page_context.storage.lock().await.get_folders()?;
 
     let mut listings = Vec::with_capacity(folders.len());
     for folder in folders {
@@ -159,7 +127,7 @@ async fn read_downloads(page_context: Arc<PageContext<'_>>) -> Option<Vec<FilesC
     }
 
     let storage = page_context.storage.lock().await;
-    Some(make_files_containers(&*storage, listings))
+    Ok(make_files_containers(&*storage, listings))
 }
 
 /// Combines file store listings with download titles from the database.
@@ -198,56 +166,40 @@ fn make_files_containers(
 pub async fn serve_download_update(
     State(page_context): State<Arc<PageContext<'_>>>,
     Json(download): Json<Download>,
-) -> impl IntoResponse {
-    let mut storage = page_context.storage.lock().await;
-    let result = storage.upsert_download(download);
-    updated_response(result)
+) -> OperationResponse {
+    page_context
+        .storage
+        .lock()
+        .await
+        .upsert_download(download)?;
+    Ok(updated())
 }
 
 pub async fn serve_download_delete(
     extract::Path(id): extract::Path<i64>,
     State(page_context): State<Arc<PageContext<'_>>>,
-) -> impl IntoResponse {
-    let mut storage = page_context.storage.lock().await;
-    let result = storage.delete_download(id);
-    updated_response(result)
+) -> OperationResponse {
+    page_context.storage.lock().await.delete_download(id)?;
+    Ok(updated())
 }
 
 pub async fn serve_downloads_admin_api(
     State(page_context): State<Arc<PageContext<'_>>>,
     Query(request): Query<DownloadsRequest>,
-) -> impl IntoResponse {
+) -> JsonResult<ApiResult<Download>> {
     let page_size = 10;
     let (page, offset) = paging::page_offset(request.page, page_size);
     let storage = page_context.storage.lock().await;
+    let count = storage.count_downloads()?;
+    let downloads = storage.get_downloads(page_size, offset)?;
 
-    let total_downloads_count = match storage.count_downloads() {
-        Ok(c) => c,
-        Err(e) => {
-            tracing::error!("{e:#?}");
-            return internal_server_error_page().into_response();
-        }
-    };
-
-    let pages_count = paging::pages_count(total_downloads_count, page_size);
-
-    let downloads = match storage.get_downloads(page_size, offset) {
-        Ok(downloads) => downloads,
-        Err(e) => {
-            tracing::error!("{e:#?}");
-            return internal_server_error_page().into_response();
-        }
-    };
-
-    let result = ApiResult {
+    Ok(Json(ApiResult {
         result: downloads,
-        pages: pages_count,
+        pages: paging::pages_count(count, page_size),
         page,
-        count: total_downloads_count,
+        count,
         status: "success",
-    };
-
-    make_json_response(Ok(result)).into_response()
+    }))
 }
 
 #[cfg(test)]

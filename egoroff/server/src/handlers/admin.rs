@@ -26,9 +26,9 @@ pub async fn serve_dashboard_api(
     let downloads_count = storage.count_downloads().unwrap_or(0);
     let users_count = storage.count_users().unwrap_or(0);
 
-    success_response(Json(DashboardStats {
+    Json(DashboardStats {
         posts: posts_count,
         downloads: downloads_count,
         users: users_count,
-    }))
+    })
 }

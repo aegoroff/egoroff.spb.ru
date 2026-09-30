@@ -52,7 +52,7 @@ pub struct MediaResponse {
 pub async fn serve_index_get(
     Query(query): Query<MicropubRequest>,
     State(page_context): State<Arc<PageContext<'_>>>,
-) -> impl IntoResponse {
+) -> Result<Response, ApiError> {
     if let Some(q) = query.q {
         let media_endpoint = Some(format!("{ME}micropub/media"));
         match q.as_str() {
@@ -67,48 +67,39 @@ pub async fn serve_index_get(
                     media_endpoint,
                     syndicate_to: Some(vec![]),
                 };
-                success_response(Json(config))
+                Ok(Json(config).into_response())
             }
             "source" => {
-                let Some(post_url) = query.url else {
-                    return bad_request_error_response(
-                        "url query parameter is required for source",
-                    );
-                };
-                let Some(post_id) = parse_post_url(ME, &post_url) else {
-                    return bad_request_error_response("invalid post url");
-                };
-
-                let post = match page_context.blog.draft(post_id).await {
-                    Ok(Some(post)) => post,
-                    Ok(None) => return not_found_response("post not found"),
-                    Err(e) => {
-                        tracing::error!("micropub source post {post_id} read error: {e:#?}");
-                        return internal_server_error_response(e.to_string());
-                    }
-                };
-
-                let source = MicropubSource::from_post(&post);
-                success_response(Json(source))
+                let post_url = query.url.ok_or_else(|| {
+                    ApiError::bad_request("url query parameter is required for source")
+                })?;
+                let post_id = parse_post_url(ME, &post_url)
+                    .ok_or_else(|| ApiError::bad_request("invalid post url"))?;
+                let post = page_context
+                    .blog
+                    .draft(post_id)
+                    .await?
+                    .ok_or_else(|| ApiError::not_found("post not found"))?;
+                Ok(Json(MicropubSource::from_post(&post)).into_response())
             }
             "media-endpoint" => {
                 let config = MicropubConfig {
                     media_endpoint,
                     ..Default::default()
                 };
-                success_response(Json(config))
+                Ok(Json(config).into_response())
             }
             "syndicate-to" => {
                 let config = MicropubConfig {
                     syndicate_to: Some(vec![]),
                     ..Default::default()
                 };
-                success_response(Json(config))
+                Ok(Json(config).into_response())
             }
-            _ => success_response(Body::empty()),
+            _ => Ok(StatusCode::OK.into_response()),
         }
     } else {
-        success_response(Body::empty())
+        Ok(StatusCode::OK.into_response())
     }
 }
 
@@ -132,7 +123,7 @@ pub async fn serve_index_post(
     TypedHeader(content_type): TypedHeader<ContentType>,
     State(page_context): State<Arc<PageContext<'_>>>,
     body: Bytes,
-) -> impl IntoResponse {
+) -> Result<Response, ApiError> {
     tracing::info!("content type header: {content_type}");
     let form = if is_media_type(content_type, &mime::APPLICATION_JSON) {
         MicropubForm::from_json_bytes(&body.slice(..))
@@ -140,22 +131,15 @@ pub async fn serve_index_post(
         // x-www-form-urlencoded
         MicropubForm::from_form_bytes(&body.slice(..))
     };
-    let form = match form {
-        Ok(f) => f,
-        Err(e) => {
-            return bad_request_error_response(e.to_string());
-        }
-    };
+    let form = form.map_err(|e| ApiError::bad_request(e.to_string()))?;
 
     tracing::info!("content type: {:?}", form.content_type);
-    let post_id = match page_context.blog.create(|id| form.to_post(id)).await {
-        Ok(id) => id,
-        Err(e) => return internal_server_error_response(e.to_string()),
-    };
-    (
+    let post_id = page_context.blog.create(|id| form.to_post(id)).await?;
+    Ok((
         StatusCode::CREATED,
-        [(http::header::LOCATION, format!("{ME}blog/{post_id}.html"))].into_response(),
+        [(http::header::LOCATION, format!("{ME}blog/{post_id}.html"))],
     )
+        .into_response())
 }
 
 /// Tries to create a new media or fails with 400 error in case of invalid request.
@@ -178,46 +162,35 @@ pub async fn serve_media_endpoint_post(
     TypedHeader(content_type): TypedHeader<ContentType>,
     State(page_context): State<Arc<PageContext<'_>>>,
     mut multipart: Multipart,
-) -> impl IntoResponse {
+) -> Result<Response, ApiError> {
     tracing::info!("content type header: {content_type}");
 
     if !is_media_type(content_type, &mime::MULTIPART_FORM_DATA) {
-        return bad_request_error_response("expected content-type of multipart/form-data");
+        return Err(ApiError::bad_request(
+            "expected content-type of multipart/form-data",
+        ));
     }
 
     let Ok(Some(field)) = multipart.next_field().await else {
-        return bad_request_error_response("no form data received");
+        return Err(ApiError::bad_request("no form data received"));
     };
 
     let file_name = media_storage_file_name(Uuid::new_v4(), field.file_name());
-    let data = match read_from_stream(field).await {
-        Ok(r) => r,
-        Err(e) => {
-            tracing::error!("{e}");
-            return internal_server_error_response(e.to_string());
-        }
-    };
-
-    match page_context
+    let data = read_from_stream(field).await?;
+    let id = page_context
         .file_store
         .upload(MEDIA_BUCKET, &file_name, data)
-        .await
-    {
-        Ok(id) => tracing::info!("file id: {id}"),
-        Err(e) => {
-            tracing::error!("media upload failed: {e:#}");
-            return internal_server_error_response(e.to_string());
-        }
-    }
+        .await?;
+    tracing::info!("file id: {id}");
 
-    (
+    Ok((
         StatusCode::CREATED,
         [(
             http::header::LOCATION,
             format!("{ME}storage/{MEDIA_BUCKET}/{file_name}"),
-        )]
-        .into_response(),
+        )],
     )
+        .into_response())
 }
 
 /// Gets last inserted media uri
@@ -242,26 +215,21 @@ pub async fn serve_media_endpoint_post(
 pub async fn serve_media_endpoint_get(
     State(page_context): State<Arc<PageContext<'_>>>,
     Query(req): Query<MicropubRequest>,
-) -> impl IntoResponse {
-    if let Some(q) = req.q {
-        if q != "last" {
-            return bad_request_error_response(format!(
+) -> Result<Json<MediaResponse>, ApiError> {
+    match req.q.as_deref() {
+        Some("last") => {}
+        Some(q) => {
+            return Err(ApiError::bad_request(format!(
                 "Invalid query. Must be last but was '{q}'"
-            ));
+            )));
         }
-    } else {
-        return bad_request_error_response(String::from("No query"));
+        None => return Err(ApiError::bad_request("No query")),
     }
 
-    match page_context.file_store.last(MEDIA_BUCKET).await {
-        Ok(file) => {
-            let response = MediaResponse {
-                url: format!("{ME}storage/{MEDIA_BUCKET}/{}", file.path),
-            };
-            success_response(Json(response))
-        }
-        Err(e) => internal_server_error_response(e.to_string()),
-    }
+    let file = page_context.file_store.last(MEDIA_BUCKET).await?;
+    Ok(Json(MediaResponse {
+        url: format!("{ME}storage/{MEDIA_BUCKET}/{}", file.path),
+    }))
 }
 
 /// Compares the media type of a `Content-Type` header with `expected`,

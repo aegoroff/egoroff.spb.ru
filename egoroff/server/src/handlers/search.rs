@@ -34,52 +34,50 @@ pub struct SearchApiRequest {
 pub async fn serve_search_api(
     State(page_context): State<Arc<PageContext<'_>>>,
     Query(request): Query<SearchApiRequest>,
-) -> impl IntoResponse {
-    let Some(q) = request
+) -> Result<Json<Value>, ApiError> {
+    let q = request
         .q
         .as_deref()
         .map(str::trim)
         .filter(|q| !q.is_empty())
-    else {
-        return bad_request_error_response("q is required");
-    };
+        .ok_or_else(|| ApiError::bad_request("q is required"))?;
 
     let key = page_context.site_config.search_api_key.as_str();
     let cx = page_context.site_config.google_site_id.as_str();
     if key.is_empty() || cx.is_empty() {
-        tracing::error!("search is not configured: missing API key or site id");
-        return internal_server_error_response("search is not configured");
+        return Err(ApiError::internal(
+            "search is not configured: missing API key or site id",
+        ));
     }
 
     let start = request.start.unwrap_or(1).max(1);
-    let Some(url) = google_search_url(key, cx, q, start) else {
-        tracing::error!("failed to build Google Custom Search URL");
-        return internal_server_error_response("search is not configured");
-    };
+    let url = google_search_url(key, cx, q, start)
+        .ok_or_else(|| ApiError::internal("failed to build Google Custom Search URL"))?;
 
     // Keys restricted by HTTP referrer expect the site origin; browser used to send it.
-    let client = Client::new();
-    match client.get(url).header("Referer", ME).send().await {
-        Ok(response) => {
-            let status = response.status();
-            match response.json::<Value>().await {
-                Ok(body) if status.is_success() => success_response(Json(body)),
-                Ok(body) => {
-                    let reason = google_error_summary(&body);
-                    tracing::error!("Google Custom Search returned status {status}: {reason}");
-                    bad_gateway_response("search provider error")
-                }
-                Err(e) => {
-                    tracing::error!("failed to parse Google Custom Search response: {e:#?}");
-                    bad_gateway_response("search provider error")
-                }
-            }
-        }
-        Err(e) => {
-            tracing::error!("Google Custom Search request failed: {e:#?}");
-            bad_gateway_response("search provider error")
-        }
+    let response = Client::new()
+        .get(url)
+        .header("Referer", ME)
+        .send()
+        .await
+        .map_err(|e| provider_error(anyhow::Error::from(e).context("request failed")))?;
+    let status = response.status();
+    let body = response
+        .json::<Value>()
+        .await
+        .map_err(|e| provider_error(anyhow::Error::from(e).context("response cannot be parsed")))?;
+    if !status.is_success() {
+        let reason = google_error_summary(&body);
+        return Err(provider_error(anyhow::anyhow!(
+            "returned status {status}: {reason}"
+        )));
     }
+    Ok(Json(body))
+}
+
+fn provider_error(cause: anyhow::Error) -> ApiError {
+    ApiError::bad_gateway("search provider error")
+        .caused_by(cause.context("Google Custom Search failed"))
 }
 
 fn google_error_summary(body: &Value) -> String {
@@ -118,10 +116,6 @@ fn google_search_url(key: &str, cx: &str, q: &str, start: u32) -> Option<String>
         .append_pair("q", q)
         .append_pair("start", start.format_into(&mut buf));
     Some(url.to_string())
-}
-
-fn bad_gateway_response<R: IntoResponse>(r: R) -> (StatusCode, Response) {
-    (StatusCode::BAD_GATEWAY, r.into_response())
 }
 
 #[cfg(test)]
