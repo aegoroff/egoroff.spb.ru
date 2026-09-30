@@ -53,14 +53,15 @@ pub fn typograph(html: &str) -> Result<String> {
             return Ok(());
         }
 
-        let mut text = t.as_str().to_string();
-
-        // Apply all replacements in one pass
+        // Stay borrowed until some rule actually matches
+        let mut text = Cow::Borrowed(t.as_str());
         for (re, replacement) in TYPOGRAPH_RE.iter() {
-            text = re.replace_all(&text, *replacement).into_owned();
+            if let Cow::Owned(replaced) = re.replace_all(&text, *replacement) {
+                text = Cow::Owned(replaced);
+            }
         }
 
-        if text != t.as_str() {
+        if let Cow::Owned(text) = text {
             t.replace(&text, ContentType::Html);
         }
         Ok(())
