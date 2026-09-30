@@ -67,7 +67,7 @@ async fn serve_index(
 
     let req = PostsRequest {
         page: Some(page),
-        tag: request.tag.clone(),
+        tag: request.tag().map(ToOwned::to_owned),
         ..Default::default()
     };
     let poster = Poster::new(page_context.blog.page(req).await?, page);
