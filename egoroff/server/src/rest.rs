@@ -90,10 +90,9 @@ pub fn create_routes(
     let storage_path = data_path.join(kernel::sqlite::DATABASE);
     let sessions_path = data_path.join(crate::SESSIONS_DATABASE);
 
-    let auth_backend = AuthBackend::from(storage_path.clone());
-
     let storage = Sqlite::open(&storage_path, Mode::ReadWrite)?;
     let storage = Arc::new(Mutex::new(storage));
+    let auth_backend = AuthBackend::new(storage.clone());
     let cache = Arc::new(Mutex::new(HashSet::new()));
     let micropub_api = micropub_api(&certs_path);
 
@@ -109,7 +108,7 @@ pub fn create_routes(
     });
 
     let secret = rand::rng().random::<[u8; 64]>();
-    let session_store = SqliteSessionStore::open(sessions_path, &secret)?;
+    let session_store = SqliteSessionStore::open(&sessions_path, &secret)?;
     session_store.cleanup()?;
     let session_expiry = Expiry::OnInactivity(Duration::seconds(86400 * 14));
 

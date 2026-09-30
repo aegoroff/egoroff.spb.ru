@@ -1,10 +1,7 @@
 #![allow(clippy::module_name_repetitions)]
 
 use std::marker::PhantomData;
-use std::{
-    collections::HashSet,
-    path::{Path, PathBuf},
-};
+use std::{collections::HashSet, path::Path};
 
 use anyhow::{Context, Result};
 use axum::{Json, response};
@@ -25,7 +22,7 @@ use reqwest::{Client, StatusCode};
 use serde::{Deserialize, de::DeserializeOwned};
 use thiserror::Error;
 
-use crate::domain::AuthorizedUser;
+use crate::domain::{AuthorizedUser, Database};
 
 type SpecialClient = oauth2::Client<
     oauth2::StandardErrorResponse<oauth2::basic::BasicErrorResponseType>,
@@ -83,12 +80,12 @@ pub type YandexAuthorizer = OAuthAuthorizer<YandexUser>;
 
 #[derive(Clone)]
 pub struct AuthBackend {
-    db_path: PathBuf,
+    storage: Database,
 }
 
 impl AuthBackend {
-    pub fn from(db_path: PathBuf) -> Self {
-        Self { db_path }
+    pub fn new(storage: Database) -> Self {
+        Self { storage }
     }
 }
 
@@ -361,34 +358,27 @@ where
         &self,
         creds: Self::Credentials,
     ) -> Result<Option<Self::User>, Self::Error> {
-        match Sqlite::open(self.db_path.as_path(), Mode::ReadOnly) {
-            Ok(storage) => {
-                let user = storage.get_user(&creds.user.federated_id, &creds.user.provider);
-                match user {
-                    Ok(user) => Ok(Some(AppUser::new(user))),
-                    Err(err) => Err(UserStoreError::SqlError(err)),
-                }
-            }
-            Err(err) => Err(UserStoreError::SqlError(err.into())),
-        }
+        let user = self
+            .storage
+            .lock()
+            .await
+            .get_user(&creds.user.federated_id, &creds.user.provider)
+            .map_err(UserStoreError::SqlError)?;
+        Ok(Some(AppUser::new(user)))
     }
 
     async fn get_user(
         &self,
         user_id: &String,
     ) -> std::result::Result<Option<Self::User>, Self::Error> {
-        match Sqlite::open(self.db_path.as_path(), Mode::ReadOnly) {
-            Ok(storage) => {
-                let (provider, federated_id) =
-                    user_id.split_once('_').ok_or(UserStoreError::InvalidId)?;
-                let user = storage.get_user(federated_id, provider);
-                match user {
-                    Ok(user) => Ok(Some(AppUser::new(user))),
-                    Err(err) => Err(UserStoreError::SqlError(err)),
-                }
-            }
-            Err(err) => Err(UserStoreError::SqlError(err.into())),
-        }
+        let (provider, federated_id) = user_id.split_once('_').ok_or(UserStoreError::InvalidId)?;
+        let user = self
+            .storage
+            .lock()
+            .await
+            .get_user(federated_id, provider)
+            .map_err(UserStoreError::SqlError)?;
+        Ok(Some(AppUser::new(user)))
     }
 }
 

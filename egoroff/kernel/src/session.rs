@@ -1,6 +1,6 @@
 use std::{
-    path::{Path, PathBuf},
-    sync::Arc,
+    path::Path,
+    sync::{Arc, Mutex, MutexGuard, PoisonError},
 };
 
 use async_trait::async_trait;
@@ -16,12 +16,12 @@ use tower_sessions::{
 
 #[derive(Debug, Clone)]
 pub struct SqliteSessionStore {
-    path: Arc<PathBuf>,
+    conn: Arc<Mutex<Connection>>,
 }
 
 impl SqliteSessionStore {
-    pub fn open(path: PathBuf, secret: &[u8]) -> anyhow::Result<SqliteSessionStore> {
-        let conn = SqliteSessionStore::create_connection(&path)?;
+    pub fn open(path: &Path, secret: &[u8]) -> anyhow::Result<SqliteSessionStore> {
+        let conn = SqliteSessionStore::create_connection(path)?;
         conn.execute(
             r"
                     CREATE TABLE IF NOT EXISTS session (
@@ -55,14 +55,15 @@ impl SqliteSessionStore {
             let parameters = params![secret];
             stmt.execute(parameters)?;
         }
+        drop(stmt);
 
         Ok(Self {
-            path: Arc::new(path),
+            conn: Arc::new(Mutex::new(conn)),
         })
     }
 
     pub fn cleanup(&self) -> anyhow::Result<()> {
-        let conn = SqliteSessionStore::create_connection(&self.path)?;
+        let conn = self.connection();
         let mut stmt = conn.prepare(r"DELETE FROM session WHERE expires < ?1")?;
 
         stmt.execute(params![Utc::now().timestamp()])?;
@@ -71,7 +72,7 @@ impl SqliteSessionStore {
     }
 
     pub fn get_secret(&self) -> anyhow::Result<Vec<u8>> {
-        let conn = SqliteSessionStore::create_connection(&self.path)?;
+        let conn = self.connection();
         let mut stmt = conn.prepare("SELECT secret FROM secret")?;
         let encoded: String = stmt.query_row([], |row| {
             let s: String = row.get(0)?;
@@ -85,6 +86,11 @@ impl SqliteSessionStore {
         Ok(result)
     }
 
+    /// A poisoned lock still guards a usable connection: every statement is atomic.
+    fn connection(&self) -> MutexGuard<'_, Connection> {
+        self.conn.lock().unwrap_or_else(PoisonError::into_inner)
+    }
+
     fn create_connection(path: &Path) -> anyhow::Result<Connection> {
         let conn = Connection::open(path)?;
         conn.pragma_update(None, "synchronous", "OFF")?;
@@ -95,9 +101,9 @@ impl SqliteSessionStore {
 
     fn load_impl(&self, session_id: &Id) -> anyhow::Result<Option<Record>> {
         let id = session_id.to_string();
-        let conn = SqliteSessionStore::create_connection(&self.path)?;
+        let conn = self.connection();
 
-        let mut stmt = conn.prepare(
+        let mut stmt = conn.prepare_cached(
             r"
             SELECT session, expires, id FROM session
               WHERE id = ?1 AND (expires IS NULL OR expires > ?2)
@@ -123,8 +129,8 @@ impl SqliteSessionStore {
 
     fn delete_impl(&self, session_id: &Id) -> anyhow::Result<()> {
         let id = session_id.to_string();
-        let conn = SqliteSessionStore::create_connection(&self.path)?;
-        let mut stmt = conn.prepare("DELETE FROM session WHERE id = ?")?;
+        let conn = self.connection();
+        let mut stmt = conn.prepare_cached("DELETE FROM session WHERE id = ?")?;
 
         stmt.execute(params![id])?;
 
@@ -136,9 +142,9 @@ impl SqliteSessionStore {
         let data = rmp_serde::to_vec(&session_record).unwrap_or_default();
         let expiry = &session_record.expiry_date.unix_timestamp();
 
-        let conn = SqliteSessionStore::create_connection(&self.path)?;
+        let conn = self.connection();
 
-        let mut stmt = conn.prepare(
+        let mut stmt = conn.prepare_cached(
             r"
             INSERT INTO session
               (id, session, expires) VALUES (?1, ?2, ?3)
@@ -168,5 +174,75 @@ impl SessionStore for SqliteSessionStore {
     async fn delete(&self, session_id: &Id) -> Result<()> {
         self.delete_impl(session_id)
             .map_err(|e| Error::Backend(e.to_string()))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(clippy::unwrap_used)]
+    use super::*;
+    use rstest::{fixture, rstest};
+    use tower_sessions::cookie::time::{Duration, OffsetDateTime};
+
+    const SECRET: &[u8] = b"secret";
+
+    #[fixture]
+    fn store() -> SqliteSessionStore {
+        SqliteSessionStore::open(Path::new(":memory:"), SECRET).unwrap()
+    }
+
+    fn record(expires_in: Duration) -> Record {
+        Record {
+            id: Id::default(),
+            data: [(String::from("user"), serde_json::json!("egr"))]
+                .into_iter()
+                .collect(),
+            expiry_date: OffsetDateTime::now_utc().replace_nanosecond(0).unwrap() + expires_in,
+        }
+    }
+
+    #[rstest]
+    #[case(Duration::hours(1), true)]
+    #[case(Duration::hours(-1), false)]
+    #[tokio::test]
+    async fn load_returns_only_unexpired_saved_record(
+        store: SqliteSessionStore,
+        #[case] expires_in: Duration,
+        #[case] expected_found: bool,
+    ) {
+        // arrange
+        let saved = record(expires_in);
+        store.save(&saved).await.unwrap();
+
+        // act
+        let loaded = store.load(&saved.id).await.unwrap();
+
+        // assert
+        assert_eq!(expected_found.then_some(saved), loaded);
+    }
+
+    #[rstest]
+    #[tokio::test]
+    async fn delete_removes_saved_record(store: SqliteSessionStore) {
+        // arrange
+        let saved = record(Duration::hours(1));
+        store.save(&saved).await.unwrap();
+
+        // act
+        store.delete(&saved.id).await.unwrap();
+
+        // assert
+        assert!(store.load(&saved.id).await.unwrap().is_none());
+    }
+
+    #[rstest]
+    fn get_secret_returns_secret_stored_on_open(store: SqliteSessionStore) {
+        // arrange
+
+        // act
+        let actual = store.get_secret().unwrap();
+
+        // assert
+        assert_eq!(SECRET, actual.as_slice());
     }
 }
