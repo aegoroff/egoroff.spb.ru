@@ -70,7 +70,7 @@ impl Modify for SecurityAddon {
             handlers::indie::serve_token_validate,
         ),
         components(
-            schemas(SmallPost, ApiResult<SmallPost>, micropub::MicropubConfig, micropub::SyndicateTo, micropub::MicropubFormError, indie::TokenValidationResult, indie::Token, indie::TokenRequest, handlers::micropub::MediaResponse),
+            schemas(SmallPost, ApiResult<SmallPost>, micropub::MicropubConfig, micropub::SyndicateTo, micropub::MicropubFormError, indie::TokenValidationResult, indie::IndieToken, indie::TokenRequest, handlers::micropub::MediaResponse),
         ),
         modifiers(&SecurityAddon),
         tags(

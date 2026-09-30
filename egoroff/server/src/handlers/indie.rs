@@ -13,8 +13,8 @@ use chrono::{TimeDelta, Utc};
 use crate::{
     domain::PageContext,
     indie::{
-        Claims, IndieQuery, ME, SCOPES, Token, TokenRequest, TokenValidationResult, generate_jwt,
-        read_from_client, validate_jwt,
+        Claims, IndieQuery, IndieToken, ME, SCOPES, TokenRequest, TokenValidationResult,
+        generate_jwt, read_from_client, validate_jwt,
     },
 };
 use axum::http::header::LOCATION;
@@ -76,7 +76,7 @@ pub async fn serve_auth(
     path = "/token",
     request_body(content = TokenRequest, content_type = "application/x-www-form-urlencoded"),
     responses(
-        (status = 200, description = "Configuration read successfully", body = Token),
+        (status = 200, description = "Configuration read successfully", body = IndieToken),
         (status = 401, description = "Claims validation failed", body = String),
     ),
     tag = "indie",
@@ -84,7 +84,7 @@ pub async fn serve_auth(
 pub async fn serve_token_generate(
     State(page_context): State<Arc<PageContext<'_>>>,
     Form(req): Form<TokenRequest>,
-) -> Result<Json<Token>, ApiError> {
+) -> Result<Json<IndieToken>, ApiError> {
     let public_key_path = PathBuf::from(&page_context.certs_path).join("egoroffspbrupub.pem");
     validate_jwt(&req.code, public_key_path).map_err(jwt_rejected)?;
     page_context.cache.lock().await.remove(&req.code);
@@ -109,7 +109,7 @@ pub async fn serve_token_generate(
 
     let private_key_path = PathBuf::from(&page_context.certs_path).join("egoroffspbrupri.pem");
     let access_token = generate_jwt(&claims, private_key_path)?;
-    Ok(Json(Token {
+    Ok(Json(IndieToken {
         access_token,
         token_type: "Bearer".to_string(),
         scope: SCOPES.to_string(),

@@ -68,7 +68,8 @@ pub struct TokenRequest {
 
 /// Access token response returned to the client.
 #[derive(Deserialize, Serialize, ToSchema)]
-pub struct Token {
+#[schema(as = Token)]
+pub struct IndieToken {
     /// The issued access token string.
     pub access_token: String,
     /// The type of the token; for `IndieAuth` this is typically `"Bearer"`.
