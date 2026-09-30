@@ -239,6 +239,9 @@ fn render_teasers(mut posts: Vec<SmallPost>) -> Vec<SmallPost> {
         {
             post.short_text = text;
         }
+        if let Ok(text) = typograph(&post.short_text) {
+            post.short_text = text;
+        }
     }
     posts
 }
@@ -412,12 +415,20 @@ mod tests {
     }
 
     #[rstest]
+    #[case("**bold**", true, "<p><strong>bold</strong></p>\n")]
+    #[case("a - **b**", true, "<p>a&nbsp;&mdash; <strong>b</strong></p>\n")]
+    #[case("<p>a - b</p>", false, "<p>a&nbsp;&mdash; b</p>")]
     #[tokio::test]
-    async fn page_renders_markdown_teasers(blog: Blog) {
+    async fn page_renders_teasers(
+        blog: Blog,
+        #[case] short_text: &str,
+        #[case] markdown: bool,
+        #[case] expected: &str,
+    ) {
         // arrange
         let p = Post {
-            short_text: "**bold**".into(),
-            markdown: true,
+            short_text: short_text.into(),
+            markdown,
             ..post(1, true)
         };
         store(&blog, vec![p]).await;
@@ -426,7 +437,7 @@ mod tests {
         let page = blog.page(PostsRequest::default()).await.unwrap();
 
         // assert
-        assert_eq!("<p><strong>bold</strong></p>\n", page.result[0].short_text);
+        assert_eq!(expected, page.result[0].short_text);
     }
 
     #[rstest]
