@@ -1,7 +1,10 @@
 use std::time::Duration;
 
 use anyhow::Context;
-use kernel::domain::{ApiResult, Download, DownloadsRequest, Folder};
+use kernel::{
+    domain::{ApiResult, Download, DownloadsRequest, Folder},
+    paging,
+};
 use serde::Deserialize;
 
 use crate::domain::{Downloadable, FilesContainer};
@@ -243,7 +246,7 @@ pub async fn serve_downloads_admin_api(
     Query(request): Query<DownloadsRequest>,
 ) -> impl IntoResponse {
     let page_size = 10;
-    let (page, offset) = archive::page_offset(request.page, page_size);
+    let (page, offset) = paging::page_offset(request.page, page_size);
     let storage = page_context.storage.lock().await;
 
     let total_downloads_count = match storage.count_downloads() {
@@ -254,7 +257,7 @@ pub async fn serve_downloads_admin_api(
         }
     };
 
-    let pages_count = count_pages(total_downloads_count, page_size);
+    let pages_count = paging::pages_count(total_downloads_count, page_size);
 
     let downloads = match storage.get_downloads(page_size, offset) {
         Ok(downloads) => downloads,
@@ -273,10 +276,6 @@ pub async fn serve_downloads_admin_api(
     };
 
     make_json_response(Ok(result)).into_response()
-}
-
-fn count_pages(count: i32, page_size: i32) -> i32 {
-    count / page_size + i32::from(count % page_size > 0)
 }
 
 #[cfg(test)]

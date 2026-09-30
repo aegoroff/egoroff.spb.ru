@@ -1678,6 +1678,7 @@ dependencies = [
  "rusqlite",
  "serde",
  "serde_json",
+ "tokio",
  "tower-sessions",
  "url",
  "utoipa",

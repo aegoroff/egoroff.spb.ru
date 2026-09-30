@@ -14,12 +14,7 @@ use chrono::{Datelike, Utc};
 use futures::{Stream, TryStreamExt};
 use futures_util::StreamExt;
 use kernel::graph::SiteSection;
-use kernel::{
-    archive,
-    domain::{PostsRequest, Storage},
-    graph,
-    resource::Resource,
-};
+use kernel::{domain::Storage, graph, resource::Resource};
 use percent_encoding::percent_decode_str;
 use std::fmt::Display;
 use std::{
@@ -46,6 +41,9 @@ use crate::{
 use template::{Index, Search};
 
 use self::template::ErrorPage;
+
+/// Latest posts shown on the home page.
+const HOME_POSTS: i32 = 5;
 
 pub mod admin;
 pub mod auth;
@@ -85,10 +83,7 @@ struct Static;
 struct Apache;
 
 pub async fn serve_index(State(page_context): State<Arc<PageContext<'_>>>) -> impl IntoResponse {
-    let storage = page_context.storage.lock().await;
-    let result = archive::get_small_posts(&storage, 5, None);
-
-    let blog_posts = match result {
+    let blog_posts = match page_context.blog.recent(HOME_POSTS).await {
         Ok(r) => r,
         Err(e) => {
             tracing::error!("{e:#?}");
@@ -105,7 +100,7 @@ pub async fn serve_index(State(page_context): State<Arc<PageContext<'_>>>) -> im
                     title_path: "",
                     keywords: get_keywords(section),
                     meta_description: &section.descr,
-                    posts: blog_posts.result,
+                    posts: blog_posts,
                     apache_docs: docs,
                     year: get_year(),
                 }
@@ -150,8 +145,7 @@ pub async fn serve_sitemap(State(page_context): State<Arc<PageContext<'_>>>) -> 
         }
     };
 
-    let storage = page_context.storage.lock().await;
-    let post_ids = match storage.get_posts_ids() {
+    let post_ids = match page_context.blog.ids().await {
         Ok(ids) => ids,
         Err(e) => {
             return internal_server_error_response(format!(

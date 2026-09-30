@@ -1,5 +1,4 @@
 use super::{template::Admin, *};
-use kernel::domain::PostsRequest;
 use serde::Serialize;
 
 /// Service administration interface main page
@@ -22,9 +21,8 @@ pub struct DashboardStats {
 pub async fn serve_dashboard_api(
     State(page_context): State<Arc<PageContext<'_>>>,
 ) -> impl IntoResponse {
+    let posts_count = page_context.blog.count().await.unwrap_or(0);
     let storage = page_context.storage.lock().await;
-
-    let posts_count = storage.count_posts(PostsRequest::default()).unwrap_or(0);
     let downloads_count = storage.count_downloads().unwrap_or(0);
     let users_count = storage.count_users().unwrap_or(0);
 

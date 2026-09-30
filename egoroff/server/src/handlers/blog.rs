@@ -1,7 +1,6 @@
 use kernel::{
-    converter::{html2text, markdown2html, xml2html},
-    domain::{ApiResult, Post, SmallPost},
-    typograph::typograph,
+    blog::Lookup,
+    domain::{ApiResult, Post, PostsRequest, SmallPost},
 };
 
 use crate::body::Content;
@@ -11,8 +10,6 @@ use super::{
     template::{BlogIndex, BlogPost},
     *,
 };
-
-const PAGE_SIZE: i32 = 20;
 
 const OPINIONS_REMAP: &[(&str, &str)] = &[
     ("1", "1"),
@@ -33,6 +30,9 @@ const OPINIONS_REMAP: &[(&str, &str)] = &[
 ];
 
 const BLOG_PATH: &str = "/blog/";
+
+/// Posts in the Atom feed.
+const FEED_SIZE: i32 = 20;
 
 static REPLACES_MAP: std::sync::LazyLock<HashMap<&'static str, &'static str>> =
     std::sync::LazyLock::new(|| OPINIONS_REMAP.iter().map(|(k, v)| (*k, *v)).collect());
@@ -78,14 +78,11 @@ async fn serve_index(
 
     let req = PostsRequest {
         page: Some(page),
-        tag: request.tag().map(ToOwned::to_owned),
+        tag: request.tag.clone(),
         ..Default::default()
     };
 
-    let storage = page_context.storage.lock().await;
-    let result = archive::get_small_posts(&storage, PAGE_SIZE, Some(req));
-
-    let api_result = match result {
+    let api_result = match page_context.blog.page(req).await {
         Ok(ar) => ar,
         Err(e) => {
             tracing::error!("Get posts error: {e:#?}");
@@ -136,84 +133,30 @@ pub async fn serve_document(
         }
     };
 
-    let storage = page_context.storage.lock().await;
-
-    if let Ok(id) = storage.get_new_post_id(id) {
-        let new_path = format!("/blog/{id}.html");
-        return redirect_response(&new_path);
-    }
-
-    let mut post = match storage.get_post(id) {
-        Ok(item) if item.is_public => item,
-        Ok(_) => return not_found_page(),
+    let article = match page_context.blog.article(id).await {
+        Ok(Lookup::Found(article)) => article,
+        Ok(Lookup::Moved(new_id)) => return redirect_response(&format!("/blog/{new_id}.html")),
+        Ok(Lookup::NotFound) => return not_found_page(),
         Err(e) => {
-            tracing::error!("Post ID '{id}' not found: {e:#?}");
-            return not_found_page();
+            tracing::error!("Post ID '{id}' read error: {e:#?}");
+            return internal_server_error_page();
         }
     };
-    drop(storage);
+
     let uri = format!("{BLOG_PATH}{path}");
     let title_path = page_context.site_graph.make_title_path(&uri);
-
-    match render_post_content(&mut post) {
-        Ok(content) => {
-            let meta_description = if content.is_empty() {
-                post.title.clone()
-            } else {
-                let descr = if post.markdown {
-                    markdown2html(&post.short_text).unwrap_or_default()
-                } else {
-                    post.short_text.clone()
-                };
-                if descr.is_empty() {
-                    post.title.clone()
-                } else if let Ok(txt) = html2text(&descr) {
-                    txt
-                } else {
-                    descr
-                }
-            };
-
-            let keywords = post.keywords();
-            BlogPost {
-                html_class: "blog",
-                title: &post.title,
-                title_path: &title_path,
-                keywords: &keywords,
-                main_post: &post,
-                content,
-                meta_description,
-                year: get_year(),
-            }
-            .into_response()
-        }
-        Err(e) => {
-            tracing::error!("{e:#?}");
-            internal_server_error_page()
-        }
+    let keywords = article.post.keywords();
+    BlogPost {
+        html_class: "blog",
+        title: &article.post.title,
+        title_path: &title_path,
+        keywords: &keywords,
+        main_post: &article.post,
+        content: article.html,
+        meta_description: article.description,
+        year: get_year(),
     }
-}
-
-/// Converts post body to typographed HTML and drops raw `text` from `post`.
-fn render_post_content(post: &mut Post) -> Result<String> {
-    let text = std::mem::take(&mut post.text);
-    let is_xml = text.starts_with("<?xml version=\"1.0\"?>");
-
-    let html = if post.markdown {
-        markdown2html(&text)?
-    } else if is_xml {
-        xml2html(&text)?
-    } else {
-        text
-    };
-
-    let body = if html.is_empty() {
-        post.short_text.clone()
-    } else {
-        html
-    };
-
-    typograph(&body)
+    .into_response()
 }
 
 /// Just redirects to /blog/ page using 308 code
@@ -225,11 +168,8 @@ pub async fn redirect() -> impl IntoResponse {
 }
 
 pub async fn serve_atom(State(page_context): State<Arc<PageContext<'_>>>) -> impl IntoResponse {
-    let storage = page_context.storage.lock().await;
-    let result = archive::get_small_posts(&storage, 20, None);
-
-    match result {
-        Ok(r) => match atom::from_small_posts(r.result) {
+    match page_context.blog.recent(FEED_SIZE).await {
+        Ok(posts) => match atom::from_small_posts(posts) {
             Ok(xml) => success_response(Content(xml, "application/atom+xml; charset=utf-8")),
             Err(e) => {
                 tracing::error!("Convert atom posts error: {e:#?}");
@@ -246,9 +186,7 @@ pub async fn serve_atom(State(page_context): State<Arc<PageContext<'_>>>) -> imp
 pub async fn serve_archive_api(
     State(page_context): State<Arc<PageContext<'_>>>,
 ) -> impl IntoResponse {
-    let storage = page_context.storage.lock().await;
-    let result = archive::archive(storage);
-    make_json_response(result)
+    make_json_response(page_context.blog.archive().await)
 }
 
 /// Gets small blog posts without full test (only short description and metadata) using various queries.
@@ -267,57 +205,35 @@ pub async fn serve_posts_api(
     State(page_context): State<Arc<PageContext<'_>>>,
     Query(request): Query<PostsRequest>,
 ) -> impl IntoResponse {
-    let storage = page_context.storage.lock().await;
-    let result = archive::get_small_posts(&storage, PAGE_SIZE, Some(request));
-    make_json_response(result)
+    make_json_response(page_context.blog.page(request).await)
 }
 
 pub async fn serve_posts_admin_api(
     State(page_context): State<Arc<PageContext<'_>>>,
     Query(request): Query<PostsRequest>,
 ) -> impl IntoResponse {
-    let storage = page_context.storage.lock().await;
-    let result = archive::get_posts(&storage, 10, request);
-    make_json_response(result)
+    make_json_response(page_context.blog.admin_page(request.page).await)
 }
 
 pub async fn serve_post_create(
     State(page_context): State<Arc<PageContext<'_>>>,
-    Json(mut post): Json<Post>,
+    Json(post): Json<Post>,
 ) -> impl IntoResponse {
-    let mut storage = page_context.storage.lock().await;
-
-    // Get next ID for the post
-    let new_id = match storage.next_post_id() {
-        Ok(id) => id,
-        Err(e) => {
-            tracing::error!("Failed to generate post ID: {e:#?}");
-            return created_response(Err(e));
-        }
-    };
-
-    post.id = new_id;
-
-    let result = storage.upsert_post(post);
-    created_response(result)
+    created_response(page_context.blog.create(|id| Post { id, ..post }).await)
 }
 
 pub async fn serve_post_update(
     State(page_context): State<Arc<PageContext<'_>>>,
     Json(post): Json<Post>,
 ) -> impl IntoResponse {
-    let mut storage = page_context.storage.lock().await;
-    let result = storage.upsert_post(post);
-    updated_response(result)
+    updated_response(page_context.blog.update(post).await)
 }
 
 pub async fn serve_post_delete(
     extract::Path(id): extract::Path<i64>,
     State(page_context): State<Arc<PageContext<'_>>>,
 ) -> impl IntoResponse {
-    let mut storage = page_context.storage.lock().await;
-    let result = storage.delete_post(id);
-    updated_response(result)
+    updated_response(page_context.blog.delete(id).await)
 }
 
 pub async fn redirect_to_real_document(
@@ -362,54 +278,5 @@ mod tests {
 
         // assert
         assert_eq!(expected, actual)
-    }
-
-    #[rstest]
-    #[case("Hello **world**", "", true, "<p>Hello <strong>world</strong></p>\n")]
-    #[case("a - b", "", true, "<p>a&nbsp;&mdash; b</p>\n")]
-    #[case("", "teaser only", true, "teaser only")]
-    #[case("", "<p>a - b</p>", true, "<p>a&nbsp;&mdash; b</p>")]
-    #[case("<p>a - b</p>", "", false, "<p>a&nbsp;&mdash; b</p>")]
-    #[case(
-        "<?xml version=\"1.0\"?><body><p>a - b</p><ul><li>c - d</li></ul></body>",
-        "",
-        false,
-        "<p>a&nbsp;&mdash; b</p><ul><li>c&nbsp;&mdash; d</li></ul>"
-    )]
-    fn render_post_content_tests(
-        #[case] text: &str,
-        #[case] short_text: &str,
-        #[case] markdown: bool,
-        #[case] expected: &str,
-    ) {
-        // arrange
-        let mut post = Post {
-            text: text.into(),
-            short_text: short_text.into(),
-            markdown,
-            ..Default::default()
-        };
-
-        // act
-        let actual = render_post_content(&mut post).unwrap();
-
-        // assert
-        assert_eq!(expected, actual);
-    }
-
-    #[test]
-    fn render_post_content_clears_raw_text() {
-        // arrange
-        let mut post = Post {
-            text: "Hello **world**".into(),
-            markdown: true,
-            ..Default::default()
-        };
-
-        // act
-        render_post_content(&mut post).unwrap();
-
-        // assert
-        assert!(post.text.is_empty());
     }
 }

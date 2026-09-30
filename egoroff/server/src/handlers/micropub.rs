@@ -89,12 +89,12 @@ pub async fn serve_index_get(
                     return bad_request_error_response("invalid post url");
                 };
 
-                let storage = page_context.storage.lock().await;
-                let post = match storage.get_post(post_id) {
-                    Ok(post) => post,
+                let post = match page_context.blog.draft(post_id).await {
+                    Ok(Some(post)) => post,
+                    Ok(None) => return not_found_response("post not found"),
                     Err(e) => {
-                        tracing::error!("micropub source post {post_id} not found: {e:#?}");
-                        return not_found_response("post not found");
+                        tracing::error!("micropub source post {post_id} read error: {e:#?}");
+                        return internal_server_error_response(e.to_string());
                     }
                 };
 
@@ -157,16 +157,11 @@ pub async fn serve_index_post(
         }
     };
 
-    let mut storage = page_context.storage.lock().await;
-    let post_id = match storage.next_post_id() {
+    tracing::info!("content type: {:?}", form.content_type);
+    let post_id = match page_context.blog.create(|id| form.to_post(id)).await {
         Ok(id) => id,
         Err(e) => return internal_server_error_response(e.to_string()),
     };
-    tracing::info!("content type: {:?}", form.content_type);
-    let post = form.to_post(post_id);
-    if let Err(e) = storage.upsert_post(post) {
-        return internal_server_error_response(e.to_string());
-    }
     (
         StatusCode::CREATED,
         [(http::header::LOCATION, format!("{ME}blog/{post_id}.html"))].into_response(),

@@ -67,6 +67,16 @@ impl Storage for Sqlite {
         )?;
 
         self.conn.execute(
+            "CREATE TABLE post_remap (
+                  post_id              INTEGER NOT NULL,
+                  old_id               INTEGER NOT NULL,
+                  PRIMARY KEY (post_id),
+                  FOREIGN KEY(post_id) REFERENCES post(id) ON UPDATE CASCADE ON DELETE CASCADE
+                  )",
+            [],
+        )?;
+
+        self.conn.execute(
             "CREATE TABLE folder (
                   bucket          TEXT PRIMARY KEY,
                   title           TEXT NOT NULL
@@ -371,7 +381,9 @@ impl Storage for Sqlite {
     }
 
     fn next_post_id(&mut self) -> anyhow::Result<i64> {
-        let mut stmt = self.conn.prepare("SELECT MAX(id) + 1 FROM post")?;
+        let mut stmt = self
+            .conn
+            .prepare("SELECT COALESCE(MAX(id), 0) + 1 FROM post")?;
         let post_id = stmt.query_row([], |row| row.get(0))?;
         Ok(post_id)
     }
@@ -451,6 +463,11 @@ impl Sqlite {
             Mode::ReadOnly => Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_ONLY),
         };
         Ok(Self { conn: c? })
+    }
+
+    #[cfg(test)]
+    pub(crate) fn execute(&self, sql: &str) -> Result<usize, Error> {
+        self.conn.execute(sql, [])
     }
 
     fn map_small_post_row<E: std::convert::From<Error>>(row: &Row<'_>) -> Result<SmallPost, E> {

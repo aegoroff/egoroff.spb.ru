@@ -3,10 +3,11 @@
 #![warn(clippy::unwrap_used)]
 #![allow(clippy::missing_errors_doc)]
 
-pub mod archive;
+pub mod blog;
 pub mod converter;
 pub mod domain;
 pub mod graph;
+pub mod paging;
 pub mod resource;
 pub mod session;
 pub mod sqlite;

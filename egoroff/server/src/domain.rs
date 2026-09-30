@@ -2,6 +2,7 @@ use std::{collections::HashSet, path::PathBuf, sync::Arc};
 
 use futures::lock::Mutex;
 use kernel::{
+    blog::Blog,
     domain::{ApiResult, User},
     graph::{SiteGraph, SiteSection},
     sqlite::Sqlite,
@@ -83,6 +84,8 @@ pub struct PageContext<'a> {
     pub base_path: PathBuf,
     /// The database storage instance.
     pub storage: Database,
+    /// Posts: listing, reading, archive and editing.
+    pub blog: Blog,
     /// The site graph instance.
     pub site_graph: Arc<SiteGraph<'a>>,
     /// The site configuration data.

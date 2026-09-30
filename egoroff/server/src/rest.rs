@@ -15,6 +15,7 @@ use tower_sessions::{Expiry, SessionManagerLayer};
 use crate::domain::PageContext;
 use futures::lock::Mutex;
 use indie::RequireIndieAuthorizationLayer;
+use kernel::blog::Blog;
 use kernel::domain::{ApiResult, SmallPost};
 use kernel::graph::SiteGraph;
 use kernel::session::SqliteSessionStore;
@@ -97,6 +98,7 @@ pub fn create_routes(
 
     let page_context = Arc::new(PageContext {
         base_path,
+        blog: Blog::new(storage.clone()),
         storage,
         site_graph,
         site_config,
