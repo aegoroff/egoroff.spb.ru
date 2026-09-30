@@ -16,6 +16,9 @@ pub enum Mode {
 
 pub const DATABASE: &str = "egoroff.db";
 
+/// Fits every distinct statement below, so none is evicted and re-parsed.
+const STATEMENT_CACHE_CAPACITY: usize = 64;
+
 pub struct Sqlite {
     conn: Connection,
 }
@@ -101,11 +104,9 @@ impl Storage for Sqlite {
         offset: i32,
         request: PostsRequest,
     ) -> anyhow::Result<Vec<crate::domain::SmallPost>> {
-        self.enable_foreign_keys()?;
-
         let files: Vec<crate::domain::SmallPost> = match request.tag {
             Some(tag) => {
-                let mut stmt = self.conn.prepare("SELECT id, title, created, short_text, markdown \
+                let mut stmt = self.conn.prepare_cached("SELECT id, title, created, short_text, markdown \
                                     FROM post INNER JOIN post_tag ON post_tag.post_id = post.id 
                                     WHERE is_public = 1 AND post_tag.tag = ?3 ORDER BY created DESC LIMIT ?1 OFFSET ?2")?;
                 let files = stmt.query_map(
@@ -116,7 +117,7 @@ impl Storage for Sqlite {
             }
             None => {
                 if let Some(period) = request.as_query_period() {
-                    let mut stmt = self.conn.prepare(
+                    let mut stmt = self.conn.prepare_cached(
                         "SELECT id, title, created, short_text, markdown \
                     FROM post WHERE is_public = 1 AND created > ?1 AND created < ?2 ORDER BY created DESC  LIMIT ?3 OFFSET ?4",
                     )?;
@@ -131,7 +132,7 @@ impl Storage for Sqlite {
                     )?;
                     files.filter_map(std::result::Result::ok).collect()
                 } else {
-                    let mut stmt = self.conn.prepare(
+                    let mut stmt = self.conn.prepare_cached(
                         "SELECT id, title, created, short_text, markdown \
                     FROM post WHERE is_public = 1 ORDER BY created DESC LIMIT ?1 OFFSET ?2",
                     )?;
@@ -146,13 +147,13 @@ impl Storage for Sqlite {
     fn get_post(&self, id: i64) -> anyhow::Result<crate::domain::Post> {
         let mut stmt = self
             .conn
-            .prepare("SELECT tag FROM post_tag WHERE post_tag.post_id = ?1")?;
+            .prepare_cached("SELECT tag FROM post_tag WHERE post_tag.post_id = ?1")?;
         let tags = stmt.query_map([id], |row| {
             let tag = row.get(0)?;
             Ok(tag)
         })?;
 
-        let mut stmt = self.conn.prepare(
+        let mut stmt = self.conn.prepare_cached(
             "SELECT title, created, short_text, markdown, text, is_public, modified FROM post WHERE id = ?1",
         )?;
         let post: Post = stmt.query_row([id], |row| {
@@ -187,13 +188,12 @@ impl Storage for Sqlite {
     }
 
     fn delete_post(&mut self, id: i64) -> anyhow::Result<usize> {
-        self.enable_foreign_keys()?;
         Ok(Sqlite::execute_with_retry(|| {
             let tx = self.conn.transaction()?;
 
-            let mut stmt = tx.prepare("DELETE FROM post WHERE id = ?1")?;
-            let deleted_count = stmt.execute(params![id])?;
-            stmt.finalize()?;
+            let deleted_count = tx
+                .prepare_cached("DELETE FROM post WHERE id = ?1")?
+                .execute(params![id])?;
 
             tx.commit()?;
 
@@ -205,9 +205,9 @@ impl Storage for Sqlite {
         Ok(Sqlite::execute_with_retry(|| {
             let tx = self.conn.transaction()?;
 
-            let mut stmt = tx.prepare("DELETE FROM file WHERE id = ?1")?;
-            let deleted_count = stmt.execute(params![id])?;
-            stmt.finalize()?;
+            let deleted_count = tx
+                .prepare_cached("DELETE FROM file WHERE id = ?1")?
+                .execute(params![id])?;
 
             tx.commit()?;
 
@@ -220,7 +220,7 @@ impl Storage for Sqlite {
 
         match request.tag {
             Some(tag) => {
-                let mut stmt = self.conn.prepare(
+                let mut stmt = self.conn.prepare_cached(
                     "SELECT COUNT(1) FROM post INNER JOIN post_tag ON post_tag.post_id = post.id \
                           WHERE (is_public = 1 OR is_public = ?2) AND post_tag.tag = ?1",
                 )?;
@@ -229,11 +229,11 @@ impl Storage for Sqlite {
             }
             None => {
                 if let Some(period) = request.as_query_period() {
-                    let mut stmt = self.conn.prepare("SELECT COUNT(1) FROM post WHERE (is_public = 1 OR is_public = ?3) AND created > ?1 AND created < ?2")?;
+                    let mut stmt = self.conn.prepare_cached("SELECT COUNT(1) FROM post WHERE (is_public = 1 OR is_public = ?3) AND created > ?1 AND created < ?2")?;
                     let params = params![period.from.timestamp(), period.to.timestamp(), is_public];
                     Ok(stmt.query_row(params, |row| row.get(0))?)
                 } else {
-                    let mut stmt = self.conn.prepare(
+                    let mut stmt = self.conn.prepare_cached(
                         "SELECT COUNT(1) FROM post WHERE is_public = 1 OR is_public = ?1",
                     )?;
                     Ok(stmt.query_row([is_public], |row| row.get(0))?)
@@ -243,9 +243,7 @@ impl Storage for Sqlite {
     }
 
     fn get_aggregate_tags(&self) -> anyhow::Result<Vec<crate::domain::TagAggregate>> {
-        self.enable_foreign_keys()?;
-
-        let mut stmt = self.conn.prepare("SELECT post_tag.tag, count(1) FROM post_tag \
+        let mut stmt = self.conn.prepare_cached("SELECT post_tag.tag, count(1) FROM post_tag \
                                                             INNER JOIN post ON post_tag.post_id = post.id WHERE post.is_public = 1 GROUP BY tag")?;
         let files = stmt.query_map([], |row| {
             let tag = TagAggregate {
@@ -261,7 +259,7 @@ impl Storage for Sqlite {
     fn get_posts_create_dates(&self) -> anyhow::Result<Vec<DateTime<Utc>>> {
         let mut stmt = self
             .conn
-            .prepare("SELECT created FROM post WHERE is_public = 1 ORDER BY created DESC")?;
+            .prepare_cached("SELECT created FROM post WHERE is_public = 1 ORDER BY created DESC")?;
         let dates = stmt.query_map([], |row| Ok(datetime_from_row!(row, 0)))?;
         Ok(dates.filter_map(std::result::Result::ok).collect())
     }
@@ -269,7 +267,7 @@ impl Storage for Sqlite {
     fn get_posts_ids(&self) -> anyhow::Result<Vec<i64>> {
         let mut stmt = self
             .conn
-            .prepare("SELECT id FROM post WHERE is_public = 1 ORDER BY created DESC")?;
+            .prepare_cached("SELECT id FROM post WHERE is_public = 1 ORDER BY created DESC")?;
         let ids = stmt.query_map([], |row| {
             let id: i64 = row.get(0)?;
             Ok(id)
@@ -280,13 +278,13 @@ impl Storage for Sqlite {
     fn get_oauth_provider(&self, name: &str) -> anyhow::Result<crate::domain::OAuthProvider> {
         let mut stmt = self
             .conn
-            .prepare("SELECT scope FROM oauth_provider_scopes WHERE provider = ?1")?;
+            .prepare_cached("SELECT scope FROM oauth_provider_scopes WHERE provider = ?1")?;
         let scopes = stmt.query_map([name], |row| {
             let tag = row.get(0)?;
             Ok(tag)
         })?;
 
-        let mut stmt = self.conn.prepare(
+        let mut stmt = self.conn.prepare_cached(
             "SELECT name, clientid, secret, redirect_url FROM oauth_provider WHERE name=?1",
         )?;
         let provider: OAuthProvider = stmt.query_row([name], |row| {
@@ -305,7 +303,7 @@ impl Storage for Sqlite {
     }
 
     fn get_user(&self, federated_id: &str, provider: &str) -> anyhow::Result<User> {
-        let mut stmt = self.conn.prepare(
+        let mut stmt = self.conn.prepare_cached(
         "SELECT created, email, name, login, avatar_url, federated_id, admin, verified, provider \
          FROM user WHERE federated_id=?1 AND provider=?2"
     )?;
@@ -325,7 +323,7 @@ impl Storage for Sqlite {
     }
 
     fn get_posts(&self, limit: i32, offset: i32) -> anyhow::Result<Vec<Post>> {
-        let mut stmt = self.conn.prepare(
+        let mut stmt = self.conn.prepare_cached(
             "SELECT id, title, created, short_text, markdown, text, is_public, modified \
                  FROM post ORDER BY created DESC LIMIT ?1 OFFSET ?2",
         )?;
@@ -345,7 +343,7 @@ impl Storage for Sqlite {
             Ok(post)
         })?;
 
-        let mut stmt = self.conn.prepare(
+        let mut stmt = self.conn.prepare_cached(
             "SELECT post_id, tag FROM post_tag WHERE post_id IN (SELECT id FROM post ORDER BY created DESC LIMIT ?1 OFFSET ?2)",
         )?;
 
@@ -374,7 +372,7 @@ impl Storage for Sqlite {
     fn get_new_post_id(&self, id: i64) -> anyhow::Result<i64> {
         let mut stmt = self
             .conn
-            .prepare("SELECT post_id FROM post_remap WHERE old_id = ?1")?;
+            .prepare_cached("SELECT post_id FROM post_remap WHERE old_id = ?1")?;
         let params = params![id];
         let post_id = stmt.query_row(params, |row| row.get(0))?;
         Ok(post_id)
@@ -383,13 +381,15 @@ impl Storage for Sqlite {
     fn next_post_id(&mut self) -> anyhow::Result<i64> {
         let mut stmt = self
             .conn
-            .prepare("SELECT COALESCE(MAX(id), 0) + 1 FROM post")?;
+            .prepare_cached("SELECT COALESCE(MAX(id), 0) + 1 FROM post")?;
         let post_id = stmt.query_row([], |row| row.get(0))?;
         Ok(post_id)
     }
 
     fn get_folders(&self) -> anyhow::Result<Vec<Folder>> {
-        let mut stmt = self.conn.prepare("SELECT bucket, title FROM folder")?;
+        let mut stmt = self
+            .conn
+            .prepare_cached("SELECT bucket, title FROM folder")?;
         let folders_query = stmt.query_map([], |row| {
             let post = Folder {
                 bucket: row.get(0)?,
@@ -404,7 +404,7 @@ impl Storage for Sqlite {
     fn get_download(&self, id: i64) -> anyhow::Result<Download> {
         let mut stmt = self
             .conn
-            .prepare("SELECT id, title FROM file WHERE id=?1")?;
+            .prepare_cached("SELECT id, title FROM file WHERE id=?1")?;
         let file: Download = stmt.query_row([id], |row| {
             let file = Download {
                 id: row.get(0)?,
@@ -420,7 +420,7 @@ impl Storage for Sqlite {
     fn get_downloads(&self, limit: i32, offset: i32) -> anyhow::Result<Vec<Download>> {
         let mut stmt = self
             .conn
-            .prepare("SELECT id, title FROM file ORDER BY id DESC LIMIT ?1 OFFSET ?2")?;
+            .prepare_cached("SELECT id, title FROM file ORDER BY id DESC LIMIT ?1 OFFSET ?2")?;
         let downloads_query = stmt.query_map([limit, offset], |row| {
             let download = Download {
                 id: row.get(0)?,
@@ -437,12 +437,12 @@ impl Storage for Sqlite {
     }
 
     fn count_downloads(&self) -> anyhow::Result<i32> {
-        let mut stmt = self.conn.prepare("SELECT COUNT(1) FROM file")?;
+        let mut stmt = self.conn.prepare_cached("SELECT COUNT(1) FROM file")?;
         Ok(stmt.query_row([], |row| row.get(0))?)
     }
 
     fn get_users(&self) -> anyhow::Result<Vec<User>> {
-        let mut stmt = self.conn.prepare(
+        let mut stmt = self.conn.prepare_cached(
         "SELECT created, email, name, login, avatar_url, federated_id, admin, verified, provider \
          FROM user ORDER BY created DESC"
     )?;
@@ -451,7 +451,7 @@ impl Storage for Sqlite {
     }
 
     fn count_users(&self) -> anyhow::Result<i32> {
-        let mut stmt = self.conn.prepare("SELECT COUNT(1) FROM user")?;
+        let mut stmt = self.conn.prepare_cached("SELECT COUNT(1) FROM user")?;
         Ok(stmt.query_row([], |row| row.get(0))?)
     }
 }
@@ -462,7 +462,11 @@ impl Sqlite {
             Mode::ReadWrite => Connection::open(path),
             Mode::ReadOnly => Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_ONLY),
         };
-        Ok(Self { conn: c? })
+        let conn = c?;
+        // Set once: a flag pragma expires every prepared statement of the connection
+        conn.pragma_update(None, "foreign_keys", "ON")?;
+        conn.set_prepared_statement_cache_capacity(STATEMENT_CACHE_CAPACITY);
+        Ok(Self { conn })
     }
 
     #[cfg(test)]
@@ -493,10 +497,6 @@ impl Sqlite {
             verified: row.get(7)?,
             provider: row.get(8)?,
         })
-    }
-
-    fn enable_foreign_keys(&self) -> Result<(), Error> {
-        self.pragma_update("foreign_keys", "ON")
     }
 
     fn pragma_update(&self, name: &str, value: &str) -> Result<(), Error> {
