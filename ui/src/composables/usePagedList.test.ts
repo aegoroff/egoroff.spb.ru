@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, spyOn, test } from "bun:test";
 import { nextTick, ref } from "vue";
 import type { ApiResult } from "@/services/ApiService";
 import { useNotify } from "@/composables/useNotify";
@@ -100,6 +100,7 @@ describe("usePagedList", () => {
     await settle();
     fail = true;
     const notify = useNotify();
+    const consoleError = spyOn(console, "error").mockImplementation(() => {});
 
     // act
     await list.refresh();
@@ -111,5 +112,7 @@ describe("usePagedList", () => {
     const last = notify.notifications.value.at(-1);
     expect(last?.kind).toBe("danger");
     expect(last?.text).toBe("Не удалось загрузить: boom");
+    expect(consoleError).toHaveBeenCalledTimes(1);
+    consoleError.mockRestore();
   });
 });
