@@ -25,9 +25,13 @@ jobs:
       - name: Install build deps
         run: |
           sudo apt-get update -y
-          sudo apt-get install lld python3-lxml -y
-      - name: Run build script
-        run: ./build.py
+          sudo apt-get install lld xsltproc jq -y
+      - name: Build Apache docs
+        run: |
+          mkdir -p templates/apache
+          jq -r '.[] | "\(.id) \(.stylesheet)"' apache/config.json | while read id xsl; do
+            xsltproc --novalid -o templates/apache/$id.html apache/$xsl.xsl apache/$id.xml
+          done
       - name: Rust Build
         run: cargo build --workspace
         working-directory: ./egoroff

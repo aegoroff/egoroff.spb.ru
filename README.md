@@ -89,7 +89,7 @@ Production assets are embedded into the Rust binary via `rust-embed`, so **build
 
 3. **Build Apache documentation (optional):**
    ```bash
-   python3 build.py
+   just apache          # needs xsltproc and jq
    ```
 
 ### Docker Build
@@ -167,8 +167,7 @@ egoroff.spb.ru/
 ├── ui/               # Vue.js frontend
 ├── apache/           # Apache documentation
 ├── templates/        # Template files
-├── static/           # Static assets
-└── build.py          # Build script
+└── static/           # Static assets
 ```
 
 ### Available Commands

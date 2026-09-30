@@ -61,12 +61,16 @@ lint:
 # Compile Apache XSLT documentation into templates/apache/
 [group('docs')]
 apache:
-    python3 build.py
+    mkdir -p templates/apache
+    jq -r '.[] | "\(.id) \(.stylesheet)"' apache/config.json | while read id xsl; do \
+        xsltproc --novalid -o templates/apache/$id.html apache/$xsl.xsl apache/$id.xml; \
+    done
 
 # Clean generated Apache docs, then rebuild
 [group('docs')]
 apache-clean:
-    python3 build.py --clean-all
+    rm -rf templates/apache
+    just apache
 
 # ===== Local server run =====
 
