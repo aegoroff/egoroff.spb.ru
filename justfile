@@ -56,6 +56,11 @@ ui-build:
 lint:
     cd ui && bun run lint
 
+# UI test
+[group('frontend')]
+ui-test:
+    cd ui && bun test --run
+
 # ===== Apache documentation (XSLT, optional) =====
 
 # Compile Apache XSLT documentation into templates/apache/
@@ -162,4 +167,4 @@ docker tag=env("TAG", "master") cargo_mirror=env("CARGO_MIRROR", ""):
 # ===== Umbrella checks =====
 
 # Full pre-commit check: clippy + tests + frontend lint
-check: clippy test lint
+check: clippy test ui-test lint
