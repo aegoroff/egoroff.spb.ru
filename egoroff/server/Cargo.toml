@@ -38,7 +38,7 @@ thiserror = "2.0.21"
 utoipa = { workspace = true, features = ["chrono", "time", "axum_extras"] }
 utoipa-swagger-ui = { version = "=10.0.1", features = ["axum"] }
 rand = { version = "0.10.3" }
-uuid = { version = "1.27.0", features = [
+uuid = { version = "1.28.0", features = [
     "v4",                # Lets you generate random UUIDs
     "fast-rng",          # Use a faster (but still sufficiently random) RNG
     "macro-diagnostics", # Enable better diagnostics for compile-time UUIDs
