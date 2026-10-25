@@ -5,7 +5,8 @@ use axum::extract::DefaultBodyLimit;
 use axum::handler::Handler;
 use axum::routing::{delete, post, put};
 use axum::{Router, routing::get};
-use axum_prometheus::PrometheusMetricLayer;
+use axum_prometheus::metrics_exporter_prometheus::PrometheusHandle;
+use axum_prometheus::{EndpointLabel, PrometheusMetricLayer, PrometheusMetricLayerBuilder};
 
 use axum::http::{Method, header};
 use axum_login::{AuthManagerLayerBuilder, login_required, permission_required};
@@ -145,7 +146,7 @@ pub fn create_routes(
         .and(NotForContentType::new("application/octet-stream"))
         .and(NotForContentType::new("application/json"));
 
-    let (prometheus_layer, metric_handle) = PrometheusMetricLayer::pair();
+    let (prometheus_layer, metric_handle) = metric_layer();
     let router = Router::new()
         .route("/auth", get(handlers::indie::serve_auth))
         .route("/admin", get(handlers::admin::serve))
@@ -174,7 +175,7 @@ pub fn create_routes(
             "/token/",
             post(handlers::indie::serve_token_generate).get(handlers::indie::serve_token_validate),
         )
-        .route("/metrics", get(|| async move { metric_handle.render() }))
+        .route(METRICS_PATH, get(|| async move { metric_handle.render() }))
         .merge(SwaggerUi::new("/api/v2").url("/api/v2/openapi.json", ApiDoc::openapi()))
         .merge(micropub_api)
         .merge(blog_routes())
@@ -190,6 +191,21 @@ pub fn create_routes(
         .with_state(page_context);
 
     Ok(router)
+}
+
+const METRICS_PATH: &str = "/metrics";
+const UNMATCHED_ENDPOINT: &str = "unmatched";
+
+/// Requests that match no route (mostly scanners) are reported under a single
+/// endpoint label so every probed URL doesn't create its own set of series.
+fn metric_layer() -> (PrometheusMetricLayer<'static>, PrometheusHandle) {
+    PrometheusMetricLayerBuilder::new()
+        .with_endpoint_label_type(EndpointLabel::MatchedPathWithFallbackFn(|_| {
+            UNMATCHED_ENDPOINT.to_owned()
+        }))
+        .with_ignore_pattern(METRICS_PATH)
+        .with_default_metrics()
+        .build_pair()
 }
 
 fn admin_api() -> Router<Arc<PageContext<'static>>> {
@@ -362,4 +378,43 @@ fn static_resources_routes() -> Router<Arc<PageContext<'static>>> {
         .route("/img/{path}", get(handlers::serve_img))
         .route("/apache/{path}", get(handlers::serve_apache))
         .route("/apache/images/{path}", get(handlers::serve_apache_images))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use axum::body::Body;
+    use axum::http::Request;
+    use tower::ServiceExt;
+
+    #[tokio::test]
+    async fn metric_layer_collapses_unmatched_paths_and_skips_metrics() -> Result<()> {
+        // Arrange
+        let (layer, handle) = metric_layer();
+        let router = Router::new()
+            .route("/known/{id}", get(|| async { "ok" }))
+            .route(METRICS_PATH, get(|| async { "" }))
+            .layer(layer);
+        let paths = [
+            "/known/1",
+            "/wp-admin/setup.php",
+            "/.git/config",
+            METRICS_PATH,
+        ];
+
+        // Act
+        for path in paths {
+            let request = Request::builder().uri(path).body(Body::empty())?;
+            router.clone().oneshot(request).await?;
+        }
+        let rendered = handle.render();
+
+        // Assert
+        assert!(rendered.contains("endpoint=\"/known/{id}\""));
+        assert!(rendered.contains("endpoint=\"unmatched\""));
+        assert!(!rendered.contains("wp-admin"));
+        assert!(!rendered.contains(".git"));
+        assert!(!rendered.contains("endpoint=\"/metrics\""));
+        Ok(())
+    }
 }
