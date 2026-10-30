@@ -22,9 +22,16 @@ pub async fn serve_dashboard_api(
     State(page_context): State<Arc<PageContext<'_>>>,
 ) -> impl IntoResponse {
     let posts_count = page_context.blog.count().await.unwrap_or(0);
-    let storage = page_context.storage.lock().await;
-    let downloads_count = storage.count_downloads().unwrap_or(0);
-    let users_count = storage.count_users().unwrap_or(0);
+    let (downloads_count, users_count) = page_context
+        .storage
+        .call(|storage| {
+            Ok((
+                storage.count_downloads().unwrap_or(0),
+                storage.count_users().unwrap_or(0),
+            ))
+        })
+        .await
+        .unwrap_or((0, 0));
 
     Json(DashboardStats {
         posts: posts_count,

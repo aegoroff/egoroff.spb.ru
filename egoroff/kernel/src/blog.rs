@@ -5,16 +5,15 @@ use std::{
 
 use anyhow::Result;
 use chrono::{DateTime, Datelike, Utc};
-use futures::lock::Mutex;
 use itertools::Itertools;
 
 use crate::{
     converter::{html2text, markdown2html, xml2html},
+    database::Database,
     domain::{
         ApiResult, Archive, Month, Post, PostsRequest, SmallPost, Storage, Tag, TagAggregate, Year,
     },
     paging::{page_offset, pages_count},
-    sqlite::Sqlite,
     typograph::typograph,
 };
 
@@ -27,8 +26,8 @@ pub const ADMIN_PAGE_SIZE: i32 = 10;
 const XML_PROLOG: &str = "<?xml version=\"1.0\"?>";
 
 /// Result of looking up a public post by id.
-pub enum Lookup {
-    Found(Article),
+pub enum Lookup<T = Article> {
+    Found(T),
     /// Legacy id that now lives under a new id.
     Moved(i64),
     /// Missing post or draft.
@@ -74,13 +73,13 @@ struct Teaser {
 /// happens outside the lock.
 #[derive(Clone)]
 pub struct Blog {
-    db: Arc<Mutex<Sqlite>>,
+    db: Database,
     cache: Arc<std::sync::Mutex<RenderCache>>,
 }
 
 impl Blog {
     #[must_use]
-    pub fn new(db: Arc<Mutex<Sqlite>>) -> Self {
+    pub fn new(db: Database) -> Self {
         Self {
             db,
             cache: Arc::default(),
@@ -100,28 +99,40 @@ impl Blog {
     }
 
     pub async fn article(&self, id: i64) -> Result<Lookup> {
-        let storage = self.db.lock().await;
-        match storage.get_new_post_id(id) {
-            Ok(new_id) => return Ok(Lookup::Moved(new_id)),
-            Err(e) if is_not_found(&e) => {}
-            Err(e) => return Err(e),
-        }
-        let post = match storage.get_post(id) {
-            Ok(post) if post.is_public => post,
-            Ok(_) => return Ok(Lookup::NotFound),
-            Err(e) if is_not_found(&e) => return Ok(Lookup::NotFound),
-            Err(e) => return Err(e),
-        };
-        drop(storage);
-        Ok(Lookup::Found(self.render_article(post)?))
+        let stored = self
+            .db
+            .call(move |storage| {
+                match storage.get_new_post_id(id) {
+                    Ok(new_id) => return Ok(Lookup::Moved(new_id)),
+                    Err(e) if is_not_found(&e) => {}
+                    Err(e) => return Err(e),
+                }
+                match storage.get_post(id) {
+                    Ok(post) if post.is_public => Ok(Lookup::Found(post)),
+                    Ok(_) => Ok(Lookup::NotFound),
+                    Err(e) if is_not_found(&e) => Ok(Lookup::NotFound),
+                    Err(e) => Err(e),
+                }
+            })
+            .await?;
+        Ok(match stored {
+            Lookup::Found(post) => Lookup::Found(self.render_article(post)?),
+            Lookup::Moved(new_id) => Lookup::Moved(new_id),
+            Lookup::NotFound => Lookup::NotFound,
+        })
     }
 
     pub async fn archive(&self) -> Result<Archive> {
-        let storage = self.db.lock().await;
-        let tags = storage.get_aggregate_tags()?;
-        let total = storage.count_posts(&PostsRequest::default())?;
-        let dates = storage.get_posts_create_dates()?;
-        drop(storage);
+        let (tags, total, dates) = self
+            .db
+            .call(|storage| {
+                Ok((
+                    storage.get_aggregate_tags()?,
+                    storage.count_posts(&PostsRequest::default())?,
+                    storage.get_posts_create_dates()?,
+                ))
+            })
+            .await?;
 
         Ok(Archive {
             tags: tag_levels(tags, total),
@@ -131,15 +142,21 @@ impl Blog {
 
     /// Ids of all public posts, newest first.
     pub async fn ids(&self) -> Result<Vec<i64>> {
-        self.db.lock().await.get_posts_ids()
+        self.db.call(|storage| storage.get_posts_ids()).await
     }
 
     /// One page of all posts, drafts included.
     pub async fn admin_page(&self, page: Option<i32>) -> Result<ApiResult<Post>> {
         let (page, offset) = page_offset(page, ADMIN_PAGE_SIZE);
-        let storage = self.db.lock().await;
-        let count = storage.count_posts(&all_posts())?;
-        let posts = storage.get_posts(ADMIN_PAGE_SIZE, offset)?;
+        let (count, posts) = self
+            .db
+            .call(move |storage| {
+                Ok((
+                    storage.count_posts(&all_posts())?,
+                    storage.get_posts(ADMIN_PAGE_SIZE, offset)?,
+                ))
+            })
+            .await?;
 
         Ok(ApiResult {
             result: posts,
@@ -152,38 +169,45 @@ impl Blog {
 
     /// Raw post by id, drafts included.
     pub async fn draft(&self, id: i64) -> Result<Option<Post>> {
-        match self.db.lock().await.get_post(id) {
-            Ok(post) => Ok(Some(post)),
-            Err(e) if is_not_found(&e) => Ok(None),
-            Err(e) => Err(e),
-        }
+        self.db
+            .call(move |storage| match storage.get_post(id) {
+                Ok(post) => Ok(Some(post)),
+                Err(e) if is_not_found(&e) => Ok(None),
+                Err(e) => Err(e),
+            })
+            .await
     }
 
     /// Allocates the next free id, stores the post that `make` builds for it
     /// and returns that id.
-    pub async fn create(&self, make: impl FnOnce(i64) -> Post) -> Result<i64> {
-        let mut storage = self.db.lock().await;
-        let id = storage.next_post_id()?;
-        storage.upsert_post(make(id))?;
-        Ok(id)
+    pub async fn create(&self, make: impl FnOnce(i64) -> Post + Send + 'static) -> Result<i64> {
+        self.db
+            .call(|storage| {
+                let id = storage.next_post_id()?;
+                storage.upsert_post(make(id))?;
+                Ok(id)
+            })
+            .await
     }
 
     pub async fn update(&self, post: Post) -> Result<()> {
         let id = post.id;
-        self.db.lock().await.upsert_post(post)?;
+        self.db.call(|storage| storage.upsert_post(post)).await?;
         self.evict(id);
         Ok(())
     }
 
     pub async fn delete(&self, id: i64) -> Result<()> {
-        self.db.lock().await.delete_post(id)?;
+        self.db.call(move |storage| storage.delete_post(id)).await?;
         self.evict(id);
         Ok(())
     }
 
     /// Number of all posts, drafts included.
     pub async fn count(&self) -> Result<i32> {
-        self.db.lock().await.count_posts(&all_posts())
+        self.db
+            .call(|storage| storage.count_posts(&all_posts()))
+            .await
     }
 
     async fn list(
@@ -195,10 +219,15 @@ impl Blog {
         request.include_private = None;
         request.tag = request.tag.filter(|tag| !tag.is_empty());
 
-        let storage = self.db.lock().await;
-        let count = storage.count_posts(&request)?;
-        let posts = storage.get_small_posts(page_size, offset, &request)?;
-        drop(storage);
+        let (count, posts) = self
+            .db
+            .call(move |storage| {
+                Ok((
+                    storage.count_posts(&request)?,
+                    storage.get_small_posts(page_size, offset, &request)?,
+                ))
+            })
+            .await?;
 
         Ok(ApiResult {
             result: self.render_teasers(posts),
@@ -375,7 +404,8 @@ mod tests {
     #![allow(clippy::unwrap_in_result)]
     #![allow(clippy::unwrap_used)]
     use super::*;
-    use crate::sqlite::Mode;
+    use crate::lock_test;
+    use crate::sqlite::{Mode, Sqlite};
     use chrono::TimeZone;
     use rstest::{fixture, rstest};
 
@@ -383,7 +413,7 @@ mod tests {
     fn blog() -> Blog {
         let storage = Sqlite::open(":memory:", Mode::ReadWrite).unwrap();
         storage.new_database().unwrap();
-        Blog::new(Arc::new(Mutex::new(storage)))
+        Blog::new(Database::new(storage))
     }
 
     fn post(id: i64, is_public: bool) -> Post {
@@ -417,6 +447,28 @@ mod tests {
         for p in posts {
             blog.update(p).await.unwrap();
         }
+    }
+
+    #[tokio::test(flavor = "current_thread")]
+    async fn write_waiting_for_database_lock_does_not_block_runtime() {
+        // arrange
+        let path = lock_test::temp_db("blog-lock");
+        let storage = Sqlite::open(&path, Mode::ReadWrite).unwrap();
+        storage.new_database().unwrap();
+        let blog = Blog::new(Database::new(storage));
+
+        // act
+        let (stall, written) =
+            lock_test::stall_while_locked(&path, async move { blog.update(post(1, true)).await })
+                .await;
+
+        // assert
+        std::fs::remove_file(&path).unwrap();
+        assert!(written.is_ok());
+        assert!(
+            stall < lock_test::LOCK_TIME / 2,
+            "runtime was blocked for {stall:?}"
+        );
     }
 
     #[rstest]
@@ -631,9 +683,10 @@ mod tests {
         // arrange
         store(&blog, vec![post(42, true)]).await;
         blog.db
-            .lock()
+            .call(|storage| {
+                Ok(storage.execute("INSERT INTO post_remap (old_id, post_id) VALUES (7, 42)")?)
+            })
             .await
-            .execute("INSERT INTO post_remap (old_id, post_id) VALUES (7, 42)")
             .unwrap();
 
         // act

@@ -124,7 +124,10 @@ pub async fn redirect_to_real_document(
 /// The storage lock is not held while the file store is queried over HTTP,
 /// so a slow file store cannot stall other requests that need the database.
 async fn read_downloads(page_context: Arc<PageContext<'_>>) -> Result<Vec<FilesContainer>> {
-    let folders = page_context.storage.lock().await.get_folders()?;
+    let folders = page_context
+        .storage
+        .call(|storage| storage.get_folders())
+        .await?;
 
     let mut listings = Vec::with_capacity(folders.len());
     for folder in folders {
@@ -139,8 +142,10 @@ async fn read_downloads(page_context: Arc<PageContext<'_>>) -> Result<Vec<FilesC
         listings.push((folder, files));
     }
 
-    let storage = page_context.storage.lock().await;
-    Ok(make_files_containers(&*storage, listings))
+    page_context
+        .storage
+        .call(|storage| Ok(make_files_containers(storage, listings)))
+        .await
 }
 
 /// Combines file store listings with download titles from the database.
@@ -182,9 +187,8 @@ pub async fn serve_download_update(
 ) -> OperationResponse {
     page_context
         .storage
-        .lock()
-        .await
-        .upsert_download(download)?;
+        .call(|storage| storage.upsert_download(download))
+        .await?;
     Ok(updated())
 }
 
@@ -192,7 +196,10 @@ pub async fn serve_download_delete(
     extract::Path(id): extract::Path<i64>,
     State(page_context): State<Arc<PageContext<'_>>>,
 ) -> OperationResponse {
-    page_context.storage.lock().await.delete_download(id)?;
+    page_context
+        .storage
+        .call(move |storage| storage.delete_download(id))
+        .await?;
     Ok(updated())
 }
 
@@ -202,9 +209,15 @@ pub async fn serve_downloads_admin_api(
 ) -> JsonResult<ApiResult<Download>> {
     let page_size = 10;
     let (page, offset) = paging::page_offset(request.page, page_size);
-    let storage = page_context.storage.lock().await;
-    let count = storage.count_downloads()?;
-    let downloads = storage.get_downloads(page_size, offset)?;
+    let (count, downloads) = page_context
+        .storage
+        .call(move |storage| {
+            Ok((
+                storage.count_downloads()?,
+                storage.get_downloads(page_size, offset)?,
+            ))
+        })
+        .await?;
 
     Ok(Json(ApiResult {
         result: downloads,

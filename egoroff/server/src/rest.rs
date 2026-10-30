@@ -18,6 +18,7 @@ use crate::file_store::FileStore;
 use futures::lock::Mutex;
 use indie::RequireIndieAuthorizationLayer;
 use kernel::blog::Blog;
+use kernel::database::Database;
 use kernel::domain::{ApiResult, SmallPost};
 use kernel::graph::SiteGraph;
 use kernel::session::SqliteSessionStore;
@@ -91,8 +92,7 @@ pub fn create_routes(
     let storage_path = data_path.join(kernel::sqlite::DATABASE);
     let sessions_path = data_path.join(crate::SESSIONS_DATABASE);
 
-    let storage = Sqlite::open(&storage_path, Mode::ReadWrite)?;
-    let storage = Arc::new(Mutex::new(storage));
+    let storage = Database::new(Sqlite::open(&storage_path, Mode::ReadWrite)?);
     let auth_backend = AuthBackend::new(storage.clone());
     let cache = Arc::new(Mutex::new(HashSet::new()));
     let micropub_api = micropub_api(&certs_path);

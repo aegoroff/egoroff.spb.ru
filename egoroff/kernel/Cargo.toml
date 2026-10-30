@@ -21,13 +21,13 @@ tower-sessions = { workspace = true }
 async-trait = { workspace = true }
 base64 = "0.23.1"
 url = { workspace = true }
-futures = { workspace = true }
 utoipa = { workspace = true, features = ["chrono", "time"] }
 rusqlite = { version = "0.41", features = ["bundled", "chrono"] }
+tokio = { workspace = true, features = ["rt"] }
 
 [dev-dependencies]
 rstest = "0.28.0"
-tokio = { workspace = true, features = ["macros", "rt"] }
+tokio = { workspace = true, features = ["macros", "rt", "time"] }
 
 [lints]
 workspace = true

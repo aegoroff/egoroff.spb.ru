@@ -8,6 +8,7 @@ use axum::{Json, response};
 use axum_login::{AuthUser, AuthnBackend, AuthzBackend};
 use chrono::Utc;
 use kernel::{
+    database::Database,
     domain::{OAuthProvider, Storage, User},
     sqlite::{Mode, Sqlite},
 };
@@ -22,7 +23,7 @@ use reqwest::{Client, StatusCode};
 use serde::{Deserialize, de::DeserializeOwned};
 use thiserror::Error;
 
-use crate::domain::{AuthorizedUser, Database};
+use crate::domain::AuthorizedUser;
 
 type SpecialClient = oauth2::Client<
     oauth2::StandardErrorResponse<oauth2::basic::BasicErrorResponseType>,
@@ -369,13 +370,8 @@ where
         &self,
         creds: Self::Credentials,
     ) -> Result<Option<Self::User>, Self::Error> {
-        let user = self
-            .storage
-            .lock()
+        self.find_user(creds.user.federated_id, creds.user.provider)
             .await
-            .get_user(&creds.user.federated_id, &creds.user.provider)
-            .map_err(UserStoreError::SqlError)?;
-        Ok(Some(AppUser::new(user)))
     }
 
     async fn get_user(
@@ -383,11 +379,21 @@ where
         user_id: &String,
     ) -> std::result::Result<Option<Self::User>, Self::Error> {
         let (provider, federated_id) = user_id.split_once('_').ok_or(UserStoreError::InvalidId)?;
+        self.find_user(federated_id.to_owned(), provider.to_owned())
+            .await
+    }
+}
+
+impl AuthBackend {
+    async fn find_user(
+        &self,
+        federated_id: String,
+        provider: String,
+    ) -> Result<Option<AppUser>, UserStoreError> {
         let user = self
             .storage
-            .lock()
+            .call(move |storage| storage.get_user(&federated_id, &provider))
             .await
-            .get_user(federated_id, provider)
             .map_err(UserStoreError::SqlError)?;
         Ok(Some(AppUser::new(user)))
     }

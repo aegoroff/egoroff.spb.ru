@@ -5,8 +5,11 @@
 
 pub mod blog;
 pub mod converter;
+pub mod database;
 pub mod domain;
 pub mod graph;
+#[cfg(test)]
+mod lock_test;
 pub mod paging;
 pub mod resource;
 pub mod session;

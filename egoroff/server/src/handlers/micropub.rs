@@ -137,7 +137,7 @@ pub async fn serve_index_post(
     let form = form.map_err(|e| ApiError::bad_request(e.to_string()))?;
 
     tracing::info!("content type: {:?}", form.content_type);
-    let post_id = page_context.blog.create(|id| form.to_post(id)).await?;
+    let post_id = page_context.blog.create(move |id| form.to_post(id)).await?;
     Ok((
         StatusCode::CREATED,
         [(http::header::LOCATION, format!("{ME}blog/{post_id}.html"))],

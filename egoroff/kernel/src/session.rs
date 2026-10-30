@@ -162,17 +162,33 @@ impl SqliteSessionStore {
 #[async_trait]
 impl SessionStore for SqliteSessionStore {
     async fn load(&self, session_id: &Id) -> Result<Option<Record>> {
-        self.load_impl(session_id)
-            .map_err(|e| Error::Backend(e.to_string()))
+        let session_id = *session_id;
+        self.call(move |store| store.load_impl(&session_id)).await
     }
 
     async fn save(&self, session_record: &Record) -> Result<()> {
-        self.save_impl(session_record)
-            .map_err(|e| Error::Backend(e.to_string()))
+        let session_record = session_record.clone();
+        self.call(move |store| store.save_impl(&session_record))
+            .await
     }
 
     async fn delete(&self, session_id: &Id) -> Result<()> {
-        self.delete_impl(session_id)
+        let session_id = *session_id;
+        self.call(move |store| store.delete_impl(&session_id)).await
+    }
+}
+
+impl SqliteSessionStore {
+    /// SQLite calls block, so they run on the blocking thread pool.
+    async fn call<T, F>(&self, action: F) -> Result<T>
+    where
+        F: FnOnce(&Self) -> anyhow::Result<T> + Send + 'static,
+        T: Send + 'static,
+    {
+        let store = self.clone();
+        tokio::task::spawn_blocking(move || action(&store))
+            .await
+            .map_err(|e| Error::Backend(e.to_string()))?
             .map_err(|e| Error::Backend(e.to_string()))
     }
 }
@@ -181,6 +197,7 @@ impl SessionStore for SqliteSessionStore {
 mod tests {
     #![allow(clippy::unwrap_used)]
     use super::*;
+    use crate::lock_test;
     use rstest::{fixture, rstest};
     use tower_sessions::cookie::time::{Duration, OffsetDateTime};
 
@@ -219,6 +236,26 @@ mod tests {
 
         // assert
         assert_eq!(expected_found.then_some(saved), loaded);
+    }
+
+    #[tokio::test(flavor = "current_thread")]
+    async fn save_waiting_for_database_lock_does_not_block_runtime() {
+        // arrange
+        let path = lock_test::temp_db("session-lock");
+        let store = SqliteSessionStore::open(&path, SECRET).unwrap();
+        let saved = record(Duration::hours(1));
+
+        // act
+        let (stall, result) =
+            lock_test::stall_while_locked(&path, async move { store.save(&saved).await }).await;
+
+        // assert
+        std::fs::remove_file(&path).unwrap();
+        assert!(result.is_ok());
+        assert!(
+            stall < lock_test::LOCK_TIME / 2,
+            "runtime was blocked for {stall:?}"
+        );
     }
 
     #[rstest]

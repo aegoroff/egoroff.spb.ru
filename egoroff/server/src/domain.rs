@@ -3,9 +3,9 @@ use std::{collections::HashSet, sync::Arc};
 use futures::lock::Mutex;
 use kernel::{
     blog::Blog,
+    database::Database,
     domain::{ApiResult, User},
     graph::SiteGraph,
-    sqlite::Sqlite,
 };
 use oauth2::CsrfToken;
 
@@ -13,7 +13,6 @@ use crate::file_store::FileStore;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
-pub type Database = Arc<Mutex<Sqlite>>;
 pub type Cache = Arc<Mutex<HashSet<String>>>;
 
 /// Represents a URI, which is a string representing a Uniform Resource Identifier.

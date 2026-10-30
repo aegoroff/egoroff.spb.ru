@@ -1,3 +1,3 @@
 await-holding-invalid-types = [
-    { path = "futures_util::lock::MutexGuard", reason = "the database lock serializes every request; release it before awaiting I/O" },
+    { path = "futures_util::lock::MutexGuard", reason = "every request waiting for this lock stalls while it is held across I/O" },
 ]

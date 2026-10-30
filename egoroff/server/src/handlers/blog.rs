@@ -184,7 +184,10 @@ pub async fn serve_post_create(
     State(page_context): State<Arc<PageContext<'_>>>,
     Json(post): Json<Post>,
 ) -> OperationResponse {
-    page_context.blog.create(|id| Post { id, ..post }).await?;
+    page_context
+        .blog
+        .create(move |id| Post { id, ..post })
+        .await?;
     Ok(created())
 }
 
