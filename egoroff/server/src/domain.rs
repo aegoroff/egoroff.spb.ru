@@ -3,9 +3,10 @@ use std::{collections::HashSet, sync::Arc};
 use futures::lock::Mutex;
 use kernel::{
     blog::Blog,
-    database::Database,
     domain::{ApiResult, User},
+    downloads::Downloads,
     graph::SiteGraph,
+    users::Users,
 };
 use oauth2::CsrfToken;
 
@@ -95,10 +96,12 @@ pub struct Config {
 pub struct PageContext<'a> {
     /// Apache documents from `apache/config.json`, read once at startup.
     pub apache_docs: Vec<Apache>,
-    /// The database storage instance.
-    pub storage: Database,
     /// Posts: listing, reading, archive and editing.
     pub blog: Blog,
+    /// Download folders and file titles.
+    pub downloads: Downloads,
+    /// Signed-in users.
+    pub users: Users,
     /// The site graph instance.
     pub site_graph: Arc<SiteGraph<'a>>,
     /// The site configuration data.

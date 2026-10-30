@@ -1,7 +1,6 @@
 use anyhow::Context;
 use kernel::{
     domain::{ApiResult, Download, DownloadsRequest, Folder},
-    paging,
     typograph::typograph,
 };
 
@@ -10,8 +9,8 @@ use crate::file_store::StoredFile;
 use axum::response::Redirect;
 
 use super::{
-    Arc, BufReader, File, IntoResponse, Json, JsonResult, OperationResponse, PageContext,
-    PageError, Path, Query, Response, Result, RustEmbed, State, Storage, extract, find_section,
+    Arc, BufReader, File, HashMap, IntoResponse, Json, JsonResult, OperationResponse, PageContext,
+    PageError, Path, Query, Response, Result, RustEmbed, State, extract, find_section,
     get_keywords, get_year,
     template::{ApacheDocument, Portfolio},
     updated,
@@ -120,14 +119,8 @@ pub async fn redirect_to_real_document(
 }
 
 /// Reads downloadable files of all folders.
-///
-/// The storage lock is not held while the file store is queried over HTTP,
-/// so a slow file store cannot stall other requests that need the database.
 async fn read_downloads(page_context: Arc<PageContext<'_>>) -> Result<Vec<FilesContainer>> {
-    let folders = page_context
-        .storage
-        .call(|storage| storage.get_folders())
-        .await?;
+    let folders = page_context.downloads.folders().await?;
 
     let mut listings = Vec::with_capacity(folders.len());
     for folder in folders {
@@ -142,35 +135,34 @@ async fn read_downloads(page_context: Arc<PageContext<'_>>) -> Result<Vec<FilesC
         listings.push((folder, files));
     }
 
-    page_context
-        .storage
-        .call(|storage| Ok(make_files_containers(storage, listings)))
-        .await
+    let ids = listings
+        .iter()
+        .flat_map(|(_, files)| files.iter().map(|file| file.id))
+        .collect();
+    let titles = page_context.downloads.titles(ids).await?;
+    Ok(make_files_containers(listings, &titles))
 }
 
 /// Combines file store listings with download titles from the database.
-/// Files without a database record are skipped.
+/// Files without a title are skipped.
 fn make_files_containers(
-    storage: &impl Storage,
     listings: Vec<(Folder, Vec<StoredFile>)>,
+    titles: &HashMap<i64, String>,
 ) -> Vec<FilesContainer> {
     listings
         .into_iter()
         .map(|(folder, files)| {
             let files = files
                 .into_iter()
-                .filter_map(|file| match storage.get_download(file.id) {
-                    Ok(meta_info) => Some(Downloadable {
-                        title: meta_info.title,
+                .filter_map(|file| {
+                    let title = titles.get(&file.id)?.clone();
+                    Some(Downloadable {
+                        title,
                         path: format!("/storage/{}/{}", folder.bucket, file.path),
                         filename: file.path,
                         size: file.size,
                         blake3_hash: file.blake3_hash,
-                    }),
-                    Err(e) => {
-                        tracing::trace!("{e:#?}");
-                        None
-                    }
+                    })
                 })
                 .collect();
             FilesContainer {
@@ -185,10 +177,7 @@ pub async fn serve_download_update(
     State(page_context): State<Arc<PageContext<'_>>>,
     Json(download): Json<Download>,
 ) -> OperationResponse {
-    page_context
-        .storage
-        .call(|storage| storage.upsert_download(download))
-        .await?;
+    page_context.downloads.update(download).await?;
     Ok(updated())
 }
 
@@ -196,10 +185,7 @@ pub async fn serve_download_delete(
     extract::Path(id): extract::Path<i64>,
     State(page_context): State<Arc<PageContext<'_>>>,
 ) -> OperationResponse {
-    page_context
-        .storage
-        .call(move |storage| storage.delete_download(id))
-        .await?;
+    page_context.downloads.delete(id).await?;
     Ok(updated())
 }
 
@@ -207,25 +193,7 @@ pub async fn serve_downloads_admin_api(
     State(page_context): State<Arc<PageContext<'_>>>,
     Query(request): Query<DownloadsRequest>,
 ) -> JsonResult<ApiResult<Download>> {
-    let page_size = 10;
-    let (page, offset) = paging::page_offset(request.page, page_size);
-    let (count, downloads) = page_context
-        .storage
-        .call(move |storage| {
-            Ok((
-                storage.count_downloads()?,
-                storage.get_downloads(page_size, offset)?,
-            ))
-        })
-        .await?;
-
-    Ok(Json(ApiResult {
-        result: downloads,
-        pages: paging::pages_count(count, page_size),
-        page,
-        count,
-        status: "success",
-    }))
+    Ok(Json(page_context.downloads.admin_page(request.page).await?))
 }
 
 #[cfg(test)]
@@ -233,7 +201,6 @@ mod tests {
     #![allow(clippy::unwrap_in_result)]
     #![allow(clippy::unwrap_used)]
     use super::*;
-    use kernel::sqlite::{Mode, Sqlite};
     use rstest::rstest;
 
     #[rstest]
@@ -272,14 +239,7 @@ mod tests {
     #[test]
     fn make_files_containers_joins_titles_and_skips_unknown_files() {
         // arrange
-        let mut storage = Sqlite::open(":memory:", Mode::ReadWrite).unwrap();
-        storage.new_database().unwrap();
-        storage
-            .upsert_download(Download {
-                id: 1,
-                title: String::from("Known file"),
-            })
-            .unwrap();
+        let titles = HashMap::from([(1, String::from("Known file"))]);
         let folder = Folder {
             bucket: String::from("apps"),
             title: String::from("Applications"),
@@ -287,7 +247,7 @@ mod tests {
         let files = vec![stored_file(1, "known.zip"), stored_file(2, "unknown.zip")];
 
         // act
-        let actual = make_files_containers(&storage, vec![(folder, files)]);
+        let actual = make_files_containers(vec![(folder, files)], &titles);
 
         // assert
         assert_eq!(1, actual.len());
@@ -303,15 +263,13 @@ mod tests {
     #[test]
     fn make_files_containers_keeps_folder_without_files() {
         // arrange
-        let storage = Sqlite::open(":memory:", Mode::ReadWrite).unwrap();
-        storage.new_database().unwrap();
         let folder = Folder {
             bucket: String::from("empty"),
             title: String::from("Empty"),
         };
 
         // act
-        let actual = make_files_containers(&storage, vec![(folder, vec![])]);
+        let actual = make_files_containers(vec![(folder, vec![])], &HashMap::new());
 
         // assert
         assert_eq!(1, actual.len());

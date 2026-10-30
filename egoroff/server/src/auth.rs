@@ -8,9 +8,9 @@ use axum::{Json, response};
 use axum_login::{AuthUser, AuthnBackend, AuthzBackend};
 use chrono::Utc;
 use kernel::{
-    database::Database,
     domain::{OAuthProvider, Storage, User},
     sqlite::{Mode, Sqlite},
+    users::Users,
 };
 use oauth2::{
     AccessToken, AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken,
@@ -84,12 +84,12 @@ pub type YandexAuthorizer = OAuthAuthorizer<YandexUser>;
 
 #[derive(Clone)]
 pub struct AuthBackend {
-    storage: Database,
+    users: Users,
 }
 
 impl AuthBackend {
-    pub fn new(storage: Database) -> Self {
-        Self { storage }
+    pub fn new(users: Users) -> Self {
+        Self { users }
     }
 }
 
@@ -391,8 +391,8 @@ impl AuthBackend {
         provider: String,
     ) -> Result<Option<AppUser>, UserStoreError> {
         let user = self
-            .storage
-            .call(move |storage| storage.get_user(&federated_id, &provider))
+            .users
+            .find(federated_id, provider)
             .await
             .map_err(UserStoreError::SqlError)?;
         Ok(Some(AppUser::new(user)))

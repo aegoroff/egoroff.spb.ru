@@ -1,6 +1,6 @@
 use super::{
     Arc, Extension, IntoResponse, Json, JsonResult, OperationError, OperationResponse, PageContext,
-    Query, State, Storage, get_year, template::Profile, updated,
+    Query, State, get_year, template::Profile, updated,
 };
 use crate::{
     auth::{
@@ -151,10 +151,7 @@ pub async fn serve_profile() -> impl IntoResponse {
 pub async fn serve_users_api(
     State(page_context): State<Arc<PageContext<'_>>>,
 ) -> JsonResult<ApiResult<User>> {
-    let users = page_context
-        .storage
-        .call(|storage| storage.get_users())
-        .await?;
+    let users = page_context.users.all().await?;
     let count = i32::try_from(users.len()).unwrap_or(i32::MAX);
     Ok(Json(ApiResult {
         result: users,
@@ -339,13 +336,7 @@ async fn save_and_login(
     page_context: &PageContext<'_>,
     user: User,
 ) -> anyhow::Result<()> {
-    let user = page_context
-        .storage
-        .call(|storage| {
-            storage.upsert_user(&user)?;
-            Ok(user)
-        })
-        .await?;
+    let user = page_context.users.save(user).await?;
     auth.login(&AppUser::new(user)).await?;
     Ok(())
 }

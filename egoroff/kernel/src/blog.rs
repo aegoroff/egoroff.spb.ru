@@ -9,7 +9,7 @@ use itertools::Itertools;
 
 use crate::{
     converter::{html2text, markdown2html, xml2html},
-    database::Database,
+    database::{Database, is_not_found},
     domain::{
         ApiResult, Archive, Month, Post, PostsRequest, SmallPost, Storage, Tag, TagAggregate, Year,
     },
@@ -334,13 +334,6 @@ fn describe(post: &Post, html: &str) -> String {
     } else {
         html2text(&teaser).unwrap_or(teaser)
     }
-}
-
-fn is_not_found(e: &anyhow::Error) -> bool {
-    matches!(
-        e.downcast_ref::<rusqlite::Error>(),
-        Some(rusqlite::Error::QueryReturnedNoRows)
-    )
 }
 
 fn all_posts() -> PostsRequest {

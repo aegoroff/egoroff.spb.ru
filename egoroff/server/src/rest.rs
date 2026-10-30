@@ -20,9 +20,11 @@ use indie::RequireIndieAuthorizationLayer;
 use kernel::blog::Blog;
 use kernel::database::Database;
 use kernel::domain::{ApiResult, SmallPost};
+use kernel::downloads::Downloads;
 use kernel::graph::SiteGraph;
 use kernel::session::SqliteSessionStore;
 use kernel::sqlite::{Mode, Sqlite};
+use kernel::users::Users;
 use rand::RngExt;
 use std::collections::HashSet;
 use std::env;
@@ -93,7 +95,8 @@ pub fn create_routes(
     let sessions_path = data_path.join(crate::SESSIONS_DATABASE);
 
     let storage = Database::new(Sqlite::open(&storage_path, Mode::ReadWrite)?);
-    let auth_backend = AuthBackend::new(storage.clone());
+    let users = Users::new(storage.clone());
+    let auth_backend = AuthBackend::new(users.clone());
     let cache = Arc::new(Mutex::new(HashSet::new()));
     let micropub_api = micropub_api(&certs_path);
     let http_client = reqwest::Client::builder().build()?;
@@ -101,7 +104,8 @@ pub fn create_routes(
     let page_context = Arc::new(PageContext {
         apache_docs: handlers::portfolio::read_apache_documents(base_path)?,
         blog: Blog::new(storage.clone()),
-        storage,
+        downloads: Downloads::new(storage),
+        users,
         site_graph,
         site_config,
         file_store,

@@ -38,3 +38,11 @@ impl Database {
         .await?
     }
 }
+
+/// Whether a storage error means the requested row does not exist.
+pub(crate) fn is_not_found(e: &anyhow::Error) -> bool {
+    matches!(
+        e.downcast_ref::<rusqlite::Error>(),
+        Some(rusqlite::Error::QueryReturnedNoRows)
+    )
+}

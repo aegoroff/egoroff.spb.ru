@@ -14,7 +14,7 @@ use chrono::{Datelike, Utc};
 use futures::{Stream, TryStreamExt};
 use futures_util::StreamExt;
 use kernel::graph::SiteSection;
-use kernel::{domain::Storage, graph, resource::Resource};
+use kernel::{graph, resource::Resource};
 use std::{
     collections::HashMap,
     fs::File,

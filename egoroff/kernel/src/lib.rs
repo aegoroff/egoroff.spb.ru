@@ -7,6 +7,7 @@ pub mod blog;
 pub mod converter;
 pub mod database;
 pub mod domain;
+pub mod downloads;
 pub mod graph;
 #[cfg(test)]
 mod lock_test;
@@ -15,6 +16,7 @@ pub mod resource;
 pub mod session;
 pub mod sqlite;
 pub mod typograph;
+pub mod users;
 pub mod xml;
 
 #[macro_use]
