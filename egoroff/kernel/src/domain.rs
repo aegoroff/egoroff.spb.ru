@@ -290,7 +290,6 @@ pub struct Download {
 }
 
 pub trait Storage {
-    fn new_database(&self) -> anyhow::Result<()>;
     fn get_small_posts(
         &self,
         limit: i32,

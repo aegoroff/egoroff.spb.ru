@@ -405,7 +405,6 @@ mod tests {
     #[fixture]
     fn blog() -> Blog {
         let storage = Sqlite::open(":memory:", Mode::ReadWrite).unwrap();
-        storage.new_database().unwrap();
         Blog::new(Database::new(storage))
     }
 
@@ -447,7 +446,6 @@ mod tests {
         // arrange
         let path = lock_test::temp_db("blog-lock");
         let storage = Sqlite::open(&path, Mode::ReadWrite).unwrap();
-        storage.new_database().unwrap();
         let blog = Blog::new(Database::new(storage));
 
         // act

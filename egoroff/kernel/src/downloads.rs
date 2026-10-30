@@ -98,7 +98,6 @@ mod tests {
     #[fixture]
     fn downloads() -> Downloads {
         let storage = Sqlite::open(":memory:", Mode::ReadWrite).unwrap();
-        storage.new_database().unwrap();
         Downloads::new(Database::new(storage))
     }
 

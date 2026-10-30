@@ -2,7 +2,9 @@ use std::{collections::HashMap, path::Path, time::Duration};
 
 use chrono::{DateTime, Utc};
 use itertools::Itertools;
-use rusqlite::{Connection, Error, ErrorCode, OpenFlags, Row, Transaction, params};
+use rusqlite::{
+    Connection, Error, ErrorCode, OpenFlags, Row, Transaction, TransactionBehavior, params,
+};
 
 use crate::domain::{
     Download, Folder, OAuthProvider, Post, PostsRequest, SmallPost, Storage, TagAggregate, User,
@@ -30,74 +32,76 @@ macro_rules! datetime_from_row {
     }};
 }
 
+/// The schema as it was before versioning; `IF NOT EXISTS` keeps it a no-op
+/// on databases that already have these tables.
+const BASELINE: &str = "
+    CREATE TABLE IF NOT EXISTS post (
+        id              INTEGER PRIMARY KEY,
+        title           TEXT NOT NULL,
+        short_text      TEXT NOT NULL,
+        text            TEXT NOT NULL,
+        markdown        INTEGER,
+        is_public       INTEGER,
+        created         INTEGER NOT NULL,
+        modified        INTEGER NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS created_ix ON post(created);
+    CREATE TABLE IF NOT EXISTS tag (
+        tag             TEXT PRIMARY KEY
+    );
+    CREATE TABLE IF NOT EXISTS post_tag (
+        post_id         INTEGER NOT NULL,
+        tag             TEXT NOT NULL,
+        PRIMARY KEY (post_id, tag),
+        FOREIGN KEY(post_id) REFERENCES post(id) ON UPDATE CASCADE ON DELETE CASCADE,
+        FOREIGN KEY(tag) REFERENCES tag(tag)
+    );
+    CREATE TABLE IF NOT EXISTS post_remap (
+        post_id         INTEGER NOT NULL,
+        old_id          INTEGER NOT NULL,
+        PRIMARY KEY (post_id),
+        FOREIGN KEY(post_id) REFERENCES post(id) ON UPDATE CASCADE ON DELETE CASCADE
+    );
+    CREATE TABLE IF NOT EXISTS folder (
+        bucket          TEXT PRIMARY KEY,
+        title           TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS file (
+        id              INTEGER PRIMARY KEY,
+        title           TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS user (
+        created         INTEGER NOT NULL,
+        email           TEXT NOT NULL,
+        name            TEXT NOT NULL,
+        login           TEXT NOT NULL,
+        avatar_url      TEXT NOT NULL,
+        federated_id    TEXT NOT NULL,
+        admin           INTEGER NOT NULL,
+        verified        INTEGER NOT NULL,
+        provider        TEXT NOT NULL,
+        PRIMARY KEY (federated_id, provider)
+    );
+    CREATE TABLE IF NOT EXISTS oauth_provider (
+        name            TEXT PRIMARY KEY,
+        clientid        TEXT NOT NULL,
+        secret          TEXT NOT NULL,
+        redirect_url    TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS oauth_provider_scopes (
+        provider        TEXT NOT NULL,
+        scope           TEXT NOT NULL,
+        PRIMARY KEY (provider, scope),
+        FOREIGN KEY(provider) REFERENCES oauth_provider(name)
+    );
+";
+
+/// Schema changes in the order they are applied; `PRAGMA user_version` holds
+/// how many of them a database has. Append only: an applied migration must
+/// never change.
+const MIGRATIONS: &[&str] = &[BASELINE];
+
 impl Storage for Sqlite {
-    fn new_database(&self) -> anyhow::Result<()> {
-        self.pragma_update("encoding", "UTF-8")?;
-
-        self.conn.execute(
-            "CREATE TABLE post (
-                  id              INTEGER PRIMARY KEY,
-                  title           TEXT NOT NULL,
-                  short_text      TEXT NOT NULL,
-                  text            TEXT NOT NULL,
-                  markdown        INTEGER,
-                  is_public       INTEGER,
-                  created         INTEGER NOT NULL,
-                  modified        INTEGER NOT NULL
-                  )",
-            [],
-        )?;
-
-        self.conn
-            .execute("CREATE INDEX created_ix ON post(created)", [])?;
-
-        self.conn.execute(
-            "CREATE TABLE tag (
-                   tag           TEXT PRIMARY KEY
-                  )",
-            [],
-        )?;
-
-        self.conn.execute(
-            "CREATE TABLE post_tag (
-                  post_id              INTEGER NOT NULL,
-                  tag                  TEXT NOT NULL,
-                  PRIMARY KEY (post_id, tag),
-                  FOREIGN KEY(post_id) REFERENCES post(id) ON UPDATE CASCADE ON DELETE CASCADE,
-                  FOREIGN KEY(tag) REFERENCES tag(tag)
-                  )",
-            [],
-        )?;
-
-        self.conn.execute(
-            "CREATE TABLE post_remap (
-                  post_id              INTEGER NOT NULL,
-                  old_id               INTEGER NOT NULL,
-                  PRIMARY KEY (post_id),
-                  FOREIGN KEY(post_id) REFERENCES post(id) ON UPDATE CASCADE ON DELETE CASCADE
-                  )",
-            [],
-        )?;
-
-        self.conn.execute(
-            "CREATE TABLE folder (
-                  bucket          TEXT PRIMARY KEY,
-                  title           TEXT NOT NULL
-                  )",
-            [],
-        )?;
-
-        self.conn.execute(
-            "CREATE TABLE file (
-                  id              INTEGER PRIMARY KEY,
-                  title           TEXT NOT NULL
-                  )",
-            [],
-        )?;
-
-        Ok(())
-    }
-
     fn get_small_posts(
         &self,
         limit: i32,
@@ -455,15 +459,19 @@ impl Storage for Sqlite {
 }
 
 impl Sqlite {
+    /// Opens the database; in read-write mode also brings its schema up to date.
     pub fn open<P: AsRef<Path>>(path: P, mode: Mode) -> Result<Sqlite, Error> {
         let c = match mode {
             Mode::ReadWrite => Connection::open(path),
             Mode::ReadOnly => Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_ONLY),
         };
-        let conn = c?;
+        let mut conn = c?;
         // Set once: a flag pragma expires every prepared statement of the connection
         conn.pragma_update(None, "foreign_keys", "ON")?;
         conn.set_prepared_statement_cache_capacity(STATEMENT_CACHE_CAPACITY);
+        if mode == Mode::ReadWrite {
+            apply_migrations(&mut conn, MIGRATIONS)?;
+        }
         Ok(Self { conn })
     }
 
@@ -495,10 +503,6 @@ impl Sqlite {
             verified: row.get(7)?,
             provider: row.get(8)?,
         })
-    }
-
-    fn pragma_update(&self, name: &str, value: &str) -> Result<(), Error> {
-        self.conn.pragma_update(None, name, value)
     }
 
     fn execute_with_retry<T, F>(mut action: F) -> Result<T, Error>
@@ -590,5 +594,109 @@ impl Sqlite {
 
             Ok(result)
         })
+    }
+}
+
+/// Applies the migrations the database does not have yet, each in its own
+/// transaction together with the version bump. The write lock is taken before
+/// the version is read, so replicas starting at once apply each migration once.
+fn apply_migrations(conn: &mut Connection, migrations: &[&str]) -> Result<(), Error> {
+    for (version, sql) in (1_i64..).zip(migrations) {
+        let tx = conn.transaction_with_behavior(TransactionBehavior::Immediate)?;
+        let applied: i64 = tx.pragma_query_value(None, "user_version", |row| row.get(0))?;
+        if applied < version {
+            tx.execute_batch(sql)?;
+            tx.pragma_update(None, "user_version", version)?;
+            tx.commit()?;
+        }
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(clippy::unwrap_used)]
+    use super::*;
+
+    fn user_version(conn: &Connection) -> i64 {
+        conn.pragma_query_value(None, "user_version", |row| row.get(0))
+            .unwrap()
+    }
+
+    fn table_exists(conn: &Connection, name: &str) -> bool {
+        conn.query_row(
+            "SELECT COUNT(1) FROM sqlite_master WHERE type = 'table' AND name = ?1",
+            [name],
+            |row| row.get::<_, i64>(0),
+        )
+        .unwrap()
+            == 1
+    }
+
+    #[test]
+    fn open_brings_new_database_to_latest_version() {
+        // arrange
+
+        // act
+        let storage = Sqlite::open(":memory:", Mode::ReadWrite).unwrap();
+
+        // assert
+        let expected = i64::try_from(MIGRATIONS.len()).unwrap();
+        assert_eq!(expected, user_version(&storage.conn));
+        assert!(table_exists(&storage.conn, "user"));
+        assert!(table_exists(&storage.conn, "oauth_provider_scopes"));
+    }
+
+    #[test]
+    fn migrations_applied_twice_change_nothing() {
+        // arrange
+        let mut conn = Connection::open_in_memory().unwrap();
+        apply_migrations(&mut conn, &["CREATE TABLE a (x)"]).unwrap();
+
+        // act
+        let result = apply_migrations(&mut conn, &["CREATE TABLE a (x)"]);
+
+        // assert
+        assert!(result.is_ok());
+        assert_eq!(1, user_version(&conn));
+    }
+
+    #[test]
+    fn failed_migration_is_rolled_back_and_not_counted() {
+        // arrange
+        let mut conn = Connection::open_in_memory().unwrap();
+        let migrations = ["CREATE TABLE a (x)", "CREATE TABLE b (x); NOT SQL"];
+
+        // act
+        let result = apply_migrations(&mut conn, &migrations);
+
+        // assert
+        assert!(result.is_err());
+        assert_eq!(1, user_version(&conn));
+        assert!(table_exists(&conn, "a"));
+        assert!(!table_exists(&conn, "b"));
+    }
+
+    #[test]
+    fn baseline_keeps_data_of_database_created_before_versioning() {
+        // arrange
+        let path = crate::lock_test::temp_db("baseline");
+        let legacy = Connection::open(&path).unwrap();
+        legacy.execute_batch(BASELINE).unwrap();
+        legacy
+            .execute("INSERT INTO file (id, title) VALUES (1, 'Kept')", [])
+            .unwrap();
+        drop(legacy);
+
+        // act
+        let storage = Sqlite::open(&path, Mode::ReadWrite).unwrap();
+
+        // assert
+        let download = storage.get_download(1).unwrap();
+        let version = user_version(&storage.conn);
+        drop(storage);
+        std::fs::remove_file(&path).unwrap();
+        assert_eq!("Kept", download.title);
+        assert_eq!(i64::try_from(MIGRATIONS.len()).unwrap(), version);
     }
 }
