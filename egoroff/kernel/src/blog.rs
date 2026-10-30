@@ -1,4 +1,7 @@
-use std::sync::Arc;
+use std::{
+    collections::HashMap,
+    sync::{Arc, PoisonError},
+};
 
 use anyhow::Result;
 use chrono::{DateTime, Datelike, Utc};
@@ -37,9 +40,32 @@ pub struct Article {
     /// The post itself; its raw `text` is taken out after rendering.
     pub post: Post,
     /// Body rendered to typographed HTML.
-    pub html: String,
+    pub html: Arc<str>,
     /// Plain-text description for meta tags.
-    pub description: String,
+    pub description: Arc<str>,
+}
+
+/// Rendering markdown and typography is the costliest part of a read,
+/// so its results are kept per post id.
+#[derive(Default)]
+struct RenderCache {
+    articles: HashMap<i64, RenderedArticle>,
+    teasers: HashMap<i64, Teaser>,
+}
+
+/// Valid while the post's `modified` stays the same.
+#[derive(Clone)]
+struct RenderedArticle {
+    modified: DateTime<Utc>,
+    html: Arc<str>,
+    description: Arc<str>,
+}
+
+/// Valid while the raw teaser it was rendered from stays the same.
+struct Teaser {
+    markdown: bool,
+    source: String,
+    html: String,
 }
 
 /// Everything about posts: listing, reading, archive and editing.
@@ -49,12 +75,16 @@ pub struct Article {
 #[derive(Clone)]
 pub struct Blog {
     db: Arc<Mutex<Sqlite>>,
+    cache: Arc<std::sync::Mutex<RenderCache>>,
 }
 
 impl Blog {
     #[must_use]
     pub fn new(db: Arc<Mutex<Sqlite>>) -> Self {
-        Self { db }
+        Self {
+            db,
+            cache: Arc::default(),
+        }
     }
 
     /// Latest `limit` public posts.
@@ -83,7 +113,7 @@ impl Blog {
             Err(e) => return Err(e),
         };
         drop(storage);
-        Ok(Lookup::Found(Article::render(post)?))
+        Ok(Lookup::Found(self.render_article(post)?))
     }
 
     pub async fn archive(&self) -> Result<Archive> {
@@ -139,11 +169,15 @@ impl Blog {
     }
 
     pub async fn update(&self, post: Post) -> Result<()> {
-        self.db.lock().await.upsert_post(post)
+        let id = post.id;
+        self.db.lock().await.upsert_post(post)?;
+        self.evict(id);
+        Ok(())
     }
 
     pub async fn delete(&self, id: i64) -> Result<()> {
         self.db.lock().await.delete_post(id)?;
+        self.evict(id);
         Ok(())
     }
 
@@ -167,39 +201,94 @@ impl Blog {
         drop(storage);
 
         Ok(ApiResult {
-            result: render_teasers(posts),
+            result: self.render_teasers(posts),
             pages: pages_count(count, page_size),
             page,
             count,
             status: "success",
         })
     }
-}
 
-impl Article {
-    fn render(mut post: Post) -> Result<Self> {
+    fn render_article(&self, mut post: Post) -> Result<Article> {
         let text = std::mem::take(&mut post.text);
-        let html = if post.markdown {
-            markdown2html(&text)?
-        } else if text.starts_with(XML_PROLOG) {
-            xml2html(&text)?
+        let cached = self
+            .cache()
+            .articles
+            .get(&post.id)
+            .filter(|r| r.modified == post.modified)
+            .cloned();
+        let rendered = if let Some(rendered) = cached {
+            rendered
         } else {
-            text
+            let rendered = render_article(&post, text)?;
+            self.cache().articles.insert(post.id, rendered.clone());
+            rendered
         };
-        let body = if html.is_empty() {
-            post.short_text.clone()
-        } else {
-            html
-        };
-        let html = typograph(&body)?;
-        let description = describe(&post, &html);
 
-        Ok(Self {
+        Ok(Article {
             post,
-            html,
-            description,
+            html: rendered.html,
+            description: rendered.description,
         })
     }
+
+    fn render_teasers(&self, mut posts: Vec<SmallPost>) -> Vec<SmallPost> {
+        for post in &mut posts {
+            let cached = self
+                .cache()
+                .teasers
+                .get(&post.id)
+                .filter(|t| t.markdown == post.markdown && t.source == post.short_text)
+                .map(|t| t.html.clone());
+            if let Some(html) = cached {
+                post.short_text = html;
+                continue;
+            }
+            let html = render_teaser(post.markdown, &post.short_text);
+            let source = std::mem::replace(&mut post.short_text, html.clone());
+            let teaser = Teaser {
+                markdown: post.markdown,
+                source,
+                html,
+            };
+            self.cache().teasers.insert(post.id, teaser);
+        }
+        posts
+    }
+
+    fn evict(&self, id: i64) {
+        let mut cache = self.cache();
+        cache.articles.remove(&id);
+        cache.teasers.remove(&id);
+    }
+
+    /// A poisoned lock still guards a usable cache: entries are inserted whole.
+    fn cache(&self) -> std::sync::MutexGuard<'_, RenderCache> {
+        self.cache.lock().unwrap_or_else(PoisonError::into_inner)
+    }
+}
+
+fn render_article(post: &Post, text: String) -> Result<RenderedArticle> {
+    let html = if post.markdown {
+        markdown2html(&text)?
+    } else if text.starts_with(XML_PROLOG) {
+        xml2html(&text)?
+    } else {
+        text
+    };
+    let body = if html.is_empty() {
+        post.short_text.clone()
+    } else {
+        html
+    };
+    let html = typograph(&body)?;
+    let description = describe(post, &html);
+
+    Ok(RenderedArticle {
+        modified: post.modified,
+        html: html.into(),
+        description: description.into(),
+    })
 }
 
 fn describe(post: &Post, html: &str) -> String {
@@ -232,18 +321,14 @@ fn all_posts() -> PostsRequest {
     }
 }
 
-fn render_teasers(mut posts: Vec<SmallPost>) -> Vec<SmallPost> {
-    for post in &mut posts {
-        if post.markdown
-            && let Ok(text) = markdown2html(&post.short_text)
-        {
-            post.short_text = text;
-        }
-        if let Ok(text) = typograph(&post.short_text) {
-            post.short_text = text;
-        }
-    }
-    posts
+fn render_teaser(markdown: bool, source: &str) -> String {
+    let html = if markdown {
+        markdown2html(source).ok()
+    } else {
+        None
+    };
+    let html = html.as_deref().unwrap_or(source);
+    typograph(html).unwrap_or_else(|_| html.to_owned())
 }
 
 /// Tag weight from 0 to 10 relative to the total number of posts.
@@ -490,7 +575,7 @@ mod tests {
         let Lookup::Found(article) = lookup else {
             panic!("article not found");
         };
-        assert_eq!(expected, article.html);
+        assert_eq!(expected, &*article.html);
         assert!(article.post.text.is_empty());
     }
 
@@ -556,6 +641,76 @@ mod tests {
 
         // assert
         assert!(matches!(lookup, Lookup::Moved(42)));
+    }
+
+    #[rstest]
+    #[tokio::test]
+    async fn article_rendered_again_after_update(blog: Blog) {
+        // arrange
+        store(&blog, vec![post(1, true)]).await;
+        blog.article(1).await.unwrap();
+        let updated = Post {
+            text: "<p>Updated</p>".into(),
+            short_text: "<p>Updated teaser</p>".into(),
+            ..post(1, true)
+        };
+        store(&blog, vec![updated]).await;
+
+        // act
+        let lookup = blog.article(1).await.unwrap();
+
+        // assert
+        let Lookup::Found(article) = lookup else {
+            panic!("article not found");
+        };
+        assert_eq!("<p>Updated</p>", &*article.html);
+        assert_eq!("Updated teaser", article.description.trim());
+    }
+
+    #[rstest]
+    #[tokio::test]
+    async fn article_rendered_once_returns_same_body(blog: Blog) {
+        // arrange
+        store(&blog, vec![post(1, true)]).await;
+        let Lookup::Found(first) = blog.article(1).await.unwrap() else {
+            panic!("article not found");
+        };
+
+        // act
+        let Lookup::Found(second) = blog.article(1).await.unwrap() else {
+            panic!("article not found");
+        };
+
+        // assert
+        assert!(Arc::ptr_eq(&first.html, &second.html));
+        assert_eq!(first.post.title, second.post.title);
+    }
+
+    #[rstest]
+    #[case(false, "<p>Changed</p>", "<p>Changed</p>")]
+    #[case(true, "**Changed**", "<p><strong>Changed</strong></p>")]
+    #[tokio::test]
+    async fn page_renders_teaser_again_after_update(
+        blog: Blog,
+        #[case] markdown: bool,
+        #[case] short_text: &str,
+        #[case] expected: &str,
+    ) {
+        // arrange
+        store(&blog, vec![post(1, true)]).await;
+        blog.page(PostsRequest::default()).await.unwrap();
+        let updated = Post {
+            short_text: short_text.into(),
+            markdown,
+            ..post(1, true)
+        };
+        store(&blog, vec![updated]).await;
+
+        // act
+        let page = blog.page(PostsRequest::default()).await.unwrap();
+
+        // assert
+        assert_eq!(expected, page.result[0].short_text.trim());
     }
 
     #[rstest]

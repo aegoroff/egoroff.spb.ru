@@ -125,8 +125,8 @@ pub async fn serve_document(
         title_path: &title_path,
         keywords: &keywords,
         main_post: &article.post,
-        content: article.html,
-        meta_description: article.description,
+        content: &article.html,
+        meta_description: &article.description,
         year: get_year(),
     }
     .into_response())

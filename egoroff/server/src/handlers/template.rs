@@ -159,9 +159,9 @@ pub struct BlogPost<'a> {
     pub title: &'a str,
     pub title_path: &'a str,
     pub keywords: &'a str,
-    pub meta_description: String,
+    pub meta_description: &'a str,
     pub main_post: &'a Post,
-    pub content: String,
+    pub content: &'a str,
     pub year: u32,
 }
 
