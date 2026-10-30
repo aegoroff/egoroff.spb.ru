@@ -31,7 +31,7 @@ use crate::domain::OperationResult;
 use crate::{
     atom,
     body::{Binary, FileReply, Xml},
-    domain::{BlogRequest, Navigation, PageContext, Poster, Uri},
+    domain::{BlogRequest, Navigation, NavigationSection, PageContext, Poster, Uri},
     sitemap,
 };
 
@@ -158,12 +158,8 @@ pub async fn serve_apache(extract::Path(path): extract::Path<String>) -> impl In
 }
 
 pub async fn serve_apache_images(extract::Path(path): extract::Path<String>) -> impl IntoResponse {
-    let path = path.as_str();
-    let relative_path = PathBuf::from("images");
-    let relative_path = relative_path.join(path);
-    let relative_path = relative_path.as_os_str().to_str().unwrap_or_default();
-    let asset = Apache::get(relative_path);
-    get_embed(path, asset)
+    let asset = Apache::get(&format!("images/{path}"));
+    get_embed(&path, asset)
 }
 
 pub async fn serve_storage(
@@ -199,36 +195,45 @@ fn find_section<'a>(
 pub async fn serve_navigation(
     Query(query): Query<Uri>,
     State(page_context): State<Arc<PageContext<'_>>>,
-) -> impl IntoResponse {
-    let q = query.uri;
+) -> Response {
+    Json(navigation(&page_context.site_graph, &query.uri)).into_response()
+}
 
-    let Some((breadcrumbs, current)) = page_context.site_graph.breadcrumbs(&q) else {
-        return Json(Navigation {
-            ..Default::default()
-        });
+fn navigation<'a>(site_graph: &'a graph::SiteGraph<'_>, uri: &'a str) -> Navigation<'a> {
+    let Some((breadcrumbs, current)) = site_graph.breadcrumbs(uri) else {
+        return Navigation::default();
     };
 
     let root = breadcrumbs[0];
-    let optional_breadcrumbs = if q == graph::SEP {
-        None
-    } else {
-        Some(
-            breadcrumbs
-                .into_iter()
-                .map(|s| SiteSection {
-                    id: s.id.clone(),
-                    icon: s.icon.clone(),
-                    title: s.title.clone(),
-                    ..Default::default()
-                })
-                .collect(),
-        )
-    };
+    let optional_breadcrumbs = (uri != graph::SEP).then(|| {
+        breadcrumbs
+            .iter()
+            .map(|s| NavigationSection {
+                id: &s.id,
+                icon: &s.icon,
+                title: &s.title,
+                descr: "",
+                active: None,
+            })
+            .collect()
+    });
+    let sections = root.children.as_ref().map(|children| {
+        children
+            .iter()
+            .map(|s| NavigationSection {
+                id: &s.id,
+                icon: &s.icon,
+                title: &s.title,
+                descr: &s.descr,
+                active: Some(s.id == *current),
+            })
+            .collect()
+    });
 
-    Json(Navigation {
-        sections: root.clone_children(current),
+    Navigation {
+        sections,
         breadcrumbs: optional_breadcrumbs,
-    })
+    }
 }
 
 fn redirect_response(new_path: &str) -> Response {
@@ -266,4 +271,60 @@ fn updated() -> Json<OperationResult<'static>> {
 /// Body of a successful admin create.
 fn created() -> Json<OperationResult<'static>> {
     Json(OperationResult { result: "created" })
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(clippy::unwrap_used)]
+    use super::*;
+    use rstest::rstest;
+    use serde_json::json;
+
+    fn section(id: &str, children: Option<Vec<SiteSection>>) -> SiteSection {
+        SiteSection {
+            id: id.to_string(),
+            icon: format!("{id}-icon"),
+            title: format!("{id}-title"),
+            descr: format!("{id}-descr"),
+            keywords: Some(format!("{id}-keywords")),
+            children,
+            ..Default::default()
+        }
+    }
+
+    #[rstest]
+    #[case("/", json!({
+        "sections": [
+            {"id": "a", "icon": "a-icon", "title": "a-title", "descr": "a-descr", "active": false},
+            {"id": "b", "icon": "b-icon", "title": "b-title", "descr": "b-descr", "active": false},
+        ],
+    }))]
+    #[case("/a/aa/", json!({
+        "sections": [
+            {"id": "a", "icon": "a-icon", "title": "a-title", "descr": "a-descr", "active": true},
+            {"id": "b", "icon": "b-icon", "title": "b-title", "descr": "b-descr", "active": false},
+        ],
+        "breadcrumbs": [
+            {"id": "/", "icon": "/-icon", "title": "/-title"},
+            {"id": "a", "icon": "a-icon", "title": "a-title"},
+        ],
+    }))]
+    fn navigation_serializes_sections_and_breadcrumbs(
+        #[case] uri: &str,
+        #[case] expected: serde_json::Value,
+    ) {
+        // arrange
+        let aa = section("aa", None);
+        let root = section(
+            "/",
+            Some(vec![section("a", Some(vec![aa])), section("b", None)]),
+        );
+        let site_graph = graph::SiteGraph::new(&root);
+
+        // act
+        let actual = serde_json::to_value(navigation(&site_graph, uri)).unwrap();
+
+        // assert
+        assert_eq!(expected, actual);
+    }
 }

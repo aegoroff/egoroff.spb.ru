@@ -295,7 +295,7 @@ pub trait Storage {
         &self,
         limit: i32,
         offset: i32,
-        request: PostsRequest,
+        request: &PostsRequest,
     ) -> anyhow::Result<Vec<SmallPost>>;
     fn get_posts(&self, limit: i32, offset: i32) -> anyhow::Result<Vec<Post>>;
     fn get_post(&self, id: i64) -> anyhow::Result<Post>;
@@ -303,7 +303,7 @@ pub trait Storage {
     fn upsert_post(&mut self, post: Post) -> anyhow::Result<()>;
     fn next_post_id(&mut self) -> anyhow::Result<i64>;
     fn delete_post(&mut self, id: i64) -> anyhow::Result<usize>;
-    fn count_posts(&self, request: PostsRequest) -> anyhow::Result<i32>;
+    fn count_posts(&self, request: &PostsRequest) -> anyhow::Result<i32>;
     fn get_aggregate_tags(&self) -> anyhow::Result<Vec<TagAggregate>>;
     fn get_posts_create_dates(&self) -> anyhow::Result<Vec<DateTime<Utc>>>;
     fn get_posts_ids(&self) -> anyhow::Result<Vec<i64>>;

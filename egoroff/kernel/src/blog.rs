@@ -119,7 +119,7 @@ impl Blog {
     pub async fn archive(&self) -> Result<Archive> {
         let storage = self.db.lock().await;
         let tags = storage.get_aggregate_tags()?;
-        let total = storage.count_posts(PostsRequest::default())?;
+        let total = storage.count_posts(&PostsRequest::default())?;
         let dates = storage.get_posts_create_dates()?;
         drop(storage);
 
@@ -138,7 +138,7 @@ impl Blog {
     pub async fn admin_page(&self, page: Option<i32>) -> Result<ApiResult<Post>> {
         let (page, offset) = page_offset(page, ADMIN_PAGE_SIZE);
         let storage = self.db.lock().await;
-        let count = storage.count_posts(all_posts())?;
+        let count = storage.count_posts(&all_posts())?;
         let posts = storage.get_posts(ADMIN_PAGE_SIZE, offset)?;
 
         Ok(ApiResult {
@@ -183,7 +183,7 @@ impl Blog {
 
     /// Number of all posts, drafts included.
     pub async fn count(&self) -> Result<i32> {
-        self.db.lock().await.count_posts(all_posts())
+        self.db.lock().await.count_posts(&all_posts())
     }
 
     async fn list(
@@ -196,8 +196,8 @@ impl Blog {
         request.tag = request.tag.filter(|tag| !tag.is_empty());
 
         let storage = self.db.lock().await;
-        let count = storage.count_posts(request.clone())?;
-        let posts = storage.get_small_posts(page_size, offset, request)?;
+        let count = storage.count_posts(&request)?;
+        let posts = storage.get_small_posts(page_size, offset, &request)?;
         drop(storage);
 
         Ok(ApiResult {

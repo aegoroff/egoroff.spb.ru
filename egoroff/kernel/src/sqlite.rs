@@ -102,17 +102,15 @@ impl Storage for Sqlite {
         &self,
         limit: i32,
         offset: i32,
-        request: PostsRequest,
+        request: &PostsRequest,
     ) -> anyhow::Result<Vec<crate::domain::SmallPost>> {
-        let files: Vec<crate::domain::SmallPost> = match request.tag {
+        let files: Vec<crate::domain::SmallPost> = match &request.tag {
             Some(tag) => {
                 let mut stmt = self.conn.prepare_cached("SELECT id, title, created, short_text, markdown \
                                     FROM post INNER JOIN post_tag ON post_tag.post_id = post.id 
                                     WHERE is_public = 1 AND post_tag.tag = ?3 ORDER BY created DESC LIMIT ?1 OFFSET ?2")?;
-                let files = stmt.query_map(
-                    [limit.to_string(), offset.to_string(), tag],
-                    Sqlite::map_small_post_row,
-                )?;
+                let files =
+                    stmt.query_map(params![limit, offset, tag], Sqlite::map_small_post_row)?;
                 files.filter_map(std::result::Result::ok).collect()
             }
             None => {
@@ -215,10 +213,10 @@ impl Storage for Sqlite {
         })?)
     }
 
-    fn count_posts(&self, request: PostsRequest) -> anyhow::Result<i32> {
+    fn count_posts(&self, request: &PostsRequest) -> anyhow::Result<i32> {
         let is_public = i32::from(!request.include_private.unwrap_or(false));
 
-        match request.tag {
+        match &request.tag {
             Some(tag) => {
                 let mut stmt = self.conn.prepare_cached(
                     "SELECT COUNT(1) FROM post INNER JOIN post_tag ON post_tag.post_id = post.id \

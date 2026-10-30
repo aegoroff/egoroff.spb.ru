@@ -22,23 +22,6 @@ pub struct SiteSection {
     pub children: Option<Vec<SiteSection>>,
 }
 
-impl SiteSection {
-    #[must_use]
-    pub fn clone_children(&self, active: &str) -> Option<Vec<SiteSection>> {
-        self.children.as_ref().map(|sections| {
-            sections
-                .iter()
-                .map(|s| SiteSection {
-                    active: Some(s.id.as_str() == active),
-                    keywords: None,
-                    children: None,
-                    ..s.clone()
-                })
-                .collect()
-        })
-    }
-}
-
 #[derive(Debug)]
 pub struct SiteGraph<'a> {
     sections: HashMap<String, &'a SiteSection>,

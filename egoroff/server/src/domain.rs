@@ -4,7 +4,7 @@ use futures::lock::Mutex;
 use kernel::{
     blog::Blog,
     domain::{ApiResult, User},
-    graph::{SiteGraph, SiteSection},
+    graph::SiteGraph,
     sqlite::Sqlite,
 };
 use oauth2::CsrfToken;
@@ -58,15 +58,27 @@ impl BlogRequest {
 }
 
 /// Represents navigation data in the application.
-#[derive(Deserialize, Serialize, Default)]
-pub struct Navigation {
+#[derive(Serialize, Default)]
+pub struct Navigation<'a> {
     /// A list of site sections (optional).
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub sections: Option<Vec<SiteSection>>,
+    pub sections: Option<Vec<NavigationSection<'a>>>,
 
     /// A list of breadcrumbs (optional).
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub breadcrumbs: Option<Vec<SiteSection>>,
+    pub breadcrumbs: Option<Vec<NavigationSection<'a>>>,
+}
+
+/// Site section as shown in navigation, borrowed from the site map.
+#[derive(Serialize)]
+pub struct NavigationSection<'a> {
+    pub id: &'a str,
+    pub icon: &'a str,
+    pub title: &'a str,
+    #[serde(skip_serializing_if = "str::is_empty")]
+    pub descr: &'a str,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub active: Option<bool>,
 }
 
 /// Represents the application's configuration data.
