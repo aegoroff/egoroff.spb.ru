@@ -2,9 +2,10 @@ use anyhow::Context;
 use kernel::{
     domain::{ApiResult, Download, DownloadsRequest, Folder},
     paging,
+    typograph::typograph,
 };
 
-use crate::domain::{Downloadable, FilesContainer};
+use crate::domain::{Apache, Downloadable, FilesContainer};
 use crate::file_store::StoredFile;
 use axum::response::Redirect;
 
@@ -44,24 +45,25 @@ pub async fn serve_apache_document(
     State(page_context): State<Arc<PageContext<'_>>>,
     extract::Path(path): extract::Path<String>,
 ) -> Result<Response, PageError> {
-    let id = path.trim_end_matches(".html");
+    let id = path
+        .strip_suffix(".html")
+        .ok_or_else(PageError::not_found)?;
     let doc = page_context
         .apache_docs
         .iter()
         .find(|item| item.id == id)
         .ok_or_else(PageError::not_found)?;
-    let file = ApacheTemplates::get(&path).ok_or_else(PageError::not_found)?;
+    let content = doc.content.as_deref().ok_or_else(PageError::not_found)?;
 
     let uri = format!("{PORTFOLIO_PATH}{path}");
     let title_path = page_context.site_graph.make_title_path(&uri);
-    let content = String::from_utf8_lossy(&file.data);
     Ok(ApacheDocument {
         html_class: "",
         title: &doc.title,
         title_path: &title_path,
         keywords: &doc.keywords,
         meta_description: &doc.description,
-        content: &content,
+        content,
         year: get_year(),
     }
     .into_response())
@@ -91,14 +93,23 @@ pub async fn serve_downloadable_files(
     }))
 }
 
-pub fn read_apache_documents(base_path: &Path) -> Result<Vec<crate::domain::Apache>> {
+pub fn read_apache_documents(base_path: &Path) -> Result<Vec<Apache>> {
     let config_path = base_path.join("apache/config.json");
     let file = File::open(config_path)
         .with_context(|| "Failed to open file that contain Apache documents configuration")?;
     let reader = BufReader::new(file);
-    let result = serde_json::from_reader(reader)
+    let docs: Vec<Apache> = serde_json::from_reader(reader)
         .with_context(|| "Failed to deserialize Apache documents configuration")?;
-    Ok(result)
+    docs.into_iter().map(render_apache_document).collect()
+}
+
+/// Typographs the embedded document once instead of on every request.
+fn render_apache_document(doc: Apache) -> Result<Apache> {
+    let content = ApacheTemplates::get(&format!("{}.html", doc.id))
+        .map(|file| typograph(&String::from_utf8_lossy(&file.data)))
+        .transpose()
+        .with_context(|| format!("Failed to typograph Apache document '{}'", doc.id))?;
+    Ok(Apache { content, ..doc })
 }
 
 pub async fn redirect_to_real_document(
@@ -210,6 +221,31 @@ mod tests {
     #![allow(clippy::unwrap_used)]
     use super::*;
     use kernel::sqlite::{Mode, Sqlite};
+    use rstest::rstest;
+
+    #[rstest]
+    #[case("mod_rewrite", true)]
+    #[case("rewriteguide", true)]
+    #[case("missing", false)]
+    fn render_apache_document_typographs_embedded_template(
+        #[case] id: &str,
+        #[case] expected_content: bool,
+    ) {
+        // arrange
+        let doc = Apache {
+            id: id.to_string(),
+            ..Default::default()
+        };
+
+        // act
+        let actual = render_apache_document(doc).unwrap();
+
+        // assert
+        assert_eq!(
+            expected_content,
+            actual.content.is_some_and(|c| c.contains("&mdash;"))
+        );
+    }
 
     fn stored_file(id: i64, path: &str) -> StoredFile {
         StoredFile {

@@ -115,6 +115,9 @@ pub struct Apache {
     pub description: String,
     /// The keywords for the page.
     pub keywords: String,
+    /// The document body typographed for HTML; `None` if the document has no template.
+    #[serde(skip)]
+    pub content: Option<String>,
 }
 
 /// Represents a collection of posts or pages in the application.

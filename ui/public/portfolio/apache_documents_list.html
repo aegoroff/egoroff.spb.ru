@@ -3,7 +3,7 @@
 <dl>
     {%- for item in apache_docs -%}
         <dt><a href="/portfolio/{{ item.id }}.html">{{ item.title }}</a></dt>
-        <dd>{{ item.description|typograph|safe }}</dd>
+        <dd>{{ item.description }}</dd>
     {%- endfor -%}
 </dl>
 {%- endif -%}
