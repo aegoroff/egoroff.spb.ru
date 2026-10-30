@@ -202,7 +202,6 @@ async fn oauth_callback<T: OAuthProfile>(
         let token = authorizer
             .exchange_code(query.code.clone(), pkce_code_verifier)
             .await;
-        let mut storage = page_context.storage.lock().await;
 
         match token {
             Ok(token) => {
@@ -210,20 +209,11 @@ async fn oauth_callback<T: OAuthProfile>(
                 match user {
                     Ok(user) => {
                         drop(session);
-                        if let Err(e) = storage.upsert_user(&user) {
+                        if let Err(e) = save_and_login(&mut auth, &page_context, user).await {
                             tracing::error!("login error: {e:#?}");
                             return Redirect::to(LOGIN_URI);
                         }
-                        tracing::info!("User updated");
-
-                        let u = AppUser::new(user);
-                        match auth.login(&u).await {
-                            Ok(()) => tracing::info!("login success"),
-                            Err(e) => {
-                                tracing::error!("login error: {e:#?}");
-                                return Redirect::to(LOGIN_URI);
-                            }
-                        }
+                        tracing::info!("login success");
                     }
                     Err(e) => {
                         tracing::error!("get user error: {e:#?}");
@@ -335,20 +325,18 @@ pub async fn serve_user_info_update(
     };
 
     let user = update.into_user(current.user());
-    update_profile(&mut auth, &page_context, user).await?;
+    save_and_login(&mut auth, &page_context, user).await?;
     Ok(updated())
 }
 
-async fn update_profile(
+/// Stores the user and logs them in; on a profile update the re-login
+/// makes the new name and avatar show up in the session.
+async fn save_and_login(
     auth: &mut AuthSession,
     page_context: &PageContext<'_>,
     user: User,
 ) -> anyhow::Result<()> {
-    {
-        let mut storage = page_context.storage.lock().await;
-        storage.upsert_user(&user)?;
-    }
-    // Refresh the session so the new name and avatar show up without re-login.
+    page_context.storage.lock().await.upsert_user(&user)?;
     auth.login(&AppUser::new(user)).await?;
     Ok(())
 }
