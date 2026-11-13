@@ -11,10 +11,10 @@ serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 chrono = { workspace = true, features = ["serde", "clock", "std"]}
 rmp-serde = { version = "1.3.1" }
-lol_html = "3.0.1"
+lol_html = "3.0.3"
 regex = "1.13.1"
 quick-xml = "0.42.0"
-pulldown-cmark = "0.13.5"
+pulldown-cmark = "0.13.6"
 anyhow = { workspace = true }
 itertools = "0.15.0"
 tower-sessions = { workspace = true }
@@ -22,7 +22,7 @@ async-trait = { workspace = true }
 base64 = "0.23.1"
 url = { workspace = true }
 utoipa = { workspace = true, features = ["chrono", "time"] }
-rusqlite = { version = "0.41", features = ["bundled", "chrono"] }
+rusqlite = { version = "0.42", features = ["bundled", "chrono"] }
 tokio = { workspace = true, features = ["rt"] }
 
 [dev-dependencies]
