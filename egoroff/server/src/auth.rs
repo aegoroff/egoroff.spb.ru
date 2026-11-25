@@ -1,7 +1,7 @@
 #![allow(clippy::module_name_repetitions)]
 
 use std::marker::PhantomData;
-use std::{collections::HashSet, path::Path};
+use std::{collections::HashSet, future, path::Path};
 
 use anyhow::{Context, Result};
 use axum::{Json, response};
@@ -345,16 +345,16 @@ impl AuthzBackend for AuthBackend {
     type Permission = Role;
 
     /// Gets the permissions for the provided user.
-    async fn get_user_permissions(
+    fn get_user_permissions(
         &self,
         user: &Self::User,
-    ) -> Result<HashSet<Self::Permission>, Self::Error> {
+    ) -> impl Future<Output = Result<HashSet<Self::Permission>, Self::Error>> {
         let mut user_permissions = HashSet::new();
         user_permissions.insert(Role::User);
         if user.user.admin {
             user_permissions.insert(Role::Admin);
         }
-        Ok(user_permissions)
+        future::ready(Ok(user_permissions))
     }
 }
 

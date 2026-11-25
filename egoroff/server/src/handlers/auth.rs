@@ -132,7 +132,7 @@ pub async fn serve_login(
     context.into_response()
 }
 
-pub async fn serve_logout(mut auth: AuthSession) -> impl IntoResponse {
+pub async fn serve_logout(auth: AuthSession) -> impl IntoResponse {
     if let Err(e) = auth.logout().await {
         tracing::error!("Logout failed: {e:#?}");
     }
@@ -169,7 +169,7 @@ async fn oauth_callback<T: OAuthProfile>(
     session: Session,
     pkce_code_verifier_key: &str,
     csrf_key: &str,
-    mut auth: AuthSession,
+    auth: AuthSession,
 ) -> impl IntoResponse {
     match session.get::<CsrfToken>(csrf_key).await {
         Ok(original_csrf_state) => {
@@ -209,7 +209,7 @@ async fn oauth_callback<T: OAuthProfile>(
                 match user {
                     Ok(user) => {
                         drop(session);
-                        if let Err(e) = save_and_login(&mut auth, &page_context, user).await {
+                        if let Err(e) = save_and_login(&auth, &page_context, user).await {
                             tracing::error!("login error: {e:#?}");
                             return Redirect::to(LOGIN_URI);
                         }
@@ -301,14 +301,14 @@ pub async fn yandex_oauth_callback(
 }
 
 pub async fn serve_user_api_call(auth: AuthSession) -> impl IntoResponse {
-    match auth.user {
+    match auth.user().await {
         Some(user) => Json(user.into_authorized()),
         None => Json(AuthorizedUser::default()),
     }
 }
 
 pub async fn serve_user_info_api_call(auth: AuthSession) -> impl IntoResponse {
-    if let Some(u) = auth.user {
+    if let Some(u) = auth.user().await {
         u.into_response()
     } else {
         Redirect::to(LOGIN_URI).into_response()
@@ -316,23 +316,23 @@ pub async fn serve_user_info_api_call(auth: AuthSession) -> impl IntoResponse {
 }
 
 pub async fn serve_user_info_update(
-    mut auth: AuthSession,
+    auth: AuthSession,
     State(page_context): State<Arc<PageContext<'_>>>,
     Json(update): Json<UserInfoUpdate>,
 ) -> OperationResponse {
-    let Some(current) = auth.user.clone() else {
+    let Some(current) = auth.user().await else {
         return Err(OperationError::Unauthorized);
     };
 
     let user = update.into_user(current.user());
-    save_and_login(&mut auth, &page_context, user).await?;
+    save_and_login(&auth, &page_context, user).await?;
     Ok(updated())
 }
 
 /// Stores the user and logs them in; on a profile update the re-login
 /// makes the new name and avatar show up in the session.
 async fn save_and_login(
-    auth: &mut AuthSession,
+    auth: &AuthSession,
     page_context: &PageContext<'_>,
     user: User,
 ) -> anyhow::Result<()> {
