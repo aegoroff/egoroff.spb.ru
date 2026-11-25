@@ -44,16 +44,6 @@ export function formatLongDate(date: Date | string): string {
   })
 }
 
-export function formatMonthYear(year: number, month: number): string {
-  const parts = new Intl.DateTimeFormat(RU, {
-    month: 'long',
-    year: 'numeric',
-  }).formatToParts(new Date(year, month - 1, 1))
-  const m = parts.find((p) => p.type === 'month')?.value ?? ''
-  const y = parts.find((p) => p.type === 'year')?.value ?? String(year)
-  return `${m} ${y}`
-}
-
 export function formatMonthName(month: number): string {
   const name = new Intl.DateTimeFormat(RU, { month: 'long' }).format(
     new Date(2000, month - 1, 1)

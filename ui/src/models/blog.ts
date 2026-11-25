@@ -19,20 +19,9 @@ export interface Tag {
   level: number
 }
 
-/** Filters of the posts listing; the server always pages by a fixed size. */
+/** Pagination parameters for admin lists. */
 export interface Query {
-  tag?: string
-  year?: string
-  month?: string
   page?: string
-}
-
-/** Public post teaser (`SmallPost` on the server). */
-export interface Post {
-  Created: string
-  id: number
-  Title: string
-  ShortText: string
 }
 
 /** Full post as the admin API reads and writes it (`Post` on the server). */

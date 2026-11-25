@@ -3,19 +3,16 @@
     <ul class="list-inline">
       <li class="list-inline-item" v-for="tag in tags" :key="tag.title">
         <a
-          :href="`/blog/#tag=${tag.title}`"
+          :href="`/blog/?${tagQuery(tag.title)}`"
+          data-blog-link
           :class="[currentTag === tag.title ? `btn btn-outline-dark ${tagClass(tag.level)}` : `btn ${tagClass(tag.level)}`]"
-          @click.prevent="update(tag.title, 1)"
-          :id="`t_${tag.title}`">{{ tag.title }}</a>
+          :aria-current="currentTag === tag.title ? 'true' : undefined">{{ tag.title }}</a>
       </li>
     </ul>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
-import { emitter } from '@/events'
-import { remountBlogFilter } from '@/blogMount'
 import type { Tag } from '@/models/blog'
 
 defineProps<{
@@ -23,9 +20,7 @@ defineProps<{
   currentTag: string
 }>()
 
-const emit = defineEmits<{
-  'update:currentTag': [value: string]
-}>()
+const tagQuery = (tag: string): string => new URLSearchParams({ tag }).toString()
 
 const tagsClasses: Record<number, string> = {
   0: 'tagRank10',
@@ -44,51 +39,6 @@ const tagsClasses: Record<number, string> = {
 const tagClass = (ix: number): string => {
   return tagsClasses[ix]
 }
-
-const update = (tag: string, page: number): void => {
-  const params = new URLSearchParams(window.location.hash.slice(1))
-  params.set('tag', tag)
-  if (page > 1) {
-    params.set('page', String(page))
-  } else {
-    params.delete('page')
-  }
-  params.delete('year')
-  params.delete('month')
-
-  window.location.hash = params.toString()
-
-  emitter.emit('tagChanged', tag)
-  emit('update:currentTag', tag)
-
-  remountBlogFilter(`tag=${tag}&page=${page}`, `все посты по метке: ${tag}`)
-}
-
-const onPageChanged = (page: number): void => {
-  const parts = window.location.hash.substring(1).split('&')
-
-  for (const part of parts) {
-    const [key, value] = part.split('=')
-    if (key === 'tag') {
-      update(value, page)
-      return
-    }
-  }
-}
-
-const onDateSelectionChanged = (): void => {
-  emit('update:currentTag', '')
-}
-
-onMounted(() => {
-  emitter.on('pageChanged', onPageChanged)
-  emitter.on('dateSelectionChanged', onDateSelectionChanged)
-})
-
-onUnmounted(() => {
-  emitter.off('pageChanged', onPageChanged)
-  emitter.off('dateSelectionChanged', onDateSelectionChanged)
-})
 </script>
 
 <style scoped lang="scss">

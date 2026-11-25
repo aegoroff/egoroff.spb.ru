@@ -121,7 +121,7 @@ impl Storage for Sqlite {
                 if let Some(period) = request.as_query_period() {
                     let mut stmt = self.conn.prepare_cached(
                         "SELECT id, title, created, short_text, markdown \
-                    FROM post WHERE is_public = 1 AND created > ?1 AND created < ?2 ORDER BY created DESC  LIMIT ?3 OFFSET ?4",
+                    FROM post WHERE is_public = 1 AND created BETWEEN ?1 AND ?2 ORDER BY created DESC LIMIT ?3 OFFSET ?4",
                     )?;
                     let files = stmt.query_map(
                         [
@@ -231,7 +231,7 @@ impl Storage for Sqlite {
             }
             None => {
                 if let Some(period) = request.as_query_period() {
-                    let mut stmt = self.conn.prepare_cached("SELECT COUNT(1) FROM post WHERE (is_public = 1 OR is_public = ?3) AND created > ?1 AND created < ?2")?;
+                    let mut stmt = self.conn.prepare_cached("SELECT COUNT(1) FROM post WHERE (is_public = 1 OR is_public = ?3) AND created BETWEEN ?1 AND ?2")?;
                     let params = params![period.from.timestamp(), period.to.timestamp(), is_public];
                     Ok(stmt.query_row(params, |row| row.get(0))?)
                 } else {

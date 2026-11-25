@@ -543,6 +543,66 @@ mod tests {
     }
 
     #[rstest]
+    #[case(None, 1, 1, 12, 31)]
+    #[case(Some(2), 2, 1, 2, 29)]
+    #[tokio::test]
+    async fn page_includes_both_ends_of_archive_period(
+        blog: Blog,
+        #[case] month: Option<i32>,
+        #[case] first_month: u32,
+        #[case] first_day: u32,
+        #[case] last_month: u32,
+        #[case] last_day: u32,
+    ) -> anyhow::Result<()> {
+        // Arrange
+        let first = Utc
+            .with_ymd_and_hms(2024, first_month, first_day, 0, 0, 0)
+            .single()
+            .ok_or_else(|| anyhow::anyhow!("invalid period start"))?;
+        let last = Utc
+            .with_ymd_and_hms(2024, last_month, last_day, 23, 59, 59)
+            .single()
+            .ok_or_else(|| anyhow::anyhow!("invalid period end"))?;
+        store(
+            &blog,
+            vec![
+                Post {
+                    created: first - chrono::TimeDelta::seconds(1),
+                    ..post(1, true)
+                },
+                Post {
+                    created: first,
+                    ..post(2, true)
+                },
+                Post {
+                    created: last,
+                    ..post(3, true)
+                },
+                Post {
+                    created: last + chrono::TimeDelta::seconds(1),
+                    ..post(4, true)
+                },
+            ],
+        )
+        .await;
+
+        // Act
+        let page = blog
+            .page(PostsRequest {
+                year: Some(2024),
+                month,
+                ..Default::default()
+            })
+            .await?;
+
+        // Assert
+        let ids: Vec<_> = page.result.iter().map(|post| post.id).collect();
+        assert_eq!(vec![3, 2], ids);
+        assert_eq!(2, page.count);
+        Ok(())
+    }
+
+    #[rstest]
     #[case("**bold**", true, "<p><strong>bold</strong></p>\n")]
     #[case("a - **b**", true, "<p>a&nbsp;&mdash; <strong>b</strong></p>\n")]
     #[case("<p>a - b</p>", false, "<p>a&nbsp;&mdash; b</p>")]

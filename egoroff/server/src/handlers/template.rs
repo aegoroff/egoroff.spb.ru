@@ -143,6 +143,7 @@ pub struct BlogIndex<'a> {
     pub meta_description: &'a str,
     pub poster: &'a Poster<SmallPost>,
     pub request: &'a BlogRequest,
+    pub subtitle: &'a str,
     pub year: u32,
 }
 

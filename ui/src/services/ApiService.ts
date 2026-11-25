@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useProgress } from "@marcoschulte/vue3-progress";
 import { toQuery } from "@/util";
-import type { Archive, EditablePost, Post, Query } from "@/models/blog";
+import type { Archive, EditablePost, Query } from "@/models/blog";
 import type { FullUserInfo, Nav, Section, User } from "@/models/common";
 import type { DashboardStats } from "@/models/dashboard";
 import type { Download, FilesContainer } from "@/models/portfolio";
@@ -59,10 +59,6 @@ class ApiService {
 
   public getFullUserInfo(): Promise<FullUserInfo> {
     return get<FullUserInfo>("/api/v2/auth/userinfo/");
-  }
-
-  public getPosts(q?: Query): Promise<ApiResult<Post>> {
-    return get<ApiResult<Post>>(`/api/v2/blog/posts/${toQuery(q)}`);
   }
 
   public getDownloadableFiles(): Promise<ApiResult<FilesContainer>> {

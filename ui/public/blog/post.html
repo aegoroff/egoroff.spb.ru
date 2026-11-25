@@ -15,7 +15,7 @@
                     <div itemprop="keywords">
                     <i class="icon" data-label="calendar-alt"></i> <span class="date" data-label="LL">{{ main_post.created.to_rfc3339() }}</span>&nbsp;
                     {%- if !main_post.tags.is_empty() -%}
-                        {%- for tag in main_post.tags ~%}<a href="/blog/#tag={{ tag }}" class="btn btn-outline-secondary btn-sm">{{ tag }}</a> {%~ endfor -%}
+                        {%- for tag in main_post.tags ~%}<a href="/blog/{{ BlogRequest::tag_query(tag) }}" class="btn btn-outline-secondary btn-sm">{{ tag }}</a> {%~ endfor -%}
                     {%- endif -%}
                     </div>
                     <div id="social" property="{{ title }}"></div>

@@ -33,6 +33,20 @@ const OPINIONS_REMAP: &[(&str, &str)] = &[
 ];
 
 const BLOG_PATH: &str = "/blog/";
+const MONTH_NAMES: [&str; 12] = [
+    "январь",
+    "февраль",
+    "март",
+    "апрель",
+    "май",
+    "июнь",
+    "июль",
+    "август",
+    "сентябрь",
+    "октябрь",
+    "ноябрь",
+    "декабрь",
+];
 
 /// Posts in the Atom feed.
 const FEED_SIZE: i32 = 20;
@@ -68,12 +82,12 @@ async fn serve_index(
     }
     let section = find_section(&page_context, "blog")?;
 
-    let req = PostsRequest {
-        page: Some(page),
-        tag: request.tag().map(ToOwned::to_owned),
-        ..Default::default()
-    };
-    let poster = Poster::new(page_context.blog.page(req).await?, page);
+    let request = request.normalize().ok_or_else(PageError::not_found)?;
+    let poster = Poster::new(
+        page_context.blog.page(request.posts_request(page)).await?,
+        page,
+    );
+    let subtitle = filter_subtitle(&request);
 
     let mut tpl = BlogIndex {
         html_class: "blog",
@@ -83,6 +97,7 @@ async fn serve_index(
         meta_description: section.descr.as_str(),
         poster: &poster,
         request: &request,
+        subtitle: &subtitle,
         year: get_year(),
     };
 
@@ -100,6 +115,23 @@ async fn serve_index(
     tpl.title_path = &title_path;
 
     Ok(tpl.into_response())
+}
+
+fn filter_subtitle(request: &BlogRequest) -> String {
+    if let Some(tag) = &request.tag {
+        return format!("все посты по метке: {tag}");
+    }
+    if let Some(year) = request.year {
+        let month = request
+            .month
+            .and_then(|month| usize::try_from(month - 1).ok())
+            .and_then(|index| MONTH_NAMES.get(index));
+        return month.map_or_else(
+            || format!("записи за {year} год"),
+            |month| format!("записи за {month} {year}"),
+        );
+    }
+    "тут я пишу".to_owned()
 }
 
 pub async fn serve_document(

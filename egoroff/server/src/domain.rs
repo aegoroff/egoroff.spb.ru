@@ -3,7 +3,7 @@ use std::{collections::HashSet, sync::Arc};
 use futures::lock::Mutex;
 use kernel::{
     blog::Blog,
-    domain::{ApiResult, User},
+    domain::{ApiResult, PostsRequest, User},
     downloads::Downloads,
     graph::SiteGraph,
     users::Users,
@@ -35,25 +35,58 @@ pub struct OperationResult<'a> {
 pub struct BlogRequest {
     /// The tag associated with the blog request (optional).
     pub tag: Option<String>,
+    pub year: Option<i32>,
+    pub month: Option<i32>,
 }
 
 impl BlogRequest {
-    /// Returns the tag to filter posts by, ignoring an empty one.
-    #[must_use]
-    pub fn tag(&self) -> Option<&str> {
-        self.tag.as_deref().filter(|tag| !tag.is_empty())
+    pub(crate) fn normalize(mut self) -> Option<Self> {
+        self.tag = self.tag.filter(|tag| !tag.is_empty());
+        if self.tag.is_some() {
+            self.year = None;
+            self.month = None;
+        } else if self.month.is_some_and(|month| !(1..=12).contains(&month))
+            || ((self.year.is_some() || self.month.is_some())
+                && self.posts_request(1).as_query_period().is_none())
+        {
+            return None;
+        }
+        Some(self)
     }
 
-    /// Returns the URL-encoded `?tag=...` query to keep the tag in pagination links,
-    /// or an empty string when there is no tag.
-    #[must_use]
-    pub fn tag_query(&self) -> String {
-        self.tag().map_or_else(String::new, |tag| {
-            let query = url::form_urlencoded::Serializer::new(String::new())
-                .append_pair("tag", tag)
-                .finish();
-            format!("?{query}")
-        })
+    pub(crate) fn posts_request(&self, page: i32) -> PostsRequest {
+        PostsRequest {
+            page: Some(page),
+            tag: self.tag.clone(),
+            year: self.year,
+            month: self.month,
+            ..Default::default()
+        }
+    }
+
+    pub(crate) fn page_url(&self, page: i32) -> String {
+        let path = if page == 1 {
+            "/blog/".to_owned()
+        } else {
+            format!("/blog/page/{page}/")
+        };
+        if let Some(tag) = &self.tag {
+            format!("{path}{}", Self::tag_query(tag))
+        } else if let Some(year) = self.year {
+            self.month.map_or_else(
+                || format!("{path}?year={year}"),
+                |month| format!("{path}?year={year}&month={month}"),
+            )
+        } else {
+            path
+        }
+    }
+
+    pub(crate) fn tag_query(tag: &str) -> String {
+        let query = url::form_urlencoded::Serializer::new(String::new())
+            .append_pair("tag", tag)
+            .finish();
+        format!("?{query}")
     }
 }
 
@@ -486,22 +519,41 @@ mod tests {
     }
 
     #[rstest]
-    #[case(None, "")]
-    #[case(Some(""), "")]
-    #[case(Some("rust"), "?tag=rust")]
-    #[case(Some("a b&c"), "?tag=a+b%26c")]
-    #[case(Some("\"><script>"), "?tag=%22%3E%3Cscript%3E")]
-    #[case(Some("метка"), "?tag=%D0%BC%D0%B5%D1%82%D0%BA%D0%B0")]
-    fn blog_request_tag_query_tests(#[case] tag: Option<&str>, #[case] expected: &str) {
-        // arrange
-        let request = BlogRequest {
-            tag: tag.map(ToOwned::to_owned),
-        };
+    #[case("", 1, Some("/blog/"))]
+    #[case("tag=", 2, Some("/blog/page/2/"))]
+    #[case("tag=rust", 1, Some("/blog/?tag=rust"))]
+    #[case("tag=a+b%26c", 2, Some("/blog/page/2/?tag=a+b%26c"))]
+    #[case(
+        "tag=%22%3E%3Cscript%3E",
+        2,
+        Some("/blog/page/2/?tag=%22%3E%3Cscript%3E")
+    )]
+    #[case(
+        "tag=%D0%BC%D0%B5%D1%82%D0%BA%D0%B0",
+        1,
+        Some("/blog/?tag=%D0%BC%D0%B5%D1%82%D0%BA%D0%B0")
+    )]
+    #[case("year=2024", 1, Some("/blog/?year=2024"))]
+    #[case("year=2024&month=2", 2, Some("/blog/page/2/?year=2024&month=2"))]
+    #[case("tag=C%2B%2B&year=2024&month=2", 2, Some("/blog/page/2/?tag=C%2B%2B"))]
+    #[case("month=2", 1, None)]
+    #[case("year=2024&month=13", 1, None)]
+    #[case("year=2147483647", 1, None)]
+    fn blog_request_preserves_selected_filter_in_pagination(
+        #[case] query: &str,
+        #[case] page: i32,
+        #[case] expected: Option<&str>,
+    ) -> anyhow::Result<()> {
+        // Arrange
+        let uri = format!("/blog/?{query}").parse()?;
+        let axum::extract::Query(request) =
+            axum::extract::Query::<BlogRequest>::try_from_uri(&uri)?;
 
-        // act
-        let actual = request.tag_query();
+        // Act
+        let actual = request.normalize().map(|request| request.page_url(page));
 
-        // assert
-        assert_eq!(expected, actual);
+        // Assert
+        assert_eq!(expected, actual.as_deref());
+        Ok(())
     }
 }

@@ -5,18 +5,18 @@
 {% endblock %}
 
 {%- block content -%}
-<div class="container">
+<div class="container" data-blog-list>
     <div class="row">
-        <div class="col-lg-9">
+        <div class="col-lg-9" data-blog-results>
             <div class="pb-2 mt-4 mb-2 border-bottom">
-                <h1>
-                    {{- title -}}&nbsp;<small id="blogSmallTitle">тут я пишу</small>
+                <h1 tabindex="-1">
+                    {{- title -}}&nbsp;<small>{{ subtitle }}</small>
                 </h1>
             </div>
             {%- if poster.posts.is_empty() -%}
                 Ничего нет
             {%- else -%}
-                <dl itemscope itemtype="http://schema.org/BlogPosting" id="blogcontainer">
+                <dl itemscope itemtype="http://schema.org/BlogPosting">
                     {%- for post in poster.posts -%}
                         {%- include "blog/post_box.html" -%}
                     {%- endfor -%}

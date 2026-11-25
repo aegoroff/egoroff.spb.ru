@@ -1,53 +1,25 @@
 {%- if poster.has_pages -%}
 <!--noindex-->
-    {%- set blog_path = "/blog/" -%}
-    {%- let tag_query = request.tag_query() -%}
-    {%- set older = "старее &rarr;" -%}
-    {%- set newer = "&larr; новее" -%}
-    <ul class="pagination justify-content-center" id="blogPager">
-        {%- decl li_class -%}
-        {%- decl href -%}
-
-        {%- if poster.has_prev -%}
-            {%- let li_class = "" -%}
-            {%- if poster.prev_page == 1 -%}
-                {%- let href = tag_query.to_string() -%}
-            {%- else -%}
-                {%- let href = (poster.prev_page.to_string() + "/") + tag_query.as_str() -%}
-            {%- endif -%}
-        {%- else -%}
-            {%- let li_class = "disabled" -%}
-            {%- let href = "#".to_string() -%}
-        {%- endif -%}
-
-        <li class="{{ li_class }} page-item">
-            <a href="{{ blog_path|safe }}{% if poster.prev_page > 1 %}page/{% endif %}{{ href|safe }}" class="page-link">{{ newer|safe }}</a>
-        </li>
+<nav aria-label="Страницы блога">
+    <ul class="pagination justify-content-center">
+        {%- if poster.has_prev %}
+        <li class="page-item"><a href="{{ request.page_url(*poster.prev_page) }}" class="page-link" data-blog-link>&larr; новее</a></li>
+        {%- else %}
+        <li class="page-item disabled"><span class="page-link">&larr; новее</span></li>
+        {%- endif %}
 
         {% for page in poster.pages.iter().copied() %}
-            <li {%- if page == poster.page %} class="active page-item" {%- else %} class="page-item" {%- endif -%}>
-                {%- if page == 1 -%}
-                <a href="{{ blog_path|safe }}{{ tag_query|safe }}" class="page-link">{{ page }}</a>
-                {%- else -%}
-                <a href="{{ blog_path|safe }}page/{{ page }}/{{ tag_query }}"
-                    class="page-link">{{ page }}</a>
-                {%- endif -%}
-            </li>
+        <li class="page-item{% if page == poster.page %} active{% endif %}">
+            <a href="{{ request.page_url(*page) }}" class="page-link" data-blog-link{% if page == poster.page %} aria-current="page"{% endif %}>{{ page }}</a>
+        </li>
         {% endfor %}
 
-        {%- decl li_class -%}
-        {%- decl href -%}
-        {%- if poster.has_next -%}
-            {%- set li_class = "" -%}
-            {%- set href = (poster.next_page.to_string() + "/") + tag_query.as_str() -%}
-        {%- else -%}
-            {%- set li_class = "disabled" -%}
-            {%- set href = "#".to_string() -%}
-        {%- endif -%}
-
-        <li class="{{ li_class }} page-item">
-            <a href="{{ blog_path|safe }}page/{{ href|safe }}" class="page-link">{{ older|safe }}</a>
-        </li>
+        {%- if poster.has_next %}
+        <li class="page-item"><a href="{{ request.page_url(*poster.next_page) }}" class="page-link" data-blog-link>старее &rarr;</a></li>
+        {%- else %}
+        <li class="page-item disabled"><span class="page-link">старее &rarr;</span></li>
+        {%- endif %}
     </ul>
+</nav>
 <!--/noindex-->
 {%- endif -%}
